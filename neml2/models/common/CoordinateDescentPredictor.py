@@ -159,8 +159,15 @@ class CoordinateDescentPredictor(Model):
             "bisections",
             int,
             "Bisections of the bracket in each coordinate solve, before the Newton "
-            "polish. Measured: unchanged from 6 upward and broken at 4, so the "
-            "default carries roughly threefold margin.",
+            "polish. What matters is the width of the bracket $[0, b]$ relative to "
+            "the root, which is physics-dependent: for crystal plasticity the "
+            "answer is unchanged from 6 upward and broken at 4, but viscoplasticity "
+            "at a large time step brackets a root near $0.09$ inside $[0, 90]$, and "
+            "8 halvings leave the iterate several times the root -- more than the "
+            "Newton polish recovers. Measured there, 8 takes the first step from 0 "
+            "Newton iterations to 3 while 16 holds it at 0, so the default stays at "
+            "16. Each bisection costs one evaluation of the rate law, which is "
+            "scalar arithmetic.",
             default="16",
         ),
         option(
@@ -269,12 +276,15 @@ class CoordinateDescentPredictor(Model):
         # d/dw [w + aii*phi_inv(w)] = 1 + aii * dphi_inv/dw. Safe here because
         # bisection has already put the iterate at the root.
         for _ in range(self.polish):
-            _, jvp = self.rate_law.jvp(
+            # ``jvp`` returns the primal alongside the tangent, and the primal at
+            # this w IS the rate the Newton step needs -- calling the rate law
+            # again for it would be a third of the solve's cost thrown away.
+            out, jvp = self.rate_law.jvp(
                 {self.driving_force_input: w, **pt},
                 {self.driving_force_input: w * 0.0 + 1.0},
             )
             dg = next(iter(jvp.values()))
-            g = self._phi_inv(w, pt)
+            g = next(iter(out.values()))
             w = w - (w + aii * g - c) / (aii * dg + 1.0)
         return self._phi_inv(w, pt)
 
@@ -283,9 +293,15 @@ class CoordinateDescentPredictor(Model):
 
         A per-component input (the slip strengths) is indexed; anything carried
         once for the whole vector is passed through untouched.
+
+        The test is on the *first* sub-batch axis because that is the one
+        ``sub_batch[i]`` indexes. Matching them matters: a passthrough carried at
+        ``(k, m)`` would satisfy a test on the last axis and then be sliced along
+        the size-``k`` one, yielding the wrong value -- or an ``IndexError`` when
+        ``k < m``, which is the luckier outcome.
         """
         return {
-            n: (v.sub_batch[i] if v.sub_batch_shape and v.sub_batch_shape[-1] == m else v)
+            n: (v.sub_batch[i] if v.sub_batch_ndim == 1 and v.sub_batch_shape[0] == m else v)
             for n, v in pt.items()
         }
 
@@ -304,13 +320,13 @@ class CoordinateDescentPredictor(Model):
 
     @staticmethod
     def _dimension(b: Scalar) -> int:
-        return 1 if b.sub_batch_ndim == 0 else int(b.sub_batch_shape[-1])
+        return 1 if b.sub_batch_ndim == 0 else int(b.sub_batch_shape[0])
 
     @staticmethod
     def _components(b: Scalar) -> list[Scalar]:
         if b.sub_batch_ndim == 0:
             return [b]
-        return [b.sub_batch[i] for i in range(int(b.sub_batch_shape[-1]))]
+        return [b.sub_batch[i] for i in range(int(b.sub_batch_shape[0]))]
 
     @staticmethod
     def _entry(A: Scalar, i: int, j: int) -> Scalar:
@@ -329,7 +345,9 @@ class CoordinateDescentPredictor(Model):
         Sub-batch rank is the only thing distinguishing the two layouts, so a
         mis-wired input -- an ``A`` that forgot its second axis, say -- would
         otherwise index into the wrong axis and silently produce a plausible
-        number.
+        number. Rank alone is not enough: an ``A`` at ``(m, k)`` clears the rank
+        test and then :meth:`_entry` reads entries that are not there, so the
+        extents are checked too.
         """
         want = 0 if b.sub_batch_ndim == 0 else 2
         if A.sub_batch_ndim != want or b.sub_batch_ndim > 1:
@@ -339,6 +357,14 @@ class CoordinateDescentPredictor(Model):
                 f"(1, 2) for a vector system over (m,) and (m, m), or (0, 0) for a single "
                 f"coordinate."
             )
+        if b.sub_batch_ndim == 1:
+            m = int(b.sub_batch_shape[0])
+            if tuple(A.sub_batch_shape) != (m, m):
+                raise ValueError(
+                    f"CoordinateDescentPredictor: coupling is sub-batched "
+                    f"{tuple(A.sub_batch_shape)}, expected ({m}, {m}) to match the "
+                    f"driving force."
+                )
 
     def _sweep(
         self, g: list[Scalar], bs: list[Scalar], A: Scalar, pt: dict[str, Scalar], m: int

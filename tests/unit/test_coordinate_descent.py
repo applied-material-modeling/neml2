@@ -36,6 +36,7 @@ import pytest
 import torch
 
 from neml2.models.common import CoordinateDescentPredictor
+from neml2.models.model import Model
 from neml2.models.solid_mechanics.crystal_plasticity.PowerLawSlipRule import PowerLawSlipRule
 from neml2.types import Scalar
 
@@ -138,3 +139,94 @@ def test_batched():
 def test_rejects_an_unknown_driving_force():
     with pytest.raises(ValueError, match="not an input of the rate law"):
         CoordinateDescentPredictor(rate_law=_rate_law(), driving_force_input="nope")
+
+
+def test_rejects_a_rate_law_with_more_than_one_output():
+    """The predictor reads `next(iter(out.values()))`, so two outputs is ambiguous."""
+
+    class _TwoOut(Model):
+        input_spec = {"resolved_shears": Scalar}
+        output_spec = {"slip_rates": Scalar, "extra": Scalar}
+
+        def forward(self, *inputs, v=None):  # type: ignore[override]
+            (x,) = inputs
+            return x, x
+
+    with pytest.raises(ValueError, match="must have exactly one output"):
+        CoordinateDescentPredictor(rate_law=_TwoOut(), driving_force_input="resolved_shears")
+
+
+# --------------------------------------------------------------------------- #
+# Layout validation. A mis-wired (A, b) pair must fail rather than index into
+# the wrong axis and return a plausible number.
+# --------------------------------------------------------------------------- #
+def _tauhat(m: int = M) -> Scalar:
+    return Scalar(torch.full((m,), 60.0, dtype=torch.float64), sub_batch_ndim=1)
+
+
+def test_rejects_a_coupling_that_forgot_its_second_axis():
+    b = Scalar(torch.ones(M, dtype=torch.float64), sub_batch_ndim=1)
+    A = Scalar(torch.ones(M, dtype=torch.float64), sub_batch_ndim=1)
+    with pytest.raises(ValueError, match="do not form a system"):
+        _predict(A, b, _tauhat(), sweeps=1)
+
+
+def test_rejects_a_non_square_coupling():
+    """Rank 2 is not enough -- `(m, k)` would read entries that are not there."""
+    b = Scalar(torch.ones(M, dtype=torch.float64), sub_batch_ndim=1)
+    A = Scalar(torch.ones(M, M + 2, dtype=torch.float64), sub_batch_ndim=2)
+    with pytest.raises(ValueError, match=r"expected \(3, 3\) to match the driving force"):
+        _predict(A, b, _tauhat(), sweeps=1)
+
+
+def test_a_passthrough_is_indexed_only_on_the_axis_that_is_indexed():
+    """The predicate must name the same axis the action indexes.
+
+    `sub_batch[i]` picks the FIRST sub-batch site, so a test on the *last* axis
+    only agrees with it at rank 1. A passthrough at `(k, m)` used to satisfy the
+    last-axis test and then be sliced along the size-`k` one -- the wrong value,
+    or an IndexError when `k < m`, which is the luckier outcome.
+    """
+    pred = CoordinateDescentPredictor(rate_law=_rate_law(), driving_force_input="resolved_shears")
+    per_component = Scalar(torch.arange(M, dtype=torch.float64), sub_batch_ndim=1)
+    # (2, M): the last axis is M, but the axis sub_batch[i] would index is size 2.
+    other = Scalar(torch.zeros(2, M, dtype=torch.float64), sub_batch_ndim=2)
+
+    out = pred._slice_pt({"per": per_component, "other": other}, 2, M)
+
+    assert float(out["per"].data) == 2.0  # data-ok: indexed, as intended
+    assert out["other"] is other  # passed through, not sliced along the size-2 axis
+
+
+# --------------------------------------------------------------------------- #
+# Iterable-export equivalence
+# --------------------------------------------------------------------------- #
+def test_one_sweep_applied_n_times_equals_n_sweeps():
+    """The compiled routes run `iterable_export_form()`'s single sweep in a loop.
+
+    Pinned because the single-sweep form is an instance-level `forward`
+    monkeypatch on a `copy.copy`'d module, and the AOTI suite cannot catch it
+    silently ceasing to take effect: an unrolled 16-sweep graph looped 16 times
+    converges to the same root, so a Newton count would still move.
+    """
+    n = 5
+    g_star = torch.tensor([0.05, -0.02, 0.11], dtype=torch.float64)
+    tauhat = torch.full((M,), 60.0, dtype=torch.float64)
+    A, b, th = _problem(g_star, _spd(M), tauhat)
+
+    whole = CoordinateDescentPredictor(
+        rate_law=_rate_law(), driving_force_input="resolved_shears", sweeps=n
+    )
+    inputs = {"coupling": A, "trial_driving_force": b, "slip_strengths": th}
+    expected = whole.call_by_name(inputs)["rate"]
+
+    form = CoordinateDescentPredictor(
+        rate_law=_rate_law(), driving_force_input="resolved_shears", sweeps=n
+    ).iterable_export_form()
+    assert form.iterations == n
+    rate = Scalar(torch.zeros(M, dtype=torch.float64), sub_batch_ndim=1)
+    for _ in range(n):
+        rate = form.model.call_by_name({**inputs, form.feedback_input: rate})[form.feedback_output]
+
+    # data-ok: test assertion on the numeric result
+    assert torch.equal(rate.data, expected.data)
