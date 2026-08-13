@@ -302,6 +302,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -518,9 +519,9 @@ effective scalar separation</p>
 a mixed-mode failure separation <span class="math notranslate nohighlight">\(\delta_f(\beta, \delta_c)\)</span>. Damage is
 then defined piecewise from the historical maximum effective
 separation <span class="math notranslate nohighlight">\(\bar{\delta}_m = \max_{t' \le t} \delta_m(t')\)</span>,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-682503d3-f8e4-488f-9d59-0e73d4ddde32">
-<div class="amsmath math notranslate nohighlight" id="equation-682503d3-f8e4-488f-9d59-0e73d4ddde32">
-<span class="eqno">(19)<a class="headerlink" href="#equation-682503d3-f8e4-488f-9d59-0e73d4ddde32" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-53d7708d-7f28-4428-afdb-ead27a92f043">
+<div class="amsmath math notranslate nohighlight" id="equation-53d7708d-7f28-4428-afdb-ead27a92f043">
+<span class="eqno">(19)<a class="headerlink" href="#equation-53d7708d-7f28-4428-afdb-ead27a92f043" title="Permalink to this equation">#</a></span>\[\begin{align}
 d(\bar{\delta}_m) &amp;= 0,
   &amp; \bar{\delta}_m &amp;\le \delta_c, \\
 d(\bar{\delta}_m) &amp;=
@@ -532,9 +533,9 @@ d(\bar{\delta}_m) &amp;= 1,
 \end{align}\]</div>
 </div>
 <p>so that the traction is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-71b7e7fc-4189-43dc-9df3-e83038ebecac">
-<div class="amsmath math notranslate nohighlight" id="equation-71b7e7fc-4189-43dc-9df3-e83038ebecac">
-<span class="eqno">(20)<a class="headerlink" href="#equation-71b7e7fc-4189-43dc-9df3-e83038ebecac" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-8ab55c85-ef8a-4c24-8841-528f5585445b">
+<div class="amsmath math notranslate nohighlight" id="equation-8ab55c85-ef8a-4c24-8841-528f5585445b">
+<span class="eqno">(20)<a class="headerlink" href="#equation-8ab55c85-ef8a-4c24-8841-528f5585445b" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n   &amp;= K\,(1-d)\,\langle \delta_n \rangle_+ \;+\; K\,\langle \delta_n \rangle_-, \notag \\
 T_{si} &amp;= K\,(1-d)\,\delta_{si}, \quad i \in \{1, 2\},
 \end{align}\]</div>

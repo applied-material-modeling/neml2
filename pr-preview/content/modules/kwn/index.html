@@ -302,6 +302,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -527,9 +528,9 @@ growth rate vanishes as <span class="math notranslate nohighlight">\(x^\infty_\s
 <p>The more general <strong>SFFK</strong> form (Svoboda–Fischer–Fratzl–Kozeschnik)
 handles multi-component diffusion in the dilute, diffusion-limited
 regime,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-64184151-552e-4bab-bae6-28b8f4d25b13">
-<div class="amsmath math notranslate nohighlight" id="equation-64184151-552e-4bab-bae6-28b8f4d25b13">
-<span class="eqno">(6)<a class="headerlink" href="#equation-64184151-552e-4bab-bae6-28b8f4d25b13" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-b11518fe-6a26-4890-b2d2-96daaa96ae5d">
+<div class="amsmath math notranslate nohighlight" id="equation-b11518fe-6a26-4890-b2d2-96daaa96ae5d">
+<span class="eqno">(6)<a class="headerlink" href="#equation-b11518fe-6a26-4890-b2d2-96daaa96ae5d" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{R}^{(j)} &amp;= \frac{1}{R^{(j)}} \,
   \frac{\Delta G^{(j)}_{\text{chem}}
       + \Delta G^{(j)}_{\text{surf}}
@@ -542,9 +543,9 @@ S^{(j)} &amp;= \sum_{k \in \mathcal{S}_j}
 <p>with <span class="math notranslate nohighlight">\(\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\)</span> and <span class="math notranslate nohighlight">\(D_k\)</span> the matrix
 diffusivity of species <span class="math notranslate nohighlight">\(k\)</span>. The driving force is split into chemical,
 surface, and elastic contributions:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-4189f772-8b07-4e0b-9cd4-2b500331d79c">
-<div class="amsmath math notranslate nohighlight" id="equation-4189f772-8b07-4e0b-9cd4-2b500331d79c">
-<span class="eqno">(7)<a class="headerlink" href="#equation-4189f772-8b07-4e0b-9cd4-2b500331d79c" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-e1c57f49-86a7-4112-9664-5790dcbdb9e5">
+<div class="amsmath math notranslate nohighlight" id="equation-e1c57f49-86a7-4112-9664-5790dcbdb9e5">
+<span class="eqno">(7)<a class="headerlink" href="#equation-e1c57f49-86a7-4112-9664-5790dcbdb9e5" title="Permalink to this equation">#</a></span>\[\begin{align}
 \Delta G^{(j)}_{\text{chem}} &amp;=
   \sum_{k \in \mathcal{S}_j} \Delta x^{(j)}_k
   \bigl[\mu^{\text{matrix}}_k(x^\infty) - \mu^{\text{equil},(j)}_k\bigr],
@@ -576,9 +577,9 @@ J^{(j)}_{\text{nuc}} =
 \]</div>
 </div>
 <p>with the classical-nucleation-theory expressions</p>
-<div class="math-wrapper amsmath docutils container" id="equation-c07e4d00-eaad-41a5-a3dc-465facf61bc1">
-<div class="amsmath math notranslate nohighlight" id="equation-c07e4d00-eaad-41a5-a3dc-465facf61bc1">
-<span class="eqno">(8)<a class="headerlink" href="#equation-c07e4d00-eaad-41a5-a3dc-465facf61bc1" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-f49cad4a-1ceb-4395-aecc-44db0e6aef67">
+<div class="amsmath math notranslate nohighlight" id="equation-f49cad4a-1ceb-4395-aecc-44db0e6aef67">
+<span class="eqno">(8)<a class="headerlink" href="#equation-f49cad4a-1ceb-4395-aecc-44db0e6aef67" title="Permalink to this equation">#</a></span>\[\begin{align}
 R^{(j)}_{\text{crit}} &amp;=
   \frac{2 \gamma^{(j)} V_m^{(j)}}{\Delta g^{(j)}_v}, \\
 \Delta G^{*,(j)} &amp;=

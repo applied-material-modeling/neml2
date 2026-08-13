@@ -27,7 +27,6 @@ Normality
 OlevskySinteringStress
 PerzynaPlasticFlowRate
 PerzynaPlasticFlowRateResidual
-PowerLawCreepFlowRate
 PowerLawIsotropicHardeningStaticRecovery
 PowerLawKinematicHardeningStaticRecovery
 SlopeSaturationVoceIsotropicHardening

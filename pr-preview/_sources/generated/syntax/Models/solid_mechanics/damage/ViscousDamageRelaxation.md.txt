@@ -1,0 +1,61 @@
+(models-ViscousDamageRelaxation)=
+# ViscousDamageRelaxation
+
+**Source:** `models/solid_mechanics/damage/ViscousDamageRelaxation.py`
+
+Backward-Euler viscous relaxation of a damage variable toward a
+target -- Brandyberry, Zhang & Geubelle (2022) eq (24).
+
+Under loading (:math:`g = \omega^{\mathrm{target}} - \omega^{n-1} \ge 0`):
+
+.. math::
+    \omega^{n} = \frac{\omega^{n-1} + \mu_{\mathrm{visc}}\,\Delta t\,\omega^{\mathrm{target}}}
+                      {1 + \mu_{\mathrm{visc}}\,\Delta t}
+
+Under unloading (:math:`g < 0`): :math:`\omega^{n} = \omega^{n-1}` (damage
+is monotone -- never heals).
+
+Parameter roles:
+
+* :math:`\mu_{\mathrm{visc}}` -- damage fluidity coefficient (units: 1/time).
+  Small values retard damage growth (curves toward the elastic limit);
+  large values approach the rate-independent target
+  (:math:`\omega^{n} \to \omega^{\mathrm{target}}`).
+
+Typical values: :math:`\mu_{\mathrm{visc}} \approx 20\ \mathrm{s}^{-1}`
+for the concrete/composite regime Brandyberry study; effectively
+rate-independent for slow quasi-static loading.
+
+Intended composition:
+
+* Upstream leaf computes ``target = G(psi_0)`` (any G function -- Weibull,
+  exponential softening, linear, etc.). This leaf is G-agnostic.
+* This leaf relaxes toward ``target`` with fluidity ``mu_visc``.
+* Downstream `DamagedStress` applies ``sigma = (1 - omega) * sigma_tilde``.
+
+Reference: Brandyberry, D. R., Zhang, X., & Geubelle, P. H. (2022),
+"Multiscale design of nonlinear materials using reduced-order modeling",
+*Comput. Methods Appl. Mech. Engrg.* 399, 115388, eq (24).
+Framework: Simo, J. C. & Ju, J. W. (1987) *Int. J. Solids Struct.*
+23(7), 841-869 sec. 3.4 (viscous regularization structure).
+
+## Inputs
+
+`target` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Rate-independent target damage (typically G(psi_0))
+
+`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
+: Current time
+
+
+## Outputs
+
+`omega` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Viscously-relaxed damage variable in [0, 1)
+
+
+## Parameters
+
+`mu_visc` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Damage fluidity coefficient (1/time). mu_visc*dt >> 1 recovers rate-independent target; mu_visc*dt << 1 gives near-elastic response.
+
