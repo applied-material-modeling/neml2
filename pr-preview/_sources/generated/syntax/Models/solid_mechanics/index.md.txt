@@ -6,7 +6,6 @@
 :maxdepth: 1
 
 crystal_plasticity/index
-damage/index
 elasticity/index
 kinematics/index
 plasticity/index

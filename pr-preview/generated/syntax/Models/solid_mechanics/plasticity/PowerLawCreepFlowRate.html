@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>WeibullDamage - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="elasticity" href="../elasticity/index.html" /><link rel="prev" title="ViscousDamageRelaxation" href="ViscousDamageRelaxation.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>PowerLawCreepFlowRate - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="PowerLawIsotropicHardeningStaticRecovery" href="PowerLawIsotropicHardeningStaticRecovery.html" /><link rel="prev" title="PerzynaPlasticFlowRateResidual" href="PerzynaPlasticFlowRateResidual.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="WeibullDamage"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="PowerLawCreepFlowRate"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -302,10 +302,9 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html">solid_mechanics</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../kinematics/index.html">kinematics</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../plasticity/index.html">plasticity</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html">plasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../traction_separation_law/index.html">traction_separation_law</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../viscoelasticity/index.html">viscoelasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
@@ -415,11 +414,11 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="4" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <a itemprop="item" href="index.html"><span itemprop="name">damage</span></a>
+        <a itemprop="item" href="index.html"><span itemprop="name">plasticity</span></a>
         <span>/</span>
         <meta itemprop="position" content="5" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">WeibullDamage</strong>
+        <strong itemprop="name">PowerLawCreepFlowRate</strong>
         <meta itemprop="position" content="6" />
       </li></ol>
     <div class="xl:hidden ml-1">
@@ -432,66 +431,46 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="weibulldamage">
-<span id="models-weibulldamage"></span><h1>WeibullDamage<a class="headerlink" href="#weibulldamage" title="Link to this heading">#</a></h1>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/damage/WeibullDamage.py</span></code></p>
-<p>Three-parameter Weibull damage law – Brandyberry et al. (2022)
-variant of Simo &amp; Ju (1987) isotropic elastic damage.</p>
-<p>… math::
-D® ;=; 1 ;-; \exp!\left[;-\left(\frac{\langle r-Y_\mathrm{in}\rangle_+}
-{p_1,Y_\mathrm{in}}\right)^{p_2};\right]</p>
-<p>Reads the damage-threshold history variable :math:<code class="docutils literal notranslate"><span class="pre">r</span></code> (typically the output
-of <code class="docutils literal notranslate"><span class="pre">IrreversibleScalar</span></code> acting on the elastic strain energy density</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">math<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">\psi_0</span></code>), returns the isotropic scalar damage :math:<code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">\in</span> <span class="pre">[0,</span> <span class="pre">1)</span></code>.</p>
-</dd>
-</dl>
-<p>Parameter roles:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Y_in</span></code> – damage-onset energy threshold. Below :math:<code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">=</span> <span class="pre">Y_\mathrm{in}</span></code>
-the Macaulay bracket zeros the argument, so :math:<code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">0</span></code> exactly.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">p_1</span></code> – Weibull scale, “how quickly damage grows once initiated”.
-Small <code class="docutils literal notranslate"><span class="pre">p_1</span></code> (~0.01) gives cliff-like brittle collapse; large <code class="docutils literal notranslate"><span class="pre">p_1</span></code>
-(~100) gives very gradual softening.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">p_2</span></code> – Weibull shape, controls the softening curve shape.
-<code class="docutils literal notranslate"><span class="pre">p_2</span> <span class="pre">=</span> <span class="pre">1</span></code> recovers a pure exponential; <code class="docutils literal notranslate"><span class="pre">p_2</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> sharpens the
-knee into a sigmoidal shape.</p></li>
-</ul>
-<p>Wired downstream to <code class="docutils literal notranslate"><span class="pre">DamagedStress</span></code> to obtain the nominal stress</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">math<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">\sigma</span> <span class="pre">=</span> <span class="pre">(1</span> <span class="pre">-</span> <span class="pre">D)\tilde{\sigma}</span></code>. All three parameters may be
-promoted to runtime inputs for gradient-based calibration.</p>
-</dd>
-</dl>
-<p>Reference: Brandyberry, D. R., Zhang, X., &amp; Geubelle, P. H. (2022),
-“Multiscale design of nonlinear materials using reduced-order modeling”,
-<em>Comput. Methods Appl. Mech. Engrg.</em> 399, 115388, Appendix A.2 eq (23).
-Underlying framework: Simo, J. C. &amp; Ju, J. W. (1987),
-<em>Int. J. Solids Struct.</em> 23(7), 821-869 (Parts I &amp; II).</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="powerlawcreepflowrate">
+<span id="models-powerlawcreepflowrate"></span><h1>PowerLawCreepFlowRate<a class="headerlink" href="#powerlawcreepflowrate" title="Link to this heading">#</a></h1>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/plasticity/PowerLawCreepFlowRate.py</span></code></p>
+<p>Norton (Bailey) power-law creep flow rate,
+<span class="math notranslate nohighlight">\(\dot{\gamma} = A \left&lt; f \right&gt;^n \exp\left( -\frac{Q}{R T} \right)\)</span>,
+where <span class="math notranslate nohighlight">\(f\)</span> is the driving force (the von Mises effective stress), <span class="math notranslate nohighlight">\(A\)</span> is the
+creep coefficient, <span class="math notranslate nohighlight">\(n\)</span> is the stress exponent, <span class="math notranslate nohighlight">\(Q\)</span> is the activation energy,
+<span class="math notranslate nohighlight">\(R\)</span> is the universal gas constant, <span class="math notranslate nohighlight">\(T\)</span> is the absolute temperature, and
+<span class="math notranslate nohighlight">\(\left&lt; \cdot \right&gt;\)</span> is the Macaulay bracket.</p>
+<p>This is the flow-rate form of the MOOSE <code class="docutils literal notranslate"><span class="pre">PowerLawCreepStressUpdate</span></code> creep
+law. The <code class="docutils literal notranslate"><span class="pre">temperature</span></code> input is optional: omit it for the
+temperature-independent form <span class="math notranslate nohighlight">\(\dot{\gamma} = A \left&lt; f \right&gt;^n\)</span> (then
+<span class="math notranslate nohighlight">\(Q\)</span> and <span class="math notranslate nohighlight">\(R\)</span> are unused). The MOOSE time-hardening factor <span class="math notranslate nohighlight">\(t^m\)</span> is not
+modeled (it corresponds to <span class="math notranslate nohighlight">\(m = 0\)</span>).</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">r</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Damage threshold history variable (max-history of psi_0)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">yield_function</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Driving force (von Mises effective stress)</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">temperature</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code></dt><dd><p>Absolute temperature (optional; omit for temperature-independent creep)</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">D</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Isotropic scalar damage in [0, 1)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">flow_rate</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Creep flow rate</p>
 </dd>
 </dl>
 </section>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">Y_in</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Damage-onset energy threshold (same units as r)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">coefficient</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Power-law creep coefficient</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">p1</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Weibull scale parameter (dimensionless)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">exponent</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Power-law stress exponent</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">p2</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Weibull shape parameter (dimensionless)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">activation_energy</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">0.0</span></code></dt><dd><p>Creep activation energy (used only when temperature is provided)</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gas_constant</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">8.3143</span></code></dt><dd><p>Universal gas constant (used only when temperature is provided)</p>
 </dd>
 </dl>
 </section>
@@ -503,16 +482,16 @@ Underlying framework: Simo, J. C. &amp; Ju, J. W. (1987),
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="ViscousDamageRelaxation.html">
+    <a href="PerzynaPlasticFlowRateResidual.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">ViscousDamageRelaxation</div></div>
+        <span>Previous</span><div class="title">PerzynaPlasticFlowRateResidual</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="../elasticity/index.html">
+    <a href="PowerLawIsotropicHardeningStaticRecovery.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">elasticity</div>
+        <div class="title">PowerLawIsotropicHardeningStaticRecovery</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -546,6 +525,8 @@ Underlying framework: Simo, J. C. &amp; Ju, J. W. (1987),
       <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../../_static/copybutton.js?v=7abfc884"></script>
       <script src="../../../../../_static/shibuya.js?v=50760d75"></script>
+      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../../../../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
       <script src="../../../../../_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>
