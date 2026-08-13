@@ -111,10 +111,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/pbm/index.html">Population balance (fragmentation)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/pbm/grinding.html">Grinding example</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/modules/solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -167,6 +163,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -194,7 +191,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -210,7 +206,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2LinearCombination.html">R2LinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
@@ -266,7 +261,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -464,72 +458,78 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="41">
 </span><span data-line="42"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 </span><span data-line="43">
-</span><span data-line="44"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">align_k</span><span class="p">,</span> <span class="n">align_sub_batch</span><span class="p">,</span> <span class="n">combine_k_state</span><span class="p">,</span> <span class="n">combine_sub_batch_state</span>
-</span><span data-line="45"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._primitive</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrimitiveTensor</span>
-</span><span data-line="46"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._pytree</span><span class="w"> </span><span class="kn">import</span> <span class="n">register</span>
-</span><span data-line="47">
-</span><span data-line="48">
+</span><span data-line="44"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._base</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span data-line="45">    <span class="n">UNSET</span><span class="p">,</span>
+</span><span data-line="46">    <span class="n">align_k</span><span class="p">,</span>
+</span><span data-line="47">    <span class="n">align_sub_batch</span><span class="p">,</span>
+</span><span data-line="48">    <span class="n">combine_k_state</span><span class="p">,</span>
+</span><span data-line="49">    <span class="n">combine_sub_batch_state</span><span class="p">,</span>
+</span><span data-line="50"><span class="p">)</span>
+</span><span data-line="51"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._primitive</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrimitiveTensor</span>
+</span><span data-line="52"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._pytree</span><span class="w"> </span><span class="kn">import</span> <span class="n">register</span>
+</span><span data-line="53">
+</span><span data-line="54">
 <div class="viewcode-block" id="R2">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.R2">[docs]</a>
-</span><span data-line="49"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span data-line="50"><span class="k">class</span><span class="w"> </span><span class="nc">R2</span><span class="p">(</span><span class="n">PrimitiveTensor</span><span class="p">):</span>
-</span><span data-line="51"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of shape ``(..., 3, 3)``.&quot;&quot;&quot;</span>
-</span><span data-line="52">
-</span><span data-line="53">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
-</span><span data-line="54">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="55">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="56">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="57">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="58">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="59">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="60">    <span class="n">BASE_NDIM</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
-</span><span data-line="61">    <span class="n">BASE_SHAPE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-</span><span data-line="62">
+</span><span data-line="55"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="56"><span class="k">class</span><span class="w"> </span><span class="nc">R2</span><span class="p">(</span><span class="n">PrimitiveTensor</span><span class="p">):</span>
+</span><span data-line="57"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of shape ``(..., 3, 3)``.&quot;&quot;&quot;</span>
+</span><span data-line="58">
+</span><span data-line="59">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+</span><span data-line="60">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="61">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="62">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="63">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="64">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="65">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="66">    <span class="n">BASE_NDIM</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+</span><span data-line="67">    <span class="n">BASE_SHAPE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</span><span data-line="68">
 <div class="viewcode-block" id="R2.identity">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.R2.identity">[docs]</a>
-</span><span data-line="63">    <span class="nd">@classmethod</span>
-</span><span data-line="64">    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span>
-</span><span data-line="65">        <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="66">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R2</span><span class="p">:</span>
-</span><span data-line="67">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
+</span><span data-line="69">    <span class="nd">@classmethod</span>
+</span><span data-line="70">    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span>
+</span><span data-line="71">        <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="72">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R2</span><span class="p">:</span>
+</span><span data-line="73">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
 
-</span><span data-line="68">
-</span><span data-line="69">    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-</span><span data-line="70"><span class="w">        </span><span class="sd">&quot;&quot;&quot;``R2 @ R2 → R2`` (matrix product). Other operands fall through.</span>
-</span><span data-line="71">
-</span><span data-line="72"><span class="sd">        ``align_sub_batch`` pads the LHS/RHS so e.g. a global ``(B, 3, 3)`` and</span>
-</span><span data-line="73"><span class="sd">        a per-crystal ``(B, 5, 3, 3)`` matmul aligns to ``(B, 1, 3, 3)`` vs</span>
-</span><span data-line="74"><span class="sd">        ``(B, 5, 3, 3)`` and broadcasts to ``(B, 5, 3, 3)``.</span>
-</span><span data-line="75">
-</span><span data-line="76"><span class="sd">        Uses :func:`~neml2.types.functions.matmul_3x3` (hand-rolled</span>
-</span><span data-line="77"><span class="sd">        pointwise) rather than ``torch.matmul`` so the op fuses with</span>
-</span><span data-line="78"><span class="sd">        surrounding pointwise ops under Inductor lowering. cuBLAS / MKL</span>
-</span><span data-line="79"><span class="sd">        matmul kernels can&#39;t fuse with their neighbours, so each</span>
-</span><span data-line="80"><span class="sd">        ``a @ b`` would split a CP chain into separate kernels with</span>
-</span><span data-line="81"><span class="sd">        intermediate materialisations.</span>
-</span><span data-line="82"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="83">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">R2</span><span class="p">):</span>
-</span><span data-line="84">            <span class="c1"># Lazy import to avoid the cycle ``types -&gt; functions -&gt; types``.</span>
-</span><span data-line="85">            <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">matmul_3x3</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="86">
-</span><span data-line="87">            <span class="p">[</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">],</span> <span class="n">sb</span> <span class="o">=</span> <span class="n">align_sub_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
-</span><span data-line="88">            <span class="n">state</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">combine_sub_batch_state</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">)</span>
-</span><span data-line="89">            <span class="p">[</span><span class="n">aaK</span><span class="p">,</span> <span class="n">bbK</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">align_k</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">)</span>
-</span><span data-line="90">            <span class="n">k_state</span><span class="p">,</span> <span class="n">k_pairing</span> <span class="o">=</span> <span class="n">combine_k_state</span><span class="p">(</span><span class="n">aaK</span><span class="p">,</span> <span class="n">bbK</span><span class="p">)</span>
-</span><span data-line="91">            <span class="k">return</span> <span class="n">aaK</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span>
-</span><span data-line="92">                <span class="n">matmul_3x3</span><span class="p">(</span><span class="n">aaK</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">bbK</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
-</span><span data-line="93">                <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sb</span><span class="p">,</span>
-</span><span data-line="94">                <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
-</span><span data-line="95">                <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span>
-</span><span data-line="96">                <span class="n">k_ndim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">k_state</span><span class="p">),</span>
-</span><span data-line="97">                <span class="n">k_state</span><span class="o">=</span><span class="n">k_state</span><span class="p">,</span>
-</span><span data-line="98">                <span class="n">k_pairing</span><span class="o">=</span><span class="n">k_pairing</span><span class="p">,</span>
-</span><span data-line="99">            <span class="p">)</span>
-</span><span data-line="100">        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+</span><span data-line="74">
+</span><span data-line="75">    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+</span><span data-line="76"><span class="w">        </span><span class="sd">&quot;&quot;&quot;``R2 @ R2 → R2`` (matrix product). Other operands fall through.</span>
+</span><span data-line="77">
+</span><span data-line="78"><span class="sd">        ``align_sub_batch`` pads the LHS/RHS so e.g. a global ``(B, 3, 3)`` and</span>
+</span><span data-line="79"><span class="sd">        a per-crystal ``(B, 5, 3, 3)`` matmul aligns to ``(B, 1, 3, 3)`` vs</span>
+</span><span data-line="80"><span class="sd">        ``(B, 5, 3, 3)`` and broadcasts to ``(B, 5, 3, 3)``.</span>
+</span><span data-line="81">
+</span><span data-line="82"><span class="sd">        Uses :func:`~neml2.types.functions.matmul_3x3` (hand-rolled</span>
+</span><span data-line="83"><span class="sd">        pointwise) rather than ``torch.matmul`` so the op fuses with</span>
+</span><span data-line="84"><span class="sd">        surrounding pointwise ops under Inductor lowering. cuBLAS / MKL</span>
+</span><span data-line="85"><span class="sd">        matmul kernels can&#39;t fuse with their neighbours, so each</span>
+</span><span data-line="86"><span class="sd">        ``a @ b`` would split a CP chain into separate kernels with</span>
+</span><span data-line="87"><span class="sd">        intermediate materialisations.</span>
+</span><span data-line="88"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="89">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">R2</span><span class="p">):</span>
+</span><span data-line="90">            <span class="c1"># Lazy import to avoid the cycle ``types -&gt; functions -&gt; types``.</span>
+</span><span data-line="91">            <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">matmul_3x3</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="92">
+</span><span data-line="93">            <span class="p">[</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">],</span> <span class="n">sb</span> <span class="o">=</span> <span class="n">align_sub_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+</span><span data-line="94">            <span class="n">state</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">combine_sub_batch_state</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">)</span>
+</span><span data-line="95">            <span class="p">[</span><span class="n">aaK</span><span class="p">,</span> <span class="n">bbK</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">align_k</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">)</span>
+</span><span data-line="96">            <span class="n">k_state</span><span class="p">,</span> <span class="n">k_pairing</span> <span class="o">=</span> <span class="n">combine_k_state</span><span class="p">(</span><span class="n">aaK</span><span class="p">,</span> <span class="n">bbK</span><span class="p">)</span>
+</span><span data-line="97">            <span class="k">return</span> <span class="n">aaK</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span>
+</span><span data-line="98">                <span class="n">matmul_3x3</span><span class="p">(</span><span class="n">aaK</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">bbK</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
+</span><span data-line="99">                <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sb</span><span class="p">,</span>
+</span><span data-line="100">                <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
+</span><span data-line="101">                <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span>
+</span><span data-line="102">                <span class="n">k_ndim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">k_state</span><span class="p">),</span>
+</span><span data-line="103">                <span class="n">k_state</span><span class="o">=</span><span class="n">k_state</span><span class="p">,</span>
+</span><span data-line="104">                <span class="n">k_pairing</span><span class="o">=</span><span class="n">k_pairing</span><span class="p">,</span>
+</span><span data-line="105">            <span class="p">)</span>
+</span><span data-line="106">        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
-</span><span data-line="101">
-</span><span data-line="102">
-</span><span data-line="103"><span class="n">register</span><span class="p">(</span><span class="n">R2</span><span class="p">)</span>
+</span><span data-line="107">
+</span><span data-line="108">
+</span><span data-line="109"><span class="n">register</span><span class="p">(</span><span class="n">R2</span><span class="p">)</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

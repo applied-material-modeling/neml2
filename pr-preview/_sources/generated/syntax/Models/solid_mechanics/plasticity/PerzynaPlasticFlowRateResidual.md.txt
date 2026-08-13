@@ -1,0 +1,65 @@
+(models-PerzynaPlasticFlowRateResidual)=
+# PerzynaPlasticFlowRateResidual
+
+**Source:** `models/solid_mechanics/plasticity/PerzynaPlasticFlowRateResidual.py`
+
+Perzyna flow rule stated as an implicit residual in *inverted* form,
+$r = \eta \dot{\gamma}^{1/n} - \left< f \right>$, rather than as the explicit
+map $\dot{\gamma} = \left( \left< f \right> / \eta \right)^n$ of
+`PerzynaPlasticFlowRate`.
+
+Both have the same root. The difference is what Newton sees. Substituting
+the explicit map into the backward-Euler equations makes every residual a
+degree-$n$ polynomial in the stress, and Newton on a degree-$n$ monomial
+converges only *linearly*, contracting by $(1-1/n)^n$ per iteration until
+the iterate reaches the root -- 13-15 wasted iterations at a cold start for
+typical rate sensitivities. Carrying $\dot{\gamma}$ as an unknown of the
+implicit system and closing it with this residual instead relocates that
+nonlinearity to a single $1/n$ power, leaving the stress and
+internal-variable residuals affine in $\dot{\gamma}$.
+
+The gain grows with the stiffness of the step, which is where the rate form
+hurts most: for $n = 8$ the scalar model problem takes 12 iterations either
+way at $\Delta t = 1$, but 20 (rate form) against 8 (this form) at
+$\Delta t = 10^4$.
+
+**Regularization.** $\dot{\gamma}^{1/n}$ has infinite slope at
+$\dot{\gamma} = 0$, which is exactly where a cold start sits and exactly the
+root on an elastic step. Below ``cutoff`` the power is therefore replaced by
+its tangent line at the cutoff, giving a $C^1$ residual with a bounded
+derivative everywhere and no need for a positivity projection (which the
+Newton solver does not have). On an elastic step this converges in one
+iteration to $\dot{\gamma} = -(n-1)\,\mathrm{cutoff}$ instead of exactly
+zero; with the default cutoff that error is far below solver tolerance.
+
+Pair this with an initial guess for ``flow_rate`` -- the residual is well
+behaved at zero thanks to the regularization, but a strictly positive seed
+(e.g. an initial condition plus a ``ConstantExtrapolationPredictor``) costs
+nothing and saves a couple of iterations.
+
+## Inputs
+
+`yield_function` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Yield function
+
+`flow_rate` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Flow rate. Unlike PerzynaPlasticFlowRate this is an *input* -- it is carried as an unknown of the implicit system and solved for.
+
+
+## Outputs
+
+`flow_rate_residual` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Residual of the inverted flow rule
+
+
+## Parameters
+
+`reference_stress` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Reference stress
+
+`exponent` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Power-law exponent
+
+`cutoff` &mdash; `parameter` &middot; `Scalar` &middot; default `1e-20`
+: Flow rate below which the fractional power is replaced by its tangent line, bounding the derivative at the origin. Lower is more accurate and less well-conditioned.
+
