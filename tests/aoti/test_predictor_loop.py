@@ -71,6 +71,10 @@ def _inputs() -> dict[str, torch.Tensor]:
         .contiguous(),
         "t": torch.full((b,), 0.0101, dtype=torch.float64),
         "t~1": torch.zeros(b, dtype=torch.float64),
+        # The extrapolation predictor's cold test is |t~1 - t~2| <= eps, so the
+        # graph carries a second time lag. Equal to t~1 here, which is what the
+        # first step looks like -- and therefore the branch the predictor takes.
+        "t~2": torch.zeros(b, dtype=torch.float64),
         "elastic_strain~1": torch.zeros(b, 6, dtype=torch.float64),
         "slip_hardening~1": torch.zeros(b, dtype=torch.float64),
         "orientation~1": torch.zeros(b, 3, dtype=torch.float64),
