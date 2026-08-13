@@ -56,7 +56,6 @@ from .MandelStress import MandelStress
 from .Normality import Normality
 from .OlevskySinteringStress import OlevskySinteringStress
 from .PerzynaPlasticFlowRate import PerzynaPlasticFlowRate
-from .PerzynaPlasticFlowRateResidual import PerzynaPlasticFlowRateResidual
 from .PlasticFlowRate import PlasticFlowRate
 from .PowerLawIsotropicHardeningStaticRecovery import PowerLawIsotropicHardeningStaticRecovery
 from .PowerLawKinematicHardeningStaticRecovery import PowerLawKinematicHardeningStaticRecovery
@@ -90,7 +89,6 @@ __all__ = [
     "Normality",
     "OlevskySinteringStress",
     "PerzynaPlasticFlowRate",
-    "PerzynaPlasticFlowRateResidual",
     "PlasticFlowRate",
     "PowerLawIsotropicHardeningStaticRecovery",
     "PowerLawKinematicHardeningStaticRecovery",
