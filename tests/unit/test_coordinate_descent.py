@@ -230,3 +230,37 @@ def test_one_sweep_applied_n_times_equals_n_sweeps():
 
     # data-ok: test assertion on the numeric result
     assert torch.equal(rate.data, expected.data)
+
+
+# --------------------------------------------------------------------------- #
+# The degenerate one-coordinate layout: A and b as plain scalars, no sub-batch.
+# Viscoplasticity condenses onto a single flow rate, so there is nothing to
+# sub-batch over and Gauss-Seidel is one exact scalar solve.
+# --------------------------------------------------------------------------- #
+def test_one_coordinate_system_recovers_its_root():
+    """Same construction as the vector case, with the sub-batch axes removed."""
+    g_star = torch.tensor(0.05, dtype=torch.float64)
+    tauhat = torch.tensor(60.0, dtype=torch.float64)
+    a = torch.tensor(35.0, dtype=torch.float64)
+    b = _phi(g_star, tauhat) + a * g_star
+
+    got = _predict(Scalar(a), Scalar(b), Scalar(tauhat), sweeps=40)
+    assert got.shape == ()
+    assert torch.allclose(got, g_star, rtol=1e-6, atol=1e-12)
+
+
+def test_one_coordinate_system_with_zero_coupling_is_the_rate_law():
+    """A = 0 collapses to the plain explicit law, as in the vector case."""
+    tauhat = torch.tensor(60.0, dtype=torch.float64)
+    b = torch.tensor(30.0, dtype=torch.float64)
+    expected = GAMMA0 * (b / tauhat) ** N
+    got = _predict(Scalar(torch.zeros(())), Scalar(b), Scalar(tauhat), sweeps=1)
+    assert torch.allclose(got, expected, rtol=1e-9, atol=1e-30)
+
+
+def test_a_scalar_driving_force_needs_a_scalar_coupling():
+    """Mixing the two layouts is a wiring bug, not a broadcast."""
+    b = Scalar(torch.tensor(30.0, dtype=torch.float64))
+    A = Scalar(torch.ones(M, M, dtype=torch.float64), sub_batch_ndim=2)
+    with pytest.raises(ValueError, match="do not form a system"):
+        _predict(A, b, Scalar(torch.tensor(60.0, dtype=torch.float64)), sweeps=1)

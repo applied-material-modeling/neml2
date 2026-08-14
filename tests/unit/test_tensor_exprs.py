@@ -430,3 +430,31 @@ def test_prewrapped_scalar_via_declare_typed_parameter(tmp_path):
     m = load_model(path, "elasticity")
     assert {n for n, _ in m.named_parameters()} >= {"E"}
     assert m.E.data.item() == pytest.approx(2e5)
+
+
+def test_undefined_name_reports_the_name_and_keeps_the_cause(tmp_path):
+    """An unresolvable name in an expression is a NameError, chained to its cause.
+
+    The chaining matters when the miss comes from a NESTED `[Tensors]`
+    reference: without `from exc` the traceback names only the outer block,
+    which points the reader at the wrong place.
+    """
+    f = _factory(
+        tmp_path,
+        """
+[Tensors]
+  [t]
+    type = Python
+    expr = 'Scalar(no_such_tensor)'
+  []
+[]
+""",
+    )
+    with pytest.raises(ValueError, match="expr raised NameError") as excinfo:
+        f.get_tensor("t")
+    cause = excinfo.value.__cause__
+    assert isinstance(cause, NameError), f"expected the NameError as cause, got {cause!r}"
+    assert "no_such_tensor" in str(cause)
+    # ...and that NameError in turn keeps the KeyError it came from, which is
+    # what points at a nested reference rather than the outer block.
+    assert isinstance(cause.__cause__, KeyError)
