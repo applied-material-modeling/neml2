@@ -180,6 +180,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="CopyR2.html">CopyR2</a></li>
@@ -205,12 +206,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -452,6 +455,8 @@ Subscripts <span class="math notranslate nohighlight">\(n\)</span> denote quanti
 <h2>Other options<a class="headerlink" href="#other-options" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
 <dt><code class="docutils literal notranslate"><span class="pre">rate</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>Override name for the variable rate.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">old_variable</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>Override name for the variable’s previous-step value. Defaults to <code class="docutils literal notranslate"><span class="pre">&lt;variable&gt;~1</span></code>; set it to integrate a provisional quantity forward from some <em>other</em> variable’s previous value.</p>
 </dd>
 </dl>
 </section>

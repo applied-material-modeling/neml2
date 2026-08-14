@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>PerzynaPlasticFlowRateResidual - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="PowerLawIsotropicHardeningStaticRecovery" href="PowerLawIsotropicHardeningStaticRecovery.html" /><link rel="prev" title="PerzynaPlasticFlowRate" href="PerzynaPlasticFlowRate.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SlipSystemElasticInteraction - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="SumSlipRates" href="SumSlipRates.html" /><link rel="prev" title="SingleSlipStrengthMap" href="SingleSlipStrengthMap.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="PerzynaPlasticFlowRateResidual"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="SlipSystemElasticInteraction"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -180,6 +180,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopyR2.html">CopyR2</a></li>
@@ -205,12 +206,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -301,10 +304,10 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html">solid_mechanics</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="../crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html">crystal_plasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../kinematics/index.html">kinematics</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="index.html">plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../plasticity/index.html">plasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../traction_separation_law/index.html">traction_separation_law</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../viscoelasticity/index.html">viscoelasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
@@ -385,6 +388,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#inputs">Inputs</a></li>
 <li><a class="reference internal" href="#outputs">Outputs</a></li>
 <li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#other-options">Other options</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -414,11 +418,11 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="4" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <a itemprop="item" href="index.html"><span itemprop="name">plasticity</span></a>
+        <a itemprop="item" href="index.html"><span itemprop="name">crystal_plasticity</span></a>
         <span>/</span>
         <meta itemprop="position" content="5" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">PerzynaPlasticFlowRateResidual</strong>
+        <strong itemprop="name">SlipSystemElasticInteraction</strong>
         <meta itemprop="position" content="6" />
       </li></ol>
     <div class="xl:hidden ml-1">
@@ -431,62 +435,87 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="perzynaplasticflowrateresidual">
-<span id="models-perzynaplasticflowrateresidual"></span><h1>PerzynaPlasticFlowRateResidual<a class="headerlink" href="#perzynaplasticflowrateresidual" title="Link to this heading">#</a></h1>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/plasticity/PerzynaPlasticFlowRateResidual.py</span></code></p>
-<p>Perzyna flow rule stated as an implicit residual in <em>inverted</em> form,
-<span class="math notranslate nohighlight">\(r = \eta \dot{\gamma}^{1/n} - \left&lt; f \right&gt;\)</span>, rather than as the explicit
-map <span class="math notranslate nohighlight">\(\dot{\gamma} = \left( \left&lt; f \right&gt; / \eta \right)^n\)</span> of
-<code class="docutils literal notranslate"><span class="pre">PerzynaPlasticFlowRate</span></code>.</p>
-<p>Both have the same root. The difference is what Newton sees. Substituting
-the explicit map into the backward-Euler equations makes every residual a
-degree-<span class="math notranslate nohighlight">\(n\)</span> polynomial in the stress, and Newton on a degree-<span class="math notranslate nohighlight">\(n\)</span> monomial
-converges only <em>linearly</em>, contracting by <span class="math notranslate nohighlight">\((1-1/n)^n\)</span> per iteration until
-the iterate reaches the root – 13-15 wasted iterations at a cold start for
-typical rate sensitivities. Carrying <span class="math notranslate nohighlight">\(\dot{\gamma}\)</span> as an unknown of the
-implicit system and closing it with this residual instead relocates that
-nonlinearity to a single <span class="math notranslate nohighlight">\(1/n\)</span> power, leaving the stress and
-internal-variable residuals affine in <span class="math notranslate nohighlight">\(\dot{\gamma}\)</span>.</p>
-<p>The gain grows with the stiffness of the step, which is where the rate form
-hurts most: for <span class="math notranslate nohighlight">\(n = 8\)</span> the scalar model problem takes 12 iterations either
-way at <span class="math notranslate nohighlight">\(\Delta t = 1\)</span>, but 20 (rate form) against 8 (this form) at
-<span class="math notranslate nohighlight">\(\Delta t = 10^4\)</span>.</p>
-<p><strong>Regularization.</strong> <span class="math notranslate nohighlight">\(\dot{\gamma}^{1/n}\)</span> has infinite slope at
-<span class="math notranslate nohighlight">\(\dot{\gamma} = 0\)</span>, which is exactly where a cold start sits and exactly the
-root on an elastic step. Below <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> the power is therefore replaced by
-its tangent line at the cutoff, giving a <span class="math notranslate nohighlight">\(C^1\)</span> residual with a bounded
-derivative everywhere and no need for a positivity projection (which the
-Newton solver does not have). On an elastic step this converges in one
-iteration to <span class="math notranslate nohighlight">\(\dot{\gamma} = -(n-1)\,\mathrm{cutoff}\)</span> instead of exactly
-zero; with the default cutoff that error is far below solver tolerance.</p>
-<p>Pair this with an initial guess for <code class="docutils literal notranslate"><span class="pre">flow_rate</span></code> – the residual is well
-behaved at zero thanks to the regularization, but a strictly positive seed
-(e.g. an initial condition plus a <code class="docutils literal notranslate"><span class="pre">ConstantExtrapolationPredictor</span></code>) costs
-nothing and saves a couple of iterations.</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="slipsystemelasticinteraction">
+<span id="models-slipsystemelasticinteraction"></span><h1>SlipSystemElasticInteraction<a class="headerlink" href="#slipsystemelasticinteraction" title="Link to this heading">#</a></h1>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/crystal_plasticity/SlipSystemElasticInteraction.py</span></code></p>
+<p>The coupling matrix <span class="math notranslate nohighlight">\(A_{ij} = \Delta t\, M_i : \mathbb{C} : M_j\)</span>.</p>
+<p>Slip on system <span class="math notranslate nohighlight">\(j\)</span> relaxes the resolved shear on system <span class="math notranslate nohighlight">\(i\)</span> through the
+elastic response: with <span class="math notranslate nohighlight">\(\varepsilon^e = \varepsilon^{e,\rm trial} - \Delta t
+\sum_j \dot\gamma_j M_j\)</span>, the resolved shears follow <span class="math notranslate nohighlight">\(\tau_i =
+\tau^{\rm trial}_i - \sum_j A_{ij}\dot\gamma_j\)</span>. That <span class="math notranslate nohighlight">\(A\)</span> is what turns the
+slip rule into the condensed system
+<span class="math notranslate nohighlight">\(\varphi(\dot\gamma) + A\dot\gamma = b\)</span> that
+<code class="docutils literal notranslate"><span class="pre">CoordinateDescentPredictor</span></code> solves, with
+<span class="math notranslate nohighlight">\(b = \tau^{\rm trial}\)</span>.</p>
+<p><span class="math notranslate nohighlight">\(A\)</span> is symmetric positive semi-definite – it is
+<span class="math notranslate nohighlight">\(\Delta t\,B^{\mathsf T}\mathbb{C}B\)</span> with <span class="math notranslate nohighlight">\(B\)</span> the Schmid map and
+<span class="math notranslate nohighlight">\(\mathbb{C}\)</span> the elastic stiffness – and singular, because the Schmid map
+sends <span class="math notranslate nohighlight">\(\mathbb{R}^{n_{\rm slip}}\)</span> into a lower-dimensional space of
+symmetric tensors (the classical Taylor ambiguity). Both properties are
+relied on downstream: positive semi-definiteness is what brackets each
+coordinate solve, and singularity is harmless because the slip rule’s own
+monotone nonlinearity is what makes the condensed system strictly convex.</p>
+<p>It is emitted as a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> carried on two sub-batch
+axes, <code class="docutils literal notranslate"><span class="pre">(n_slip,</span> <span class="pre">n_slip)</span></code> – a matrix of scalars is exactly what the
+sub-batch machinery represents.</p>
+<p><strong>Frames.</strong> Everything is contracted in the lab frame, matching the rest of
+the crystal-plasticity library: <code class="docutils literal notranslate"><span class="pre">ResolvedShear</span></code> rotates the Schmid tensors
+and contracts them with the lab-frame stress, and <code class="docutils literal notranslate"><span class="pre">GeneralElasticity</span></code>
+rotates the stiffness (<code class="docutils literal notranslate"><span class="pre">T_rot</span> <span class="pre">=</span> <span class="pre">rotate(T,</span> <span class="pre">R)</span></code>) before applying it to the
+lab-frame strain. So both Schmid operands <em>and</em> the stiffness are rotated
+here. Getting this wrong yields a plausible but silently wrong matrix, so it
+is pinned by a test: for an isotropic stiffness, <span class="math notranslate nohighlight">\(A\)</span> must not depend on the
+orientation at all.</p>
+<p><strong>The spin convection is deliberately omitted.</strong>
+<code class="docutils literal notranslate"><span class="pre">ElasticStrainRate</span></code>
+carries <span class="math notranslate nohighlight">\(\dot\varepsilon^e = d - d^p + \Omega[\varepsilon^e]\)</span> with
+<span class="math notranslate nohighlight">\(\Omega[V] = [W, V]\)</span> the material spin, so the elastic-strain block of the
+Jacobian is <span class="math notranslate nohighlight">\(I - \Delta t\,\Omega\)</span> rather than <span class="math notranslate nohighlight">\(I\)</span> and the exact condensed
+coupling is <span class="math notranslate nohighlight">\(\Delta t\,M^{\mathsf T}\mathbb{C}(I - \Delta t\,\Omega)^{-1}M\)</span>.
+Because <span class="math notranslate nohighlight">\(\Omega\)</span> generates a rotation it is skew-adjoint, which splits that
+exactly: the symmetric part is what is computed here to within
+<span class="math notranslate nohighlight">\(O((\Delta t\lVert\Omega\rVert)^2)\)</span>, and the whole deviation is a <em>skew</em>
+contribution of size <span class="math notranslate nohighlight">\(\Delta t\lVert\Omega\rVert = 2\Delta t\lvert w\rvert\)</span>
+– the incremental rotation over the step.</p>
+<p>That omission is required rather than tolerated. Coordinate descent
+converges because <span class="math notranslate nohighlight">\(\varphi(\dot\gamma) + A\dot\gamma - b\)</span> is the gradient of
+a strictly convex potential, which needs <span class="math notranslate nohighlight">\(A\)</span> symmetric; the exact coupling
+is not symmetric and so is not the gradient of anything. This model computes
+the variational part and drops the rest. One corollary worth knowing: a skew
+matrix has zero diagonal, so the <span class="math notranslate nohighlight">\(A_{ii}\ge 0\)</span> precondition that brackets
+each coordinate solve holds <em>exactly</em>, not to within the spin error.</p>
+<p>The <span class="math notranslate nohighlight">\(O((\Delta t\lVert\Omega\rVert)^2)\)</span> bound on the symmetric part assumes
+<span class="math notranslate nohighlight">\([\mathbb{C}, \Omega] = 0\)</span>, i.e. isotropic elasticity. With an anisotropic
+stiffness the symmetric part also picks up
+<span class="math notranslate nohighlight">\(\tfrac{1}{2}\Delta t^2 M^{\mathsf T}[\mathbb{C},\Omega]M\)</span>, one order lower.
+Still small, still <span class="math notranslate nohighlight">\(O(\Delta t)\)</span> in the step.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">yield_function</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Yield function</p>
+<dt><code class="docutils literal notranslate"><span class="pre">orientation</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">MRP</span></code> · <strong>required</strong></dt><dd><p>Active-convention orientation</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">flow_rate</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Flow rate. Unlike PerzynaPlasticFlowRate this is an <em>input</em> – it is carried as an unknown of the implicit system and solved for.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">time</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">t</span></code></dt><dd><p>Time</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">flow_rate_residual</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Residual of the inverted flow rule</p>
+<dt><code class="docutils literal notranslate"><span class="pre">coupling</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The coupling matrix, sub-batched over (n_slip, n_slip)</p>
 </dd>
 </dl>
 </section>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">reference_stress</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Reference stress</p>
+<dt><code class="docutils literal notranslate"><span class="pre">elastic_stiffness_tensor</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">SSR4</span></code> · <strong>required</strong></dt><dd><p>Elastic stiffness tensor, in the crystal frame</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">exponent</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Power-law exponent</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">cutoff</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">1e-20</span></code></dt><dd><p>Flow rate below which the fractional power is replaced by its tangent line, bounding the derivative at the origin. Lower is more accurate and less well-conditioned.</p>
+</dl>
+</section>
+<section id="other-options">
+<h2>Other options<a class="headerlink" href="#other-options" title="Link to this heading">#</a></h2>
+<dl class="simple myst">
+<dt><code class="docutils literal notranslate"><span class="pre">crystal_geometry</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · default <code class="docutils literal notranslate"><span class="pre">crystal_geometry</span></code></dt><dd><p>The data object carrying the crystallographic information</p>
 </dd>
 </dl>
 </section>
@@ -498,16 +527,16 @@ nothing and saves a couple of iterations.</p>
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="PerzynaPlasticFlowRate.html">
+    <a href="SingleSlipStrengthMap.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">PerzynaPlasticFlowRate</div></div>
+        <span>Previous</span><div class="title">SingleSlipStrengthMap</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="PowerLawIsotropicHardeningStaticRecovery.html">
+    <a href="SumSlipRates.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">PowerLawIsotropicHardeningStaticRecovery</div>
+        <div class="title">SumSlipRates</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>

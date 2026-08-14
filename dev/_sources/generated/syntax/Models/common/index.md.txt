@@ -8,6 +8,7 @@
 ArrheniusParameter
 ComposedModel
 ConstantExtrapolationPredictor
+CoordinateDescentPredictor
 CopyMRP
 CopyMillerIndex
 CopyR2
@@ -33,12 +34,14 @@ MixedControlSetup
 R2BackwardEulerTimeIntegration
 R2ConstantParameter
 R2Determinant
+R2ForwardEulerTimeIntegration
 R2InputParameter
 R2Multiplication
 R2ParameterToVariable
 R2ToSR2
 R2ToWR2
 R2VariableRate
+RateCondensation
 RotationMatrix
 SR2BackwardEulerTimeIntegration
 SR2BilinearInterpolation

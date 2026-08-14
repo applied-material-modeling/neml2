@@ -25,3 +25,6 @@ Subscripts $n$ denote quantities from the previous time step.
 `rate` &mdash; `str`
 : Override name for the variable rate.
 
+`old_variable` &mdash; `str`
+: Override name for the variable's previous-step value. Defaults to `<variable>~1`; set it to integrate a provisional quantity forward from some *other* variable's previous value.
+
