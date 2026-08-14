@@ -1,0 +1,27 @@
+(models-ProjectedDiffusivitySum)=
+# ProjectedDiffusivitySum
+
+**Source:** `models/kwn/ProjectedDiffusivitySum.py`
+
+Compute the projected diffusivity sum for SFFK and nucleation.
+
+## Inputs
+
+`far_field_concentrations` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Far-field concentrations
+
+
+## Outputs
+
+`projected_diffusivity_sum` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Projected diffusivity sum
+
+
+## Parameters
+
+`concentration_differences` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Concentration differences for each species
+
+`diffusivities` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Species diffusivities
+
