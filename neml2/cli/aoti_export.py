@@ -90,7 +90,7 @@ if TYPE_CHECKING:
 #: ``scripts/dep_manager.py`` (which keeps this literal, the C++ loader, and the
 #: docs in sync).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 13
+AOTI_META_SCHEMA_VERSION = 14
 
 
 def _var_size(type_cls) -> int:
@@ -309,6 +309,83 @@ def _segment_var_infos(spec_or_infos) -> list[dict]:
     if isinstance(spec_or_infos, dict):
         return [{"name": name} for name in spec_or_infos]
     return [{"name": info["name"]} for info in spec_or_infos]
+
+
+def _iterable_predictor_form(pred):
+    """Wrap *pred* for export, unrolling any loop the runtime should drive itself.
+
+    Returns ``(exportable, iterable_or_None)``. Without an iterable leaf this is
+    just the usual ``ComposedModel([pred])``.
+
+    A leaf that would rather be looped by the runtime implements
+    ``iterable_export_form()`` (see
+    :class:`~neml2.models.model.IterableExport`) and returns a *single-step*
+    model plus the feedback pair. This rebuilds the predictor graph with that
+    leaf swapped in and adds the feedback variable to the graph's outputs, so
+    the compiled predictor takes the previous step's value on one extra input
+    and returns the next one. The runtime then re-runs the whole predictor graph
+    ``iterations`` times.
+
+    Iterating the enclosing graph rather than the leaf alone means the stages
+    around it recompute each step. That is the deliberate trade: the alternative
+    is splitting the predictor into pre/step/post packages, which triples the
+    export planner's bookkeeping to save a fraction of an already-cheap stage.
+
+    Only one iterable leaf is supported. Two would need nested loops and a
+    feedback ordering the metadata does not express, so it is rejected rather
+    than silently looping just the first.
+
+    A predictor with no iterable leaf takes the original path unchanged --
+    same wrapper, same graph, same metadata -- so nothing here costs an
+    existing predictor anything at compile time or at run time.
+    """
+    from ..models.common import ComposedModel  # noqa: PLC0415
+
+    leaves = list(_flatten_composed(pred))
+    found = [
+        (i, m, form) for i, m in enumerate(leaves) if (form := m.iterable_export_form()) is not None
+    ]
+    if not found:
+        return ComposedModel([pred]), None
+    if len(found) > 1:
+        names = ", ".join(type(m).__name__ for _, m, _ in found)
+        raise ValueError(
+            f"Predictor contains {len(found)} models wanting a runtime loop ({names}); "
+            "only one is supported, because the metadata carries a single feedback pair."
+        )
+    index, _leaf, iterable = found[0]
+    leaves[index] = iterable.model
+    return ComposedModel(leaves, additional_outputs=[iterable.feedback_output]), iterable
+
+
+def _feedback_var_info(pred, iterable, shapes, dyn_shape, device) -> dict:
+    """Metadata for the feedback pair: the input name plus the shape to seed it at.
+
+    The runtime has to allocate the first iteration's input before it has ever
+    run the graph, so it needs the variable's sub-batch and base shape. Neither
+    is statically knowable here -- for coordinate descent the sub-batch extent
+    is the slip-system count, which lives in the crystal geometry and only
+    reaches this graph through the coupling matrix -- so discover it by running
+    the *original* predictor once on example inputs and measuring its output.
+
+    The original is the right thing to run: it has no feedback input, so its
+    examples come straight from ``shapes``, which avoids the circularity of
+    needing the shape in order to find the shape.
+    """
+    from ..models.common import ComposedModel  # noqa: PLC0415
+
+    probe = ComposedModel(
+        list(_flatten_composed(pred)), additional_outputs=[iterable.feedback_output]
+    )
+    probe_shapes = _predictor_input_shapes(probe.input_spec, shapes, dyn_shape)
+    with torch.no_grad():
+        out = probe(*_example_inputs_for(probe, device, shapes=probe_shapes))
+    value = dict(zip(probe.output_spec, out, strict=True))[iterable.feedback_output]
+    return {
+        "input": iterable.feedback_input,
+        "sub_batch_shape": list(value.sub_batch_shape),
+        "base_shape": [int(s) for s in type(value).BASE_SHAPE],
+    }
 
 
 def _shared_dyn_shape(
@@ -1954,7 +2031,6 @@ def _compile_implicit_segment(
         LinearSolveParam,
         Matvec,
     )
-    from ..models.common import ComposedModel
     from ..models.export import compile_model
 
     system = inner.system
@@ -2434,8 +2510,18 @@ def _compile_implicit_segment(
     # predictor is part of the implicit segment for promotion purposes).
     if inner.predictor is not None:
         pred = inner.predictor.to(device)
-        pred_exportable = ComposedModel([pred])
+        pred_exportable, iterable = _iterable_predictor_form(pred)
         pred_shapes = _predictor_input_shapes(pred_exportable.input_spec, shapes, dyn_shape)
+        feedback_info = None
+        if iterable is not None:
+            feedback_info = _feedback_var_info(pred, iterable, shapes, dyn_shape, device)
+            # The feedback input is a name no caller declares, so the shape
+            # cascade above falls back to "no sub-batch". Override it with the
+            # measured shape or the example input is silently the wrong rank.
+            pred_shapes[iterable.feedback_input] = (
+                pred_shapes[iterable.feedback_input][0],
+                tuple(feedback_info["sub_batch_shape"]),
+            )
         pred_inputs = _example_inputs_for(pred_exportable, device, shapes=pred_shapes)
         pred_name = f"{pkg_basename}_predictor.pt2"
         compile_model(
@@ -2443,8 +2529,26 @@ def _compile_implicit_segment(
         )
         _report(progress_cb, pred_name)
         seg["predictor_package"] = pred_name
-        seg["predictor_inputs"] = _segment_var_infos(pred.input_spec)
-        seg["predictor_outputs"] = _segment_var_infos(pred.output_spec)
+        if iterable is None or feedback_info is None:
+            # Unchanged path: the wrapper is ComposedModel([pred]), whose specs
+            # are pred's own. Kept keyed off `pred` verbatim so a predictor that
+            # does not opt in cannot be perturbed by the iterable machinery.
+            seg["predictor_inputs"] = _segment_var_infos(pred.input_spec)
+            seg["predictor_outputs"] = _segment_var_infos(pred.output_spec)
+        else:
+            # The graph was rebuilt from the leaves with the single-step model
+            # swapped in, so its specs -- not pred's -- describe the call.
+            seg["predictor_inputs"] = _segment_var_infos(pred_exportable.input_spec)
+            seg["predictor_outputs"] = _segment_var_infos(pred_exportable.output_spec)
+            # One nested object rather than four sibling keys: the runtime either
+            # loops the predictor or it does not, and every field is needed only
+            # in the first case. `iterations` is metadata, not baked into the
+            # graph, so a host can lower it without recompiling.
+            seg["predictor_feedback"] = {
+                **feedback_info,
+                "output": iterable.feedback_output,
+                "iterations": iterable.iterations,
+            }
 
     return seg
 

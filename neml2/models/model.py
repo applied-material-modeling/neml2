@@ -169,6 +169,43 @@ class PromotedParam:
     provider_output: str | None = None
 
 
+@dataclass(frozen=True)
+class IterableExport:
+    """A model whose compiled form is one step of a loop the runtime drives.
+
+    Some models are a bounded iteration in Python -- a fixed number of sweeps,
+    passes or refinements. Exporting one as-is unrolls every iteration into the
+    graph, which is both large and rigid: the count is frozen at compile time
+    and no early exit is possible.
+
+    A model that would rather be looped by the runtime implements
+    ``iterable_export_form()`` and returns this. The exporter compiles
+    :attr:`model` -- a *single* step, taking the previous step's value on the
+    extra input :attr:`feedback_input` -- and records the pair plus
+    :attr:`iterations` in the segment metadata. The runtime then re-runs the
+    graph that many times, routing :attr:`feedback_output` back to
+    :attr:`feedback_input`, exactly as it already loops Newton.
+
+    The feedback variable must be reachable as an output of the graph actually
+    exported, which for a predictor is the enclosing
+    :class:`~neml2.models.common.ComposedModel.ComposedModel`; the exporter adds
+    it to that model's ``additional_outputs``.
+
+    Iterating in the runtime rather than the graph is also what leaves room for
+    a convergence test between steps later -- the reason the count lives in
+    metadata (retunable without recompiling) rather than baked into the graph.
+    """
+
+    #: The single-step model to compile, including the feedback input.
+    model: Model
+    #: Input variable carrying the previous step's value.
+    feedback_input: str
+    #: Output variable carrying this step's value.
+    feedback_output: str
+    #: Default number of steps. Metadata, so a host can lower it without recompiling.
+    iterations: int
+
+
 class Model(nn.Module, ABC):
     """Base class for Python-native NEML2 models with declared variable names.
 
@@ -471,6 +508,20 @@ class Model(nn.Module, ABC):
                     instance_output[value] = field.value_type
 
         if instance_input is not None:
+            # Promoted parameters (``declare_typed_parameter`` modes 3/4) add an
+            # input keyed by a provider output name the schema knows nothing
+            # about, so the class-level seed above does not contain it. Deferring
+            # to pass 2 covers declarations made *by this call*; it does not
+            # cover one made earlier by a subclass ``__init__``, which is what
+            # happens on ``from_hit``'s leftover path (custom ``__init__`` +
+            # unconsumed name-bearing fields). Without this the input silently
+            # vanishes from ``input_spec`` while ``_promoted_params`` still
+            # expects it, and the model dies much later inside ``_get_param``
+            # with an IndexError that names nothing useful.
+            prior_input = self.input_spec
+            for pparam in self._promoted_params.values():
+                if pparam.input_name not in instance_input and pparam.input_name in prior_input:
+                    instance_input[pparam.input_name] = prior_input[pparam.input_name]
             self.input_spec = instance_input
         if instance_output is not None:
             self.output_spec = instance_output
@@ -670,10 +721,13 @@ class Model(nn.Module, ABC):
 
         # ── mode 2: factory.get_tensor lookup ([Tensors] cross-ref) ───────────
         if factory is not None:
-            try:
-                tensor_val = factory.get_tensor(spec)
-            except KeyError:
-                tensor_val = None
+            # Existence check rather than catching KeyError around get_tensor:
+            # a KeyError raised from INSIDE the tensor's construction would
+            # otherwise be read as "no such tensor", and the caller would fall
+            # through to the next mode -- for a promotable parameter that means
+            # silently treating the name as a variable to promote, which only
+            # surfaces later as an IndexError in _get_param.
+            tensor_val = factory.get_tensor(spec) if factory.has_tensor(spec) else None
             if tensor_val is not None:
                 # get_tensor returns torch.Tensor or TensorWrapper; wrap if needed.
                 if isinstance(tensor_val, type_cls):
@@ -833,10 +887,13 @@ class Model(nn.Module, ABC):
 
         # ── mode 2: factory.get_tensor lookup ([Tensors] cross-ref) ───────────
         if factory is not None:
-            try:
-                tensor_val = factory.get_tensor(spec)
-            except KeyError:
-                tensor_val = None
+            # Existence check rather than catching KeyError around get_tensor:
+            # a KeyError raised from INSIDE the tensor's construction would
+            # otherwise be read as "no such tensor", and the caller would fall
+            # through to the next mode -- for a promotable parameter that means
+            # silently treating the name as a variable to promote, which only
+            # surfaces later as an IndexError in _get_param.
+            tensor_val = factory.get_tensor(spec) if factory.has_tensor(spec) else None
             if tensor_val is not None:
                 if isinstance(tensor_val, type_cls):
                     pass
@@ -941,6 +998,22 @@ class Model(nn.Module, ABC):
     @property
     def provided_items(self) -> frozenset[str]:
         return frozenset(self.output_spec)
+
+    def iterable_export_form(self) -> IterableExport | None:
+        """One step of this model's loop, for a runtime to drive itself.
+
+        Override in a model that is a bounded iteration -- a fixed number of
+        sweeps, passes or refinements -- and would rather the compiled routes
+        loop it than unroll every iteration into the graph. Return an
+        :class:`IterableExport`; the default returns ``None``, meaning "export
+        me whole", which is right for every ordinary leaf.
+
+        Declared here rather than left to ``hasattr`` so the hook is
+        discoverable from the base class and type-checkable at the call site.
+        See :class:`IterableExport` for what the exporter and the runtime do
+        with it.
+        """
+        return None
 
     def call_by_name(
         self,

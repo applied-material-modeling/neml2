@@ -81,6 +81,11 @@ _DEDICATED = {
     "implicit_substep",
     "implicit_substep_nl",
     "implicit_substep_ramp",
+    # Rate-sensitive crystal plasticity: the slip rate goes as (tau/tauhat)^n
+    # with n = 8, so a randn deformation rate drives the residual to ~1e28 and
+    # Newton diverges before it can test anything. Covered by
+    # test_predictor_loop.py with a physical load step.
+    "implicit_predictor_loop",
 }
 _SCENARIOS = sorted(
     d

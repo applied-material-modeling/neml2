@@ -370,6 +370,31 @@ struct Model::Impl
 
     std::vector<std::string> predictor_inputs;
     std::vector<std::string> predictor_outputs;
+
+    /// Optional runtime loop around the predictor graph (schema v14).
+    ///
+    /// Some predictors are a bounded iteration -- coordinate descent sweeps,
+    /// say. Unrolling that into the exported graph is both large (thousands of
+    /// copies of the inner law) and rigid: the count is frozen at compile time
+    /// and no early exit is possible. Instead the exporter compiles a SINGLE
+    /// step, taking the previous step's value on an extra input, and the
+    /// runtime re-runs the graph `iterations` times routing `output` back to
+    /// `input` -- the same shape as the Newton loop next door.
+    ///
+    /// `sub_batch_shape` / `base_shape` size the zero tensor the first
+    /// iteration is seeded with, before the graph has ever run.
+    ///
+    /// Absent (`iterations == 0`) for every predictor that did not opt in, and
+    /// the call path is then byte-identical to pre-v14.
+    struct PredictorFeedback
+    {
+      std::string input;  ///< graph input carrying the previous step's value
+      std::string output; ///< graph output carrying this step's value
+      int64_t iterations = 0;
+      std::vector<int64_t> sub_batch_shape;
+      std::vector<int64_t> base_shape;
+    };
+    PredictorFeedback predictor_feedback;
     /// Promoted parameters the predictor graph consumes. Separate
     /// from `param_inputs` because the predictor is a distinct nn.Module: the
     /// the operator graphs take the residual's promoted tail, but the predictor
@@ -401,6 +426,19 @@ struct Model::Impl
   /// `_named_parameters`. Throws if any name is missing. Common helper for
   /// every loader call.
   std::vector<at::Tensor> _gather_params(const std::vector<std::string> & names) const;
+
+  /// Run a segment's predictor, writing its outputs into `state`.
+  ///
+  /// One call unless the segment declares a `predictor_feedback`, in which case
+  /// the graph is re-run `iterations` times with its feedback output routed
+  /// back to its feedback input -- the runtime half of an iteration the
+  /// exporter deliberately did not unroll. No-op when the segment has no
+  /// predictor. `batch_shape` sizes the zero tensor the first iteration is
+  /// seeded with.
+  void _run_predictor(const Segment & seg,
+                      std::map<std::string, at::Tensor> & state,
+                      const at::TensorOptions & opts,
+                      const std::vector<int64_t> & batch_shape) const;
 
   /// Broadcast a stored promoted parameter `(*pbatch, *base)` to the runtime call
   /// batch `(*batch, *base)` (right-aligned; `base` is its natural base, the

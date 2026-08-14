@@ -53,6 +53,7 @@ from .ConstantParameter import (
     VecConstantParameter,
     WR2ConstantParameter,
 )
+from .CoordinateDescentPredictor import CoordinateDescentPredictor
 from .CopyVariable import (
     CopyMillerIndex,
     CopyMRP,
@@ -68,6 +69,7 @@ from .DynamicMean import SR2DynamicMean
 from .DynamicSum import SR2DynamicSum
 from .FBComplementarity import FBComplementarity
 from .ForwardEulerTimeIntegration import (
+    R2ForwardEulerTimeIntegration,
     ScalarForwardEulerTimeIntegration,
     SR2ForwardEulerTimeIntegration,
 )
@@ -107,6 +109,7 @@ from .ParameterToVariable import (
 from .R2Multiplication import R2Multiplication
 from .R2ToSR2 import R2ToSR2
 from .R2ToWR2 import R2ToWR2
+from .RateCondensation import RateCondensation
 from .Reduction import Reduction
 from .RotationMatrix import RotationMatrix
 from .ScalarMultiplication import ScalarMultiplication
@@ -137,6 +140,7 @@ __all__ = [
     "SR2BackwardEulerTimeIntegration",
     "VecBackwardEulerTimeIntegration",
     "ScalarForwardEulerTimeIntegration",
+    "R2ForwardEulerTimeIntegration",
     "SR2ForwardEulerTimeIntegration",
     "FBComplementarity",
     "HermiteSmoothStep",
@@ -144,6 +148,7 @@ __all__ = [
     "MacaulaySplit",
     "MinMapComplementarity",
     "ConstantExtrapolationPredictor",
+    "CoordinateDescentPredictor",
     "LinearExtrapolationPredictor",
     "MillerIndexConstantParameter",
     "R2ConstantParameter",
@@ -191,6 +196,7 @@ __all__ = [
     "MixedControlSetup",
     "R2Determinant",
     "R2Multiplication",
+    "RateCondensation",
     "R2ToSR2",
     "R2ToWR2",
     "SR2Determinant",

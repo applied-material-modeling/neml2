@@ -362,18 +362,19 @@ class ImplicitUpdate(Model):
         predictor: Model | None = None
         pred_node = node.find("predictor")
         if pred_node is not None:
-            pred_name = node.param_str("predictor")
-            try:
-                predictor = factory.get_model(pred_name)
-            except KeyError:
-                from neml2 import log  # noqa: PLC0415
-
-                log.emit(
-                    "model",
-                    "warning",
-                    f"Predictor {pred_name!r} is not natively registered; "
-                    "using no predictor (initial guess = zero).",
-                )
+            # No try/except here, deliberately. This used to swallow KeyError and
+            # fall back to "no predictor (initial guess = zero)", from the v3
+            # migration when a HIT type might not yet have a native port. Every
+            # type is ported now -- the factory's own contract is that the native
+            # surface "must cover every HIT type loaded through neml2" -- so the
+            # fallback could no longer fire for its intended reason, and instead
+            # caught KeyError from ANYWHERE inside constructing the predictor
+            # graph: a missing [Models/...] block, a stale name in a
+            # ComposedModel's member list, an unresolvable variable. Each of
+            # those became a warning plus a silently disabled predictor, which
+            # surfaces much later as an unexplained convergence failure rather
+            # than as the wiring error it is.
+            predictor = factory.get_model(node.param_str("predictor"))
         return cls(
             system,
             solver,

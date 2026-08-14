@@ -251,6 +251,75 @@ Model::Impl::_make_implicit_system(const Segment & seg,
 }
 
 void
+Model::Impl::_run_predictor(const Segment & seg,
+                            std::map<std::string, at::Tensor> & state,
+                            const at::TensorOptions & opts,
+                            const std::vector<int64_t> & batch_shape) const
+{
+  if (!seg.predictor_loader)
+    return;
+
+  const auto & fb = seg.predictor_feedback;
+  const bool iterating = fb.iterations > 0;
+
+  // Seed the feedback input at zero before the first pass -- the graph is one
+  // step of a loop, so on entry there is no previous step to read.
+  //
+  // Unconditionally, not "only if absent". The feedback variable is internal to
+  // the predictor graph and never a model input, and the substep driver builds
+  // a fresh span map per sub-increment, so on this path the entry is always
+  // absent and the guard was untestable. Worse, the one case that could have
+  // populated it -- two implicit segments sharing a state map and a feedback
+  // name -- is the case where skipping the seed is wrong, because the second
+  // predictor would silently start from the first's last iterate.
+  if (iterating)
+  {
+    std::vector<int64_t> shape(batch_shape);
+    shape.insert(shape.end(), fb.sub_batch_shape.begin(), fb.sub_batch_shape.end());
+    shape.insert(shape.end(), fb.base_shape.begin(), fb.base_shape.end());
+    state[fb.input] = at::zeros(shape, opts);
+  }
+
+  // A single-shot predictor runs the body once, so this loop is the pre-v14
+  // path plus one integer compare.
+  const int64_t passes = iterating ? fb.iterations : 1;
+  for (int64_t pass = 0; pass < passes; ++pass)
+  {
+    std::vector<at::Tensor> p_inputs;
+    p_inputs.reserve(seg.predictor_inputs.size() + seg.predictor_param_inputs.size());
+    for (const auto & name : seg.predictor_inputs)
+    {
+      auto it = state.find(name);
+      _assert(it != state.end(),
+              "aoti::Model: implicit segment predictor needs input '",
+              name,
+              "' which is not in the state map.");
+      p_inputs.push_back(it->second.contiguous());
+    }
+    // The predictor is compiled without the residual's promoted tail; pass its
+    // own (currently always empty) promoted-param list, not seg.param_inputs.
+    for (auto & p : _gather_params(seg.predictor_param_inputs))
+      p_inputs.push_back(std::move(p));
+
+    const auto p_outs = seg.predictor_loader->run(p_inputs);
+    _assert(p_outs.size() == seg.predictor_outputs.size(),
+            "aoti::Model: predictor returned ",
+            p_outs.size(),
+            " outputs, expected ",
+            seg.predictor_outputs.size());
+
+    // Route predictor outputs to the matching unknown slot by name. The
+    // feedback output lands in state under its own name and is picked up as the
+    // feedback input on the next pass; it is not an unknown, so writing it is
+    // harmless.
+    for (std::size_t i = 0; i < p_outs.size(); ++i)
+      state[seg.predictor_outputs[i]] = p_outs[i].to(opts).contiguous();
+    if (iterating)
+      state[fb.input] = state[fb.output];
+  }
+}
+
+void
 Model::Impl::_run_implicit_segment(const Segment & seg,
                                    std::map<std::string, at::Tensor> & state,
                                    std::vector<at::Tensor> & u_solved_groups,
@@ -301,35 +370,7 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
     if (state.find(v.name) == state.end())
       state[v.name] = at::zeros(_full_shape(v), opts);
 
-  if (seg.predictor_loader)
-  {
-    std::vector<at::Tensor> p_inputs;
-    p_inputs.reserve(seg.predictor_inputs.size() + seg.param_inputs.size());
-    for (const auto & name : seg.predictor_inputs)
-    {
-      auto it = state.find(name);
-      _assert(it != state.end(),
-              "aoti::Model: implicit segment predictor needs input '",
-              name,
-              "' which is not in the state map.");
-      p_inputs.push_back(it->second.contiguous());
-    }
-    // The predictor is compiled without the residual's promoted tail; pass its
-    // own (currently always empty) promoted-param list, not seg.param_inputs.
-    for (auto & p : _gather_params(seg.predictor_param_inputs))
-      p_inputs.push_back(std::move(p));
-
-    const auto p_outs = seg.predictor_loader->run(p_inputs);
-    _assert(p_outs.size() == seg.predictor_outputs.size(),
-            "aoti::Model: predictor returned ",
-            p_outs.size(),
-            " outputs, expected ",
-            seg.predictor_outputs.size());
-
-    // Route predictor outputs to the matching unknown slot by name.
-    for (std::size_t i = 0; i < p_outs.size(); ++i)
-      state[seg.predictor_outputs[i]] = p_outs[i].to(opts).contiguous();
-  }
+  _run_predictor(seg, state, opts, batch_shape);
 
   // Pack per-group inputs at solve start (one at::cat per group).
   g_groups = _pack_groups(state, seg.given_groups);
@@ -414,30 +455,7 @@ Model::Impl::_run_implicit_segment_masked(const Segment & seg,
     if (state.find(v.name) == state.end())
       state[v.name] = at::zeros(_full_shape(v), opts);
 
-  if (seg.predictor_loader)
-  {
-    std::vector<at::Tensor> p_inputs;
-    p_inputs.reserve(seg.predictor_inputs.size() + seg.predictor_param_inputs.size());
-    for (const auto & name : seg.predictor_inputs)
-    {
-      auto it = state.find(name);
-      _assert(it != state.end(),
-              "aoti::Model: implicit segment predictor needs input '",
-              name,
-              "' which is not in the state map.");
-      p_inputs.push_back(it->second.contiguous());
-    }
-    for (auto & p : _gather_params(seg.predictor_param_inputs))
-      p_inputs.push_back(std::move(p));
-    const auto p_outs = seg.predictor_loader->run(p_inputs);
-    _assert(p_outs.size() == seg.predictor_outputs.size(),
-            "aoti::Model: predictor returned ",
-            p_outs.size(),
-            " outputs, expected ",
-            seg.predictor_outputs.size());
-    for (std::size_t i = 0; i < p_outs.size(); ++i)
-      state[seg.predictor_outputs[i]] = p_outs[i].to(opts).contiguous();
-  }
+  _run_predictor(seg, state, opts, batch_shape);
 
   auto g_groups = _pack_groups(state, seg.given_groups);
   auto u0_groups = _pack_groups(state, seg.unknown_groups);
