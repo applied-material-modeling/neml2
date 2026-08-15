@@ -180,6 +180,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
@@ -205,12 +206,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -302,7 +305,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -397,6 +399,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.models.model.Model.from_hit"><code class="docutils literal notranslate"><span class="pre">Model.from_hit()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.hit"><code class="docutils literal notranslate"><span class="pre">Model.hit</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.input_spec"><code class="docutils literal notranslate"><span class="pre">Model.input_spec</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.iterable_export_form"><code class="docutils literal notranslate"><span class="pre">Model.iterable_export_form()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.jacobian"><code class="docutils literal notranslate"><span class="pre">Model.jacobian()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.jvp"><code class="docutils literal notranslate"><span class="pre">Model.jvp()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.output_priorities"><code class="docutils literal notranslate"><span class="pre">Model.output_priorities</span></code></a></li>
@@ -757,6 +760,26 @@ non-trivial construction logic may still override this method.</p>
 <dt class="sig sig-object py" id="neml2.models.model.Model.input_spec">
 <span class="sig-name descname"><span class="pre">input_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper"><span class="pre">TensorWrapper</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.models.model.Model.input_spec" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.models.model.Model.iterable_export_form">
+<span class="sig-name descname"><span class="pre">iterable_export_form</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#Model.iterable_export_form"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.Model.iterable_export_form" title="Link to this definition">#</a></dt>
+<dd><p>One step of this model’s loop, for a runtime to drive itself.</p>
+<p>Override in a model that is a bounded iteration – a fixed number of
+sweeps, passes or refinements – and would rather the compiled routes
+loop it than unroll every iteration into the graph. Return an
+<code class="xref py py-class docutils literal notranslate"><span class="pre">IterableExport</span></code>; the default returns <code class="docutils literal notranslate"><span class="pre">None</span></code>, meaning “export
+me whole”, which is right for every ordinary leaf.</p>
+<p>Declared here rather than left to <code class="docutils literal notranslate"><span class="pre">hasattr</span></code> so the hook is
+discoverable from the base class and type-checkable at the call site.
+See <code class="xref py py-class docutils literal notranslate"><span class="pre">IterableExport</span></code> for what the exporter and the runtime do
+with it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>IterableExport</em> | None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.models.model.Model.jacobian">

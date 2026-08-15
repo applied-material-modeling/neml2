@@ -25,3 +25,6 @@ and $n$ is the time step counter, respectively.
 `unknowns_R2` &mdash; `list`
 : The unknowns to extrapolate of type R2
 
+`cold` &mdash; `list`
+: Optional `unknown:variable` pairs naming a COLD value per unknown, used on the step where there is no history to extrapolate from. Every later step extrapolates as usual. Name only the unknowns you want seeded; the rest fall back to `u~1`, unchanged.
+

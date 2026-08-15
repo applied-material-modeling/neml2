@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>WeibullDamage - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="elasticity" href="../elasticity/index.html" /><link rel="prev" title="ViscousDamageRelaxation" href="ViscousDamageRelaxation.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SlipSystemElasticInteraction - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="SumSlipRates" href="SumSlipRates.html" /><link rel="prev" title="SingleSlipStrengthMap" href="SingleSlipStrengthMap.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="WeibullDamage"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="SlipSystemElasticInteraction"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -180,6 +180,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopyR2.html">CopyR2</a></li>
@@ -205,12 +206,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -301,8 +304,7 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html">solid_mechanics</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="../crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="index.html">damage</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html">crystal_plasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../plasticity/index.html">plasticity</a></li>
@@ -386,6 +388,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#inputs">Inputs</a></li>
 <li><a class="reference internal" href="#outputs">Outputs</a></li>
 <li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#other-options">Other options</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -415,11 +418,11 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="4" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <a itemprop="item" href="index.html"><span itemprop="name">damage</span></a>
+        <a itemprop="item" href="index.html"><span itemprop="name">crystal_plasticity</span></a>
         <span>/</span>
         <meta itemprop="position" content="5" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">WeibullDamage</strong>
+        <strong itemprop="name">SlipSystemElasticInteraction</strong>
         <meta itemprop="position" content="6" />
       </li></ol>
     <div class="xl:hidden ml-1">
@@ -432,66 +435,87 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="weibulldamage">
-<span id="models-weibulldamage"></span><h1>WeibullDamage<a class="headerlink" href="#weibulldamage" title="Link to this heading">#</a></h1>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/damage/WeibullDamage.py</span></code></p>
-<p>Three-parameter Weibull damage law – Brandyberry et al. (2022)
-variant of Simo &amp; Ju (1987) isotropic elastic damage.</p>
-<p>… math::
-D® ;=; 1 ;-; \exp!\left[;-\left(\frac{\langle r-Y_\mathrm{in}\rangle_+}
-{p_1,Y_\mathrm{in}}\right)^{p_2};\right]</p>
-<p>Reads the damage-threshold history variable :math:<code class="docutils literal notranslate"><span class="pre">r</span></code> (typically the output
-of <code class="docutils literal notranslate"><span class="pre">IrreversibleScalar</span></code> acting on the elastic strain energy density</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">math<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">\psi_0</span></code>), returns the isotropic scalar damage :math:<code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">\in</span> <span class="pre">[0,</span> <span class="pre">1)</span></code>.</p>
-</dd>
-</dl>
-<p>Parameter roles:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Y_in</span></code> – damage-onset energy threshold. Below :math:<code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">=</span> <span class="pre">Y_\mathrm{in}</span></code>
-the Macaulay bracket zeros the argument, so :math:<code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">0</span></code> exactly.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">p_1</span></code> – Weibull scale, “how quickly damage grows once initiated”.
-Small <code class="docutils literal notranslate"><span class="pre">p_1</span></code> (~0.01) gives cliff-like brittle collapse; large <code class="docutils literal notranslate"><span class="pre">p_1</span></code>
-(~100) gives very gradual softening.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">p_2</span></code> – Weibull shape, controls the softening curve shape.
-<code class="docutils literal notranslate"><span class="pre">p_2</span> <span class="pre">=</span> <span class="pre">1</span></code> recovers a pure exponential; <code class="docutils literal notranslate"><span class="pre">p_2</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> sharpens the
-knee into a sigmoidal shape.</p></li>
-</ul>
-<p>Wired downstream to <code class="docutils literal notranslate"><span class="pre">DamagedStress</span></code> to obtain the nominal stress</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">math<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">\sigma</span> <span class="pre">=</span> <span class="pre">(1</span> <span class="pre">-</span> <span class="pre">D)\tilde{\sigma}</span></code>. All three parameters may be
-promoted to runtime inputs for gradient-based calibration.</p>
-</dd>
-</dl>
-<p>Reference: Brandyberry, D. R., Zhang, X., &amp; Geubelle, P. H. (2022),
-“Multiscale design of nonlinear materials using reduced-order modeling”,
-<em>Comput. Methods Appl. Mech. Engrg.</em> 399, 115388, Appendix A.2 eq (23).
-Underlying framework: Simo, J. C. &amp; Ju, J. W. (1987),
-<em>Int. J. Solids Struct.</em> 23(7), 821-869 (Parts I &amp; II).</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="slipsystemelasticinteraction">
+<span id="models-slipsystemelasticinteraction"></span><h1>SlipSystemElasticInteraction<a class="headerlink" href="#slipsystemelasticinteraction" title="Link to this heading">#</a></h1>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/crystal_plasticity/SlipSystemElasticInteraction.py</span></code></p>
+<p>The coupling matrix <span class="math notranslate nohighlight">\(A_{ij} = \Delta t\, M_i : \mathbb{C} : M_j\)</span>.</p>
+<p>Slip on system <span class="math notranslate nohighlight">\(j\)</span> relaxes the resolved shear on system <span class="math notranslate nohighlight">\(i\)</span> through the
+elastic response: with <span class="math notranslate nohighlight">\(\varepsilon^e = \varepsilon^{e,\rm trial} - \Delta t
+\sum_j \dot\gamma_j M_j\)</span>, the resolved shears follow <span class="math notranslate nohighlight">\(\tau_i =
+\tau^{\rm trial}_i - \sum_j A_{ij}\dot\gamma_j\)</span>. That <span class="math notranslate nohighlight">\(A\)</span> is what turns the
+slip rule into the condensed system
+<span class="math notranslate nohighlight">\(\varphi(\dot\gamma) + A\dot\gamma = b\)</span> that
+<code class="docutils literal notranslate"><span class="pre">CoordinateDescentPredictor</span></code> solves, with
+<span class="math notranslate nohighlight">\(b = \tau^{\rm trial}\)</span>.</p>
+<p><span class="math notranslate nohighlight">\(A\)</span> is symmetric positive semi-definite – it is
+<span class="math notranslate nohighlight">\(\Delta t\,B^{\mathsf T}\mathbb{C}B\)</span> with <span class="math notranslate nohighlight">\(B\)</span> the Schmid map and
+<span class="math notranslate nohighlight">\(\mathbb{C}\)</span> the elastic stiffness – and singular, because the Schmid map
+sends <span class="math notranslate nohighlight">\(\mathbb{R}^{n_{\rm slip}}\)</span> into a lower-dimensional space of
+symmetric tensors (the classical Taylor ambiguity). Both properties are
+relied on downstream: positive semi-definiteness is what brackets each
+coordinate solve, and singularity is harmless because the slip rule’s own
+monotone nonlinearity is what makes the condensed system strictly convex.</p>
+<p>It is emitted as a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> carried on two sub-batch
+axes, <code class="docutils literal notranslate"><span class="pre">(n_slip,</span> <span class="pre">n_slip)</span></code> – a matrix of scalars is exactly what the
+sub-batch machinery represents.</p>
+<p><strong>Frames.</strong> Everything is contracted in the lab frame, matching the rest of
+the crystal-plasticity library: <code class="docutils literal notranslate"><span class="pre">ResolvedShear</span></code> rotates the Schmid tensors
+and contracts them with the lab-frame stress, and <code class="docutils literal notranslate"><span class="pre">GeneralElasticity</span></code>
+rotates the stiffness (<code class="docutils literal notranslate"><span class="pre">T_rot</span> <span class="pre">=</span> <span class="pre">rotate(T,</span> <span class="pre">R)</span></code>) before applying it to the
+lab-frame strain. So both Schmid operands <em>and</em> the stiffness are rotated
+here. Getting this wrong yields a plausible but silently wrong matrix, so it
+is pinned by a test: for an isotropic stiffness, <span class="math notranslate nohighlight">\(A\)</span> must not depend on the
+orientation at all.</p>
+<p><strong>The spin convection is deliberately omitted.</strong>
+<code class="docutils literal notranslate"><span class="pre">ElasticStrainRate</span></code>
+carries <span class="math notranslate nohighlight">\(\dot\varepsilon^e = d - d^p + \Omega[\varepsilon^e]\)</span> with
+<span class="math notranslate nohighlight">\(\Omega[V] = [W, V]\)</span> the material spin, so the elastic-strain block of the
+Jacobian is <span class="math notranslate nohighlight">\(I - \Delta t\,\Omega\)</span> rather than <span class="math notranslate nohighlight">\(I\)</span> and the exact condensed
+coupling is <span class="math notranslate nohighlight">\(\Delta t\,M^{\mathsf T}\mathbb{C}(I - \Delta t\,\Omega)^{-1}M\)</span>.
+Because <span class="math notranslate nohighlight">\(\Omega\)</span> generates a rotation it is skew-adjoint, which splits that
+exactly: the symmetric part is what is computed here to within
+<span class="math notranslate nohighlight">\(O((\Delta t\lVert\Omega\rVert)^2)\)</span>, and the whole deviation is a <em>skew</em>
+contribution of size <span class="math notranslate nohighlight">\(\Delta t\lVert\Omega\rVert = 2\Delta t\lvert w\rvert\)</span>
+– the incremental rotation over the step.</p>
+<p>That omission is required rather than tolerated. Coordinate descent
+converges because <span class="math notranslate nohighlight">\(\varphi(\dot\gamma) + A\dot\gamma - b\)</span> is the gradient of
+a strictly convex potential, which needs <span class="math notranslate nohighlight">\(A\)</span> symmetric; the exact coupling
+is not symmetric and so is not the gradient of anything. This model computes
+the variational part and drops the rest. One corollary worth knowing: a skew
+matrix has zero diagonal, so the <span class="math notranslate nohighlight">\(A_{ii}\ge 0\)</span> precondition that brackets
+each coordinate solve holds <em>exactly</em>, not to within the spin error.</p>
+<p>The <span class="math notranslate nohighlight">\(O((\Delta t\lVert\Omega\rVert)^2)\)</span> bound on the symmetric part assumes
+<span class="math notranslate nohighlight">\([\mathbb{C}, \Omega] = 0\)</span>, i.e. isotropic elasticity. With an anisotropic
+stiffness the symmetric part also picks up
+<span class="math notranslate nohighlight">\(\tfrac{1}{2}\Delta t^2 M^{\mathsf T}[\mathbb{C},\Omega]M\)</span>, one order lower.
+Still small, still <span class="math notranslate nohighlight">\(O(\Delta t)\)</span> in the step.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">r</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Damage threshold history variable (max-history of psi_0)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">orientation</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">MRP</span></code> · <strong>required</strong></dt><dd><p>Active-convention orientation</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">time</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">t</span></code></dt><dd><p>Time</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">D</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Isotropic scalar damage in [0, 1)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">coupling</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The coupling matrix, sub-batched over (n_slip, n_slip)</p>
 </dd>
 </dl>
 </section>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">Y_in</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Damage-onset energy threshold (same units as r)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">elastic_stiffness_tensor</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">SSR4</span></code> · <strong>required</strong></dt><dd><p>Elastic stiffness tensor, in the crystal frame</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">p1</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Weibull scale parameter (dimensionless)</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">p2</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Weibull shape parameter (dimensionless)</p>
+</dl>
+</section>
+<section id="other-options">
+<h2>Other options<a class="headerlink" href="#other-options" title="Link to this heading">#</a></h2>
+<dl class="simple myst">
+<dt><code class="docutils literal notranslate"><span class="pre">crystal_geometry</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · default <code class="docutils literal notranslate"><span class="pre">crystal_geometry</span></code></dt><dd><p>The data object carrying the crystallographic information</p>
 </dd>
 </dl>
 </section>
@@ -503,16 +527,16 @@ Underlying framework: Simo, J. C. &amp; Ju, J. W. (1987),
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="ViscousDamageRelaxation.html">
+    <a href="SingleSlipStrengthMap.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">ViscousDamageRelaxation</div></div>
+        <span>Previous</span><div class="title">SingleSlipStrengthMap</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="../elasticity/index.html">
+    <a href="SumSlipRates.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">elasticity</div>
+        <div class="title">SumSlipRates</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -546,6 +570,8 @@ Underlying framework: Simo, J. C. &amp; Ju, J. W. (1987),
       <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../../_static/copybutton.js?v=7abfc884"></script>
       <script src="../../../../../_static/shibuya.js?v=50760d75"></script>
+      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../../../../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
       <script src="../../../../../_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>

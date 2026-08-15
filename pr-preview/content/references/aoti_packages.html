@@ -180,6 +180,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
@@ -205,12 +206,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -302,7 +305,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -664,7 +666,7 @@ not mirrored field-by-field here. The metadata carries an integer
 refuses any non-matching version with a clear “regenerate via
 <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>” message; the only remediation is a re-compile.</p>
 <!-- dependencies: aoti.schema_version -->
-<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">13</span></code>.</p>
+<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">14</span></code>.</p>
 </section>
 <section id="segment-kinds">
 <h3>Segment kinds<a class="headerlink" href="#segment-kinds" title="Link to this heading">#</a></h3>
@@ -676,7 +678,17 @@ requested a derivative pair this segment contributes to (a block that
 does not depend on the dynamic batch is emitted unbatched). Call shape
 is <code class="docutils literal notranslate"><span class="pre">(*user_inputs,</span> <span class="pre">*promoted_params)</span> <span class="pre">-&gt;</span> <span class="pre">outputs</span></code>.</p></li>
 <li><p><strong>Implicit</strong> segments always lower <code class="docutils literal notranslate"><span class="pre">_residual.pt2</span></code> (Newton residual), plus an
-optional <code class="docutils literal notranslate"><span class="pre">_predictor.pt2</span></code> graph when the source had a <code class="docutils literal notranslate"><span class="pre">Predictor</span></code>. The
+optional <code class="docutils literal notranslate"><span class="pre">_predictor.pt2</span></code> graph when the source had a <code class="docutils literal notranslate"><span class="pre">Predictor</span></code>. A predictor
+that is itself a bounded iteration is <strong>not</strong> unrolled into that graph: the
+model implements <code class="docutils literal notranslate"><span class="pre">iterable_export_form()</span></code>, the exporter lowers one step taking
+the previous step’s value on an extra input, and the segment gains a
+<code class="docutils literal notranslate"><span class="pre">predictor_feedback</span></code> block naming the input/output pair, the step count and
+the shape to seed the first pass. The C++ runtime then re-runs the predictor
+graph that many times, routing the feedback output back to the feedback input,
+the way it already loops Newton. Because the count lives in metadata rather
+than the graph, it can be retuned without recompiling. <code class="docutils literal notranslate"><span class="pre">CoordinateDescentPredictor</span></code>
+is the first user: unrolling its Gauss-Seidel sweeps would emit thousands of
+copies of the inner rate law and freeze the sweep count at compile time. The
 remaining forward-solve graphs depend on <code class="docutils literal notranslate"><span class="pre">solver_config.solver_kind</span></code>:</p>
 <ul class="simple">
 <li><p>a <strong>direct</strong> solve (<code class="docutils literal notranslate"><span class="pre">DenseLU</span></code> / <code class="docutils literal notranslate"><span class="pre">SchurComplement</span></code>) lowers <code class="docutils literal notranslate"><span class="pre">_jacobian.pt2</span></code>

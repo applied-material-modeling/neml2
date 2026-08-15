@@ -180,6 +180,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
@@ -205,12 +206,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -302,7 +305,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -528,9 +530,9 @@ growth rate vanishes as <span class="math notranslate nohighlight">\(x^\infty_\s
 <p>The more general <strong>SFFK</strong> form (Svoboda–Fischer–Fratzl–Kozeschnik)
 handles multi-component diffusion in the dilute, diffusion-limited
 regime,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-b11518fe-6a26-4890-b2d2-96daaa96ae5d">
-<div class="amsmath math notranslate nohighlight" id="equation-b11518fe-6a26-4890-b2d2-96daaa96ae5d">
-<span class="eqno">(6)<a class="headerlink" href="#equation-b11518fe-6a26-4890-b2d2-96daaa96ae5d" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-8c2611d3-3799-4b58-a8ac-4ed3084cbad4">
+<div class="amsmath math notranslate nohighlight" id="equation-8c2611d3-3799-4b58-a8ac-4ed3084cbad4">
+<span class="eqno">(6)<a class="headerlink" href="#equation-8c2611d3-3799-4b58-a8ac-4ed3084cbad4" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{R}^{(j)} &amp;= \frac{1}{R^{(j)}} \,
   \frac{\Delta G^{(j)}_{\text{chem}}
       + \Delta G^{(j)}_{\text{surf}}
@@ -543,9 +545,9 @@ S^{(j)} &amp;= \sum_{k \in \mathcal{S}_j}
 <p>with <span class="math notranslate nohighlight">\(\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\)</span> and <span class="math notranslate nohighlight">\(D_k\)</span> the matrix
 diffusivity of species <span class="math notranslate nohighlight">\(k\)</span>. The driving force is split into chemical,
 surface, and elastic contributions:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-e1c57f49-86a7-4112-9664-5790dcbdb9e5">
-<div class="amsmath math notranslate nohighlight" id="equation-e1c57f49-86a7-4112-9664-5790dcbdb9e5">
-<span class="eqno">(7)<a class="headerlink" href="#equation-e1c57f49-86a7-4112-9664-5790dcbdb9e5" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-69365430-628c-4973-8d43-74a733075142">
+<div class="amsmath math notranslate nohighlight" id="equation-69365430-628c-4973-8d43-74a733075142">
+<span class="eqno">(7)<a class="headerlink" href="#equation-69365430-628c-4973-8d43-74a733075142" title="Permalink to this equation">#</a></span>\[\begin{align}
 \Delta G^{(j)}_{\text{chem}} &amp;=
   \sum_{k \in \mathcal{S}_j} \Delta x^{(j)}_k
   \bigl[\mu^{\text{matrix}}_k(x^\infty) - \mu^{\text{equil},(j)}_k\bigr],
@@ -577,9 +579,9 @@ J^{(j)}_{\text{nuc}} =
 \]</div>
 </div>
 <p>with the classical-nucleation-theory expressions</p>
-<div class="math-wrapper amsmath docutils container" id="equation-f49cad4a-1ceb-4395-aecc-44db0e6aef67">
-<div class="amsmath math notranslate nohighlight" id="equation-f49cad4a-1ceb-4395-aecc-44db0e6aef67">
-<span class="eqno">(8)<a class="headerlink" href="#equation-f49cad4a-1ceb-4395-aecc-44db0e6aef67" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-ebd3af2a-6ff7-4bf7-ae4c-fdf864a6a183">
+<div class="amsmath math notranslate nohighlight" id="equation-ebd3af2a-6ff7-4bf7-ae4c-fdf864a6a183">
+<span class="eqno">(8)<a class="headerlink" href="#equation-ebd3af2a-6ff7-4bf7-ae4c-fdf864a6a183" title="Permalink to this equation">#</a></span>\[\begin{align}
 R^{(j)}_{\text{crit}} &amp;=
   \frac{2 \gamma^{(j)} V_m^{(j)}}{\Delta g^{(j)}_v}, \\
 \Delta G^{*,(j)} &amp;=

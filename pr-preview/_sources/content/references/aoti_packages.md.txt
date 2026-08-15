@@ -206,7 +206,7 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `13`.
+The current schema version is `14`.
 
 ### Segment kinds
 
@@ -218,7 +218,17 @@ Two segment kinds appear inside `segments`:
   does not depend on the dynamic batch is emitted unbatched). Call shape
   is `(*user_inputs, *promoted_params) -> outputs`.
 - **Implicit** segments always lower `_residual.pt2` (Newton residual), plus an
-  optional `_predictor.pt2` graph when the source had a `Predictor`. The
+  optional `_predictor.pt2` graph when the source had a `Predictor`. A predictor
+  that is itself a bounded iteration is **not** unrolled into that graph: the
+  model implements `iterable_export_form()`, the exporter lowers one step taking
+  the previous step's value on an extra input, and the segment gains a
+  `predictor_feedback` block naming the input/output pair, the step count and
+  the shape to seed the first pass. The C++ runtime then re-runs the predictor
+  graph that many times, routing the feedback output back to the feedback input,
+  the way it already loops Newton. Because the count lives in metadata rather
+  than the graph, it can be retuned without recompiling. `CoordinateDescentPredictor`
+  is the first user: unrolling its Gauss-Seidel sweeps would emit thousands of
+  copies of the inner rate law and freeze the sweep count at compile time. The
   remaining forward-solve graphs depend on `solver_config.solver_kind`:
   - a **direct** solve (`DenseLU` / `SchurComplement`) lowers `_jacobian.pt2`
     (the residual Jacobian operator `A = ∂r/∂u` + `b`) and `_solve.pt2` (the
