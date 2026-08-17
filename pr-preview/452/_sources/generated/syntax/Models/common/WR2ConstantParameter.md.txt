@@ -1,0 +1,18 @@
+(models-WR2ConstantParameter)=
+# WR2ConstantParameter
+
+**Source:** `models/common/ConstantParameter.py`
+
+WR2-valued constant parameter. Mirrors ``ConstantParameter<WR2>``.
+
+## Outputs
+
+`parameter` &mdash; `output` &middot; `WR2`
+: The output parameter. If not specified, the object name will be used.
+
+
+## Parameters
+
+`value` &mdash; `parameter` &middot; `WR2` &middot; **required**
+: The constant value of the parameter
+
