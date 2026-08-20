@@ -16,7 +16,7 @@ protected:
     void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
     // Plastic Flow rate
-    const Variable<Scalar> & _gamma_dot;
+    const Variable<Scalar> & _p_dot;
     // const parameter k1
     const Scalar & _k1;
     const Variable<Scalar> & _L;

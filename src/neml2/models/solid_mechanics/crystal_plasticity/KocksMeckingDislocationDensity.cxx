@@ -23,7 +23,7 @@ KocksMeckingDislocationDensity::expected_options()
     return options;
 }
 KocksMeckingDislocationDensity::KocksMeckingDislocationDensity(const OptionSet & options) : Model(options),
-    _gamma_dot(declare_input_variable<Scalar>("plastic_flow_rate")),
+    _p_dot(declare_input_variable<Scalar>("plastic_flow_rate")),
     _k1(declare_parameter<Scalar>("k1", "k1", true)),
     _L(declare_input_variable<Scalar>("L")),
     _k2_0(declare_parameter<Scalar>("k2_0", "k2_0", true)),
@@ -40,30 +40,30 @@ KocksMeckingDislocationDensity::set_value(bool out, bool dout_din, bool /*d2out_
     const auto k2 = _k2_0 * neml2::exp(- _Q_d / (_k_B * _T()));
 
     if (out)
-        _rho_m_dot = (_k1/_L() - k2 * _rho_m()) * _gamma_dot();
+        _rho_m_dot = (_k1/_L() - k2 * _rho_m()) * _p_dot();
 
     if (dout_din)
     {
-        if (_gamma_dot.is_dependent())
-            _rho_m_dot.d(_gamma_dot) = _k1/_L() - k2 * _rho_m();
+        if (_p_dot.is_dependent())
+            _rho_m_dot.d(_p_dot) = _k1/_L() - k2 * _rho_m();
         
         if (_L.is_dependent())
-            _rho_m_dot.d(_L) = - (_k1 * _gamma_dot()) / neml2::pow(_L(), 2.0);
+            _rho_m_dot.d(_L) = - (_k1 * _p_dot()) / neml2::pow(_L(), 2.0);
 
         if (_T.is_dependent())
-            _rho_m_dot.d(_T) = - (_k2_0 * _Q_d) / (_k_B * neml2::pow(_T(), 2.0)) * neml2::exp(- _Q_d / (_k_B * _T())) * _rho_m() * _gamma_dot();
+            _rho_m_dot.d(_T) = - (_k2_0 * _Q_d) / (_k_B * neml2::pow(_T(), 2.0)) * neml2::exp(- _Q_d / (_k_B * _T())) * _rho_m() * _p_dot();
         
         if (_rho_m.is_dependent())
-            _rho_m_dot.d(_rho_m) = - k2 * _gamma_dot();
+            _rho_m_dot.d(_rho_m) = - k2 * _p_dot();
 
         if (const auto * const k1 = nl_param("k1"))
-            _rho_m_dot.d(*k1) = _gamma_dot() / _L();
+            _rho_m_dot.d(*k1) = _p_dot() / _L();
         
         if (const auto * const k2_0 = nl_param("k2_0"))
-            _rho_m_dot.d(*k2_0) = - neml2::exp(- _Q_d / (_k_B * _T())) * _rho_m() * _gamma_dot();
+            _rho_m_dot.d(*k2_0) = - neml2::exp(- _Q_d / (_k_B * _T())) * _rho_m() * _p_dot();
         
         if (const auto * const Q_d = nl_param("Q_d"))
-            _rho_m_dot.d(*Q_d) = _k2_0 / (_k_B * _T()) * neml2::exp(- _Q_d / (_k_B * _T())) * _rho_m() * _gamma_dot();
+            _rho_m_dot.d(*Q_d) = _k2_0 / (_k_B * _T()) * neml2::exp(- _Q_d / (_k_B * _T())) * _rho_m() * _p_dot();
     }
 }
 }

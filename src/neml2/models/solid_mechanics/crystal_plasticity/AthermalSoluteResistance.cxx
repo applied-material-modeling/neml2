@@ -68,9 +68,8 @@ AthermalSoluteResistance::set_value(bool out, bool dout_din, bool /*d2out_din2*/
         _sigma_0 = sigma_0;
     
     if (dout_din)
-    {   
-        if (_L.is_dependent())
-            _sigma_0.d(_L) = -(_alpha * _G * _b) / neml2::pow(_L(), 2.0);
+    {  
+        auto dsigma_0_dL = -(_alpha * _G * _b) / neml2::pow(_L(), 2.0);
         
         if (const auto * const G = nl_param("shear_modulus"))
             _sigma_0.d(*G) = (_alpha * _b) / _L();
@@ -82,13 +81,14 @@ AthermalSoluteResistance::set_value(bool out, bool dout_din, bool /*d2out_din2*/
         {
             const auto t_w        = _L() / (*_v_disl)();
             const auto t_a        = (*_t_a0) * neml2::exp((*_Q_a) / ((*_k_B) * (*_T)()));
-            const auto tau_ss     = (*_tau_s0) * neml2::exp(-neml2::pow((t_w / t_a), (*_p_ss)));
-            const auto sigma_ss   = tau_ss / (*_m);
             
             if (_L.is_dependent())
-                _sigma_0.d(_L) = -(_alpha * _G * _b) / neml2::pow(_L(), 2.0) - 
-                                 (*_tau_s0) * (*_p_ss) / ((*_m) * (t_a) * (*_v_disl)()) * neml2::pow((t_w/t_a), ((*_p_ss) - 1.0)) *
-                                 neml2::exp(-neml2::pow((t_w/t_a), (*_p_ss)));
+            {
+                const auto dsigma_ss_dL = -(*_tau_s0) * (*_p_ss) / ((*_m) * (t_a) * (*_v_disl)()) * neml2::pow((t_w/t_a), ((*_p_ss) - 1.0)) *
+                                          neml2::exp(-neml2::pow((t_w/t_a), (*_p_ss)));
+
+                dsigma_0_dL += dsigma_ss_dL;
+            }
 
             if ((*_v_disl).is_dependent())
                 _sigma_0.d(*_v_disl) = (*_tau_s0) * (*_p_ss) * _L() / ((*_m) * (t_a) * neml2::pow((*_v_disl)(), 2.0)) *
@@ -99,6 +99,9 @@ AthermalSoluteResistance::set_value(bool out, bool dout_din, bool /*d2out_din2*/
                                   neml2::pow((t_w/t_a), ((*_p_ss) - 1.0)) * neml2::exp((*_Q_a)/((*_k_B) * (*_T)())) * 
                                   neml2::exp(-neml2::pow((t_w/t_a), (*_p_ss)));
         }
+
+        if (_L.is_dependent())
+            _sigma_0.d(_L) = dsigma_0_dL;
     }
 }
 }

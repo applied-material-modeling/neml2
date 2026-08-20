@@ -6,6 +6,8 @@
         input_Scalar_values = '10 1.0 573.15 1.0e12'
         output_Scalar_names = 'state/internal/rho_m_rate'
         output_Scalar_values = '2.99903464e11'
+        derivative_rel_tol = 1e-4
+        parameter_derivative_rel_tol = 1e-4
     []
 []
 

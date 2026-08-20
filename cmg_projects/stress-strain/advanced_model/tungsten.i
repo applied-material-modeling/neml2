@@ -19,7 +19,7 @@
         values = '6000.0'
         batch_shape = '(1)'
     []
-    [Q_d]
+    [Q_d] # eV
         type = Scalar
         values = '0.01'
         batch_shape = '(1)'
@@ -38,9 +38,9 @@
         type = Scalar
         values = '950.0'
     []
-    [H_0] # eV
+    [H_0] # J
         type = Scalar
-        values = '2.55'
+        values = '4.08555042e-19'
     []
     [alpha]
         type = Scalar
@@ -74,9 +74,13 @@
         type = Scalar
         values = '7.9e-6'
     []
-    [kB] # eV/K
+    [kB] # J/K
         type = Scalar
-        values = '8.617e-5'
+        values = '1.380649e-23'
+    []
+    [kB_eV] # eV/K
+        type = Scalar
+        values = '8.617333262e-5'
     []
 []
 
@@ -151,13 +155,13 @@
         L = 'state/internal/L'
     []
     [athermal]
-        type = AthermalStress
+        type = AthermalSoluteResistance
         shear_modulus = 'G'
         alpha = 'alpha'
         b = 'b'
-        sigma_ss = 0.0
         L = 'state/internal/L'
-        athermal_stress = 'state/internal/s_a'
+        include_solid_solution = false
+        athermal_solute_resistance = 'state/internal/s_a'
     []
     [yield]
         type = YieldFunction
@@ -225,7 +229,7 @@
         L = 'state/internal/L'
         k2_0 = 'k2_0'
         Q_d = 'Q_d'
-        k_B = 'kB'
+        k_B = 'kB_eV'
         temperature = 'forces/T'
         dislocation_density = 'state/internal/rho_m'
         density_rate = 'state/internal/rho_m_rate'
