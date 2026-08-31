@@ -26,6 +26,13 @@
 
 #include <sstream>
 
+// c10::LinAlgError is a numerical failure raised by torch's linalg kernels
+// (a singular / non-invertible / non-PD factorization); a downstream time-
+// stepping consumer can recover from it by cutting the step, so the guard below
+// re-throws it as the recoverable neml2 ConvergenceError rather than letting it
+// fall through to the generic std::exception catch (which would flag it fatal).
+#include <c10/util/Exception.h>
+
 #include "neml2/csrc/aoti/Exception.h"
 
 // Internal header -- NOT shipped. Holds the check-and-throw helpers shared
@@ -66,10 +73,15 @@ _assert(bool cond, const Args &... args)
 /// neml2 exception taxonomy so a consumer has a single catch surface:
 ///   - a neml2 `Exception` (incl. the recoverable `ConvergenceError`) passes
 ///     through untouched -- its dynamic type and `recoverable()` are preserved;
-///   - a foreign exception (a torch `c10::Error` from a shape / device mismatch
-///     inside a compiled graph, `std::bad_alloc`, ...) becomes a `FatalError`,
-///     i.e. non-recoverable -- a caller that retries on `recoverable()` will
-///     never retry one of these.
+///   - a torch `c10::LinAlgError` (a singular / non-invertible / non-PD linear
+///     factorization from a torch linalg kernel) is re-thrown as the recoverable
+///     `ConvergenceError` -- like a Newton non-convergence, a time-stepping
+///     consumer can cut the step and retry. The original message is carried on
+///     the new exception so the end user still sees which factorization failed;
+///   - any other foreign exception (a torch `c10::Error` from a shape / device
+///     mismatch inside a compiled graph, `std::bad_alloc`, ...) becomes a
+///     `FatalError`, i.e. non-recoverable -- a caller that retries on
+///     `recoverable()` will never retry one of these.
 template <typename Fn>
 auto
 _guarded(Fn && fn) -> decltype(fn())
@@ -81,6 +93,17 @@ _guarded(Fn && fn) -> decltype(fn())
   catch (const Exception &)
   {
     throw;
+  }
+  catch (const c10::LinAlgError & e)
+  {
+    // Prefer `what_without_backtrace()` so the recoverable message stays
+    // focused on the numerical failure rather than dragging the torch C++
+    // backtrace into a message a downstream (e.g. finite-element) driver
+    // may surface to the end user. Fall back to `what()` if the derived
+    // override ever returns an empty string.
+    const char * msg = e.what_without_backtrace();
+    const std::string body = (msg && *msg) ? std::string(msg) : std::string(e.what());
+    throw ConvergenceError(std::string("aoti: torch linalg failure: ") + body);
   }
   catch (const std::exception & e)
   {

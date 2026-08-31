@@ -61,6 +61,26 @@ is_convergence_error(const py::error_already_set & e)
   }
 }
 
+// True if the Python exception `e` is (or derives from) `torch.linalg.LinAlgError`
+// -- the Python face of a c10::LinAlgError raised by a torch linalg kernel
+// (singular / non-invertible / non-PD factorization). Numerically recoverable in
+// the same sense as a Newton non-convergence: a time-stepping consumer can cut
+// the step and retry, so the caller wants a `ConvergenceError` here, not a fatal.
+// Same fast sys.modules lookup + safe-degradation pattern as
+// `is_convergence_error` above.
+bool
+is_torch_linalg_error(const py::error_already_set & e)
+{
+  try
+  {
+    return e.matches(py::module_::import("torch").attr("linalg").attr("LinAlgError"));
+  }
+  catch (...)
+  {
+    return false;
+  }
+}
+
 // Run a Python-touching operation under the GIL and normalize any failure to the
 // NEML2 exception taxonomy -- mirroring the aoti runtime's `_guarded` policy of
 // presenting foreign torch/python errors through that taxonomy. The GIL is held
@@ -89,9 +109,11 @@ guarded(const char * op, F && f) -> decltype(f())
     // A Python exception crossed the embedded boundary. A solver divergence /
     // max-iters originates as neml2::aoti::ConvergenceError in libneml2.so and
     // surfaces here as the registered neml2.aoti._aoti.ConvergenceError; re-raise
-    // it as the recoverable C++ type so a host can cut the step and retry.
-    // Everything else is a fatal config / shape / dtype error.
-    if (is_convergence_error(e))
+    // it as the recoverable C++ type so a host can cut the step and retry. A
+    // torch.linalg.LinAlgError from a torch linalg kernel (a c10::LinAlgError
+    // that crossed into Python) is likewise numerically recoverable and gets the
+    // same treatment. Everything else is a fatal config / shape / dtype error.
+    if (is_convergence_error(e) || is_torch_linalg_error(e))
       throw neml2::aoti::ConvergenceError(prefix + e.what());
     throw neml2::aoti::FatalError(prefix + e.what());
   }
