@@ -32,6 +32,7 @@ package import.
 
 from .DumpInSmallestBin import DumpInSmallestBin
 from .FiniteVolumeAppendBoundaryCondition import FiniteVolumeAppendBoundaryCondition
+from .FiniteVolumeFragmentationFlux import FiniteVolumeFragmentationFlux
 from .FiniteVolumeGradient import FiniteVolumeGradient
 from .FiniteVolumeUpwindedAdvectiveFlux import FiniteVolumeUpwindedAdvectiveFlux
 from .LinearlyInterpolateToCellEdges import LinearlyInterpolateToCellEdges
@@ -41,6 +42,7 @@ from .SmearedDeltaSource import SmearedDeltaSource
 __all__ = [
     "DumpInSmallestBin",
     "FiniteVolumeAppendBoundaryCondition",
+    "FiniteVolumeFragmentationFlux",
     "FiniteVolumeGradient",
     "LinearlyInterpolateToCellEdges",
     "FiniteVolumeUpwindedAdvectiveFlux",
