@@ -521,9 +521,9 @@ effective scalar separation</p>
 a mixed-mode failure separation <span class="math notranslate nohighlight">\(\delta_f(\beta, \delta_c)\)</span>. Damage is
 then defined piecewise from the historical maximum effective
 separation <span class="math notranslate nohighlight">\(\bar{\delta}_m = \max_{t' \le t} \delta_m(t')\)</span>,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-f34880a7-b114-4fab-a055-90ae40dfb47b">
-<div class="amsmath math notranslate nohighlight" id="equation-f34880a7-b114-4fab-a055-90ae40dfb47b">
-<span class="eqno">(19)<a class="headerlink" href="#equation-f34880a7-b114-4fab-a055-90ae40dfb47b" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-90c6d791-7a80-4ce8-8030-0ccfd93ac545">
+<div class="amsmath math notranslate nohighlight" id="equation-90c6d791-7a80-4ce8-8030-0ccfd93ac545">
+<span class="eqno">(19)<a class="headerlink" href="#equation-90c6d791-7a80-4ce8-8030-0ccfd93ac545" title="Permalink to this equation">#</a></span>\[\begin{align}
 d(\bar{\delta}_m) &amp;= 0,
   &amp; \bar{\delta}_m &amp;\le \delta_c, \\
 d(\bar{\delta}_m) &amp;=
@@ -535,9 +535,9 @@ d(\bar{\delta}_m) &amp;= 1,
 \end{align}\]</div>
 </div>
 <p>so that the traction is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-610ecaad-f75e-4d57-a51d-9e1792e08133">
-<div class="amsmath math notranslate nohighlight" id="equation-610ecaad-f75e-4d57-a51d-9e1792e08133">
-<span class="eqno">(20)<a class="headerlink" href="#equation-610ecaad-f75e-4d57-a51d-9e1792e08133" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-c8dba8d8-705d-4c03-b440-b3a773e463fb">
+<div class="amsmath math notranslate nohighlight" id="equation-c8dba8d8-705d-4c03-b440-b3a773e463fb">
+<span class="eqno">(20)<a class="headerlink" href="#equation-c8dba8d8-705d-4c03-b440-b3a773e463fb" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n   &amp;= K\,(1-d)\,\langle \delta_n \rangle_+ \;+\; K\,\langle \delta_n \rangle_-, \notag \\
 T_{si} &amp;= K\,(1-d)\,\delta_{si}, \quad i \in \{1, 2\},
 \end{align}\]</div>
@@ -577,61 +577,61 @@ mixed-mode opening ramp, and pins the result against a reference:</p>
 </span><span data-line="6"><span class="k">[Tensors]</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[times]</span>
 </span><span data-line="8"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="9"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(0.0).dynamic_batch, Scalar(1.0).dynamic_batch, 40)&#39;</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'linspace(Scalar(0.0).dynamic_batch, Scalar(1.0).dynamic_batch, 40)'</span>
 </span><span data-line="10"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="11"><span class="w">  </span><span class="k">[jumps]</span>
 </span><span data-line="12"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="13"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Vec(torch.linspace(0.0, 1.0, 40, dtype=torch.float64).reshape(40, 1) * torch.tensor([0.05, 0.04, 0.03], dtype=torch.float64))&#39;</span>
+</span><span data-line="13"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'Vec(torch.linspace(0.0, 1.0, 40, dtype=torch.float64).reshape(40, 1) * torch.tensor([0.05, 0.04, 0.03], dtype=torch.float64))'</span>
 </span><span data-line="14"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="15"><span class="k">[]</span>
 </span><span data-line="16">
 </span><span data-line="17"><span class="k">[Drivers]</span>
 </span><span data-line="18"><span class="w">  </span><span class="k">[driver]</span>
 </span><span data-line="19"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
-</span><span data-line="20"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
-</span><span data-line="21"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="22"><span class="w">    </span><span class="na">prescribed_Vec_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;separation&#39;</span>
-</span><span data-line="23"><span class="w">    </span><span class="na">prescribed_Vec_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;jumps&#39;</span>
+</span><span data-line="20"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'model'</span>
+</span><span data-line="21"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'times'</span>
+</span><span data-line="22"><span class="w">    </span><span class="na">prescribed_Vec_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'separation'</span>
+</span><span data-line="23"><span class="w">    </span><span class="na">prescribed_Vec_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'jumps'</span>
 </span><span data-line="24"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="25"><span class="w">  </span><span class="k">[regression]</span>
 </span><span data-line="26"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
-</span><span data-line="27"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
-</span><span data-line="28"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
+</span><span data-line="27"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'driver'</span>
+</span><span data-line="28"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'gold/result.pt'</span>
 </span><span data-line="29"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="30"><span class="k">[]</span>
 </span><span data-line="31">
 </span><span data-line="32"><span class="k">[Models]</span>
 </span><span data-line="33"><span class="w">  </span><span class="k">[decompose]</span>
 </span><span data-line="34"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">VecComponents</span>
-</span><span data-line="35"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;separation&#39;</span>
-</span><span data-line="36"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;signed_normal_separation tangential_separation_1 tangential_separation_2&#39;</span>
+</span><span data-line="35"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'separation'</span>
+</span><span data-line="36"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'signed_normal_separation tangential_separation_1 tangential_separation_2'</span>
 </span><span data-line="37"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="38"><span class="w">  </span><span class="k">[tangential_separation]</span>
 </span><span data-line="39"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarPNorm</span>
-</span><span data-line="40"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;tangential_separation_1 tangential_separation_2&#39;</span>
-</span><span data-line="41"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;tangential_separation&#39;</span>
+</span><span data-line="40"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'tangential_separation_1 tangential_separation_2'</span>
+</span><span data-line="41"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'tangential_separation'</span>
 </span><span data-line="42"><span class="w">    </span><span class="na">exponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
 </span><span data-line="43"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="44"><span class="w">  </span><span class="k">[macaulay_n]</span>
 </span><span data-line="45"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">MacaulaySplit</span>
-</span><span data-line="46"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;signed_normal_separation&#39;</span>
-</span><span data-line="47"><span class="w">    </span><span class="na">to_positive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;normal_separation&#39;</span>
-</span><span data-line="48"><span class="w">    </span><span class="na">to_negative</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;normal_penetration&#39;</span>
+</span><span data-line="46"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'signed_normal_separation'</span>
+</span><span data-line="47"><span class="w">    </span><span class="na">to_positive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'normal_separation'</span>
+</span><span data-line="48"><span class="w">    </span><span class="na">to_negative</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'normal_penetration'</span>
 </span><span data-line="49"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="50"><span class="w">  </span><span class="k">[mode_mixity]</span>
 </span><span data-line="51"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ModeMixity</span>
 </span><span data-line="52"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="53"><span class="w">  </span><span class="k">[critical_separation]</span>
 </span><span data-line="54"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CamanhoDavilaCriticalSeparation</span>
-</span><span data-line="55"><span class="w">    </span><span class="na">mode_mixity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;mode_mixity&#39;</span>
+</span><span data-line="55"><span class="w">    </span><span class="na">mode_mixity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'mode_mixity'</span>
 </span><span data-line="56"><span class="w">    </span><span class="na">penalty_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000.0</span>
 </span><span data-line="57"><span class="w">    </span><span class="na">normal_strength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10.0</span>
 </span><span data-line="58"><span class="w">    </span><span class="na">shear_strength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10.0</span>
 </span><span data-line="59"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="60"><span class="w">  </span><span class="k">[full_separation]</span>
 </span><span data-line="61"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">BenzeggaghKenaneFullSeparation</span>
-</span><span data-line="62"><span class="w">    </span><span class="na">mode_mixity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;mode_mixity&#39;</span>
-</span><span data-line="63"><span class="w">    </span><span class="na">critical_separation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;critical_separation&#39;</span>
+</span><span data-line="62"><span class="w">    </span><span class="na">mode_mixity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'mode_mixity'</span>
+</span><span data-line="63"><span class="w">    </span><span class="na">critical_separation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'critical_separation'</span>
 </span><span data-line="64"><span class="w">    </span><span class="na">penalty_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000.0</span>
 </span><span data-line="65"><span class="w">    </span><span class="na">mode_I_fracture_toughness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
 </span><span data-line="66"><span class="w">    </span><span class="na">mode_II_fracture_toughness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
@@ -640,21 +640,21 @@ mixed-mode opening ramp, and pins the result against a reference:</p>
 </span><span data-line="69"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="70"><span class="w">  </span><span class="k">[effective_separation]</span>
 </span><span data-line="71"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarPNorm</span>
-</span><span data-line="72"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;normal_separation tangential_separation&#39;</span>
-</span><span data-line="73"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;effective_separation&#39;</span>
+</span><span data-line="72"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'normal_separation tangential_separation'</span>
+</span><span data-line="73"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'effective_separation'</span>
 </span><span data-line="74"><span class="w">    </span><span class="na">exponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
 </span><span data-line="75"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="76"><span class="w">  </span><span class="k">[traction]</span>
 </span><span data-line="77"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">BilinearTraction</span>
-</span><span data-line="78"><span class="w">    </span><span class="na">critical_separation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;critical_separation&#39;</span>
-</span><span data-line="79"><span class="w">    </span><span class="na">full_separation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;full_separation&#39;</span>
-</span><span data-line="80"><span class="w">    </span><span class="na">normal_penetration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;normal_penetration&#39;</span>
+</span><span data-line="78"><span class="w">    </span><span class="na">critical_separation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'critical_separation'</span>
+</span><span data-line="79"><span class="w">    </span><span class="na">full_separation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'full_separation'</span>
+</span><span data-line="80"><span class="w">    </span><span class="na">normal_penetration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'normal_penetration'</span>
 </span><span data-line="81"><span class="w">    </span><span class="na">penalty_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000.0</span>
 </span><span data-line="82"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="83"><span class="w">  </span><span class="k">[model]</span>
 </span><span data-line="84"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="85"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;decompose tangential_separation macaulay_n effective_separation traction&#39;</span>
-</span><span data-line="86"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;damage&#39;</span>
+</span><span data-line="85"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'decompose tangential_separation macaulay_n effective_separation traction'</span>
+</span><span data-line="86"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'damage'</span>
 </span><span data-line="87"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="88"><span class="k">[]</span>
 </span></pre></div>

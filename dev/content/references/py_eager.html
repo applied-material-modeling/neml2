@@ -432,7 +432,7 @@ any device, and sub-batch models (e.g. crystal plasticity).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">stress</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
 </span></pre></div>
 </div>
@@ -446,15 +446,15 @@ all behave the way they do for any torch module.</p>
 <p><code class="docutils literal notranslate"><span class="pre">model.jvp</span></code> and <code class="docutils literal notranslate"><span class="pre">model.jacobian</span></code> are the typed forward-mode derivative surface —
 the same <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> API the compiled and embedded routes
 expose, so derivative code reads identically on every route:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Jacobian-vector product: one cheap directional derivative.</span>
-</span><span data-line="4"><span class="n">outputs</span><span class="p">,</span> <span class="n">jvp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">eps</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">deps</span><span class="p">})</span>
-</span><span data-line="5"><span class="c1">#   jvp[&quot;stress&quot;] is an SR2 — the directional derivative of stress along deps.</span>
+</span><span data-line="4"><span class="n">outputs</span><span class="p">,</span> <span class="n">jvp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">eps</span><span class="p">},</span> <span class="p">{</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">deps</span><span class="p">})</span>
+</span><span data-line="5"><span class="c1">#   jvp["stress"] is an SR2 — the directional derivative of stress along deps.</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="c1"># Full Jacobian: every (output, input) block.</span>
-</span><span data-line="8"><span class="n">outputs</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">eps</span><span class="p">})</span>
-</span><span data-line="9"><span class="c1">#   J[&quot;stress&quot;][&quot;strain&quot;] is a typed block d(stress)/d(strain).</span>
+</span><span data-line="8"><span class="n">outputs</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">eps</span><span class="p">})</span>
+</span><span data-line="9"><span class="c1">#   J["stress"]["strain"] is a typed block d(stress)/d(strain).</span>
 </span></pre></div>
 </div>
 <p>Inputs and tangents are keyed by variable name and accept typed wrappers or raw

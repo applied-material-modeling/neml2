@@ -449,8 +449,8 @@ on the parameters:</p>
 </span><span data-line="5"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
 </span><span data-line="6">  <span class="p">[</span><span class="n">elasticity</span><span class="p">]</span>
 </span><span data-line="7">    <span class="nb">type</span> <span class="o">=</span> <span class="n">LinearIsotropicElasticity</span>
-</span><span data-line="8">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">&#39;200e3          0.3&#39;</span>
-</span><span data-line="9">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="8">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">'200e3          0.3'</span>
+</span><span data-line="9">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="10">  <span class="p">[]</span>
 </span><span data-line="11"><span class="p">[]</span>
 </span></pre></div>
@@ -471,10 +471,10 @@ the same way it does for any PyTorch model:</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="4">
 </span><span data-line="5"><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
-</span><span data-line="6">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="6">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -495,8 +495,8 @@ Reading <code class="docutils literal notranslate"><span class="pre">model.E</sp
 wrappers (see <a class="reference internal" href="../../../tensor_types/index.html#tensor-types"><span class="std std-ref">Tensor types</span></a> for the full list):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E  =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>
-</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nu =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="s2">"E  ="</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">"nu ="</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -515,8 +515,8 @@ numerical value with <code class="docutils literal notranslate"><span class="pre
 stays on the typed wrappers.)</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E  =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nu =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="s2">"E  ="</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">"nu ="</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </span></pre></div>
 </div>
 </div>
@@ -547,7 +547,7 @@ assignment:</p>
 </span><span data-line="3"><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
 </span><span data-line="4">    <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">150e3</span><span class="p">)</span>
 </span><span data-line="5">
-</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">"E ="</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </span></pre></div>
 </div>
 </div>
@@ -568,7 +568,7 @@ writes back to that same Parameter.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
-</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nu =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">"nu ="</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </span></pre></div>
 </div>
 </div>
@@ -595,7 +595,7 @@ optimizer tracking it will leave it alone:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E.requires_grad =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">"E.requires_grad ="</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -617,13 +617,13 @@ evaluate again:</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="4"><span class="n">strain</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 </span><span data-line="5">
-</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E = 200e3 -&gt;&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">"E = 200e3 -&gt;"</span><span class="p">,</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="n">model</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">100e3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
-</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E = 100e3 -&gt;&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">"E = 100e3 -&gt;"</span><span class="p">,</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -647,14 +647,14 @@ other <code class="docutils literal notranslate"><span class="pre">nn.Module</sp
 output gives gradients on each parameter:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">strain</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">stress</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">stress</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dL/dE  =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-</span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dL/dnu =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span><span data-line="7"><span class="nb">print</span><span class="p">(</span><span class="s2">"dL/dE  ="</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="s2">"dL/dnu ="</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </span></pre></div>
 </div>
 </div>

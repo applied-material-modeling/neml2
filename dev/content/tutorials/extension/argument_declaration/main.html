@@ -466,17 +466,17 @@ to a helper from <code class="docutils literal notranslate"><span class="pre">ne
 </span><span data-line="7">
 </span><span data-line="8">
 </span><span data-line="9"><span class="k">class</span><span class="w"> </span><span class="nc">ProjectileAcceleration</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-</span><span data-line="10"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Projectile acceleration under gravity and linear drag: a = g - mu * v.&quot;&quot;&quot;</span>
+</span><span data-line="10"><span class="w">    </span><span class="sd">"""Projectile acceleration under gravity and linear drag: a = g - mu * v."""</span>
 </span><span data-line="11">
 </span><span data-line="12">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
-</span><span data-line="13">        <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">&quot;Projectile velocity&quot;</span><span class="p">),</span>
-</span><span data-line="14">        <span class="n">output</span><span class="p">(</span><span class="s2">&quot;acceleration&quot;</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">&quot;Projectile acceleration&quot;</span><span class="p">),</span>
-</span><span data-line="15">        <span class="n">parameter</span><span class="p">(</span><span class="s2">&quot;dynamic_viscosity&quot;</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="s2">&quot;Drag coefficient mu&quot;</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;mu&quot;</span><span class="p">),</span>
+</span><span data-line="13">        <span class="nb">input</span><span class="p">(</span><span class="s2">"velocity"</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">"Projectile velocity"</span><span class="p">),</span>
+</span><span data-line="14">        <span class="n">output</span><span class="p">(</span><span class="s2">"acceleration"</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">"Projectile acceleration"</span><span class="p">),</span>
+</span><span data-line="15">        <span class="n">parameter</span><span class="p">(</span><span class="s2">"dynamic_viscosity"</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="s2">"Drag coefficient mu"</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="s2">"mu"</span><span class="p">),</span>
 </span><span data-line="16">        <span class="n">buffer</span><span class="p">(</span>
-</span><span data-line="17">            <span class="s2">&quot;gravity&quot;</span><span class="p">,</span>
+</span><span data-line="17">            <span class="s2">"gravity"</span><span class="p">,</span>
 </span><span data-line="18">            <span class="n">Vec</span><span class="p">,</span>
-</span><span data-line="19">            <span class="s2">&quot;Gravitational acceleration vector&quot;</span><span class="p">,</span>
-</span><span data-line="20">            <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span>
+</span><span data-line="19">            <span class="s2">"Gravitational acceleration vector"</span><span class="p">,</span>
+</span><span data-line="20">            <span class="n">attr</span><span class="o">=</span><span class="s2">"g"</span><span class="p">,</span>
 </span><span data-line="21">            <span class="n">default</span><span class="o">=</span><span class="n">Vec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.81</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 </span><span data-line="22">        <span class="p">),</span>
 </span><span data-line="23">    <span class="p">)</span>
@@ -503,7 +503,7 @@ GPU when the model does) but isn’t trainable.</p></li>
 </section>
 <section id="variable-declaration">
 <h2>Variable declaration<a class="headerlink" href="#variable-declaration" title="Link to this heading">#</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">input</span><span class="p">(</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">&quot;Velocity of the projectile&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">input</span><span class="p">(</span><span class="s2">"velocity"</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">"Velocity of the projectile"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">input(name,</span> <span class="pre">type_cls,</span> <span class="pre">doc)</span></code> declares one input variable. <code class="docutils literal notranslate"><span class="pre">type_cls</span></code>
@@ -523,7 +523,7 @@ no rename is supplied. So a fresh instance reports
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">{&#39;velocity&#39;: neml2.types.vec.Vec}
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">{'velocity': neml2.types.vec.Vec}
 </span></pre></div>
 </div>
 </div>
@@ -535,7 +535,7 @@ no rename is supplied. So a fresh instance reports
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">{&#39;acceleration&#39;: neml2.types.vec.Vec}
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">{'acceleration': neml2.types.vec.Vec}
 </span></pre></div>
 </div>
 </div>
@@ -545,8 +545,8 @@ instead:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">m_renamed</span> <span class="o">=</span> <span class="n">ProjectileAcceleration</span><span class="p">(</span>
-</span><span data-line="2">    <span class="n">velocity</span><span class="o">=</span><span class="s2">&quot;v&quot;</span><span class="p">,</span>
-</span><span data-line="3">    <span class="n">acceleration</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span>
+</span><span data-line="2">    <span class="n">velocity</span><span class="o">=</span><span class="s2">"v"</span><span class="p">,</span>
+</span><span data-line="3">    <span class="n">acceleration</span><span class="o">=</span><span class="s2">"a"</span><span class="p">,</span>
 </span><span data-line="4">    <span class="n">dynamic_viscosity</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
 </span><span data-line="5"><span class="p">)</span>
 </span><span data-line="6"><span class="n">m_renamed</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">m_renamed</span><span class="o">.</span><span class="n">output_spec</span>
@@ -554,7 +554,7 @@ instead:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">({&#39;v&#39;: neml2.types.vec.Vec}, {&#39;a&#39;: neml2.types.vec.Vec})
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">({'v': neml2.types.vec.Vec}, {'a': neml2.types.vec.Vec})
 </span></pre></div>
 </div>
 </div>
@@ -572,10 +572,10 @@ return tuple. The next tutorial,
 <section id="parameter-declaration">
 <h2>Parameter declaration<a class="headerlink" href="#parameter-declaration" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">parameter</span><span class="p">(</span>
-</span><span data-line="2">    <span class="s2">&quot;dynamic_viscosity&quot;</span><span class="p">,</span>
+</span><span data-line="2">    <span class="s2">"dynamic_viscosity"</span><span class="p">,</span>
 </span><span data-line="3">    <span class="n">Scalar</span><span class="p">,</span>
-</span><span data-line="4">    <span class="s2">&quot;Dynamic viscosity of the medium&quot;</span><span class="p">,</span>
-</span><span data-line="5">    <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;mu&quot;</span><span class="p">,</span>
+</span><span data-line="4">    <span class="s2">"Dynamic viscosity of the medium"</span><span class="p">,</span>
+</span><span data-line="5">    <span class="n">attr</span><span class="o">=</span><span class="s2">"mu"</span><span class="p">,</span>
 </span><span data-line="6"><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -617,7 +617,7 @@ wrapper carrying the same data:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">{&#39;mu&#39;: Parameter containing:
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">{'mu': Parameter containing:
 </span><span data-line="2"> tensor(0.0010, dtype=torch.float64, requires_grad=True)}
 </span></pre></div>
 </div>
@@ -646,18 +646,18 @@ unchanged — <code class="docutils literal notranslate"><span class="pre">model
 attributes:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;input_spec :&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">input_spec</span><span class="p">)</span>
-</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;output_spec:&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">output_spec</span><span class="p">)</span>
-</span><span data-line="3"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;parameters :&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()])</span>
-</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;buffers    :&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">named_buffers</span><span class="p">()])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="s2">"input_spec :"</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">input_spec</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">"output_spec:"</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">output_spec</span><span class="p">)</span>
+</span><span data-line="3"><span class="nb">print</span><span class="p">(</span><span class="s2">"parameters :"</span><span class="p">,</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()])</span>
+</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="s2">"buffers    :"</span><span class="p">,</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">named_buffers</span><span class="p">()])</span>
 </span></pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">input_spec : {&#39;velocity&#39;: &lt;class &#39;neml2.types.vec.Vec&#39;&gt;}
-</span><span data-line="2">output_spec: {&#39;acceleration&#39;: &lt;class &#39;neml2.types.vec.Vec&#39;&gt;}
-</span><span data-line="3">parameters : [&#39;mu&#39;]
-</span><span data-line="4">buffers    : [&#39;g&#39;]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">input_spec : {'velocity': &lt;class 'neml2.types.vec.Vec'&gt;}
+</span><span data-line="2">output_spec: {'acceleration': &lt;class 'neml2.types.vec.Vec'&gt;}
+</span><span data-line="3">parameters : ['mu']
+</span><span data-line="4">buffers    : ['g']
 </span></pre></div>
 </div>
 </div>

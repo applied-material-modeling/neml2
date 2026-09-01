@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Per-variable typed wrappers around equation-system state.</span>
+</span><span data-line="25"><span class="sd">"""Per-variable typed wrappers around equation-system state.</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">``SparseVector`` and ``SparseMatrix`` are the typed duals of</span>
 </span><span data-line="28"><span class="sd">:class:`~neml2.es.assembled.AssembledVector` and</span>
@@ -481,7 +481,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="61"><span class="sd">into trailing base via :func:`_tangent_block_to_trailing_k`. They are</span>
 </span><span data-line="62"><span class="sd">different objects despite the dict-of-dict shape coincidence; do not</span>
 </span><span data-line="63"><span class="sd">unify them.</span>
-</span><span data-line="64"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="64"><span class="sd">"""</span>
 </span><span data-line="65">
 </span><span data-line="66"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="67">
@@ -502,7 +502,7 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.SparseVector">[docs]</a>
 </span><span data-line="81"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span data-line="82"><span class="k">class</span><span class="w"> </span><span class="nc">SparseVector</span><span class="p">:</span>
-</span><span data-line="83"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-variable typed-wrapper vector; the typed dual of :class:`AssembledVector`.</span>
+</span><span data-line="83"><span class="w">    </span><span class="sd">"""Per-variable typed-wrapper vector; the typed dual of :class:`AssembledVector`.</span>
 </span><span data-line="84">
 </span><span data-line="85"><span class="sd">    ``values`` maps each variable name listed in ``layout.vars()`` to its</span>
 </span><span data-line="86"><span class="sd">    typed value (a :class:`~neml2.types.TensorWrapper` subclass instance).</span>
@@ -514,7 +514,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="92"><span class="sd">    notebooks / tests) wrap with the appropriate ``TensorWrapper``</span>
 </span><span data-line="93"><span class="sd">    subclass *at the construction site*, not by handing raw tensors to</span>
 </span><span data-line="94"><span class="sd">    an internal neml2 helper.</span>
-</span><span data-line="95"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="95"><span class="sd">    """</span>
 </span><span data-line="96">
 </span><span data-line="97">    <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span>
 </span><span data-line="98">    <span class="n">values</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span>
@@ -524,22 +524,22 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="102">        <span class="n">missing</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 </span><span data-line="103">        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
 </span><span data-line="104">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-</span><span data-line="105">                <span class="sa">f</span><span class="s2">&quot;SparseVector: missing values for variables </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; &quot;</span>
-</span><span data-line="106">                <span class="sa">f</span><span class="s2">&quot;layout declares </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">, &quot;</span>
-</span><span data-line="107">                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span data-line="105">                <span class="sa">f</span><span class="s2">"SparseVector: missing values for variables </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; "</span>
+</span><span data-line="106">                <span class="sa">f</span><span class="s2">"layout declares </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">, "</span>
+</span><span data-line="107">                <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">."</span>
 </span><span data-line="108">            <span class="p">)</span>
 </span><span data-line="109">
 <div class="viewcode-block" id="SparseVector.assemble">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.SparseVector.assemble">[docs]</a>
 </span><span data-line="110">    <span class="k">def</span><span class="w"> </span><span class="nf">assemble</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span>
-</span><span data-line="111"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Stack ``values`` into per-group tensors via the layout&#39;s grouping.&quot;&quot;&quot;</span>
+</span><span data-line="111"><span class="w">        </span><span class="sd">"""Stack ``values`` into per-group tensors via the layout's grouping."""</span>
 </span><span data-line="112">        <span class="k">return</span> <span class="n">AssembledVector</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span></div>
 
 </span><span data-line="113">
 <div class="viewcode-block" id="SparseVector.to">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.SparseVector.to">[docs]</a>
 </span><span data-line="114">    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparseVector</span><span class="p">:</span>
-</span><span data-line="115"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Move every value to a new device / dtype; returns a new SparseVector.&quot;&quot;&quot;</span>
+</span><span data-line="115"><span class="w">        </span><span class="sd">"""Move every value to a new device / dtype; returns a new SparseVector."""</span>
 </span><span data-line="116">        <span class="k">return</span> <span class="n">SparseVector</span><span class="p">(</span>
 </span><span data-line="117">            <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span>
 </span><span data-line="118">            <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">val</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
@@ -576,7 +576,7 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.SparseMatrix">[docs]</a>
 </span><span data-line="140"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span data-line="141"><span class="k">class</span><span class="w"> </span><span class="nc">SparseMatrix</span><span class="p">:</span>
-</span><span data-line="142"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-(row_var, col_var) cell map; the typed dual of :class:`AssembledMatrix`.</span>
+</span><span data-line="142"><span class="w">    </span><span class="sd">"""Per-(row_var, col_var) cell map; the typed dual of :class:`AssembledMatrix`.</span>
 </span><span data-line="143">
 </span><span data-line="144"><span class="sd">    ``cells[row_var][col_var]`` is the assembled per-cell</span>
 </span><span data-line="145"><span class="sd">    :class:`~neml2.types.Tensor` block that</span>
@@ -587,7 +587,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="150"><span class="sd">    ``row_layout``; missing inner ``(row_var, col_var)`` entries are</span>
 </span><span data-line="151"><span class="sd">    allowed and become zero blocks at assembly time (per-block sparsity</span>
 </span><span data-line="152"><span class="sd">    is normal in chain-rule derivatives).</span>
-</span><span data-line="153"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="153"><span class="sd">    """</span>
 </span><span data-line="154">
 </span><span data-line="155">    <span class="n">row_layout</span><span class="p">:</span> <span class="n">AxisLayout</span>
 </span><span data-line="156">    <span class="n">col_layout</span><span class="p">:</span> <span class="n">AxisLayout</span>
@@ -597,21 +597,21 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="160">        <span class="n">missing</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 </span><span data-line="161">        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
 </span><span data-line="162">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-</span><span data-line="163">                <span class="sa">f</span><span class="s2">&quot;SparseMatrix: missing row entries for variables </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; &quot;</span>
-</span><span data-line="164">                <span class="sa">f</span><span class="s2">&quot;row_layout declares </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">, &quot;</span>
-</span><span data-line="165">                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span data-line="163">                <span class="sa">f</span><span class="s2">"SparseMatrix: missing row entries for variables </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; "</span>
+</span><span data-line="164">                <span class="sa">f</span><span class="s2">"row_layout declares </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">, "</span>
+</span><span data-line="165">                <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">."</span>
 </span><span data-line="166">            <span class="p">)</span>
 </span><span data-line="167">
 <div class="viewcode-block" id="SparseMatrix.assemble">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.SparseMatrix.assemble">[docs]</a>
 </span><span data-line="168">    <span class="k">def</span><span class="w"> </span><span class="nf">assemble</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="169"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Walk row x col groups and pack into an :class:`AssembledMatrix`.</span>
+</span><span data-line="169"><span class="w">        </span><span class="sd">"""Walk row x col groups and pack into an :class:`AssembledMatrix`.</span>
 </span><span data-line="170">
 </span><span data-line="171"><span class="sd">        Delegates to :meth:`AssembledMatrix.select_blocks`, which handles</span>
 </span><span data-line="172"><span class="sd">        per-block sparsity (missing entries -&gt; zero blocks).</span>
-</span><span data-line="173"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="173"><span class="sd">        """</span>
 </span><span data-line="174">        <span class="c1"># select_blocks wants a plain ``dict[str, dict[str, Tensor]]``;</span>
-</span><span data-line="175">        <span class="c1"># unwrap our nested Mapping so it doesn&#39;t matter whether the</span>
+</span><span data-line="175">        <span class="c1"># unwrap our nested Mapping so it doesn't matter whether the</span>
 </span><span data-line="176">        <span class="c1"># caller used a regular dict or some other Mapping type.</span>
 </span><span data-line="177">        <span class="n">plain</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
 </span><span data-line="178">            <span class="n">row</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">inner</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
@@ -622,7 +622,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="SparseMatrix.to">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.SparseMatrix.to">[docs]</a>
 </span><span data-line="182">    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparseMatrix</span><span class="p">:</span>
-</span><span data-line="183"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Move every cell to a new device / dtype; returns a new SparseMatrix.&quot;&quot;&quot;</span>
+</span><span data-line="183"><span class="w">        </span><span class="sd">"""Move every cell to a new device / dtype; returns a new SparseMatrix."""</span>
 </span><span data-line="184">        <span class="k">return</span> <span class="n">SparseMatrix</span><span class="p">(</span>
 </span><span data-line="185">            <span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span><span class="p">,</span>
 </span><span data-line="186">            <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span>
@@ -645,7 +645,7 @@ data-aria-dark="Switch to auto color mode">
 
 </span><span data-line="202">
 </span><span data-line="203">
-</span><span data-line="204"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SparseVector&quot;</span><span class="p">,</span> <span class="s2">&quot;SparseMatrix&quot;</span><span class="p">]</span>
+</span><span data-line="204"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"SparseVector"</span><span class="p">,</span> <span class="s2">"SparseMatrix"</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

@@ -476,9 +476,9 @@ override <code class="docutils literal notranslate"><span class="pre">from_hit</
 </span><span data-line="5"><span class="c1"># ``v[in_name][leaf_name]`` is a typed wrapper with leading seed axis K:</span>
 </span><span data-line="6"><span class="c1"># data shape ``(K, *B, *sub, *base_in)``.</span>
 </span><span data-line="7"><span class="c1"># Returns ``(*outputs, v_out_dict)`` where ``v_out_dict[out_name][leaf_name]``</span>
-</span><span data-line="8"><span class="c1"># is the output&#39;s typed wrapper with the same leading K. No explicit</span>
+</span><span data-line="8"><span class="c1"># is the output's typed wrapper with the same leading K. No explicit</span>
 </span><span data-line="9"><span class="c1"># Jacobian block is materialised inside the chain-rule graph.</span>
-</span><span data-line="10"><span class="o">*</span><span class="n">vals</span><span class="p">,</span> <span class="n">v_out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;leaf&quot;</span><span class="p">:</span> <span class="n">sensitivity_matrix</span><span class="p">,</span> <span class="o">...</span><span class="p">}})</span>
+</span><span data-line="10"><span class="o">*</span><span class="n">vals</span><span class="p">,</span> <span class="n">v_out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"leaf"</span><span class="p">:</span> <span class="n">sensitivity_matrix</span><span class="p">,</span> <span class="o">...</span><span class="p">}})</span>
 </span><span data-line="11">
 </span><span data-line="12"><span class="c1"># Forward + first- and second-order Jacobian pushforward (opt-in) —</span>
 </span><span data-line="13"><span class="c1"># ``v2[in_name][seed_a][seed_b]`` is a typed wrapper with two leading seed</span>

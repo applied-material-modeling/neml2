@@ -435,19 +435,19 @@ name of another section in the file.</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Tensors]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[E]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar(200e3)&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'Scalar(200e3)'</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[nu]</span>
 </span><span data-line="7"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar(0.3)&#39;</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'Scalar(0.3)'</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="10"><span class="k">[]</span>
 </span><span data-line="11">
 </span><span data-line="12"><span class="k">[Models]</span>
 </span><span data-line="13"><span class="w">  </span><span class="k">[elasticity]</span>
 </span><span data-line="14"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="15"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;E              nu&#39;</span><span class="w">                </span><span class="c1"># ← refers to [Tensors] entries</span>
-</span><span data-line="16"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="15"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">'E              nu'</span><span class="w">                </span><span class="c1"># ← refers to [Tensors] entries</span>
+</span><span data-line="16"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="17"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="18"><span class="k">[]</span>
 </span></pre></div>
@@ -458,8 +458,8 @@ tensor inputs still need a <code class="docutils literal notranslate"><span clas
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Models]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[elasticity]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;200e3          0.3&#39;</span><span class="w">               </span><span class="c1"># inline literals</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">'200e3          0.3'</span><span class="w">               </span><span class="c1"># inline literals</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="7"><span class="k">[]</span>
 </span></pre></div>
@@ -472,7 +472,7 @@ or a CSV file rather than a bare number.</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Tensors]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[T_controls]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)'</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="6"><span class="k">[]</span>
 </span></pre></div>
@@ -490,16 +490,16 @@ to produce the associated flow direction
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Models]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[vonmises]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SR2Invariant</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">invariant_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;VONMISES&#39;</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">tensor</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;mandel_stress&#39;</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">invariant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;effective_stress&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">invariant_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'VONMISES'</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">tensor</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">'mandel_stress'</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">invariant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'effective_stress'</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="8"><span class="w">  </span><span class="k">[normality]</span>
 </span><span data-line="9"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Normality</span>
-</span><span data-line="10"><span class="w">    </span><span class="na">model</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vonmises&#39;</span><span class="w">          </span><span class="c1"># ← name of the [Models] entry above</span>
-</span><span data-line="11"><span class="w">    </span><span class="na">function</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;effective_stress&#39;</span><span class="w">  </span><span class="c1"># the scalar output of `vonmises` to differentiate</span>
-</span><span data-line="12"><span class="w">    </span><span class="na">from</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;mandel_stress&#39;</span>
-</span><span data-line="13"><span class="w">    </span><span class="na">to</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;flow_direction&#39;</span>
+</span><span data-line="10"><span class="w">    </span><span class="na">model</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">'vonmises'</span><span class="w">          </span><span class="c1"># ← name of the [Models] entry above</span>
+</span><span data-line="11"><span class="w">    </span><span class="na">function</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'effective_stress'</span><span class="w">  </span><span class="c1"># the scalar output of `vonmises` to differentiate</span>
+</span><span data-line="12"><span class="w">    </span><span class="na">from</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s">'mandel_stress'</span>
+</span><span data-line="13"><span class="w">    </span><span class="na">to</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s">'flow_direction'</span>
 </span><span data-line="14"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="15"><span class="k">[]</span>
 </span></pre></div>

@@ -447,8 +447,8 @@ first-class objects under <code class="docutils literal notranslate"><span class
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Models]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[model]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">implicit_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;system&#39;</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">implicit_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'system'</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'newton'</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="7"><span class="k">[]</span>
 </span></pre></div>
@@ -458,15 +458,15 @@ from <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[EquationSystems]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[eq_sys]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;system&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'system'</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="6"><span class="k">[]</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="k">[Models]</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[model]</span>
 </span><span data-line="10"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="11"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
-</span><span data-line="12"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="11"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'eq_sys'</span>
+</span><span data-line="12"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'newton'</span>
 </span><span data-line="13"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="14"><span class="k">[]</span>
 </span></pre></div>
@@ -496,7 +496,7 @@ When omitted, the solver defaults to <code class="docutils literal notranslate">
 </span><span data-line="4"><span class="w">    </span><span class="na">abs_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-10</span>
 </span><span data-line="5"><span class="w">    </span><span class="na">rel_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-8</span>
 </span><span data-line="6"><span class="w">    </span><span class="na">max_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
-</span><span data-line="7"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span><span class="w">   </span><span class="c1"># optional; DenseLU is used when absent</span>
+</span><span data-line="7"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'lu'</span><span class="w">   </span><span class="c1"># optional; DenseLU is used when absent</span>
 </span><span data-line="8"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[lu]</span>
 </span><span data-line="10"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>

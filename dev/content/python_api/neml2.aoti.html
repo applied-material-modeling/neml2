@@ -471,12 +471,12 @@ reflected on the next call. The derivative graphs are emitted only for the
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Pass the artifact ROOT folder; device/dtype default to the ambient</span>
 </span><span data-line="4"><span class="c1"># torch.get_default_device() / torch.get_default_dtype().</span>
-</span><span data-line="5"><span class="n">m</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">&quot;aoti/my_model&quot;</span><span class="p">)</span>
-</span><span data-line="6"><span class="n">outputs</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">forward</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain_tensor</span><span class="p">})</span>
-</span><span data-line="7"><span class="n">outputs</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain_tensor</span><span class="p">})</span>
+</span><span data-line="5"><span class="n">m</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">"aoti/my_model"</span><span class="p">)</span>
+</span><span data-line="6"><span class="n">outputs</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">forward</span><span class="p">({</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">strain_tensor</span><span class="p">})</span>
+</span><span data-line="7"><span class="n">outputs</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">strain_tensor</span><span class="p">})</span>
 </span><span data-line="8">
 </span><span data-line="9"><span class="c1"># If `--parameter E` was passed at compile time:</span>
-</span><span data-line="10"><span class="n">m</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()[</span><span class="s2">&quot;E&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">210000.0</span><span class="p">)</span>
+</span><span data-line="10"><span class="n">m</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()[</span><span class="s2">"E"</span><span class="p">]</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">210000.0</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <dl class="py class">

@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Shared type aliases for chain-rule sensitivity propagation.</span>
+</span><span data-line="25"><span class="sd">"""Shared type aliases for chain-rule sensitivity propagation.</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">Tangents in transit through the framework are ordinary typed wrappers</span>
 </span><span data-line="28"><span class="sd">(``Scalar`` / ``SR2`` / ``R2`` / ...) carrying one or more leading K</span>
@@ -456,12 +456,12 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="36"><span class="sd">K axis is paired with a sub_batch axis (cheap broadcast diagonal) vs</span>
 </span><span data-line="37"><span class="sd">when it has been exposed to per-site enumeration.</span>
 </span><span data-line="38">
-</span><span data-line="39"><span class="sd">When a leaf&#39;s action would contract a paired sub_batch axis (e.g. a</span>
+</span><span data-line="39"><span class="sd">When a leaf's action would contract a paired sub_batch axis (e.g. a</span>
 </span><span data-line="40"><span class="sd">``sum`` / ``mean`` / ``inner`` that mixes per-site data), it must call</span>
 </span><span data-line="41"><span class="sd">``fullify`` from :mod:`neml2.types.functions` first. The exposing</span>
 </span><span data-line="42"><span class="sd">reductions (``sum_sub_batch``, ``sum`` / ``mean`` over a K-paired axis)</span>
 </span><span data-line="43"><span class="sd">handle the common case automatically.</span>
-</span><span data-line="44"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="44"><span class="sd">"""</span>
 </span><span data-line="45">
 </span><span data-line="46"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="47">
@@ -486,7 +486,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="equalize_tangent_K">
 <a class="viewcode-back" href="../../../content/python_api/neml2.models.chain_rule.html#neml2.models.chain_rule.equalize_tangent_K">[docs]</a>
 </span><span data-line="66"><span class="k">def</span><span class="w"> </span><span class="nf">equalize_tangent_K</span><span class="p">(</span><span class="n">contributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]:</span>
-</span><span data-line="67"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Tile compact-K contributions to match the max-K contribution.</span>
+</span><span data-line="67"><span class="w">    </span><span class="sd">"""Tile compact-K contributions to match the max-K contribution.</span>
 </span><span data-line="68">
 </span><span data-line="69"><span class="sd">    Apply-chain-rule accumulates contributions for the same seed leaf across</span>
 </span><span data-line="70"><span class="sd">    multiple input edges. Different edges can produce different K storage</span>
@@ -504,7 +504,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="82"><span class="sd">    Returns a list of contributions all with the same leading K storage shape.</span>
 </span><span data-line="83"><span class="sd">    No-op when every contribution already matches the max (the common case</span>
 </span><span data-line="84"><span class="sd">    once ``align_k`` + ``combine_k_state`` have already aligned).</span>
-</span><span data-line="85"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="85"><span class="sd">    """</span>
 </span><span data-line="86">    <span class="k">if</span> <span class="ow">not</span> <span class="n">contributions</span><span class="p">:</span>
 </span><span data-line="87">        <span class="k">return</span> <span class="n">contributions</span>
 </span><span data-line="88">    <span class="n">k_sizes</span> <span class="o">=</span> <span class="p">[</span>
@@ -522,7 +522,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="100">            <span class="k">else</span><span class="p">:</span>
 </span><span data-line="101">                <span class="n">max_k</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 </span><span data-line="102">    <span class="c1"># If any contribution carries a paired-broadcast K axis that needs</span>
-</span><span data-line="103">    <span class="c1"># to be expanded to a parallel contribution&#39;s full K, eye-expand it</span>
+</span><span data-line="103">    <span class="c1"># to be expanded to a parallel contribution's full K, eye-expand it</span>
 </span><span data-line="104">    <span class="c1"># via :func:`~neml2.types.functions.fullify` BEFORE the per-axis</span>
 </span><span data-line="105">    <span class="c1"># ``expand`` below. Plain expand on a paired-broadcast axis duplicates</span>
 </span><span data-line="106">    <span class="c1"># the diagonal storage across all K positions, which is the WRONG</span>
@@ -544,7 +544,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="122">            <span class="k">if</span> <span class="p">(</span>
 </span><span data-line="123">                <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 </span><span data-line="124">                <span class="ow">and</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
-</span><span data-line="125">                <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">k_state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;broadcast&quot;</span>
+</span><span data-line="125">                <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">k_state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"broadcast"</span>
 </span><span data-line="126">                <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">k_pairing</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 </span><span data-line="127">            <span class="p">):</span>
 </span><span data-line="128">                <span class="n">nf</span> <span class="o">=</span> <span class="kc">True</span>
@@ -568,8 +568,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="146">            <span class="k">if</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
 </span><span data-line="147">                <span class="k">if</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
 </span><span data-line="148">                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="149">                        <span class="sa">f</span><span class="s2">&quot;equalize_tangent_K: K axis </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has incompatible storage &quot;</span>
-</span><span data-line="150">                        <span class="sa">f</span><span class="s2">&quot;size </span><span class="si">{</span><span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> (target </span><span class="si">{</span><span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">); align upstream.&quot;</span>
+</span><span data-line="149">                        <span class="sa">f</span><span class="s2">"equalize_tangent_K: K axis </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has incompatible storage "</span>
+</span><span data-line="150">                        <span class="sa">f</span><span class="s2">"size </span><span class="si">{</span><span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> (target </span><span class="si">{</span><span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">); align upstream."</span>
 </span><span data-line="151">                    <span class="p">)</span>
 </span><span data-line="152">                <span class="n">target</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 </span><span data-line="153">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
@@ -581,26 +581,26 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="matvec">
 <a class="viewcode-back" href="../../../content/python_api/neml2.models.chain_rule.html#neml2.models.chain_rule.matvec">[docs]</a>
 </span><span data-line="158"><span class="k">def</span><span class="w"> </span><span class="nf">matvec</span><span class="p">(</span><span class="n">M</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="159"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Fused matrix-vector product without ``einsum``.</span>
+</span><span data-line="159"><span class="w">    </span><span class="sd">"""Fused matrix-vector product without ``einsum``.</span>
 </span><span data-line="160">
 </span><span data-line="161"><span class="sd">    ``M @ v`` where the trailing dims are ``(..., n_row, n_col)`` and</span>
 </span><span data-line="162"><span class="sd">    ``(..., n_col)`` respectively. Implemented as</span>
 </span><span data-line="163"><span class="sd">    ``(M @ v.unsqueeze(-1)).squeeze(-1)`` so Inductor can fuse the trailing</span>
 </span><span data-line="164"><span class="sd">    pointwise ops around the matmul.</span>
-</span><span data-line="165"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="165"><span class="sd">    """</span>
 </span><span data-line="166">    <span class="k">return</span> <span class="p">(</span><span class="n">M</span> <span class="o">@</span> <span class="n">v</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
 
 </span><span data-line="167">
 </span><span data-line="168">
 </span><span data-line="169"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="170">    <span class="s2">&quot;TangentAction&quot;</span><span class="p">,</span>
-</span><span data-line="171">    <span class="s2">&quot;ChainRuleDict&quot;</span><span class="p">,</span>
-</span><span data-line="172">    <span class="s2">&quot;ChainRuleAction&quot;</span><span class="p">,</span>
-</span><span data-line="173">    <span class="s2">&quot;SecondOrderTangentAction&quot;</span><span class="p">,</span>
-</span><span data-line="174">    <span class="s2">&quot;SecondOrderChainRuleDict&quot;</span><span class="p">,</span>
-</span><span data-line="175">    <span class="s2">&quot;SecondOrderChainRuleAction&quot;</span><span class="p">,</span>
-</span><span data-line="176">    <span class="s2">&quot;matvec&quot;</span><span class="p">,</span>
-</span><span data-line="177">    <span class="s2">&quot;equalize_tangent_K&quot;</span><span class="p">,</span>
+</span><span data-line="170">    <span class="s2">"TangentAction"</span><span class="p">,</span>
+</span><span data-line="171">    <span class="s2">"ChainRuleDict"</span><span class="p">,</span>
+</span><span data-line="172">    <span class="s2">"ChainRuleAction"</span><span class="p">,</span>
+</span><span data-line="173">    <span class="s2">"SecondOrderTangentAction"</span><span class="p">,</span>
+</span><span data-line="174">    <span class="s2">"SecondOrderChainRuleDict"</span><span class="p">,</span>
+</span><span data-line="175">    <span class="s2">"SecondOrderChainRuleAction"</span><span class="p">,</span>
+</span><span data-line="176">    <span class="s2">"matvec"</span><span class="p">,</span>
+</span><span data-line="177">    <span class="s2">"equalize_tangent_K"</span><span class="p">,</span>
 </span><span data-line="178"><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">

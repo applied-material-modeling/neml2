@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;pyzag bidiagonal ``BlockJacobian`` backed by neml2 ``AssembledMatrix`` blocks.&quot;&quot;&quot;</span>
+</span><span data-line="25"><span class="sd">"""pyzag bidiagonal ``BlockJacobian`` backed by neml2 ``AssembledMatrix`` blocks."""</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="28">
@@ -457,7 +457,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="37">
 </span><span data-line="38">
 </span><span data-line="39"><span class="k">def</span><span class="w"> </span><span class="nf">_flip_time</span><span class="p">(</span><span class="n">am</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="40"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Flip every block along the leading dynamic (time) axis.&quot;&quot;&quot;</span>
+</span><span data-line="40"><span class="w">    </span><span class="sd">"""Flip every block along the leading dynamic (time) axis."""</span>
 </span><span data-line="41">    <span class="n">blocks</span> <span class="o">=</span> <span class="p">[[</span><span class="n">t</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">row</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">am</span><span class="o">.</span><span class="n">tensors</span><span class="p">]</span>
 </span><span data-line="42">    <span class="k">return</span> <span class="n">AssembledMatrix</span><span class="p">(</span><span class="n">am</span><span class="o">.</span><span class="n">row_layout</span><span class="p">,</span> <span class="n">am</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="n">blocks</span><span class="p">)</span>
 </span><span data-line="43">
@@ -465,7 +465,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockJacobian">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian">[docs]</a>
 </span><span data-line="45"><span class="k">class</span><span class="w"> </span><span class="nc">NEML2BlockJacobian</span><span class="p">(</span><span class="n">BlockJacobian</span><span class="p">):</span>
-</span><span data-line="46"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-chunk bidiagonal Jacobian wrapping neml2 ``AssembledMatrix`` diag/sub.&quot;&quot;&quot;</span>
+</span><span data-line="46"><span class="w">    </span><span class="sd">"""Per-chunk bidiagonal Jacobian wrapping neml2 ``AssembledMatrix`` diag/sub."""</span>
 </span><span data-line="47">
 </span><span data-line="48">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
 </span><span data-line="49">        <span class="bp">self</span><span class="p">,</span>
@@ -474,7 +474,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="52">        <span class="n">layout</span><span class="p">,</span>
 </span><span data-line="53">        <span class="n">_reversed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 </span><span data-line="54">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="55"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Hold the diagonal (``dr/du``) and subdiagonal (``dr/du_old``) chunk blocks.</span>
+</span><span data-line="55"><span class="w">        </span><span class="sd">"""Hold the diagonal (``dr/du``) and subdiagonal (``dr/du_old``) chunk blocks.</span>
 </span><span data-line="56">
 </span><span data-line="57"><span class="sd">        Args:</span>
 </span><span data-line="58"><span class="sd">            diag_am: the per-step diagonal ``AssembledMatrix``.</span>
@@ -482,7 +482,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="60"><span class="sd">            layout: the state :class:`~neml2.es.axis_layout.AxisLayout`.</span>
 </span><span data-line="61"><span class="sd">            _reversed: internal flag marking an adjoint (time-reversed) walk; set via</span>
 </span><span data-line="62"><span class="sd">                :meth:`as_adjoint_walk`, not directly.</span>
-</span><span data-line="63"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="63"><span class="sd">        """</span>
 </span><span data-line="64">        <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span> <span class="o">=</span> <span class="n">diag_am</span>
 </span><span data-line="65">        <span class="bp">self</span><span class="o">.</span><span class="n">sub_am</span> <span class="o">=</span> <span class="n">sub_am</span>
 </span><span data-line="66">        <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span> <span class="o">=</span> <span class="n">layout</span>
@@ -490,49 +490,49 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="68">
 </span><span data-line="69">    <span class="nd">@property</span>
 </span><span data-line="70">    <span class="k">def</span><span class="w"> </span><span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
-</span><span data-line="71"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Device of the backing tensors.&quot;&quot;&quot;</span>
+</span><span data-line="71"><span class="w">        </span><span class="sd">"""Device of the backing tensors."""</span>
 </span><span data-line="72">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">device</span>
 </span><span data-line="73">
 </span><span data-line="74">    <span class="nd">@property</span>
 </span><span data-line="75">    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
-</span><span data-line="76"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Dtype of the backing tensors.&quot;&quot;&quot;</span>
+</span><span data-line="76"><span class="w">        </span><span class="sd">"""Dtype of the backing tensors."""</span>
 </span><span data-line="77">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
 </span><span data-line="78">
 </span><span data-line="79">    <span class="nd">@property</span>
 </span><span data-line="80">    <span class="k">def</span><span class="w"> </span><span class="nf">nblk_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="81"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of time steps (blocks) in this chunk.&quot;&quot;&quot;</span>
+</span><span data-line="81"><span class="w">        </span><span class="sd">"""Number of time steps (blocks) in this chunk."""</span>
 </span><span data-line="82">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="83">
 </span><span data-line="84">    <span class="nd">@property</span>
 </span><span data-line="85">    <span class="k">def</span><span class="w"> </span><span class="nf">batch_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="86"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Size of the plain (non-dynamic) batch axis.&quot;&quot;&quot;</span>
+</span><span data-line="86"><span class="w">        </span><span class="sd">"""Size of the plain (non-dynamic) batch axis."""</span>
 </span><span data-line="87">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </span><span data-line="88">
 </span><span data-line="89">    <span class="nd">@property</span>
 </span><span data-line="90">    <span class="k">def</span><span class="w"> </span><span class="nf">block_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="91"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Total per-step degrees of freedom of the state layout.&quot;&quot;&quot;</span>
+</span><span data-line="91"><span class="w">        </span><span class="sd">"""Total per-step degrees of freedom of the state layout."""</span>
 </span><span data-line="92">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="o">.</span><span class="n">flat_size</span><span class="p">()</span>
 </span><span data-line="93">
 </span><span data-line="94">    <span class="k">def</span><span class="w"> </span><span class="nf">_walk_diag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="95"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Diagonal blocks in walk order (time-flipped when reversed).&quot;&quot;&quot;</span>
+</span><span data-line="95"><span class="w">        </span><span class="sd">"""Diagonal blocks in walk order (time-flipped when reversed)."""</span>
 </span><span data-line="96">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed</span> <span class="k">else</span> <span class="n">_flip_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="p">)</span>
 </span><span data-line="97">
 </span><span data-line="98">    <span class="k">def</span><span class="w"> </span><span class="nf">_walk_sub</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="99"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Subdiagonal blocks in walk order (time-flipped when reversed).&quot;&quot;&quot;</span>
+</span><span data-line="99"><span class="w">        </span><span class="sd">"""Subdiagonal blocks in walk order (time-flipped when reversed)."""</span>
 </span><span data-line="100">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_am</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed</span> <span class="k">else</span> <span class="n">_flip_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_am</span><span class="p">)</span>
 </span><span data-line="101">
 <div class="viewcode-block" id="NEML2BlockJacobian.forward_system">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian.forward_system">[docs]</a>
 </span><span data-line="102">    <span class="k">def</span><span class="w"> </span><span class="nf">forward_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inverse_operator</span><span class="p">):</span>
-</span><span data-line="103"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the forward bidiagonal chunk operator solved during the state sweep.</span>
+</span><span data-line="103"><span class="w">        </span><span class="sd">"""Build the forward bidiagonal chunk operator solved during the state sweep.</span>
 </span><span data-line="104">
 </span><span data-line="105"><span class="sd">        ``inverse_operator`` is the factorization pyzag requests. Must be called on</span>
 </span><span data-line="106"><span class="sd">        a forward-walk Jacobian, not one from :meth:`as_adjoint_walk`.</span>
-</span><span data-line="107"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="107"><span class="sd">        """</span>
 </span><span data-line="108">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed</span><span class="p">:</span>
 </span><span data-line="109">            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span data-line="110">                <span class="s2">&quot;forward_system() must be called on a forward-walk BlockJacobian, &quot;</span>
-</span><span data-line="111">                <span class="s2">&quot;not one returned by as_adjoint_walk().&quot;</span>
+</span><span data-line="110">                <span class="s2">"forward_system() must be called on a forward-walk BlockJacobian, "</span>
+</span><span data-line="111">                <span class="s2">"not one returned by as_adjoint_walk()."</span>
 </span><span data-line="112">            <span class="p">)</span>
 </span><span data-line="113">        <span class="n">A_ops</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="o">.</span><span class="n">factored</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="p">)</span>
 </span><span data-line="114">        <span class="n">B_ops</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_am</span><span class="o">.</span><span class="n">batch</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
@@ -543,20 +543,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="119">        <span class="p">)</span></div>
 
 </span><span data-line="120">
-</span><span data-line="121">    <span class="c1"># pyzag&#39;s abstract adjoint_system is unannotated (inferred -&gt; None), so our</span>
+</span><span data-line="121">    <span class="c1"># pyzag's abstract adjoint_system is unannotated (inferred -&gt; None), so our</span>
 </span><span data-line="122">    <span class="c1"># concrete operator return trips the override check.</span>
 <div class="viewcode-block" id="NEML2BlockJacobian.adjoint_system">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian.adjoint_system">[docs]</a>
 </span><span data-line="123">    <span class="k">def</span><span class="w"> </span><span class="nf">adjoint_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inverse_operator</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
-</span><span data-line="124"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the transposed, time-reversed bidiagonal operator for the adjoint sweep.</span>
+</span><span data-line="124"><span class="w">        </span><span class="sd">"""Build the transposed, time-reversed bidiagonal operator for the adjoint sweep.</span>
 </span><span data-line="125">
 </span><span data-line="126"><span class="sd">        Uses the transposed diagonal/subdiagonal blocks in reverse time order. Must</span>
 </span><span data-line="127"><span class="sd">        be called on the Jacobian returned by :meth:`as_adjoint_walk`.</span>
-</span><span data-line="128"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="128"><span class="sd">        """</span>
 </span><span data-line="129">        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed</span><span class="p">:</span>
 </span><span data-line="130">            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span data-line="131">                <span class="s2">&quot;adjoint_system() must be called on the BlockJacobian returned by &quot;</span>
-</span><span data-line="132">                <span class="s2">&quot;as_adjoint_walk(), not the forward one.&quot;</span>
+</span><span data-line="131">                <span class="s2">"adjoint_system() must be called on the BlockJacobian returned by "</span>
+</span><span data-line="132">                <span class="s2">"as_adjoint_walk(), not the forward one."</span>
 </span><span data-line="133">            <span class="p">)</span>
 </span><span data-line="134">        <span class="n">diag_walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_diag</span><span class="p">()</span>
 </span><span data-line="135">        <span class="n">sub_walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_sub</span><span class="p">()</span>
@@ -570,10 +570,10 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockJacobian.solve_terminal_adjoint">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian.solve_terminal_adjoint">[docs]</a>
 </span><span data-line="142">    <span class="k">def</span><span class="w"> </span><span class="nf">solve_terminal_adjoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g_terminal</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="143"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Seed the adjoint recursion from the terminal cost gradient ``g_terminal``.</span>
+</span><span data-line="143"><span class="w">        </span><span class="sd">"""Seed the adjoint recursion from the terminal cost gradient ``g_terminal``.</span>
 </span><span data-line="144">
-</span><span data-line="145"><span class="sd">        Solves ``-A_last^T x = g_terminal`` on the last step&#39;s transposed diagonal.</span>
-</span><span data-line="146"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="145"><span class="sd">        Solves ``-A_last^T x = g_terminal`` on the last step's transposed diagonal.</span>
+</span><span data-line="146"><span class="sd">        """</span>
 </span><span data-line="147">        <span class="n">terminal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="o">.</span><span class="n">batch</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
 </span><span data-line="148">        <span class="n">op</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="o">.</span><span class="n">factored</span><span class="p">(</span><span class="n">terminal</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
 </span><span data-line="149">        <span class="n">g_av</span> <span class="o">=</span> <span class="n">AssembledVector</span><span class="o">.</span><span class="n">from_flat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">,</span> <span class="n">g_terminal</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
@@ -585,14 +585,14 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockJacobian.couple_prev_chunk">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian.couple_prev_chunk">[docs]</a>
 </span><span data-line="154">    <span class="k">def</span><span class="w"> </span><span class="nf">couple_prev_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_first</span><span class="p">:</span> <span class="n">BlockVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="155"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Propagate the adjoint across the chunk boundary via the subdiagonal coupling.</span>
+</span><span data-line="155"><span class="w">        </span><span class="sd">"""Propagate the adjoint across the chunk boundary via the subdiagonal coupling.</span>
 </span><span data-line="156">
-</span><span data-line="157"><span class="sd">        Applies the transpose of this chunk&#39;s boundary subdiagonal block to the</span>
+</span><span data-line="157"><span class="sd">        Applies the transpose of this chunk's boundary subdiagonal block to the</span>
 </span><span data-line="158"><span class="sd">        first adjoint variable ``a_first``, giving the contribution into the</span>
-</span><span data-line="159"><span class="sd">        previous chunk&#39;s terminal adjoint.</span>
-</span><span data-line="160"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="159"><span class="sd">        previous chunk's terminal adjoint.</span>
+</span><span data-line="160"><span class="sd">        """</span>
 </span><span data-line="161">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a_first</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
-</span><span data-line="162">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;NEML2BlockJacobian.couple_prev_chunk expects NEML2BlockVector.&quot;</span><span class="p">)</span>
+</span><span data-line="162">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"NEML2BlockJacobian.couple_prev_chunk expects NEML2BlockVector."</span><span class="p">)</span>
 </span><span data-line="163">        <span class="n">sub_walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_sub</span><span class="p">()</span>
 </span><span data-line="164">        <span class="n">boundary</span> <span class="o">=</span> <span class="n">sub_walk</span><span class="o">.</span><span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
 </span><span data-line="165">        <span class="n">op</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="p">(</span><span class="n">boundary</span><span class="p">)</span>
@@ -602,7 +602,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockJacobian.as_adjoint_walk">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian.as_adjoint_walk">[docs]</a>
 </span><span data-line="168">    <span class="k">def</span><span class="w"> </span><span class="nf">as_adjoint_walk</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockJacobian</span><span class="p">:</span>
-</span><span data-line="169"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a view of this Jacobian marked for the reverse-time adjoint walk.&quot;&quot;&quot;</span>
+</span><span data-line="169"><span class="w">        </span><span class="sd">"""Return a view of this Jacobian marked for the reverse-time adjoint walk."""</span>
 </span><span data-line="170">        <span class="k">return</span> <span class="n">NEML2BlockJacobian</span><span class="p">(</span>
 </span><span data-line="171">            <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_am</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">,</span> <span class="n">_reversed</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed</span>
 </span><span data-line="172">        <span class="p">)</span></div>

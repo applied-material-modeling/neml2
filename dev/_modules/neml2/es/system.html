@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,8 +442,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Abstract :class:`LinearSystem` / :class:`NonlinearSystem` interfaces +</span>
-</span><span data-line="26"><span class="sd">the model-backed :class:`ModelNonlinearSystem` concrete implementation.&quot;&quot;&quot;</span>
+</span><span data-line="25"><span class="sd">"""Abstract :class:`LinearSystem` / :class:`NonlinearSystem` interfaces +</span>
+</span><span data-line="26"><span class="sd">the model-backed :class:`ModelNonlinearSystem` concrete implementation."""</span>
 </span><span data-line="27">
 </span><span data-line="28"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="29">
@@ -482,12 +482,12 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="LinearSystem">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.LinearSystem">[docs]</a>
 </span><span data-line="62"><span class="k">class</span><span class="w"> </span><span class="nc">LinearSystem</span><span class="p">:</span>
-</span><span data-line="63"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for systems with assembled operators.&quot;&quot;&quot;</span>
+</span><span data-line="63"><span class="w">    </span><span class="sd">"""Base class for systems with assembled operators."""</span>
 </span><span data-line="64">
 </span><span data-line="65">    <span class="c1">#: HIT section for ``neml2-syntax`` classification -- inherited by every</span>
 </span><span data-line="66">    <span class="c1">#: registered subclass (``ModelNonlinearSystem`` lives under</span>
 </span><span data-line="67">    <span class="c1">#: ``[EquationSystems]`` in the input file).</span>
-</span><span data-line="68">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">&quot;EquationSystems&quot;</span>
+</span><span data-line="68">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">"EquationSystems"</span>
 </span><span data-line="69">
 </span><span data-line="70">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="71">        <span class="bp">self</span><span class="o">.</span><span class="n">_ulayout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup_ulayout</span><span class="p">()</span>
@@ -604,39 +604,39 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NonlinearSystem">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.NonlinearSystem">[docs]</a>
 </span><span data-line="142"><span class="k">class</span><span class="w"> </span><span class="nc">NonlinearSystem</span><span class="p">(</span><span class="n">LinearSystem</span><span class="p">):</span>
-</span><span data-line="143"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Nonlinear system with C++-matching Newton sign convention.&quot;&quot;&quot;</span></div>
+</span><span data-line="143"><span class="w">    </span><span class="sd">"""Nonlinear system with C++-matching Newton sign convention."""</span></div>
 
 </span><span data-line="144">
 </span><span data-line="145">
 <div class="viewcode-block" id="ModelNonlinearSystem">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem">[docs]</a>
-</span><span data-line="146"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;NonlinearSystem&quot;</span><span class="p">)</span>
+</span><span data-line="146"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"NonlinearSystem"</span><span class="p">)</span>
 </span><span data-line="147"><span class="k">class</span><span class="w"> </span><span class="nc">ModelNonlinearSystem</span><span class="p">(</span><span class="n">NonlinearSystem</span><span class="p">):</span>
-</span><span data-line="148"><span class="w">    </span><span class="sd">&quot;&quot;&quot;A nonlinear system defined by a Model.&quot;&quot;&quot;</span>
+</span><span data-line="148"><span class="w">    </span><span class="sd">"""A nonlinear system defined by a Model."""</span>
 </span><span data-line="149">
 </span><span data-line="150">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
-</span><span data-line="151">        <span class="n">dependency</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;get_model&quot;</span><span class="p">,</span> <span class="s2">&quot;The Model defining this nonlinear system.&quot;</span><span class="p">),</span>
+</span><span data-line="151">        <span class="n">dependency</span><span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="s2">"get_model"</span><span class="p">,</span> <span class="s2">"The Model defining this nonlinear system."</span><span class="p">),</span>
 </span><span data-line="152">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="153">            <span class="s2">&quot;unknowns&quot;</span><span class="p">,</span>
+</span><span data-line="153">            <span class="s2">"unknowns"</span><span class="p">,</span>
 </span><span data-line="154">            <span class="nb">list</span><span class="p">,</span>
-</span><span data-line="155">            <span class="s2">&quot;Ordering and grouping of unknowns. Each inner list defines one variable group.&quot;</span><span class="p">,</span>
+</span><span data-line="155">            <span class="s2">"Ordering and grouping of unknowns. Each inner list defines one variable group."</span><span class="p">,</span>
 </span><span data-line="156">        <span class="p">),</span>
 </span><span data-line="157">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="158">            <span class="s2">&quot;residuals&quot;</span><span class="p">,</span>
+</span><span data-line="158">            <span class="s2">"residuals"</span><span class="p">,</span>
 </span><span data-line="159">            <span class="nb">list</span><span class="p">,</span>
-</span><span data-line="160">            <span class="s2">&quot;Ordering and grouping of residual variables. Each inner list defines one &quot;</span>
-</span><span data-line="161">            <span class="s2">&quot;variable group.&quot;</span><span class="p">,</span>
+</span><span data-line="160">            <span class="s2">"Ordering and grouping of residual variables. Each inner list defines one "</span>
+</span><span data-line="161">            <span class="s2">"variable group."</span><span class="p">,</span>
 </span><span data-line="162">            <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
 </span><span data-line="163">        <span class="p">),</span>
 </span><span data-line="164">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="165">            <span class="s2">&quot;structure&quot;</span><span class="p">,</span>
+</span><span data-line="165">            <span class="s2">"structure"</span><span class="p">,</span>
 </span><span data-line="166">            <span class="nb">list</span><span class="p">,</span>
-</span><span data-line="167">            <span class="s2">&quot;Per-group SubBatchStructure (&#39;block&#39; or &#39;dense&#39;). One token per group, &quot;</span>
-</span><span data-line="168">            <span class="s2">&quot;in group order. Mirrors v2&#39;s `istructure = &#39;BLOCK DENSE&#39;`. &quot;</span>
-</span><span data-line="169">            <span class="s2">&quot;BLOCK preserves sub_batch axes as intmd dims on the per-group &quot;</span>
-</span><span data-line="170">            <span class="s2">&quot;assembled tensor (per-grain / per-cell / per-bin independence &quot;</span>
-</span><span data-line="171">            <span class="s2">&quot;stays compact). DENSE folds sub_batch into base. Defaults to &quot;</span>
-</span><span data-line="172">            <span class="s2">&quot;all &#39;dense&#39; when omitted.&quot;</span><span class="p">,</span>
+</span><span data-line="167">            <span class="s2">"Per-group SubBatchStructure ('block' or 'dense'). One token per group, "</span>
+</span><span data-line="168">            <span class="s2">"in group order. Mirrors v2's `istructure = 'BLOCK DENSE'`. "</span>
+</span><span data-line="169">            <span class="s2">"BLOCK preserves sub_batch axes as intmd dims on the per-group "</span>
+</span><span data-line="170">            <span class="s2">"assembled tensor (per-grain / per-cell / per-bin independence "</span>
+</span><span data-line="171">            <span class="s2">"stays compact). DENSE folds sub_batch into base. Defaults to "</span>
+</span><span data-line="172">            <span class="s2">"all 'dense' when omitted."</span><span class="p">,</span>
 </span><span data-line="173">            <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
 </span><span data-line="174">        <span class="p">),</span>
 </span><span data-line="175">    <span class="p">)</span>
@@ -645,22 +645,22 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem.from_hit">[docs]</a>
 </span><span data-line="177">    <span class="nd">@classmethod</span>
 </span><span data-line="178">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelNonlinearSystem</span><span class="p">:</span>
-</span><span data-line="179">        <span class="n">model</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">))</span>
-</span><span data-line="180">        <span class="c1"># HIT `unknowns = &#39;a b; c&#39;` -&gt; two groups [[&#39;a&#39;,&#39;b&#39;], [&#39;c&#39;]]; a single</span>
+</span><span data-line="179">        <span class="n">model</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">"model"</span><span class="p">))</span>
+</span><span data-line="180">        <span class="c1"># HIT `unknowns = 'a b; c'` -&gt; two groups [['a','b'], ['c']]; a single</span>
 </span><span data-line="181">        <span class="c1"># whitespace-separated list with no `;` collapses to one group. Matches</span>
 </span><span data-line="182">        <span class="c1"># the C++ side (which also uses `;` as the group separator).</span>
-</span><span data-line="183">        <span class="n">unknowns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">param_list_list_str</span><span class="p">(</span><span class="s2">&quot;unknowns&quot;</span><span class="p">)]</span>
+</span><span data-line="183">        <span class="n">unknowns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">param_list_list_str</span><span class="p">(</span><span class="s2">"unknowns"</span><span class="p">)]</span>
 </span><span data-line="184">        <span class="n">residuals</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="185">        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;residuals&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="186">            <span class="n">residuals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">param_list_list_str</span><span class="p">(</span><span class="s2">&quot;residuals&quot;</span><span class="p">)]</span>
+</span><span data-line="185">        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"residuals"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="186">            <span class="n">residuals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">param_list_list_str</span><span class="p">(</span><span class="s2">"residuals"</span><span class="p">)]</span>
 </span><span data-line="187">        <span class="n">structure</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="188">        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;structure&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="189">            <span class="c1"># HIT `structure = &#39;block dense&#39;` -&gt; [&#39;block&#39;, &#39;dense&#39;] (one per group).</span>
-</span><span data-line="190">            <span class="n">raw</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_list_str</span><span class="p">(</span><span class="s2">&quot;structure&quot;</span><span class="p">)</span>
+</span><span data-line="188">        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"structure"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="189">            <span class="c1"># HIT `structure = 'block dense'` -&gt; ['block', 'dense'] (one per group).</span>
+</span><span data-line="190">            <span class="n">raw</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_list_str</span><span class="p">(</span><span class="s2">"structure"</span><span class="p">)</span>
 </span><span data-line="191">            <span class="n">structure</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">]</span>
 </span><span data-line="192">        <span class="c1"># ``[Settings]/example_batch_shape`` is file-global, so it may well name</span>
 </span><span data-line="193">        <span class="c1"># variables this system has never heard of (driver-level forces, another</span>
-</span><span data-line="194">        <span class="c1"># system&#39;s unknowns). Keep the ones that are ours and let the consumers</span>
+</span><span data-line="194">        <span class="c1"># system's unknowns). Keep the ones that are ours and let the consumers</span>
 </span><span data-line="195">        <span class="c1"># that can see the whole model tree police the rest.</span>
 </span><span data-line="196">        <span class="n">settings</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">settings</span>
 </span><span data-line="197">        <span class="n">declared</span> <span class="o">=</span> <span class="p">{</span>
@@ -686,7 +686,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="216">        <span class="n">declared_sub_batch_shapes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="217">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="218">        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-</span><span data-line="219">        <span class="c1">#: Per-variable sub-batch extents declared in the input file&#39;s</span>
+</span><span data-line="219">        <span class="c1">#: Per-variable sub-batch extents declared in the input file's</span>
 </span><span data-line="220">        <span class="c1">#: ``[Settings]/example_batch_shape``, keyed by variable name. Empty</span>
 </span><span data-line="221">        <span class="c1">#: when the system is constructed directly in Python. This is what lets</span>
 </span><span data-line="222">        <span class="c1">#: a sub-batched unknown have a known shape before any tensor for it</span>
@@ -704,22 +704,22 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="234">        <span class="bp">self</span><span class="o">.</span><span class="n">unknown_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unknown_groups</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
 </span><span data-line="235">        <span class="bp">self</span><span class="o">.</span><span class="n">residual_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_groups</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
 </span><span data-line="236">        <span class="bp">self</span><span class="o">.</span><span class="n">given_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">input_spec</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unknown_names</span><span class="p">]</span>
-</span><span data-line="237">        <span class="c1"># Per-group SubBatchStructure. Default to all &#39;dense&#39; when caller doesn&#39;t</span>
+</span><span data-line="237">        <span class="c1"># Per-group SubBatchStructure. Default to all 'dense' when caller doesn't</span>
 </span><span data-line="238">        <span class="c1"># specify. Length must match the unknown_groups count.</span>
 </span><span data-line="239">        <span class="k">if</span> <span class="n">structure</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">structure</span><span class="p">:</span>
-</span><span data-line="240">            <span class="bp">self</span><span class="o">.</span><span class="n">_structure</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStructure</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;dense&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unknown_groups</span><span class="p">)</span>
+</span><span data-line="240">            <span class="bp">self</span><span class="o">.</span><span class="n">_structure</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStructure</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"dense"</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unknown_groups</span><span class="p">)</span>
 </span><span data-line="241">        <span class="k">else</span><span class="p">:</span>
 </span><span data-line="242">            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unknown_groups</span><span class="p">):</span>
 </span><span data-line="243">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="244">                    <span class="sa">f</span><span class="s2">&quot;ModelNonlinearSystem: structure has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span><span class="si">}</span><span class="s2"> entries, expected &quot;</span>
-</span><span data-line="245">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unknown_groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> (one per unknown group).&quot;</span>
+</span><span data-line="244">                    <span class="sa">f</span><span class="s2">"ModelNonlinearSystem: structure has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span><span class="si">}</span><span class="s2"> entries, expected "</span>
+</span><span data-line="245">                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unknown_groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> (one per unknown group)."</span>
 </span><span data-line="246">                <span class="p">)</span>
 </span><span data-line="247">            <span class="n">lowered</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">structure</span><span class="p">)</span>
 </span><span data-line="248">            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">lowered</span><span class="p">:</span>
-</span><span data-line="249">                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;block&quot;</span><span class="p">,</span> <span class="s2">&quot;dense&quot;</span><span class="p">):</span>
+</span><span data-line="249">                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"block"</span><span class="p">,</span> <span class="s2">"dense"</span><span class="p">):</span>
 </span><span data-line="250">                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="251">                        <span class="sa">f</span><span class="s2">&quot;ModelNonlinearSystem: structure entries must be &quot;</span>
-</span><span data-line="252">                        <span class="sa">f</span><span class="s2">&quot;&#39;block&#39; or &#39;dense&#39;, got </span><span class="si">{</span><span class="n">k</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+</span><span data-line="251">                        <span class="sa">f</span><span class="s2">"ModelNonlinearSystem: structure entries must be "</span>
+</span><span data-line="252">                        <span class="sa">f</span><span class="s2">"'block' or 'dense', got </span><span class="si">{</span><span class="n">k</span><span class="si">!r}</span><span class="s2">."</span>
 </span><span data-line="253">                    <span class="p">)</span>
 </span><span data-line="254">            <span class="bp">self</span><span class="o">.</span><span class="n">_structure</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStructure</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">lowered</span><span class="p">)</span>
 </span><span data-line="255">        <span class="c1">#: State store keyed by variable name. Typed wrappers</span>
@@ -741,12 +741,12 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="271">        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">unknowns</span><span class="p">:</span>
 </span><span data-line="272">            <span class="n">residual_group</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="273">            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
-</span><span data-line="274">                <span class="n">residual</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_residual&quot;</span>
+</span><span data-line="274">                <span class="n">residual</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_residual"</span>
 </span><span data-line="275">                <span class="k">if</span> <span class="n">residual</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">:</span>
 </span><span data-line="276">                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-</span><span data-line="277">                        <span class="sa">f</span><span class="s2">&quot;Could not infer residual for unknown </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; &quot;</span>
-</span><span data-line="278">                        <span class="sa">f</span><span class="s2">&quot;expected output </span><span class="si">{</span><span class="n">residual</span><span class="si">!r}</span><span class="s2">. Provide explicit &quot;</span>
-</span><span data-line="279">                        <span class="s2">&quot;`residuals = ...` in the [EquationSystems] block.&quot;</span>
+</span><span data-line="277">                        <span class="sa">f</span><span class="s2">"Could not infer residual for unknown </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; "</span>
+</span><span data-line="278">                        <span class="sa">f</span><span class="s2">"expected output </span><span class="si">{</span><span class="n">residual</span><span class="si">!r}</span><span class="s2">. Provide explicit "</span>
+</span><span data-line="279">                        <span class="s2">"`residuals = ...` in the [EquationSystems] block."</span>
 </span><span data-line="280">                    <span class="p">)</span>
 </span><span data-line="281">                <span class="n">residual_group</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span>
 </span><span data-line="282">            <span class="n">residual_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">residual_group</span><span class="p">)</span>
@@ -755,7 +755,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="ModelNonlinearSystem.setup_ulayout">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem.setup_ulayout">[docs]</a>
 </span><span data-line="285">    <span class="k">def</span><span class="w"> </span><span class="nf">setup_ulayout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_batch_shapes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AxisLayout</span><span class="p">:</span>
-</span><span data-line="286">        <span class="c1"># ``sub_batch_shapes=None`` reads from the system&#39;s current state</span>
+</span><span data-line="286">        <span class="c1"># ``sub_batch_shapes=None`` reads from the system's current state</span>
 </span><span data-line="287">        <span class="c1"># (the default used by ``__init__`` and the post-``initialize``</span>
 </span><span data-line="288">        <span class="c1"># rebuild). Callers that want to pre-build a layout for</span>
 </span><span data-line="289">        <span class="c1"># :class:`SparseVector` construction *before* ``initialize`` pass</span>
@@ -774,7 +774,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="299">    <span class="k">def</span><span class="w"> </span><span class="nf">setup_glayout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_batch_shapes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AxisLayout</span><span class="p">:</span>
 </span><span data-line="300">        <span class="c1"># Auto-mirror: split givens into groups whose structure mirrors the</span>
 </span><span data-line="301">        <span class="c1"># unknown groups. A given with sub_batch matching a BLOCK unknown</span>
-</span><span data-line="302">        <span class="c1"># group&#39;s sub_batch lands in a BLOCK col group with that same</span>
+</span><span data-line="302">        <span class="c1"># group's sub_batch lands in a BLOCK col group with that same</span>
 </span><span data-line="303">        <span class="c1"># sub_batch; everything else collapses into a trailing DENSE group.</span>
 </span><span data-line="304">        <span class="c1"># This keeps the per-(grain row, grain col) cross-block in the IFT</span>
 </span><span data-line="305">        <span class="c1"># B matrix at O(N) storage instead of the O(N^2) you get when a</span>
@@ -785,7 +785,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="310">        <span class="n">block_structures</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubBatchStructure</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="311">        <span class="n">used</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 </span><span data-line="312">        <span class="k">for</span> <span class="n">ugroup</span><span class="p">,</span> <span class="n">ustructure</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unknown_groups</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span data-line="313">            <span class="k">if</span> <span class="n">ustructure</span> <span class="o">!=</span> <span class="s2">&quot;block&quot;</span><span class="p">:</span>
+</span><span data-line="313">            <span class="k">if</span> <span class="n">ustructure</span> <span class="o">!=</span> <span class="s2">"block"</span><span class="p">:</span>
 </span><span data-line="314">                <span class="k">continue</span>
 </span><span data-line="315">            <span class="n">u_sb</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
 </span><span data-line="316">                <span class="p">(</span><span class="n">sb</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">ugroup</span> <span class="k">if</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">sb</span><span class="p">),</span>
@@ -796,16 +796,16 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="321">            <span class="n">matched</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">given_names</span> <span class="k">if</span> <span class="n">g</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">used</span> <span class="ow">and</span> <span class="n">given_sb</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="o">==</span> <span class="n">u_sb</span><span class="p">]</span>
 </span><span data-line="322">            <span class="k">if</span> <span class="n">matched</span><span class="p">:</span>
 </span><span data-line="323">                <span class="n">block_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matched</span><span class="p">)</span>
-</span><span data-line="324">                <span class="n">block_structures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;block&quot;</span><span class="p">)</span>
+</span><span data-line="324">                <span class="n">block_structures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"block"</span><span class="p">)</span>
 </span><span data-line="325">                <span class="n">used</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">matched</span><span class="p">)</span>
 </span><span data-line="326">        <span class="n">dense_remainder</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">given_names</span> <span class="k">if</span> <span class="n">g</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">used</span><span class="p">]</span>
 </span><span data-line="327">        <span class="n">all_groups</span> <span class="o">=</span> <span class="n">block_groups</span> <span class="o">+</span> <span class="p">([</span><span class="n">dense_remainder</span><span class="p">]</span> <span class="k">if</span> <span class="n">dense_remainder</span> <span class="k">else</span> <span class="p">[])</span>
-</span><span data-line="328">        <span class="n">dense_tail</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubBatchStructure</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dense&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">dense_remainder</span> <span class="k">else</span> <span class="p">[]</span>
+</span><span data-line="328">        <span class="n">dense_tail</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubBatchStructure</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"dense"</span><span class="p">]</span> <span class="k">if</span> <span class="n">dense_remainder</span> <span class="k">else</span> <span class="p">[]</span>
 </span><span data-line="329">        <span class="n">all_structures</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStructure</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">block_structures</span> <span class="o">+</span> <span class="n">dense_tail</span><span class="p">)</span>
 </span><span data-line="330">        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_groups</span><span class="p">:</span>
 </span><span data-line="331">            <span class="c1"># No givens at all -- single empty DENSE group keeps invariants.</span>
 </span><span data-line="332">            <span class="n">all_groups</span> <span class="o">=</span> <span class="p">[[]]</span>
-</span><span data-line="333">            <span class="n">all_structures</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;dense&quot;</span><span class="p">,)</span>
+</span><span data-line="333">            <span class="n">all_structures</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"dense"</span><span class="p">,)</span>
 </span><span data-line="334">        <span class="k">return</span> <span class="n">AxisLayout</span><span class="p">(</span>
 </span><span data-line="335">            <span class="n">all_groups</span><span class="p">,</span>
 </span><span data-line="336">            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span>
@@ -836,24 +836,24 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="ModelNonlinearSystem.to">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem.to">[docs]</a>
 </span><span data-line="357">    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelNonlinearSystem</span><span class="p">:</span>
-</span><span data-line="358"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Move the underlying ``Model`` and any populated state to a new</span>
+</span><span data-line="358"><span class="w">        </span><span class="sd">"""Move the underlying ``Model`` and any populated state to a new</span>
 </span><span data-line="359"><span class="sd">        device / dtype.</span>
 </span><span data-line="360">
-</span><span data-line="361"><span class="sd">        Matches torch&#39;s ``nn.Module.to`` signature and convention: forwards</span>
+</span><span data-line="361"><span class="sd">        Matches torch's ``nn.Module.to`` signature and convention: forwards</span>
 </span><span data-line="362"><span class="sd">        ``*args`` / ``**kwargs`` to ``self.model.to(...)`` (covering</span>
-</span><span data-line="363"><span class="sd">        ``to(device=&#39;cuda&#39;)``, ``to(dtype=torch.float32)``,</span>
-</span><span data-line="364"><span class="sd">        ``to(&#39;cuda&#39;, non_blocking=True)`` etc.) and additionally walks</span>
+</span><span data-line="363"><span class="sd">        ``to(device='cuda')``, ``to(dtype=torch.float32)``,</span>
+</span><span data-line="364"><span class="sd">        ``to('cuda', non_blocking=True)`` etc.) and additionally walks</span>
 </span><span data-line="365"><span class="sd">        ``self._state`` -- the per-variable typed wrappers populated by</span>
 </span><span data-line="366"><span class="sd">        :meth:`initialize` -- moving each one through</span>
 </span><span data-line="367"><span class="sd">        :meth:`TensorWrapper.to`. Returns ``self`` so call chains like</span>
-</span><span data-line="368"><span class="sd">        ``system = neml2.load_nonlinear_system(...).to(&#39;cuda&#39;)`` work the</span>
+</span><span data-line="368"><span class="sd">        ``system = neml2.load_nonlinear_system(...).to('cuda')`` work the</span>
 </span><span data-line="369"><span class="sd">        same way they do for ``nn.Module``.</span>
 </span><span data-line="370">
 </span><span data-line="371"><span class="sd">        ``ModelNonlinearSystem`` is intentionally not an ``nn.Module``</span>
-</span><span data-line="372"><span class="sd">        (it composes one rather than being one), so torch&#39;s</span>
-</span><span data-line="373"><span class="sd">        ``Module.to`` semantics don&#39;t reach the system automatically --</span>
+</span><span data-line="372"><span class="sd">        (it composes one rather than being one), so torch's</span>
+</span><span data-line="373"><span class="sd">        ``Module.to`` semantics don't reach the system automatically --</span>
 </span><span data-line="374"><span class="sd">        this method is the bridge.</span>
-</span><span data-line="375"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="375"><span class="sd">        """</span>
 </span><span data-line="376">        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </span><span data-line="377">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">tw</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 </span><span data-line="378">            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tw</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -871,14 +871,14 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="ModelNonlinearSystem.set_u_from_group_raws">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem.set_u_from_group_raws">[docs]</a>
 </span><span data-line="386">    <span class="k">def</span><span class="w"> </span><span class="nf">set_u_from_group_raws</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_raws</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="387"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Commit per-group raw unknown tensors (the solver boundary).</span>
+</span><span data-line="387"><span class="w">        </span><span class="sd">"""Commit per-group raw unknown tensors (the solver boundary).</span>
 </span><span data-line="388">
 </span><span data-line="389"><span class="sd">        Inverse of ``_vector_to_per_group_raws(self.u())``: each per-group raw</span>
 </span><span data-line="390"><span class="sd">        is re-typed via :func:`~neml2.es.assembled.wrap_group_raw` using the</span>
-</span><span data-line="391"><span class="sd">        unknown layout&#39;s structure, then committed through :meth:`set_u`. Used</span>
+</span><span data-line="391"><span class="sd">        unknown layout's structure, then committed through :meth:`set_u`. Used</span>
 </span><span data-line="392"><span class="sd">        by the C++-backed Newton solver to write the converged iterate back</span>
 </span><span data-line="393"><span class="sd">        into the system state.</span>
-</span><span data-line="394"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="394"><span class="sd">        """</span>
 </span><span data-line="395">        <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
 </span><span data-line="396">            <span class="n">wrap_group_raw</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ulayout</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">gi</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ulayout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">gi</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ulayout</span><span class="p">)</span>
 </span><span data-line="397">            <span class="k">for</span> <span class="n">gi</span><span class="p">,</span> <span class="n">raw</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">u_raws</span><span class="p">)</span>
@@ -914,14 +914,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="415">        <span class="n">g</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span>
 </span><span data-line="416">        <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="417">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SparseVector</span><span class="p">,</span> <span class="n">SparseVector</span><span class="p">]:</span>
-</span><span data-line="418"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert typed ``(u_dict, g_dict, sub_batch_ndim)`` into ``(u_sv, g_sv)``</span>
+</span><span data-line="418"><span class="w">        </span><span class="sd">"""Convert typed ``(u_dict, g_dict, sub_batch_ndim)`` into ``(u_sv, g_sv)``</span>
 </span><span data-line="419"><span class="sd">        :class:`SparseVector` pair ready to pass to :meth:`initialize`.</span>
 </span><span data-line="420">
 </span><span data-line="421"><span class="sd">        Use this helper at internal call sites that already build per-variable</span>
 </span><span data-line="422"><span class="sd">        typed-wrapper dicts + a per-variable ``sub_batch_ndim`` count dict</span>
 </span><span data-line="423"><span class="sd">        (the classic :class:`~neml2.models.common.ImplicitUpdate` / pyzag</span>
 </span><span data-line="424"><span class="sd">        adapter shape). Per-variable ``sub_batch_shapes`` are derived from</span>
-</span><span data-line="425"><span class="sd">        each wrapper&#39;s trailing batch dims so the resulting</span>
+</span><span data-line="425"><span class="sd">        each wrapper's trailing batch dims so the resulting</span>
 </span><span data-line="426"><span class="sd">        :class:`SparseVector` layouts encode the same sub-batch structure</span>
 </span><span data-line="427"><span class="sd">        that the wrappers carry.</span>
 </span><span data-line="428">
@@ -930,7 +930,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="431"><span class="sd">        sub-batch (the typical test / notebook shape), construct</span>
 </span><span data-line="432"><span class="sd">        ``SparseVector(system.ulayout, {name: typed_wrapper, ...})``</span>
 </span><span data-line="433"><span class="sd">        directly instead -- no helper needed.</span>
-</span><span data-line="434"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="434"><span class="sd">        """</span>
 </span><span data-line="435">        <span class="n">sbn</span> <span class="o">=</span> <span class="n">sub_batch_ndim</span> <span class="k">if</span> <span class="n">sub_batch_ndim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
 </span><span data-line="436">
 </span><span data-line="437">        <span class="k">def</span><span class="w"> </span><span class="nf">_shape_of</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">:</span>
@@ -941,8 +941,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="442">            <span class="n">batch</span> <span class="o">=</span> <span class="n">_batch_shape</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">)</span>
 </span><span data-line="443">            <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
 </span><span data-line="444">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="445">                    <span class="sa">f</span><span class="s2">&quot;sub_batch_ndim[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">]=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> exceeds batch_ndim=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="446">                    <span class="sa">f</span><span class="s2">&quot;of value with shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="445">                    <span class="sa">f</span><span class="s2">"sub_batch_ndim[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">]=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> exceeds batch_ndim=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="446">                    <span class="sa">f</span><span class="s2">"of value with shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="447">                <span class="p">)</span>
 </span><span data-line="448">            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">:])</span>
 </span><span data-line="449">
@@ -962,24 +962,24 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="460">        <span class="n">g</span><span class="p">:</span> <span class="n">SparseVector</span><span class="p">,</span>
 </span><span data-line="461">        <span class="n">dyn_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
 </span><span data-line="462">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="463"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the state and per-variable layout from typed :class:`SparseVector` inputs.</span>
+</span><span data-line="463"><span class="w">        </span><span class="sd">"""Set the state and per-variable layout from typed :class:`SparseVector` inputs.</span>
 </span><span data-line="464">
 </span><span data-line="465"><span class="sd">        ``u`` and ``g`` carry their own :class:`AxisLayout`, which pins</span>
-</span><span data-line="466"><span class="sd">        each variable&#39;s ``sub_batch_shape``. The system trusts these</span>
+</span><span data-line="466"><span class="sd">        each variable's ``sub_batch_shape``. The system trusts these</span>
 </span><span data-line="467"><span class="sd">        layouts directly -- no separate ``sub_batch_ndim`` dict is needed</span>
 </span><span data-line="468"><span class="sd">        because the wrappers + layout already encode the same information</span>
 </span><span data-line="469"><span class="sd">        consistently.</span>
 </span><span data-line="470">
-</span><span data-line="471"><span class="sd">        Each :class:`SparseVector`&#39;s ``values`` may pass typed wrappers</span>
+</span><span data-line="471"><span class="sd">        Each :class:`SparseVector`'s ``values`` may pass typed wrappers</span>
 </span><span data-line="472"><span class="sd">        (preferred per the wrapper-discipline rule) or raw ``torch.Tensor``</span>
-</span><span data-line="473"><span class="sd">        (auto-wrapped with the input_spec&#39;s type for caller convenience at</span>
-</span><span data-line="474"><span class="sd">        construction sites that haven&#39;t migrated yet -- these wrap-on-entry,</span>
+</span><span data-line="473"><span class="sd">        (auto-wrapped with the input_spec's type for caller convenience at</span>
+</span><span data-line="474"><span class="sd">        construction sites that haven't migrated yet -- these wrap-on-entry,</span>
 </span><span data-line="475"><span class="sd">        not wrap-on-exit, so no metadata is lost).</span>
 </span><span data-line="476">
 </span><span data-line="477"><span class="sd">        Call sites that have raw dicts + a ``sub_batch_ndim`` count dict</span>
 </span><span data-line="478"><span class="sd">        should funnel through :meth:`to_sparse` to construct the typed</span>
 </span><span data-line="479"><span class="sd">        :class:`SparseVector` pair.</span>
-</span><span data-line="480"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="480"><span class="sd">        """</span>
 </span><span data-line="481">        <span class="c1"># Per-variable sub_batch_shapes come straight from the typed layouts.</span>
 </span><span data-line="482">        <span class="c1"># No re-derivation from value shapes -- the caller committed to a</span>
 </span><span data-line="483">        <span class="c1"># layout when they built the SparseVector.</span>
@@ -990,7 +990,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="488">
 </span><span data-line="489">        <span class="c1"># Normalize every typed wrapper against the layout-pinned sub_batch_ndim</span>
 </span><span data-line="490">        <span class="c1"># so wrappers whose own sub_batch_ndim happens to disagree get</span>
-</span><span data-line="491">        <span class="c1"># rewrapped to the layout&#39;s source of truth (predictor /</span>
+</span><span data-line="491">        <span class="c1"># rewrapped to the layout's source of truth (predictor /</span>
 </span><span data-line="492">        <span class="c1"># initial-unknown wrappers that lost their sub axis count upstream</span>
 </span><span data-line="493">        <span class="c1"># would otherwise leak that loss into per-site unknowns like</span>
 </span><span data-line="494">        <span class="c1"># dislocation_density).</span>
@@ -1009,8 +1009,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="507">            <span class="n">sbn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">()))</span>
 </span><span data-line="508">            <span class="k">if</span> <span class="n">sbn</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">sbn</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
 </span><span data-line="509">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="510">                    <span class="sa">f</span><span class="s2">&quot;sub_batch_ndim[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">]=</span><span class="si">{</span><span class="n">sbn</span><span class="si">}</span><span class="s2"> exceeds batch_ndim=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="511">                    <span class="sa">f</span><span class="s2">&quot;of value with shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">wrapper</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="510">                    <span class="sa">f</span><span class="s2">"sub_batch_ndim[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">]=</span><span class="si">{</span><span class="n">sbn</span><span class="si">}</span><span class="s2"> exceeds batch_ndim=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="511">                    <span class="sa">f</span><span class="s2">"of value with shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">wrapper</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="512">                <span class="p">)</span>
 </span><span data-line="513">            <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_batch_ndim</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="o">-</span> <span class="n">sbn</span>
 </span><span data-line="514">
@@ -1029,7 +1029,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="526">    <span class="k">def</span><span class="w"> </span><span class="nf">_call_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">ChainRuleDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 </span><span data-line="527">        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">]</span>
 </span><span data-line="528">        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
-</span><span data-line="529">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ModelNonlinearSystem state is missing inputs: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="529">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ModelNonlinearSystem state is missing inputs: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="530">        <span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
 </span><span data-line="531">            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">[</span><span class="n">name</span><span class="p">](</span>
 </span><span data-line="532">                <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
@@ -1040,42 +1040,42 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="537">        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="538">            <span class="kn">from</span><span class="w"> </span><span class="nn">neml2</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>  <span class="c1"># noqa: PLC0415</span>
 </span><span data-line="539">
-</span><span data-line="540">            <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">):</span>
+</span><span data-line="540">            <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="s2">"debug"</span><span class="p">):</span>
 </span><span data-line="541">                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span data-line="542">                    <span class="n">log</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span>
-</span><span data-line="543">                        <span class="s2">&quot;model&quot;</span><span class="p">,</span>
-</span><span data-line="544">                        <span class="s2">&quot;debug&quot;</span><span class="p">,</span>
-</span><span data-line="545">                        <span class="sa">f</span><span class="s2">&quot;_call_model arg[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">]: &quot;</span>
-</span><span data-line="546">                        <span class="sa">f</span><span class="s2">&quot;data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> sub_ndim=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="547">                        <span class="sa">f</span><span class="s2">&quot;sub_state=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span data-line="543">                        <span class="s2">"model"</span><span class="p">,</span>
+</span><span data-line="544">                        <span class="s2">"debug"</span><span class="p">,</span>
+</span><span data-line="545">                        <span class="sa">f</span><span class="s2">"_call_model arg[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">]: "</span>
+</span><span data-line="546">                        <span class="sa">f</span><span class="s2">"data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> sub_ndim=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="547">                        <span class="sa">f</span><span class="s2">"sub_state=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
 </span><span data-line="548">                    <span class="p">)</span>
 </span><span data-line="549">                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">seeds</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 </span><span data-line="550">                    <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seeds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 </span><span data-line="551">                        <span class="n">log</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span>
-</span><span data-line="552">                            <span class="s2">&quot;model&quot;</span><span class="p">,</span>
-</span><span data-line="553">                            <span class="s2">&quot;debug&quot;</span><span class="p">,</span>
-</span><span data-line="554">                            <span class="sa">f</span><span class="s2">&quot;_call_model v[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">][</span><span class="si">{</span><span class="n">leaf</span><span class="si">!r}</span><span class="s2">]: &quot;</span>
-</span><span data-line="555">                            <span class="sa">f</span><span class="s2">&quot;data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> sub_ndim=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="556">                            <span class="sa">f</span><span class="s2">&quot;sub_state=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="557">                            <span class="sa">f</span><span class="s2">&quot;k_state=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_state</span><span class="si">}</span><span class="s2"> k_pairing=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_pairing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span data-line="552">                            <span class="s2">"model"</span><span class="p">,</span>
+</span><span data-line="553">                            <span class="s2">"debug"</span><span class="p">,</span>
+</span><span data-line="554">                            <span class="sa">f</span><span class="s2">"_call_model v[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">][</span><span class="si">{</span><span class="n">leaf</span><span class="si">!r}</span><span class="s2">]: "</span>
+</span><span data-line="555">                            <span class="sa">f</span><span class="s2">"data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> sub_ndim=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="556">                            <span class="sa">f</span><span class="s2">"sub_state=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="557">                            <span class="sa">f</span><span class="s2">"k_state=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_state</span><span class="si">}</span><span class="s2"> k_pairing=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_pairing</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
 </span><span data-line="558">                        <span class="p">)</span>
 </span><span data-line="559">        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
 </span><span data-line="560">        <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">result</span><span class="p">,)</span>
 </span><span data-line="561">
 </span><span data-line="562">    <span class="k">def</span><span class="w"> </span><span class="nf">_identity_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ChainRuleDict</span><span class="p">:</span>
-</span><span data-line="563"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Per-(residual_group, unknown) expanded identity seeds.</span>
+</span><span data-line="563"><span class="w">        </span><span class="sd">"""Per-(residual_group, unknown) expanded identity seeds.</span>
 </span><span data-line="564">
 </span><span data-line="565"><span class="sd">        For each (input, residual_group) pair we emit ONE seed leaf</span>
 </span><span data-line="566"><span class="sd">        whose compactness is the intersection of per-pair compactness</span>
-</span><span data-line="567"><span class="sd">        across the group&#39;s residuals -- the chain-rule analog of</span>
-</span><span data-line="568"><span class="sd">        :meth:`_preserved_labels_per_group`&#39;s ``candidate − touched``</span>
+</span><span data-line="567"><span class="sd">        across the group's residuals -- the chain-rule analog of</span>
+</span><span data-line="568"><span class="sd">        :meth:`_preserved_labels_per_group`'s ``candidate − touched``</span>
 </span><span data-line="569"><span class="sd">        rule applied at the seed boundary. This guarantees the chain</span>
 </span><span data-line="570"><span class="sd">        rule is never finer-grained than the storage layer that</span>
 </span><span data-line="571"><span class="sd">        consumes it (``AxisLayout.preserved_labels[gi]`` is the per-</span>
 </span><span data-line="572"><span class="sd">        group set, so per-pair compactness only differs from per-</span>
 </span><span data-line="573"><span class="sd">        group when some pair preserves an axis the rest of the group</span>
 </span><span data-line="574"><span class="sd">        touches -- and that finer-grained gain is wiped out at</span>
-</span><span data-line="575"><span class="sd">        ``_normalize_block_to_cell_canonical`` because the cell&#39;s</span>
+</span><span data-line="575"><span class="sd">        ``_normalize_block_to_cell_canonical`` because the cell's</span>
 </span><span data-line="576"><span class="sd">        canonical preserved set is empty).</span>
 </span><span data-line="577">
 </span><span data-line="578"><span class="sd">        Per-group seeds collapse the redundant per-pair-within-a-group</span>
@@ -1086,7 +1086,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="583"><span class="sd">          group → group == pair).</span>
 </span><span data-line="584"><span class="sd">        * **Multi-residual groups, no preservation surviving the</span>
 </span><span data-line="585"><span class="sd">          intersection** (chaboche2, scpcoup as configured): single</span>
-</span><span data-line="586"><span class="sd">          seed per input at the group&#39;s full ``K`` -- equivalent to the</span>
+</span><span data-line="586"><span class="sd">          seed per input at the group's full ``K`` -- equivalent to the</span>
 </span><span data-line="587"><span class="sd">          v3-OLD per-input column seed and ~N_residuals× less chain-</span>
 </span><span data-line="588"><span class="sd">          rule work than per-pair.</span>
 </span><span data-line="589"><span class="sd">        * **Multi-residual groups with surviving preservation**: single</span>
@@ -1099,9 +1099,9 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="596"><span class="sd">        introduces``). Symmetric with how the storage layer derives</span>
 </span><span data-line="597"><span class="sd">        ``preserved_labels[gi]``.</span>
 </span><span data-line="598">
-</span><span data-line="599"><span class="sd">        Leaf keys use the ``&quot;{col}:rgroup{gi}&quot;`` format where ``gi`` is</span>
+</span><span data-line="599"><span class="sd">        Leaf keys use the ``"{col}:rgroup{gi}"`` format where ``gi`` is</span>
 </span><span data-line="600"><span class="sd">        the residual group index. ``_build_group_block`` reads the</span>
-</span><span data-line="601"><span class="sd">        tangent at ``v_out[row_name][f&quot;{col_name}:rgroup{i_of_row_group}&quot;]``.</span>
+</span><span data-line="601"><span class="sd">        tangent at ``v_out[row_name][f"{col_name}:rgroup{i_of_row_group}"]``.</span>
 </span><span data-line="602">
 </span><span data-line="603"><span class="sd">        Bundling per-group leaves into a single ``model.forward(*args,</span>
 </span><span data-line="604"><span class="sd">        v=seed)`` call works because ``apply_chain_rule`` propagates</span>
@@ -1109,15 +1109,15 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="606"><span class="sd">        leaves -- the chain rule treats seed keys opaquely.</span>
 </span><span data-line="607">
 </span><span data-line="608"><span class="sd">        Seeds for variables whose state value has fewer dynamic-batch</span>
-</span><span data-line="609"><span class="sd">        axes than the system&#39;s max are LEFT-padded with size-1</span>
+</span><span data-line="609"><span class="sd">        axes than the system's max are LEFT-padded with size-1</span>
 </span><span data-line="610"><span class="sd">        placeholders so the leading-K tangent contract ``(K, *dyn, *sub,</span>
 </span><span data-line="611"><span class="sd">        *base)`` lines up position-wise across all variables. Without</span>
 </span><span data-line="612"><span class="sd">        these placeholders, a tangent for a base-shape-only unknown</span>
 </span><span data-line="613"><span class="sd">        would have shape ``(K, base)`` and collide positionally with a</span>
-</span><span data-line="614"><span class="sd">        force primal&#39;s ``(dyn, base)`` during the typed-wrapper algebra</span>
-</span><span data-line="615"><span class="sd">        -- torch&#39;s right-aligned broadcast would then misalign K with</span>
+</span><span data-line="614"><span class="sd">        force primal's ``(dyn, base)`` during the typed-wrapper algebra</span>
+</span><span data-line="615"><span class="sd">        -- torch's right-aligned broadcast would then misalign K with</span>
 </span><span data-line="616"><span class="sd">        dyn.</span>
-</span><span data-line="617"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="617"><span class="sd">        """</span>
 </span><span data-line="618">        <span class="c1"># V2P-5 canonical seed, delegated to the shared builder so the native</span>
 </span><span data-line="619">        <span class="c1"># eager path and the AOTI export wrappers cannot drift (the padding +</span>
 </span><span data-line="620">        <span class="c1"># per-(input, residual_group) expansion live in one place now).</span>
@@ -1138,16 +1138,16 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="635">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
 </span><span data-line="636">        <span class="kn">from</span><span class="w"> </span><span class="nn">neml2</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>  <span class="c1"># noqa: PLC0415</span>
 </span><span data-line="637">
-</span><span data-line="638">        <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">):</span>
+</span><span data-line="638">        <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="s2">"debug"</span><span class="p">):</span>
 </span><span data-line="639">            <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">leaves</span> <span class="ow">in</span> <span class="n">v_out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 </span><span data-line="640">                <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">leaves</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 </span><span data-line="641">                    <span class="n">log</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span>
-</span><span data-line="642">                        <span class="s2">&quot;model&quot;</span><span class="p">,</span>
-</span><span data-line="643">                        <span class="s2">&quot;debug&quot;</span><span class="p">,</span>
-</span><span data-line="644">                        <span class="sa">f</span><span class="s2">&quot;_assemble_matrix v_out[</span><span class="si">{</span><span class="n">r</span><span class="si">!r}</span><span class="s2">][</span><span class="si">{</span><span class="n">leaf</span><span class="si">!r}</span><span class="s2">]: &quot;</span>
-</span><span data-line="645">                        <span class="sa">f</span><span class="s2">&quot;data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="646">                        <span class="sa">f</span><span class="s2">&quot;k_state=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_state</span><span class="si">}</span><span class="s2"> k_pairing=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_pairing</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="647">                        <span class="sa">f</span><span class="s2">&quot;sub=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span data-line="642">                        <span class="s2">"model"</span><span class="p">,</span>
+</span><span data-line="643">                        <span class="s2">"debug"</span><span class="p">,</span>
+</span><span data-line="644">                        <span class="sa">f</span><span class="s2">"_assemble_matrix v_out[</span><span class="si">{</span><span class="n">r</span><span class="si">!r}</span><span class="s2">][</span><span class="si">{</span><span class="n">leaf</span><span class="si">!r}</span><span class="s2">]: "</span>
+</span><span data-line="645">                        <span class="sa">f</span><span class="s2">"data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="646">                        <span class="sa">f</span><span class="s2">"k_state=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_state</span><span class="si">}</span><span class="s2"> k_pairing=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_pairing</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="647">                        <span class="sa">f</span><span class="s2">"sub=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
 </span><span data-line="648">                    <span class="p">)</span>
 </span><span data-line="649">        <span class="n">M</span> <span class="o">=</span> <span class="n">_build_block_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">row_layout</span><span class="p">,</span> <span class="n">col_layout</span><span class="p">,</span> <span class="n">v_out</span><span class="p">,</span> <span class="n">like_by_row</span><span class="p">)</span>
 </span><span data-line="650">        <span class="k">return</span> <span class="n">M</span>
@@ -1176,7 +1176,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="671">            <span class="n">v_out</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </span><span data-line="672">
 </span><span data-line="673">        <span class="c1"># Keep model outputs as typed wrappers per rule 1; if a leaf</span>
-</span><span data-line="674">        <span class="c1"># returned raw (shouldn&#39;t happen post-cleanup but tolerate),</span>
+</span><span data-line="674">        <span class="c1"># returned raw (shouldn't happen post-cleanup but tolerate),</span>
 </span><span data-line="675">        <span class="c1"># rewrap with the declared output type.</span>
 </span><span data-line="676">        <span class="n">output_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span data-line="677">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">output_values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -1206,7 +1206,7 @@ data-aria-dark="Switch to auto color mode">
 
 </span><span data-line="700">
 </span><span data-line="701">
-</span><span data-line="702"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LinearSystem&quot;</span><span class="p">,</span> <span class="s2">&quot;NonlinearSystem&quot;</span><span class="p">,</span> <span class="s2">&quot;ModelNonlinearSystem&quot;</span><span class="p">]</span>
+</span><span data-line="702"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"LinearSystem"</span><span class="p">,</span> <span class="s2">"NonlinearSystem"</span><span class="p">,</span> <span class="s2">"ModelNonlinearSystem"</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Preconditioners for the matrix-free iterative (Krylov) linear solvers.</span>
+</span><span data-line="25"><span class="sd">"""Preconditioners for the matrix-free iterative (Krylov) linear solvers.</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">A preconditioner is a registered ``[Solvers]`` object taken by ``GMRES`` /</span>
 </span><span data-line="28"><span class="sd">``BiCGStab`` as a dependency (default :class:`NoPreconditioner`). It authors a</span>
@@ -458,7 +458,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="38"><span class="sd">Because both are ordinary authored torch modules, a user can add a custom</span>
 </span><span data-line="39"><span class="sd">preconditioner by subclassing :class:`Preconditioner` and returning their own</span>
 </span><span data-line="40"><span class="sd">setup/apply modules -- no C++ change. v1 targets a single dense unknown group.</span>
-</span><span data-line="41"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="41"><span class="sd">"""</span>
 </span><span data-line="42">
 </span><span data-line="43"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="44">
@@ -476,8 +476,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="56">
 </span><span data-line="57">
 </span><span data-line="58"><span class="k">def</span><span class="w"> </span><span class="nf">_unknown_block_sizes</span><span class="p">(</span><span class="n">system</span><span class="p">:</span> <span class="n">ModelNonlinearSystem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-</span><span data-line="59"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-variable storage widths of the (single dense) unknown group -- the</span>
-</span><span data-line="60"><span class="sd">    Block-Jacobi diagonal block sizes (summing to the flat unknown count).&quot;&quot;&quot;</span>
+</span><span data-line="59"><span class="w">    </span><span class="sd">"""Per-variable storage widths of the (single dense) unknown group -- the</span>
+</span><span data-line="60"><span class="sd">    Block-Jacobi diagonal block sizes (summing to the flat unknown count)."""</span>
 </span><span data-line="61">    <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.es.assembled</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssembledMatrix</span>  <span class="c1"># noqa: PLC0415</span>
 </span><span data-line="62">
 </span><span data-line="63">    <span class="n">lay</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">ulayout</span>
@@ -491,19 +491,19 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="Preconditioner">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.Preconditioner">[docs]</a>
 </span><span data-line="71"><span class="k">class</span><span class="w"> </span><span class="nc">Preconditioner</span><span class="p">:</span>
-</span><span data-line="72"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Base preconditioner. Concrete subclasses set :attr:`kind` and return their</span>
-</span><span data-line="73"><span class="sd">    setup/apply modules; the base is the ``none`` (identity) case.&quot;&quot;&quot;</span>
+</span><span data-line="72"><span class="w">    </span><span class="sd">"""Base preconditioner. Concrete subclasses set :attr:`kind` and return their</span>
+</span><span data-line="73"><span class="sd">    setup/apply modules; the base is the ``none`` (identity) case."""</span>
 </span><span data-line="74">
-</span><span data-line="75">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">&quot;Solvers&quot;</span>
+</span><span data-line="75">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">"Solvers"</span>
 </span><span data-line="76">    <span class="c1">#: Marks a preconditioner object (GMRES/BiCGStab + the exporter dispatch on it).</span>
 </span><span data-line="77">    <span class="n">is_preconditioner</span> <span class="o">=</span> <span class="kc">True</span>
 </span><span data-line="78">    <span class="c1">#: Metadata tag (informational; the behavior is defined by the graphs).</span>
-</span><span data-line="79">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+</span><span data-line="79">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">"none"</span>
 </span><span data-line="80">
 <div class="viewcode-block" id="Preconditioner.setup_module">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.Preconditioner.setup_module">[docs]</a>
 </span><span data-line="81">    <span class="k">def</span><span class="w"> </span><span class="nf">setup_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="n">ModelNonlinearSystem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="82"><span class="w">        </span><span class="sd">&quot;&quot;&quot;The setup module, or ``None`` for the identity (no) preconditioner.&quot;&quot;&quot;</span>
+</span><span data-line="82"><span class="w">        </span><span class="sd">"""The setup module, or ``None`` for the identity (no) preconditioner."""</span>
 </span><span data-line="83">        <span class="k">del</span> <span class="n">system</span>
 </span><span data-line="84">        <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -519,11 +519,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="90">
 <div class="viewcode-block" id="NoPreconditioner">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.NoPreconditioner">[docs]</a>
-</span><span data-line="91"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;NoPreconditioner&quot;</span><span class="p">)</span>
+</span><span data-line="91"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"NoPreconditioner"</span><span class="p">)</span>
 </span><span data-line="92"><span class="k">class</span><span class="w"> </span><span class="nc">NoPreconditioner</span><span class="p">(</span><span class="n">Preconditioner</span><span class="p">):</span>
-</span><span data-line="93"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Identity preconditioner (unpreconditioned Krylov).&quot;&quot;&quot;</span>
+</span><span data-line="93"><span class="w">    </span><span class="sd">"""Identity preconditioner (unpreconditioned Krylov)."""</span>
 </span><span data-line="94">
-</span><span data-line="95">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+</span><span data-line="95">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">"none"</span>
 </span><span data-line="96">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">()</span>
 </span><span data-line="97">
 <div class="viewcode-block" id="NoPreconditioner.from_hit">
@@ -538,11 +538,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="103">
 <div class="viewcode-block" id="JacobiPreconditioner">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.JacobiPreconditioner">[docs]</a>
-</span><span data-line="104"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;JacobiPreconditioner&quot;</span><span class="p">)</span>
+</span><span data-line="104"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"JacobiPreconditioner"</span><span class="p">)</span>
 </span><span data-line="105"><span class="k">class</span><span class="w"> </span><span class="nc">JacobiPreconditioner</span><span class="p">(</span><span class="n">Preconditioner</span><span class="p">):</span>
-</span><span data-line="106"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Point-Jacobi: ``M = diag(A)`` (elementwise scaling).&quot;&quot;&quot;</span>
+</span><span data-line="106"><span class="w">    </span><span class="sd">"""Point-Jacobi: ``M = diag(A)`` (elementwise scaling)."""</span>
 </span><span data-line="107">
-</span><span data-line="108">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;jacobi&quot;</span>
+</span><span data-line="108">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">"jacobi"</span>
 </span><span data-line="109">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">()</span>
 </span><span data-line="110">
 <div class="viewcode-block" id="JacobiPreconditioner.from_hit">
@@ -574,11 +574,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="127">
 <div class="viewcode-block" id="BlockJacobiPreconditioner">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.BlockJacobiPreconditioner">[docs]</a>
-</span><span data-line="128"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;BlockJacobiPreconditioner&quot;</span><span class="p">)</span>
+</span><span data-line="128"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"BlockJacobiPreconditioner"</span><span class="p">)</span>
 </span><span data-line="129"><span class="k">class</span><span class="w"> </span><span class="nc">BlockJacobiPreconditioner</span><span class="p">(</span><span class="n">Preconditioner</span><span class="p">):</span>
-</span><span data-line="130"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Block-Jacobi: ``M = blockdiag(A)`` over the per-variable on-diagonal blocks.&quot;&quot;&quot;</span>
+</span><span data-line="130"><span class="w">    </span><span class="sd">"""Block-Jacobi: ``M = blockdiag(A)`` over the per-variable on-diagonal blocks."""</span>
 </span><span data-line="131">
-</span><span data-line="132">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;block_jacobi&quot;</span>
+</span><span data-line="132">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">"block_jacobi"</span>
 </span><span data-line="133">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">()</span>
 </span><span data-line="134">
 <div class="viewcode-block" id="BlockJacobiPreconditioner.from_hit">
@@ -609,12 +609,12 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="150">
 <div class="viewcode-block" id="FullPreconditioner">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.FullPreconditioner">[docs]</a>
-</span><span data-line="151"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;FullPreconditioner&quot;</span><span class="p">)</span>
+</span><span data-line="151"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"FullPreconditioner"</span><span class="p">)</span>
 </span><span data-line="152"><span class="k">class</span><span class="w"> </span><span class="nc">FullPreconditioner</span><span class="p">(</span><span class="n">Preconditioner</span><span class="p">):</span>
-</span><span data-line="153"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Full (LU) preconditioner: ``M = A`` (exact per-solve; with a caching</span>
-</span><span data-line="154"><span class="sd">    ``cache_strategy`` this is modified Newton -- factor once, reuse).&quot;&quot;&quot;</span>
+</span><span data-line="153"><span class="w">    </span><span class="sd">"""Full (LU) preconditioner: ``M = A`` (exact per-solve; with a caching</span>
+</span><span data-line="154"><span class="sd">    ``cache_strategy`` this is modified Newton -- factor once, reuse)."""</span>
 </span><span data-line="155">
-</span><span data-line="156">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;full&quot;</span>
+</span><span data-line="156">    <span class="n">kind</span> <span class="o">=</span> <span class="s2">"full"</span>
 </span><span data-line="157">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">()</span>
 </span><span data-line="158">
 <div class="viewcode-block" id="FullPreconditioner.from_hit">
@@ -645,11 +645,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="174">
 </span><span data-line="175">
 </span><span data-line="176"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="177">    <span class="s2">&quot;Preconditioner&quot;</span><span class="p">,</span>
-</span><span data-line="178">    <span class="s2">&quot;NoPreconditioner&quot;</span><span class="p">,</span>
-</span><span data-line="179">    <span class="s2">&quot;JacobiPreconditioner&quot;</span><span class="p">,</span>
-</span><span data-line="180">    <span class="s2">&quot;BlockJacobiPreconditioner&quot;</span><span class="p">,</span>
-</span><span data-line="181">    <span class="s2">&quot;FullPreconditioner&quot;</span><span class="p">,</span>
+</span><span data-line="177">    <span class="s2">"Preconditioner"</span><span class="p">,</span>
+</span><span data-line="178">    <span class="s2">"NoPreconditioner"</span><span class="p">,</span>
+</span><span data-line="179">    <span class="s2">"JacobiPreconditioner"</span><span class="p">,</span>
+</span><span data-line="180">    <span class="s2">"BlockJacobiPreconditioner"</span><span class="p">,</span>
+</span><span data-line="181">    <span class="s2">"FullPreconditioner"</span><span class="p">,</span>
 </span><span data-line="182"><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">

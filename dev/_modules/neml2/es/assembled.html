@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,26 +442,26 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Assembled vector / matrix blocks on top of :class:`~neml2.types.Tensor`.</span>
+</span><span data-line="25"><span class="sd">"""Assembled vector / matrix blocks on top of :class:`~neml2.types.Tensor`.</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">v2-parity (V2P-6 rewrite). Each variable group declares a</span>
-</span><span data-line="28"><span class="sd">:data:`~neml2.es.axis_layout.SubBatchStructure` -- either ``&quot;block&quot;`` or</span>
-</span><span data-line="29"><span class="sd">``&quot;dense&quot;`` -- on the owning :class:`AxisLayout`. Assembly behaviour</span>
+</span><span data-line="28"><span class="sd">:data:`~neml2.es.axis_layout.SubBatchStructure` -- either ``"block"`` or</span>
+</span><span data-line="29"><span class="sd">``"dense"`` -- on the owning :class:`AxisLayout`. Assembly behaviour</span>
 </span><span data-line="30"><span class="sd">branches on this flag:</span>
 </span><span data-line="31">
-</span><span data-line="32"><span class="sd">* **Block group**: the group&#39;s sub_batch axes are PRESERVED as intermediate</span>
+</span><span data-line="32"><span class="sd">* **Block group**: the group's sub_batch axes are PRESERVED as intermediate</span>
 </span><span data-line="33"><span class="sd">  dims on the per-group assembled tensor.</span>
 </span><span data-line="34">
 </span><span data-line="35"><span class="sd">  * Vector: ``(*dyn, *sub_batch, group_storage_size)`` -- per-site</span>
 </span><span data-line="36"><span class="sd">    independence preserved; the underlying solver batches per site</span>
 </span><span data-line="37"><span class="sd">    naturally.</span>
 </span><span data-line="38"><span class="sd">  * Matrix block: ``(*dyn, *intmd_row, *intmd_col, row_storage, col_storage)``.</span>
-</span><span data-line="39"><span class="sd">    Each side&#39;s sub_batch axes appear as intmd dims (in row order then</span>
+</span><span data-line="39"><span class="sd">    Each side's sub_batch axes appear as intmd dims (in row order then</span>
 </span><span data-line="40"><span class="sd">    col order). For a per-grain × per-grain block both sides share the</span>
 </span><span data-line="41"><span class="sd">    same per-grain extent and the intmd dims double-stack with the</span>
 </span><span data-line="42"><span class="sd">    eye-diagonal storage convention.</span>
 </span><span data-line="43">
-</span><span data-line="44"><span class="sd">* **Dense group**: the group&#39;s sub_batch axes are FOLDED into the base</span>
+</span><span data-line="44"><span class="sd">* **Dense group**: the group's sub_batch axes are FOLDED into the base</span>
 </span><span data-line="45"><span class="sd">  storage at assembly time.</span>
 </span><span data-line="46">
 </span><span data-line="47"><span class="sd">  * Vector: ``(*dyn, group_storage_size_with_sub_folded)``.</span>
@@ -470,12 +470,12 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="50"><span class="sd">Per-block decision in ``_build_group_block``:</span>
 </span><span data-line="51">
 </span><span data-line="52"><span class="sd">* both row group AND col group dense -&gt; dense block (fold everything).</span>
-</span><span data-line="53"><span class="sd">* either side block -&gt; keep that side&#39;s sub_batch as intmd on the block.</span>
+</span><span data-line="53"><span class="sd">* either side block -&gt; keep that side's sub_batch as intmd on the block.</span>
 </span><span data-line="54">
 </span><span data-line="55"><span class="sd">``AssembledMatrix.__matmul__`` mirrors v2: standard ``mm`` reduces along</span>
 </span><span data-line="56"><span class="sd">the base axes; an additional ``sum`` over the intmd axes fires when the</span>
-</span><span data-line="57"><span class="sd">contracting (inner) group&#39;s :data:`SubBatchStructure` is ``&quot;block&quot;``.</span>
-</span><span data-line="58"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="57"><span class="sd">contracting (inner) group's :data:`SubBatchStructure` is ``"block"``.</span>
+</span><span data-line="58"><span class="sd">"""</span>
 </span><span data-line="59">
 </span><span data-line="60"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="61">
@@ -508,18 +508,18 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AssembledVector">[docs]</a>
 </span><span data-line="87"><span class="nd">@dataclass</span>
 </span><span data-line="88"><span class="k">class</span><span class="w"> </span><span class="nc">AssembledVector</span><span class="p">:</span>
-</span><span data-line="89"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-group dense vector blocks.</span>
+</span><span data-line="89"><span class="w">    </span><span class="sd">"""Per-group dense vector blocks.</span>
 </span><span data-line="90">
-</span><span data-line="91"><span class="sd">    Each group&#39;s tensor follows the :data:`SubBatchStructure` of the owning</span>
+</span><span data-line="91"><span class="sd">    Each group's tensor follows the :data:`SubBatchStructure` of the owning</span>
 </span><span data-line="92"><span class="sd">    :class:`AxisLayout`:</span>
 </span><span data-line="93">
-</span><span data-line="94"><span class="sd">    * ``&quot;block&quot;`` -&gt; ``(*dyn, *sub_batch, group_storage_size)``,</span>
+</span><span data-line="94"><span class="sd">    * ``"block"`` -&gt; ``(*dyn, *sub_batch, group_storage_size)``,</span>
 </span><span data-line="95"><span class="sd">      ``base_ndim=1``, ``sub_batch_ndim=len(sub_batch_shape)``.</span>
-</span><span data-line="96"><span class="sd">    * ``&quot;dense&quot;`` -&gt; ``(*dyn, group_storage_size_with_sub_folded)``,</span>
+</span><span data-line="96"><span class="sd">    * ``"dense"`` -&gt; ``(*dyn, group_storage_size_with_sub_folded)``,</span>
 </span><span data-line="97"><span class="sd">      ``base_ndim=1``, ``sub_batch_ndim=0``.</span>
 </span><span data-line="98">
 </span><span data-line="99"><span class="sd">    Arithmetic and dot products forward to :class:`Tensor` ops.</span>
-</span><span data-line="100"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="100"><span class="sd">    """</span>
 </span><span data-line="101">
 </span><span data-line="102">    <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span>
 </span><span data-line="103">    <span class="n">tensors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span>
@@ -532,21 +532,21 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="108">        <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
 </span><span data-line="109">        <span class="n">values</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span>
 </span><span data-line="110">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span>
-</span><span data-line="111"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Pack typed-wrapper ``values`` (one per variable) into per-group tensors.</span>
+</span><span data-line="111"><span class="w">        </span><span class="sd">"""Pack typed-wrapper ``values`` (one per variable) into per-group tensors.</span>
 </span><span data-line="112">
-</span><span data-line="113"><span class="sd">        For a ``&quot;block&quot;`` group, the per-variable wrappers are flattened to</span>
+</span><span data-line="113"><span class="sd">        For a ``"block"`` group, the per-variable wrappers are flattened to</span>
 </span><span data-line="114"><span class="sd">        base then concatenated along base (last) axis -- sub_batch axes</span>
 </span><span data-line="115"><span class="sd">        stay as intermediate dims on the resulting Tensor.</span>
 </span><span data-line="116">
-</span><span data-line="117"><span class="sd">        For a ``&quot;dense&quot;`` group, each wrapper&#39;s sub_batch is folded INTO</span>
-</span><span data-line="118"><span class="sd">        the variable&#39;s flat base storage before concat: per-variable</span>
+</span><span data-line="117"><span class="sd">        For a ``"dense"`` group, each wrapper's sub_batch is folded INTO</span>
+</span><span data-line="118"><span class="sd">        the variable's flat base storage before concat: per-variable</span>
 </span><span data-line="119"><span class="sd">        contribution becomes ``(*dyn, sub_total * base_size)``, then all</span>
 </span><span data-line="120"><span class="sd">        contributions concat to ``(*dyn, sum_var (sub_total * base_size))``.</span>
 </span><span data-line="121">
 </span><span data-line="122"><span class="sd">        Per CLAUDE.md rule 1: ``values`` is strictly typed -- raw</span>
 </span><span data-line="123"><span class="sd">        ``torch.Tensor`` is rejected. External boundaries wrap with the</span>
 </span><span data-line="124"><span class="sd">        appropriate ``TensorWrapper`` subclass at the construction site.</span>
-</span><span data-line="125"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="125"><span class="sd">        """</span>
 </span><span data-line="126">        <span class="n">tensors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="127">        <span class="k">for</span> <span class="n">gi</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">groups</span><span class="p">):</span>
 </span><span data-line="128">            <span class="n">structure</span> <span class="o">=</span> <span class="n">layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">gi</span><span class="p">]</span>
@@ -554,7 +554,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="130">            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
 </span><span data-line="131">                <span class="n">wrapped</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 </span><span data-line="132">                <span class="n">t</span> <span class="o">=</span> <span class="n">Tensor</span><span class="o">.</span><span class="n">from_typed</span><span class="p">(</span><span class="n">wrapped</span><span class="p">)</span><span class="o">.</span><span class="n">flatten_base</span><span class="p">()</span>
-</span><span data-line="133">                <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="133">                <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">"dense"</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
 </span><span data-line="134">                    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">flatten_sub_batch_into_first_base_axis</span><span class="p">()</span>
 </span><span data-line="135">                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 </span><span data-line="136">            <span class="n">tensors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_cat_along_base</span><span class="p">(</span><span class="n">parts</span><span class="p">))</span>
@@ -564,16 +564,16 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="AssembledVector.disassemble">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AssembledVector.disassemble">[docs]</a>
 </span><span data-line="139">    <span class="k">def</span><span class="w"> </span><span class="nf">disassemble</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparseVector</span><span class="p">:</span>
-</span><span data-line="140"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Unpack per-group tensors back into a :class:`SparseVector`.</span>
+</span><span data-line="140"><span class="w">        </span><span class="sd">"""Unpack per-group tensors back into a :class:`SparseVector`.</span>
 </span><span data-line="141">
 </span><span data-line="142"><span class="sd">        Inverse of :meth:`from_dict` -- the per-group split point is the</span>
-</span><span data-line="143"><span class="sd">        per-variable storage size; for ``&quot;dense&quot;`` groups the sub_batch</span>
+</span><span data-line="143"><span class="sd">        per-variable storage size; for ``"dense"`` groups the sub_batch</span>
 </span><span data-line="144"><span class="sd">        is unfolded back to the declared shape before re-typing.</span>
 </span><span data-line="145">
 </span><span data-line="146"><span class="sd">        Returns a :class:`SparseVector` (the typed dual of this object).</span>
 </span><span data-line="147"><span class="sd">        The underlying name -&gt; typed-wrapper dict is on</span>
 </span><span data-line="148"><span class="sd">        ``.values`` for callers that need the raw mapping.</span>
-</span><span data-line="149"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="149"><span class="sd">        """</span>
 </span><span data-line="150">        <span class="kn">from</span><span class="w"> </span><span class="nn">.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparseVector</span>  <span class="c1"># local: avoid circular import</span>
 </span><span data-line="151">
 </span><span data-line="152">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -584,7 +584,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="157">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">slices</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span data-line="158">                <span class="n">type_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 </span><span data-line="159">                <span class="n">sb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="160">                <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span> <span class="ow">and</span> <span class="n">sb</span><span class="p">:</span>
+</span><span data-line="160">                <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">"dense"</span> <span class="ow">and</span> <span class="n">sb</span><span class="p">:</span>
 </span><span data-line="161">                    <span class="c1"># Unfold sub_batch from the trailing base axis.</span>
 </span><span data-line="162">                    <span class="n">var_base</span> <span class="o">=</span> <span class="n">_storage_size</span><span class="p">(</span><span class="n">type_cls</span><span class="p">)</span>
 </span><span data-line="163">                    <span class="c1"># part has shape (*dyn, sub_total * var_base); reshape to</span>
@@ -612,7 +612,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="184">            <span class="p">(</span>
 </span><span data-line="185">                <span class="n">_storage_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
 </span><span data-line="186">                <span class="o">*</span> <span class="p">(</span><span class="n">prod</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
-</span><span data-line="187">                <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span>
+</span><span data-line="187">                <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">"dense"</span>
 </span><span data-line="188">                <span class="k">else</span> <span class="n">_storage_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
 </span><span data-line="189">            <span class="p">)</span>
 </span><span data-line="190">            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">group</span>
@@ -631,14 +631,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="203">
 </span><span data-line="204">    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span>
 </span><span data-line="205">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">layout</span><span class="p">:</span>
-</span><span data-line="206">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;AssembledVector + requires matching layouts&quot;</span><span class="p">)</span>
+</span><span data-line="206">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"AssembledVector + requires matching layouts"</span><span class="p">)</span>
 </span><span data-line="207">        <span class="k">return</span> <span class="n">AssembledVector</span><span class="p">(</span>
 </span><span data-line="208">            <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensors</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">tensors</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
 </span><span data-line="209">        <span class="p">)</span>
 </span><span data-line="210">
 </span><span data-line="211">    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span>
 </span><span data-line="212">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">layout</span><span class="p">:</span>
-</span><span data-line="213">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;AssembledVector - requires matching layouts&quot;</span><span class="p">)</span>
+</span><span data-line="213">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"AssembledVector - requires matching layouts"</span><span class="p">)</span>
 </span><span data-line="214">        <span class="k">return</span> <span class="n">AssembledVector</span><span class="p">(</span>
 </span><span data-line="215">            <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensors</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">tensors</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
 </span><span data-line="216">        <span class="p">)</span>
@@ -652,13 +652,13 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="AssembledVector.to_flat">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AssembledVector.to_flat">[docs]</a>
 </span><span data-line="221">    <span class="k">def</span><span class="w"> </span><span class="nf">to_flat</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="222"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Pack all groups into one flat ``(*dyn, layout.flat_size())`` tensor.</span>
+</span><span data-line="222"><span class="w">        </span><span class="sd">"""Pack all groups into one flat ``(*dyn, layout.flat_size())`` tensor.</span>
 </span><span data-line="223">
 </span><span data-line="224"><span class="sd">        Each group tensor is flattened past its dynamic-batch axes (folding</span>
 </span><span data-line="225"><span class="sd">        sub-batch + base) and concatenated along the feature axis -- the raw</span>
 </span><span data-line="226"><span class="sd">        form the pyzag adapter and time-integration solvers consume. Inverse of</span>
 </span><span data-line="227"><span class="sd">        :meth:`from_flat`.</span>
-</span><span data-line="228"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="228"><span class="sd">        """</span>
 </span><span data-line="229">        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">batch_ndim</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensors</span><span class="p">]</span>
 </span><span data-line="230">        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
@@ -667,18 +667,18 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AssembledVector.from_flat">[docs]</a>
 </span><span data-line="232">    <span class="nd">@classmethod</span>
 </span><span data-line="233">    <span class="k">def</span><span class="w"> </span><span class="nf">from_flat</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span> <span class="n">flat</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span>
-</span><span data-line="234"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Split a flat ``(*dyn, layout.flat_size())`` tensor into a per-group</span>
+</span><span data-line="234"><span class="w">        </span><span class="sd">"""Split a flat ``(*dyn, layout.flat_size())`` tensor into a per-group</span>
 </span><span data-line="235"><span class="sd">        :class:`AssembledVector`. Inverse of :meth:`to_flat`.</span>
 </span><span data-line="236">
 </span><span data-line="237"><span class="sd">        BLOCK groups recover their preserved sub-batch (site) axes; DENSE groups</span>
 </span><span data-line="238"><span class="sd">        stay flat (their sub-batch was folded into base at assembly).</span>
-</span><span data-line="239"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="239"><span class="sd">        """</span>
 </span><span data-line="240">        <span class="n">dyn_ndim</span> <span class="o">=</span> <span class="n">flat</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span>
 </span><span data-line="241">        <span class="n">group_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">layout</span><span class="o">.</span><span class="n">group_flat_size</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">)]</span>
 </span><span data-line="242">        <span class="n">group_flats</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">flat</span><span class="p">,</span> <span class="n">group_sizes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="243">        <span class="n">tensors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="244">        <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">gflat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">group_flats</span><span class="p">):</span>
-</span><span data-line="245">            <span class="k">if</span> <span class="n">layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">g</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span><span class="p">:</span>
+</span><span data-line="245">            <span class="k">if</span> <span class="n">layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">g</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
 </span><span data-line="246">                <span class="n">sub_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
 </span><span data-line="247">                <span class="n">sub_numel</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="n">sub_shape</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span>
 </span><span data-line="248">                <span class="n">base</span> <span class="o">=</span> <span class="n">gflat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="n">sub_numel</span>
@@ -691,20 +691,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="254">
 </span><span data-line="255">    <span class="nd">@property</span>
 </span><span data-line="256">    <span class="k">def</span><span class="w"> </span><span class="nf">batch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_BatchIndexAV</span><span class="p">:</span>
-</span><span data-line="257"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Index/slice the leading dynamic (batch) axis of every group tensor.</span>
+</span><span data-line="257"><span class="w">        </span><span class="sd">"""Index/slice the leading dynamic (batch) axis of every group tensor.</span>
 </span><span data-line="258">
 </span><span data-line="259"><span class="sd">        ``av.batch[key]`` returns a new :class:`AssembledVector` with each group</span>
 </span><span data-line="260"><span class="sd">        tensor sliced along its batch region (``t.batch[key]``) -- the dynamic</span>
 </span><span data-line="261"><span class="sd">        (e.g. time) axis indexing the pyzag adapter and solvers walk.</span>
-</span><span data-line="262"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="262"><span class="sd">        """</span>
 </span><span data-line="263">        <span class="k">return</span> <span class="n">_BatchIndexAV</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 </span><span data-line="264">
 </span><span data-line="265">
 </span><span data-line="266"><span class="k">class</span><span class="w"> </span><span class="nc">_BatchIndexAV</span><span class="p">:</span>
-</span><span data-line="267"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscript proxy for :attr:`AssembledVector.batch`.&quot;&quot;&quot;</span>
+</span><span data-line="267"><span class="w">    </span><span class="sd">"""Subscript proxy for :attr:`AssembledVector.batch`."""</span>
 </span><span data-line="268">
-</span><span data-line="269">    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_av&quot;</span><span class="p">,)</span>
+</span><span data-line="269">    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_av"</span><span class="p">,)</span>
 </span><span data-line="270">
 </span><span data-line="271">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">av</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="272">        <span class="bp">self</span><span class="o">.</span><span class="n">_av</span> <span class="o">=</span> <span class="n">av</span>
@@ -719,20 +719,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="281">    <span class="n">structure</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="282">    <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
 </span><span data-line="283"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="284"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap a per-group raw tensor into a typed dynamic-base :class:`Tensor`.</span>
+</span><span data-line="284"><span class="w">    </span><span class="sd">"""Wrap a per-group raw tensor into a typed dynamic-base :class:`Tensor`.</span>
 </span><span data-line="285">
 </span><span data-line="286"><span class="sd">    Inverse of the per-group ``.data`` extraction at the solver / AOTI</span>
 </span><span data-line="287"><span class="sd">    framework boundary: it infers ``batch_ndim`` / ``sub_batch_ndim`` from the</span>
-</span><span data-line="288"><span class="sd">    group&#39;s declared :data:`SubBatchStructure` so the result drops straight</span>
+</span><span data-line="288"><span class="sd">    group's declared :data:`SubBatchStructure` so the result drops straight</span>
 </span><span data-line="289"><span class="sd">    into an :class:`AssembledVector` and round-trips through</span>
 </span><span data-line="290"><span class="sd">    :meth:`AssembledVector.disassemble`. Used wherever per-group raw tensors</span>
 </span><span data-line="291"><span class="sd">    re-enter the typed world (the eager Newton boundary, the AOTI export</span>
 </span><span data-line="292"><span class="sd">    segment inputs).</span>
-</span><span data-line="293"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="293"><span class="sd">    """</span>
 </span><span data-line="294">    <span class="k">if</span> <span class="ow">not</span> <span class="n">group_names</span><span class="p">:</span>
 </span><span data-line="295">        <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </span><span data-line="296">    <span class="n">first_name</span> <span class="o">=</span> <span class="n">group_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span data-line="297">    <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span><span class="p">:</span>
+</span><span data-line="297">    <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
 </span><span data-line="298">        <span class="c1"># (*dyn, *sub_batch, group_base_total): base_ndim=1.</span>
 </span><span data-line="299">        <span class="n">sub_ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">first_name</span><span class="p">))</span>
 </span><span data-line="300">        <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">sub_ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sub_ndim</span><span class="p">)</span>
@@ -746,7 +746,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="308">    <span class="n">col_layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
 </span><span data-line="309">    <span class="n">col_gi</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 </span><span data-line="310"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="311"><span class="w">    </span><span class="sd">&quot;&quot;&quot;The ``sub_batch_ndim`` of the assembled ``(row_gi, col_gi)`` block.</span>
+</span><span data-line="311"><span class="w">    </span><span class="sd">"""The ``sub_batch_ndim`` of the assembled ``(row_gi, col_gi)`` block.</span>
 </span><span data-line="312">
 </span><span data-line="313"><span class="sd">    Single source of truth mirroring the storage convention in</span>
 </span><span data-line="314"><span class="sd">    :func:`_build_group_block` / :func:`_zero_block` /</span>
@@ -758,27 +758,27 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="320"><span class="sd">    Used to reconstruct a typed :class:`AssembledMatrix` from raw per-block</span>
 </span><span data-line="321"><span class="sd">    tensors at the solver graph boundary (:class:`~neml2.es.implicit.LinearSolve`):</span>
 </span><span data-line="322"><span class="sd">    only the (structural) ``sub_batch_ndim`` is needed there -- ``batch_ndim``</span>
-</span><span data-line="323"><span class="sd">    follows from the runtime tensor&#39;s ndim.</span>
-</span><span data-line="324"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="323"><span class="sd">    follows from the runtime tensor's ndim.</span>
+</span><span data-line="324"><span class="sd">    """</span>
 </span><span data-line="325">    <span class="n">rs</span> <span class="o">=</span> <span class="n">row_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">row_gi</span><span class="p">]</span>
 </span><span data-line="326">    <span class="n">cs</span> <span class="o">=</span> <span class="n">col_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">col_gi</span><span class="p">]</span>
 </span><span data-line="327">    <span class="n">r_sub</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">row_layout</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">row_gi</span><span class="p">))</span>
 </span><span data-line="328">    <span class="n">c_sub</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">col_layout</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">col_gi</span><span class="p">))</span>
-</span><span data-line="329">    <span class="k">if</span> <span class="n">rs</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span> <span class="ow">and</span> <span class="n">cs</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span> <span class="ow">and</span> <span class="n">r_sub</span> <span class="o">==</span> <span class="n">c_sub</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_sub</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="329">    <span class="k">if</span> <span class="n">rs</span> <span class="o">==</span> <span class="s2">"block"</span> <span class="ow">and</span> <span class="n">cs</span> <span class="o">==</span> <span class="s2">"block"</span> <span class="ow">and</span> <span class="n">r_sub</span> <span class="o">==</span> <span class="n">c_sub</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_sub</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
 </span><span data-line="330">        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_sub</span><span class="p">)</span>  <span class="c1"># paired diagonal (compact)</span>
-</span><span data-line="331">    <span class="n">r_intmd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_sub</span><span class="p">)</span> <span class="k">if</span> <span class="n">rs</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span> <span class="k">else</span> <span class="mi">0</span>
-</span><span data-line="332">    <span class="n">c_intmd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">c_sub</span><span class="p">)</span> <span class="k">if</span> <span class="n">cs</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span> <span class="k">else</span> <span class="mi">0</span>
+</span><span data-line="331">    <span class="n">r_intmd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_sub</span><span class="p">)</span> <span class="k">if</span> <span class="n">rs</span> <span class="o">==</span> <span class="s2">"block"</span> <span class="k">else</span> <span class="mi">0</span>
+</span><span data-line="332">    <span class="n">c_intmd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">c_sub</span><span class="p">)</span> <span class="k">if</span> <span class="n">cs</span> <span class="o">==</span> <span class="s2">"block"</span> <span class="k">else</span> <span class="mi">0</span>
 </span><span data-line="333">    <span class="k">return</span> <span class="n">r_intmd</span> <span class="o">+</span> <span class="n">c_intmd</span>
 </span><span data-line="334">
 </span><span data-line="335">
 </span><span data-line="336"><span class="k">def</span><span class="w"> </span><span class="nf">wrap_block_raw</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="337"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap a raw assembled-matrix block into a typed dynamic-base :class:`Tensor`.</span>
+</span><span data-line="337"><span class="w">    </span><span class="sd">"""Wrap a raw assembled-matrix block into a typed dynamic-base :class:`Tensor`.</span>
 </span><span data-line="338">
 </span><span data-line="339"><span class="sd">    Inverse of the per-block ``.data`` extraction at the solver graph boundary: a</span>
 </span><span data-line="340"><span class="sd">    block is ``(*dyn, *sub, row_storage, col_storage)`` (``base_ndim=2``), so</span>
 </span><span data-line="341"><span class="sd">    ``batch_ndim = raw.ndim - sub_batch_ndim - 2``. ``sub_batch_ndim`` comes from</span>
 </span><span data-line="342"><span class="sd">    :func:`group_block_sub_batch_ndim`.</span>
-</span><span data-line="343"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="343"><span class="sd">    """</span>
 </span><span data-line="344">    <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">sub_batch_ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
 </span><span data-line="345">
 </span><span data-line="346">
@@ -791,25 +791,25 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AssembledMatrix">[docs]</a>
 </span><span data-line="352"><span class="nd">@dataclass</span>
 </span><span data-line="353"><span class="k">class</span><span class="w"> </span><span class="nc">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="354"><span class="w">    </span><span class="sd">&quot;&quot;&quot;2D grid of per-(row_group, col_group) tensor blocks.</span>
+</span><span data-line="354"><span class="w">    </span><span class="sd">"""2D grid of per-(row_group, col_group) tensor blocks.</span>
 </span><span data-line="355">
 </span><span data-line="356"><span class="sd">    Per-block storage decision:</span>
 </span><span data-line="357">
 </span><span data-line="358"><span class="sd">    * both row group AND col group dense -&gt; shape</span>
 </span><span data-line="359"><span class="sd">      ``(*dyn, row_storage_with_sub_folded, col_storage_with_sub_folded)``;</span>
 </span><span data-line="360"><span class="sd">      ``base_ndim=2``, ``sub_batch_ndim=0``.</span>
-</span><span data-line="361"><span class="sd">    * any side block -&gt; that side&#39;s sub_batch is preserved as intmd dims.</span>
+</span><span data-line="361"><span class="sd">    * any side block -&gt; that side's sub_batch is preserved as intmd dims.</span>
 </span><span data-line="362"><span class="sd">      Shape ``(*dyn, *intmd_row, *intmd_col, row_storage, col_storage)``;</span>
 </span><span data-line="363"><span class="sd">      ``base_ndim=2``, ``sub_batch_ndim = len(intmd_row) + len(intmd_col)``.</span>
 </span><span data-line="364">
 </span><span data-line="365"><span class="sd">    matmul:</span>
 </span><span data-line="366">
 </span><span data-line="367"><span class="sd">    * ``mm(aik, bkj)`` contracts the trailing two base axes.</span>
-</span><span data-line="368"><span class="sd">    * if ``col_layout.structure[k] == &quot;block&quot;`` (the inner group is block),</span>
+</span><span data-line="368"><span class="sd">    * if ``col_layout.structure[k] == "block"`` (the inner group is block),</span>
 </span><span data-line="369"><span class="sd">      a sub_batch reduction (``sum`` over the intmd dims contributed by</span>
 </span><span data-line="370"><span class="sd">      group k) runs after the per-block mm. This is the v2-parity</span>
-</span><span data-line="371"><span class="sd">      &quot;block intmd_sum after mm&quot; pattern.</span>
-</span><span data-line="372"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="371"><span class="sd">      "block intmd_sum after mm" pattern.</span>
+</span><span data-line="372"><span class="sd">    """</span>
 </span><span data-line="373">
 </span><span data-line="374">    <span class="n">row_layout</span><span class="p">:</span> <span class="n">AxisLayout</span>
 </span><span data-line="375">    <span class="n">col_layout</span><span class="p">:</span> <span class="n">AxisLayout</span>
@@ -824,7 +824,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="384">
 </span><span data-line="385">    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
 </span><span data-line="386">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">row_layout</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">col_layout</span><span class="p">:</span>
-</span><span data-line="387">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;AssembledMatrix + requires matching layouts&quot;</span><span class="p">)</span>
+</span><span data-line="387">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"AssembledMatrix + requires matching layouts"</span><span class="p">)</span>
 </span><span data-line="388">        <span class="k">return</span> <span class="n">AssembledMatrix</span><span class="p">(</span>
 </span><span data-line="389">            <span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span><span class="p">,</span>
 </span><span data-line="390">            <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span>
@@ -836,7 +836,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="396">
 </span><span data-line="397">    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
 </span><span data-line="398">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">row_layout</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">col_layout</span><span class="p">:</span>
-</span><span data-line="399">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;AssembledMatrix - requires matching layouts&quot;</span><span class="p">)</span>
+</span><span data-line="399">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"AssembledMatrix - requires matching layouts"</span><span class="p">)</span>
 </span><span data-line="400">        <span class="k">return</span> <span class="n">AssembledMatrix</span><span class="p">(</span>
 </span><span data-line="401">            <span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span><span class="p">,</span>
 </span><span data-line="402">            <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span>
@@ -859,16 +859,16 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="AssembledMatrix.disassemble">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AssembledMatrix.disassemble">[docs]</a>
 </span><span data-line="416">    <span class="k">def</span><span class="w"> </span><span class="nf">disassemble</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparseMatrix</span><span class="p">:</span>
-</span><span data-line="417"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Unpack per-block tensors into a :class:`SparseMatrix`.</span>
+</span><span data-line="417"><span class="w">        </span><span class="sd">"""Unpack per-block tensors into a :class:`SparseMatrix`.</span>
 </span><span data-line="418">
 </span><span data-line="419"><span class="sd">        Each cell ``cells[row_var][col_var]`` is a typed dynamic-base</span>
-</span><span data-line="420"><span class="sd">        :class:`~neml2.types.Tensor` that carries the block&#39;s ``batch_ndim``</span>
-</span><span data-line="421"><span class="sd">        / ``sub_batch_ndim`` verbatim. For ``&quot;dense&quot;`` blocks the sub_batch</span>
+</span><span data-line="420"><span class="sd">        :class:`~neml2.types.Tensor` that carries the block's ``batch_ndim``</span>
+</span><span data-line="421"><span class="sd">        / ``sub_batch_ndim`` verbatim. For ``"dense"`` blocks the sub_batch</span>
 </span><span data-line="422"><span class="sd">        axes have been folded into base, so the slices are flat in row +</span>
 </span><span data-line="423"><span class="sd">        col. Boundary callers (e.g. the pyzag interface) read the</span>
 </span><span data-line="424"><span class="sd">        underlying dict-of-dict via ``.cells`` and unwrap to raw ``.data``</span>
 </span><span data-line="425"><span class="sd">        at their own framework boundary.</span>
-</span><span data-line="426"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="426"><span class="sd">        """</span>
 </span><span data-line="427">        <span class="kn">from</span><span class="w"> </span><span class="nn">.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparseMatrix</span>  <span class="c1"># local: avoid circular import</span>
 </span><span data-line="428">
 </span><span data-line="429">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -911,7 +911,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="463">        <span class="n">col_layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
 </span><span data-line="464">        <span class="n">blocks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]],</span>
 </span><span data-line="465">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="466"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build an :class:`AssembledMatrix` from per-(row_var, col_var) typed blocks.</span>
+</span><span data-line="466"><span class="w">        </span><span class="sd">"""Build an :class:`AssembledMatrix` from per-(row_var, col_var) typed blocks.</span>
 </span><span data-line="467">
 </span><span data-line="468"><span class="sd">        Inverse of :meth:`disassemble`. Each ``blocks[row_name][col_name]`` is</span>
 </span><span data-line="469"><span class="sd">        a typed dynamic-base :class:`~neml2.types.Tensor` with</span>
@@ -920,16 +920,16 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="472"><span class="sd">        Missing (row_var, col_var) pairs are zero-filled.</span>
 </span><span data-line="473">
 </span><span data-line="474"><span class="sd">        Only the dense-x-dense case is supported (no intmd sub_batch dims on</span>
-</span><span data-line="475"><span class="sd">        either side) -- that&#39;s the only path the pyzag interface and the</span>
+</span><span data-line="475"><span class="sd">        either side) -- that's the only path the pyzag interface and the</span>
 </span><span data-line="476"><span class="sd">        round-trip test currently exercise. Block-structure layouts would need</span>
-</span><span data-line="477"><span class="sd">        the corresponding sub_batch axes to live in each block&#39;s storage</span>
-</span><span data-line="478"><span class="sd">        and the cat axes shifted accordingly; raise so callers don&#39;t</span>
+</span><span data-line="477"><span class="sd">        the corresponding sub_batch axes to live in each block's storage</span>
+</span><span data-line="478"><span class="sd">        and the cat axes shifted accordingly; raise so callers don't</span>
 </span><span data-line="479"><span class="sd">        silently get the wrong shape.</span>
-</span><span data-line="480"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="480"><span class="sd">        """</span>
 </span><span data-line="481">        <span class="k">for</span> <span class="n">structure</span> <span class="ow">in</span> <span class="p">(</span><span class="o">*</span><span class="n">row_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span> <span class="o">*</span><span class="n">col_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">):</span>
-</span><span data-line="482">            <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">&quot;dense&quot;</span><span class="p">:</span>
+</span><span data-line="482">            <span class="k">if</span> <span class="n">structure</span> <span class="o">!=</span> <span class="s2">"dense"</span><span class="p">:</span>
 </span><span data-line="483">                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-</span><span data-line="484">                    <span class="sa">f</span><span class="s2">&quot;select_blocks only handles dense layouts; got structure=</span><span class="si">{</span><span class="n">structure</span><span class="si">!r}</span><span class="s2">&quot;</span>
+</span><span data-line="484">                    <span class="sa">f</span><span class="s2">"select_blocks only handles dense layouts; got structure=</span><span class="si">{</span><span class="n">structure</span><span class="si">!r}</span><span class="s2">"</span>
 </span><span data-line="485">                <span class="p">)</span>
 </span><span data-line="486">        <span class="c1"># Find one present block to source the dyn-batch shape, dtype, and</span>
 </span><span data-line="487">        <span class="c1"># device for the zero-fill on missing (row_var, col_var) pairs.</span>
@@ -941,7 +941,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="493">            <span class="k">if</span> <span class="n">ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="494">                <span class="k">break</span>
 </span><span data-line="495">        <span class="k">if</span> <span class="n">ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="496">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;select_blocks: empty blocks dict (need at least one to size zeros)&quot;</span><span class="p">)</span>
+</span><span data-line="496">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"select_blocks: empty blocks dict (need at least one to size zeros)"</span><span class="p">)</span>
 </span><span data-line="497">        <span class="n">batch_ndim</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">batch_ndim</span>
 </span><span data-line="498">        <span class="n">dyn_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">)</span>
 </span><span data-line="499">        <span class="n">dtype</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">dtype</span>
@@ -991,7 +991,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="542">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 </span><span data-line="543">        <span class="n">type_cls</span> <span class="o">=</span> <span class="n">layout</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 </span><span data-line="544">        <span class="n">base</span> <span class="o">=</span> <span class="n">_storage_size</span><span class="p">(</span><span class="n">type_cls</span><span class="p">)</span>
-</span><span data-line="545">        <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span><span class="p">:</span>
+</span><span data-line="545">        <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">"dense"</span><span class="p">:</span>
 </span><span data-line="546">            <span class="n">sb</span> <span class="o">=</span> <span class="n">layout</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 </span><span data-line="547">            <span class="k">return</span> <span class="n">base</span> <span class="o">*</span> <span class="p">(</span><span class="n">prod</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sb</span><span class="p">])</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
 </span><span data-line="548">        <span class="k">return</span> <span class="n">base</span>
@@ -1001,17 +1001,17 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="552">    <span class="nd">@overload</span>
 </span><span data-line="553">    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span> <span class="o">...</span>
 </span><span data-line="554">    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-</span><span data-line="555"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Block matmul ``C = A @ B`` (matrix RHS) or ``c = A @ b`` (vector RHS).</span>
+</span><span data-line="555"><span class="w">        </span><span class="sd">"""Block matmul ``C = A @ B`` (matrix RHS) or ``c = A @ b`` (vector RHS).</span>
 </span><span data-line="556">
 </span><span data-line="557"><span class="sd">        v2-parity:</span>
 </span><span data-line="558"><span class="sd">            ``Cij = sum_k mm(Aik, Bkj)`` plus intmd_sum on the result when</span>
-</span><span data-line="559"><span class="sd">            ``col_layout.structure[k] == &quot;block&quot;`` (reduces the BLOCK k&#39;s</span>
+</span><span data-line="559"><span class="sd">            ``col_layout.structure[k] == "block"`` (reduces the BLOCK k's</span>
 </span><span data-line="560"><span class="sd">            intmd axes that survived mm).</span>
-</span><span data-line="561"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="561"><span class="sd">        """</span>
 </span><span data-line="562">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">AssembledVector</span><span class="p">):</span>
 </span><span data-line="563">            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">layout</span><span class="p">:</span>
 </span><span data-line="564">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="565">                    <span class="s2">&quot;AssembledMatrix @ AssembledVector requires matching inner layouts&quot;</span>
+</span><span data-line="565">                    <span class="s2">"AssembledMatrix @ AssembledVector requires matching inner layouts"</span>
 </span><span data-line="566">                <span class="p">)</span>
 </span><span data-line="567">            <span class="n">out_tensors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="568">            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">):</span>
@@ -1020,7 +1020,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="571">                    <span class="n">aik</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
 </span><span data-line="572">                    <span class="n">bk</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
 </span><span data-line="573">                    <span class="n">r</span> <span class="o">=</span> <span class="n">aik</span> <span class="o">@</span> <span class="n">bk</span>
-</span><span data-line="574">                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span><span class="p">:</span>
+</span><span data-line="574">                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
 </span><span data-line="575">                        <span class="n">r</span> <span class="o">=</span> <span class="n">_intmd_sum_k</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
 </span><span data-line="576">                    <span class="n">acc</span> <span class="o">=</span> <span class="n">r</span> <span class="k">if</span> <span class="n">acc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">acc</span> <span class="o">+</span> <span class="n">r</span>
 </span><span data-line="577">                <span class="k">assert</span> <span class="n">acc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -1029,11 +1029,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="580">
 </span><span data-line="581">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">AssembledMatrix</span><span class="p">):</span>
 </span><span data-line="582">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="583">                <span class="sa">f</span><span class="s2">&quot;AssembledMatrix @ expected AssembledVector or AssembledMatrix; &quot;</span>
-</span><span data-line="584">                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="583">                <span class="sa">f</span><span class="s2">"AssembledMatrix @ expected AssembledVector or AssembledMatrix; "</span>
+</span><span data-line="584">                <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="585">            <span class="p">)</span>
 </span><span data-line="586">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">row_layout</span><span class="p">:</span>
-</span><span data-line="587">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;AssembledMatrix @ AssembledMatrix requires matching inner layouts&quot;</span><span class="p">)</span>
+</span><span data-line="587">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"AssembledMatrix @ AssembledMatrix requires matching inner layouts"</span><span class="p">)</span>
 </span><span data-line="588">        <span class="n">out_blocks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="589">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">):</span>
 </span><span data-line="590">            <span class="n">row_blocks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1043,7 +1043,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="594">                    <span class="n">aik</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
 </span><span data-line="595">                    <span class="n">bkj</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
 </span><span data-line="596">                    <span class="n">r</span> <span class="o">=</span> <span class="n">aik</span> <span class="o">@</span> <span class="n">bkj</span>
-</span><span data-line="597">                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span><span class="p">:</span>
+</span><span data-line="597">                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
 </span><span data-line="598">                        <span class="n">r</span> <span class="o">=</span> <span class="n">_intmd_sum_k</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
 </span><span data-line="599">                    <span class="n">acc</span> <span class="o">=</span> <span class="n">r</span> <span class="k">if</span> <span class="n">acc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">acc</span> <span class="o">+</span> <span class="n">r</span>
 </span><span data-line="600">                <span class="k">assert</span> <span class="n">acc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -1056,7 +1056,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="605">    <span class="k">def</span><span class="w"> </span><span class="nf">per_instance_matvec</span><span class="p">(</span>
 </span><span data-line="606">        <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">transpose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 </span><span data-line="607">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span>
-</span><span data-line="608"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Grain-diagonal matrix-vector product ``A @ x`` (or ``Aᵀ @ x``).</span>
+</span><span data-line="608"><span class="w">        </span><span class="sd">"""Grain-diagonal matrix-vector product ``A @ x`` (or ``Aᵀ @ x``).</span>
 </span><span data-line="609">
 </span><span data-line="610"><span class="sd">        Deliberately distinct from :meth:`__matmul__`: a BLOCK output group is</span>
 </span><span data-line="611"><span class="sd">        kept **per-site** (the grain-diagonal ``B @ v`` a block Thomas sweep or</span>
@@ -1068,21 +1068,21 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="617"><span class="sd">        solve, whereas ``@`` aggregates on every contracted BLOCK group (correct</span>
 </span><span data-line="618"><span class="sd">        only for the Schur cross-terms).</span>
 </span><span data-line="619">
-</span><span data-line="620"><span class="sd">        ``x``&#39;s groups correspond positionally to the input layout (the column</span>
+</span><span data-line="620"><span class="sd">        ``x``'s groups correspond positionally to the input layout (the column</span>
 </span><span data-line="621"><span class="sd">        layout, or the row layout when ``transpose``). ``transpose`` applies</span>
-</span><span data-line="622"><span class="sd">        ``Aᵀ`` (swap row/col layouts and transpose each block&#39;s base axes).</span>
+</span><span data-line="622"><span class="sd">        ``Aᵀ`` (swap row/col layouts and transpose each block's base axes).</span>
 </span><span data-line="623"><span class="sd">        Returns an :class:`AssembledVector` over the output layout.</span>
-</span><span data-line="624"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="624"><span class="sd">        """</span>
 </span><span data-line="625">        <span class="n">out_layout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span> <span class="k">if</span> <span class="n">transpose</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span>
 </span><span data-line="626">        <span class="n">in_layout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_layout</span> <span class="k">if</span> <span class="n">transpose</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span>
 </span><span data-line="627">        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="n">in_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">:</span>
 </span><span data-line="628">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="629">                <span class="sa">f</span><span class="s2">&quot;per_instance_matvec: x has </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2"> group(s) but the &quot;</span>
-</span><span data-line="630">                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;row&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">transpose</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;col&#39;</span><span class="si">}</span><span class="s2"> layout has </span><span class="si">{</span><span class="n">in_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="629">                <span class="sa">f</span><span class="s2">"per_instance_matvec: x has </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2"> group(s) but the "</span>
+</span><span data-line="630">                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'row'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">transpose</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'col'</span><span class="si">}</span><span class="s2"> layout has </span><span class="si">{</span><span class="n">in_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="631">            <span class="p">)</span>
 </span><span data-line="632">        <span class="n">out_tensors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="633">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">out_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">):</span>
-</span><span data-line="634">            <span class="n">out_is_block</span> <span class="o">=</span> <span class="n">out_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span>
+</span><span data-line="634">            <span class="n">out_is_block</span> <span class="o">=</span> <span class="n">out_layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"block"</span>
 </span><span data-line="635">            <span class="n">acc</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span data-line="636">            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">in_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">):</span>
 </span><span data-line="637">                <span class="n">blk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="k">if</span> <span class="n">transpose</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
@@ -1101,21 +1101,21 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="AssembledMatrix.transpose">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AssembledMatrix.transpose">[docs]</a>
 </span><span data-line="649">    <span class="k">def</span><span class="w"> </span><span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="650"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Block transpose: swap row/col layouts and transpose each block&#39;s base axes.</span>
+</span><span data-line="650"><span class="w">        </span><span class="sd">"""Block transpose: swap row/col layouts and transpose each block's base axes.</span>
 </span><span data-line="651">
 </span><span data-line="652"><span class="sd">        Correct for blocks with at most one intermediate (sub-batch) axis -- the</span>
 </span><span data-line="653"><span class="sd">        envelope the assembled ops support. A block carrying two distinct</span>
-</span><span data-line="654"><span class="sd">        intermediate axes (separate row and col sites) can&#39;t be transposed by a</span>
+</span><span data-line="654"><span class="sd">        intermediate axes (separate row and col sites) can't be transposed by a</span>
 </span><span data-line="655"><span class="sd">        base-axis swap alone (the intmd axes would need reordering too), so it is</span>
 </span><span data-line="656"><span class="sd">        rejected rather than silently mishandled.</span>
-</span><span data-line="657"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="657"><span class="sd">        """</span>
 </span><span data-line="658">        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensors</span><span class="p">):</span>
 </span><span data-line="659">            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
 </span><span data-line="660">                <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
 </span><span data-line="661">                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-</span><span data-line="662">                        <span class="s2">&quot;AssembledMatrix.transpose supports at most one intermediate &quot;</span>
-</span><span data-line="663">                        <span class="sa">f</span><span class="s2">&quot;(sub-batch) axis per block; block [</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">][</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">] has &quot;</span>
-</span><span data-line="664">                        <span class="sa">f</span><span class="s2">&quot;sub_batch_ndim=</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span data-line="662">                        <span class="s2">"AssembledMatrix.transpose supports at most one intermediate "</span>
+</span><span data-line="663">                        <span class="sa">f</span><span class="s2">"(sub-batch) axis per block; block [</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">][</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">] has "</span>
+</span><span data-line="664">                        <span class="sa">f</span><span class="s2">"sub_batch_ndim=</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2">."</span>
 </span><span data-line="665">                    <span class="p">)</span>
 </span><span data-line="666">        <span class="k">return</span> <span class="n">AssembledMatrix</span><span class="p">(</span>
 </span><span data-line="667">            <span class="bp">self</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span>
@@ -1129,20 +1129,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="674">
 </span><span data-line="675">    <span class="nd">@property</span>
 </span><span data-line="676">    <span class="k">def</span><span class="w"> </span><span class="nf">batch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_BatchIndexAM</span><span class="p">:</span>
-</span><span data-line="677"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Index/slice the leading dynamic (batch) axis of every block.</span>
+</span><span data-line="677"><span class="w">        </span><span class="sd">"""Index/slice the leading dynamic (batch) axis of every block.</span>
 </span><span data-line="678">
 </span><span data-line="679"><span class="sd">        ``am.batch[key]`` returns a new :class:`AssembledMatrix` with each block</span>
 </span><span data-line="680"><span class="sd">        sliced along its batch region (``t.batch[key]``) -- the dynamic (e.g.</span>
 </span><span data-line="681"><span class="sd">        time) axis the pyzag adapter and solvers walk.</span>
-</span><span data-line="682"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="682"><span class="sd">        """</span>
 </span><span data-line="683">        <span class="k">return</span> <span class="n">_BatchIndexAM</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 </span><span data-line="684">
 </span><span data-line="685">
 </span><span data-line="686"><span class="k">class</span><span class="w"> </span><span class="nc">_BatchIndexAM</span><span class="p">:</span>
-</span><span data-line="687"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscript proxy for :attr:`AssembledMatrix.batch`.&quot;&quot;&quot;</span>
+</span><span data-line="687"><span class="w">    </span><span class="sd">"""Subscript proxy for :attr:`AssembledMatrix.batch`."""</span>
 </span><span data-line="688">
-</span><span data-line="689">    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_am&quot;</span><span class="p">,)</span>
+</span><span data-line="689">    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_am"</span><span class="p">,)</span>
 </span><span data-line="690">
 </span><span data-line="691">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">am</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="692">        <span class="bp">self</span><span class="o">.</span><span class="n">_am</span> <span class="o">=</span> <span class="n">am</span>
@@ -1163,7 +1163,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="norm">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.norm">[docs]</a>
 </span><span data-line="707"><span class="k">def</span><span class="w"> </span><span class="nf">norm</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="708"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Batched Euclidean norm over all assembled vector groups.&quot;&quot;&quot;</span>
+</span><span data-line="708"><span class="w">    </span><span class="sd">"""Batched Euclidean norm over all assembled vector groups."""</span>
 </span><span data-line="709">    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">norm_sq</span><span class="p">(</span><span class="n">v</span><span class="p">))</span></div>
 
 </span><span data-line="710">
@@ -1171,14 +1171,14 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="norm_sq">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.norm_sq">[docs]</a>
 </span><span data-line="712"><span class="k">def</span><span class="w"> </span><span class="nf">norm_sq</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="713"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Batched squared Euclidean norm over all assembled vector groups.&quot;&quot;&quot;</span>
+</span><span data-line="713"><span class="w">    </span><span class="sd">"""Batched squared Euclidean norm over all assembled vector groups."""</span>
 </span><span data-line="714">    <span class="n">total</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span data-line="715">    <span class="k">for</span> <span class="n">gi</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">tensors</span><span class="p">):</span>
 </span><span data-line="716">        <span class="c1"># Sum over base axis; for BLOCK groups also sum over intmd sub_batch.</span>
 </span><span data-line="717">        <span class="n">squared</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="n">t</span><span class="o">.</span><span class="n">data</span>
 </span><span data-line="718">        <span class="c1"># Always sum over base axis.</span>
 </span><span data-line="719">        <span class="n">squared</span> <span class="o">=</span> <span class="n">squared</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-</span><span data-line="720">        <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">gi</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span><span class="p">:</span>
+</span><span data-line="720">        <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">gi</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
 </span><span data-line="721">            <span class="c1"># Sum over the sub_batch intmd axes (they live at positions</span>
 </span><span data-line="722">            <span class="c1"># batch_ndim : batch_ndim + sub_batch_ndim).</span>
 </span><span data-line="723">            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">):</span>
@@ -1201,11 +1201,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="739">    <span class="n">v_out</span><span class="p">:</span> <span class="n">ChainRuleDict</span><span class="p">,</span>
 </span><span data-line="740">    <span class="n">like_by_row</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
 </span><span data-line="741"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="742"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Assemble the full block matrix from chain-rule tangents.</span>
+</span><span data-line="742"><span class="w">    </span><span class="sd">"""Assemble the full block matrix from chain-rule tangents.</span>
 </span><span data-line="743">
 </span><span data-line="744"><span class="sd">    Iterates ``(row_group, col_group)`` pairs and dispatches to</span>
 </span><span data-line="745"><span class="sd">    :func:`_build_group_block` for each.</span>
-</span><span data-line="746"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="746"><span class="sd">    """</span>
 </span><span data-line="747">    <span class="n">blocks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="748">    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row_group</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row_layout</span><span class="o">.</span><span class="n">groups</span><span class="p">):</span>
 </span><span data-line="749">        <span class="n">row_blocks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1241,7 +1241,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="779">    <span class="n">v_out</span><span class="p">:</span> <span class="n">ChainRuleDict</span><span class="p">,</span>
 </span><span data-line="780">    <span class="n">like_by_row</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
 </span><span data-line="781"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="782"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Assemble one ``(row_group, col_group)`` block as a :class:`Tensor`.</span>
+</span><span data-line="782"><span class="w">    </span><span class="sd">"""Assemble one ``(row_group, col_group)`` block as a :class:`Tensor`.</span>
 </span><span data-line="783">
 </span><span data-line="784"><span class="sd">    Per-(row_var, col_var) tangent is converted to trailing-K form, with</span>
 </span><span data-line="785"><span class="sd">    K = (sub_extents × col_base_size) for the col side. The per-variable</span>
@@ -1250,14 +1250,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="788">
 </span><span data-line="789"><span class="sd">    Per structure:</span>
 </span><span data-line="790"><span class="sd">    * dense row AND dense col: sub_batch of both sides folded into base</span>
-</span><span data-line="791"><span class="sd">      (rows fold sub_row into row_base, cols&#39; K is already (sub_col_total *</span>
+</span><span data-line="791"><span class="sd">      (rows fold sub_row into row_base, cols' K is already (sub_col_total *</span>
 </span><span data-line="792"><span class="sd">      col_base) from the chain-rule fullify).</span>
 </span><span data-line="793"><span class="sd">    * block row: sub_row stays as leading intmd dim on the assembled block.</span>
 </span><span data-line="794"><span class="sd">    * block col: K still includes sub_col_total * col_base (no separate</span>
 </span><span data-line="795"><span class="sd">      handling needed at assembly; the matmul-side intmd_sum on BLOCK k</span>
 </span><span data-line="796"><span class="sd">      reduces in the trailing kp dim).</span>
-</span><span data-line="797"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="798">    <span class="c1"># Determine row dyn shape from the row group&#39;s `like` template.</span>
+</span><span data-line="797"><span class="sd">    """</span>
+</span><span data-line="798">    <span class="c1"># Determine row dyn shape from the row group's `like` template.</span>
 </span><span data-line="799">    <span class="c1"># All vars in a group share the same dyn shape by construction.</span>
 </span><span data-line="800">    <span class="c1"># ``like`` is the typed dynamic-base Tensor returned by</span>
 </span><span data-line="801">    <span class="c1"># :func:`_flatten_base`, which collapses base to a single trailing</span>
@@ -1265,8 +1265,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="803">    <span class="c1"># reshape). The typed wrapper carries its own ``batch_ndim`` --</span>
 </span><span data-line="804">    <span class="c1"># use that directly instead of computing from total ndim minus</span>
 </span><span data-line="805">    <span class="c1"># BASE_NDIM minus sub, which double-counts for the BASE_NDIM=0</span>
-</span><span data-line="806">    <span class="c1"># case (the trailing axis added by ``_flatten_base`` isn&#39;t</span>
-</span><span data-line="807">    <span class="c1"># reflected in the spec&#39;s BASE_NDIM).</span>
+</span><span data-line="806">    <span class="c1"># case (the trailing axis added by ``_flatten_base`` isn't</span>
+</span><span data-line="807">    <span class="c1"># reflected in the spec's BASE_NDIM).</span>
 </span><span data-line="808">    <span class="n">first_row</span> <span class="o">=</span> <span class="n">row_group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="809">    <span class="n">like</span> <span class="o">=</span> <span class="n">like_by_row</span><span class="p">[</span><span class="n">first_row</span><span class="p">]</span>
 </span><span data-line="810">    <span class="n">row_sb</span> <span class="o">=</span> <span class="n">row_layout</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">first_row</span><span class="p">)</span>
@@ -1283,13 +1283,13 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="821">            <span class="c1"># Expected trailing-K for this col var: sub_col_total * var_base.</span>
 </span><span data-line="822">            <span class="n">expected_K</span> <span class="o">=</span> <span class="n">col_sb_total</span> <span class="o">*</span> <span class="n">col_var_size</span>
 </span><span data-line="823">            <span class="c1"># Tangent block for this (row, col) pair.</span>
-</span><span data-line="824">            <span class="n">seed_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col_name</span><span class="si">}</span><span class="s2">:rgroup</span><span class="si">{</span><span class="n">row_gi</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="824">            <span class="n">seed_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">col_name</span><span class="si">}</span><span class="s2">:rgroup</span><span class="si">{</span><span class="n">row_gi</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="825">            <span class="n">t_block</span> <span class="o">=</span> <span class="n">v_out</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row_name</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">seed_key</span><span class="p">)</span>
 </span><span data-line="826">            <span class="k">if</span> <span class="n">t_block</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="827">                <span class="c1"># Zero block.</span>
 </span><span data-line="828">                <span class="n">block</span> <span class="o">=</span> <span class="n">_zero_block</span><span class="p">(</span>
 </span><span data-line="829">                    <span class="n">row_batch_dyn</span><span class="p">,</span>
-</span><span data-line="830">                    <span class="n">row_sb</span> <span class="k">if</span> <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span> <span class="k">else</span> <span class="p">(),</span>
+</span><span data-line="830">                    <span class="n">row_sb</span> <span class="k">if</span> <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">"block"</span> <span class="k">else</span> <span class="p">(),</span>
 </span><span data-line="831">                    <span class="n">row_structure</span><span class="p">,</span>
 </span><span data-line="832">                    <span class="n">col_structure</span><span class="p">,</span>
 </span><span data-line="833">                    <span class="n">row_name</span><span class="p">,</span>
@@ -1340,10 +1340,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="878">    <span class="n">row_sb</span> <span class="o">=</span> <span class="n">row_layout</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">row_name</span><span class="p">)</span>
 </span><span data-line="879">    <span class="n">row_sb_total</span> <span class="o">=</span> <span class="n">prod</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">row_sb</span><span class="p">])</span> <span class="ow">or</span> <span class="mi">1</span>
 </span><span data-line="880">    <span class="c1"># Paired BLOCK+BLOCK: single per-site intmd axis to match</span>
-</span><span data-line="881">    <span class="c1"># _convert_tangent_to_paired_block&#39;s storage convention.</span>
+</span><span data-line="881">    <span class="c1"># _convert_tangent_to_paired_block's storage convention.</span>
 </span><span data-line="882">    <span class="n">paired</span> <span class="o">=</span> <span class="p">(</span>
-</span><span data-line="883">        <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span>
-</span><span data-line="884">        <span class="ow">and</span> <span class="n">col_structure</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span>
+</span><span data-line="883">        <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">"block"</span>
+</span><span data-line="884">        <span class="ow">and</span> <span class="n">col_structure</span> <span class="o">==</span> <span class="s2">"block"</span>
 </span><span data-line="885">        <span class="ow">and</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">row_sb</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">col_sb</span><span class="p">)</span>
 </span><span data-line="886">        <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_sb</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
 </span><span data-line="887">    <span class="p">)</span>
@@ -1355,13 +1355,13 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="893">            <span class="n">batch_ndim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">row_batch_dyn</span><span class="p">),</span>
 </span><span data-line="894">            <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">site_shape</span><span class="p">),</span>
 </span><span data-line="895">        <span class="p">)</span>
-</span><span data-line="896">    <span class="k">if</span> <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span><span class="p">:</span>
+</span><span data-line="896">    <span class="k">if</span> <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">"dense"</span><span class="p">:</span>
 </span><span data-line="897">        <span class="n">row_dim</span> <span class="o">=</span> <span class="n">row_var_base</span> <span class="o">*</span> <span class="n">row_sb_total</span>
 </span><span data-line="898">        <span class="n">row_intmd_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
 </span><span data-line="899">    <span class="k">else</span><span class="p">:</span>
 </span><span data-line="900">        <span class="n">row_dim</span> <span class="o">=</span> <span class="n">row_var_base</span>
 </span><span data-line="901">        <span class="n">row_intmd_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">row_sb</span><span class="p">)</span>
-</span><span data-line="902">    <span class="k">if</span> <span class="n">col_structure</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span><span class="p">:</span>
+</span><span data-line="902">    <span class="k">if</span> <span class="n">col_structure</span> <span class="o">==</span> <span class="s2">"dense"</span><span class="p">:</span>
 </span><span data-line="903">        <span class="n">col_dim</span> <span class="o">=</span> <span class="n">col_var_base</span> <span class="o">*</span> <span class="n">col_sb_total</span>
 </span><span data-line="904">        <span class="n">col_intmd_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
 </span><span data-line="905">    <span class="k">else</span><span class="p">:</span>
@@ -1387,10 +1387,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="925">    <span class="n">paired_sb</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
 </span><span data-line="926">    <span class="n">col_var_base</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 </span><span data-line="927"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="928"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the paired-site assembled block ``(*dyn, *site, row_base, col_base)``.</span>
+</span><span data-line="928"><span class="w">    </span><span class="sd">"""Build the paired-site assembled block ``(*dyn, *site, row_base, col_base)``.</span>
 </span><span data-line="929">
 </span><span data-line="930"><span class="sd">    For a BLOCK+BLOCK pair with identical per-site sub_batch shape on both</span>
-</span><span data-line="931"><span class="sd">    sides, the chain-rule tangent&#39;s K_paired axes are broadcast (size 1) in</span>
+</span><span data-line="931"><span class="sd">    sides, the chain-rule tangent's K_paired axes are broadcast (size 1) in</span>
 </span><span data-line="932"><span class="sd">    storage against per-site sub axes -- the per-site Jacobian is the</span>
 </span><span data-line="933"><span class="sd">    eye-diagonal of the would-be full (site_row × site_col) grid. Storing</span>
 </span><span data-line="934"><span class="sd">    only the diagonal (single paired-site intmd axis) lets the downstream</span>
@@ -1405,24 +1405,24 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="943"><span class="sd">       trailing as the col_base storage axis. Flatten the row base axes</span>
 </span><span data-line="944"><span class="sd">       in front of it.</span>
 </span><span data-line="945"><span class="sd">    4. Result shape: ``(*dyn, *site, row_base, col_base)``.</span>
-</span><span data-line="946"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="946"><span class="sd">    """</span>
 </span><span data-line="947">    <span class="c1"># Materialise sub_batch broadcast so the per-site sub axes carry their</span>
 </span><span data-line="948">    <span class="c1"># true extent (the chain rule may have left them broadcast against</span>
 </span><span data-line="949">    <span class="c1"># paired K).</span>
 </span><span data-line="950">    <span class="n">block_w</span> <span class="o">=</span> <span class="n">t_block</span>
-</span><span data-line="951">    <span class="k">if</span> <span class="n">block_w</span><span class="o">.</span><span class="n">sub_batch_state</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">block_w</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="p">):</span>
+</span><span data-line="951">    <span class="k">if</span> <span class="n">block_w</span><span class="o">.</span><span class="n">sub_batch_state</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span> <span class="o">==</span> <span class="s2">"broadcast"</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">block_w</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="p">):</span>
 </span><span data-line="952">        <span class="n">block_w</span> <span class="o">=</span> <span class="n">block_w</span><span class="o">.</span><span class="n">materialize</span><span class="p">()</span>
 </span><span data-line="953">    <span class="k">if</span> <span class="n">block_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">paired_sb</span><span class="p">):</span>
 </span><span data-line="954">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="955">            <span class="sa">f</span><span class="s2">&quot;_convert_tangent_to_paired_block: tangent sub_batch_ndim=</span><span class="si">{</span><span class="n">block_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="956">            <span class="sa">f</span><span class="s2">&quot;doesn&#39;t match paired_sb=</span><span class="si">{</span><span class="n">paired_sb</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="955">            <span class="sa">f</span><span class="s2">"_convert_tangent_to_paired_block: tangent sub_batch_ndim=</span><span class="si">{</span><span class="n">block_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="956">            <span class="sa">f</span><span class="s2">"doesn't match paired_sb=</span><span class="si">{</span><span class="n">paired_sb</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="957">        <span class="p">)</span>
 </span><span data-line="958">    <span class="c1"># Drop broadcast K_paired axes -- they are size 1 in storage and the</span>
 </span><span data-line="959">    <span class="c1"># paired-site information now lives on the sub axis.</span>
 </span><span data-line="960">    <span class="n">drop_axes</span> <span class="o">=</span> <span class="p">[</span>
 </span><span data-line="961">        <span class="n">i</span>
 </span><span data-line="962">        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">block_w</span><span class="o">.</span><span class="n">k_state</span><span class="p">,</span> <span class="n">block_w</span><span class="o">.</span><span class="n">k_pairing</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-</span><span data-line="963">        <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;broadcast&quot;</span> <span class="ow">and</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">block_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
+</span><span data-line="963">        <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s2">"broadcast"</span> <span class="ow">and</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">block_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
 </span><span data-line="964">    <span class="p">]</span>
 </span><span data-line="965">    <span class="n">data</span> <span class="o">=</span> <span class="n">block_w</span><span class="o">.</span><span class="n">data</span>
 </span><span data-line="966">    <span class="n">new_k_state</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">block_w</span><span class="o">.</span><span class="n">k_state</span><span class="p">)</span>
@@ -1438,20 +1438,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="976">        <span class="c1"># the pipeline can treat it as the col_base axis.</span>
 </span><span data-line="977">        <span class="k">if</span> <span class="n">col_var_base</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
 </span><span data-line="978">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="979">                <span class="sa">f</span><span class="s2">&quot;_convert_tangent_to_paired_block: tangent has no K_base but &quot;</span>
-</span><span data-line="980">                <span class="sa">f</span><span class="s2">&quot;col_var_base=</span><span class="si">{</span><span class="n">col_var_base</span><span class="si">}</span><span class="s2"> (expected 1 for Scalar cols)&quot;</span>
+</span><span data-line="979">                <span class="sa">f</span><span class="s2">"_convert_tangent_to_paired_block: tangent has no K_base but "</span>
+</span><span data-line="980">                <span class="sa">f</span><span class="s2">"col_var_base=</span><span class="si">{</span><span class="n">col_var_base</span><span class="si">}</span><span class="s2"> (expected 1 for Scalar cols)"</span>
 </span><span data-line="981">            <span class="p">)</span>
 </span><span data-line="982">        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </span><span data-line="983">        <span class="n">new_k_ndim</span> <span class="o">=</span> <span class="mi">1</span>
 </span><span data-line="984">    <span class="k">elif</span> <span class="n">new_k_ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
 </span><span data-line="985">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="986">            <span class="sa">f</span><span class="s2">&quot;_convert_tangent_to_paired_block: expected k_ndim=1 after squeezing &quot;</span>
-</span><span data-line="987">            <span class="sa">f</span><span class="s2">&quot;paired-broadcast K, got k_ndim=</span><span class="si">{</span><span class="n">new_k_ndim</span><span class="si">}</span><span class="s2"> (k_state=</span><span class="si">{</span><span class="n">new_k_state</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span data-line="986">            <span class="sa">f</span><span class="s2">"_convert_tangent_to_paired_block: expected k_ndim=1 after squeezing "</span>
+</span><span data-line="987">            <span class="sa">f</span><span class="s2">"paired-broadcast K, got k_ndim=</span><span class="si">{</span><span class="n">new_k_ndim</span><span class="si">}</span><span class="s2"> (k_state=</span><span class="si">{</span><span class="n">new_k_state</span><span class="si">}</span><span class="s2">)"</span>
 </span><span data-line="988">        <span class="p">)</span>
 </span><span data-line="989">    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="n">col_var_base</span><span class="p">:</span>
 </span><span data-line="990">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="991">            <span class="sa">f</span><span class="s2">&quot;_convert_tangent_to_paired_block: K_base size </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="992">            <span class="sa">f</span><span class="s2">&quot;!= col_var_base </span><span class="si">{</span><span class="n">col_var_base</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="991">            <span class="sa">f</span><span class="s2">"_convert_tangent_to_paired_block: K_base size </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="992">            <span class="sa">f</span><span class="s2">"!= col_var_base </span><span class="si">{</span><span class="n">col_var_base</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="993">        <span class="p">)</span>
 </span><span data-line="994">    <span class="n">base_ndim</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">block_w</span><span class="p">)</span><span class="o">.</span><span class="n">BASE_NDIM</span>
 </span><span data-line="995">    <span class="n">sub_ndim</span> <span class="o">=</span> <span class="n">block_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
@@ -1488,20 +1488,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1026">    <span class="n">row_batch_dyn</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
 </span><span data-line="1027">    <span class="n">expected_K</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 </span><span data-line="1028"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="1029"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a chain-rule tangent block to the assembled block shape.</span>
+</span><span data-line="1029"><span class="w">    </span><span class="sd">"""Convert a chain-rule tangent block to the assembled block shape.</span>
 </span><span data-line="1030">
 </span><span data-line="1031"><span class="sd">    Pipeline:</span>
 </span><span data-line="1032"><span class="sd">    1. Move K to trailing via :func:`_tangent_block_to_trailing_k`</span>
 </span><span data-line="1033"><span class="sd">       (which fullifies broadcast K_paired axes internally). Result is a</span>
 </span><span data-line="1034"><span class="sd">       :class:`Tensor` with shape ``(*dyn, *sub_row, row_base, K)`` and</span>
 </span><span data-line="1035"><span class="sd">       ``K = sub_col_total * col_base`` after fullify.</span>
-</span><span data-line="1036"><span class="sd">    2. If row_structure == &quot;dense&quot;: fold sub_row into row_base. Resulting</span>
+</span><span data-line="1036"><span class="sd">    2. If row_structure == "dense": fold sub_row into row_base. Resulting</span>
 </span><span data-line="1037"><span class="sd">       shape: ``(*dyn, sub_row_total * row_base, K)``.</span>
-</span><span data-line="1038"><span class="sd">    3. If col_structure == &quot;block&quot;: unflatten the trailing K into</span>
+</span><span data-line="1038"><span class="sd">    3. If col_structure == "block": unflatten the trailing K into</span>
 </span><span data-line="1039"><span class="sd">       ``(*sub_col, col_base)`` so the col intmd dims sit between row and</span>
 </span><span data-line="1040"><span class="sd">       col base. Resulting shape: ``(*dyn, [*sub_row,] *sub_col,</span>
 </span><span data-line="1041"><span class="sd">       row_storage, col_base)``.</span>
-</span><span data-line="1042"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="1042"><span class="sd">    """</span>
 </span><span data-line="1043">    <span class="n">row_sb</span> <span class="o">=</span> <span class="n">row_layout</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">row_name</span><span class="p">)</span>
 </span><span data-line="1044">    <span class="n">col_sb</span> <span class="o">=</span> <span class="n">col_layout</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span>
 </span><span data-line="1045">    <span class="n">col_var_base</span> <span class="o">=</span> <span class="n">_storage_size</span><span class="p">(</span><span class="n">col_layout</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="n">col_name</span><span class="p">])</span>
@@ -1514,8 +1514,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1052">    <span class="c1"># downstream torch.linalg.solve sees off-diagonal site cells as</span>
 </span><span data-line="1053">    <span class="c1"># independent zero (10, 10) batches and reports singular.</span>
 </span><span data-line="1054">    <span class="k">if</span> <span class="p">(</span>
-</span><span data-line="1055">        <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span>
-</span><span data-line="1056">        <span class="ow">and</span> <span class="n">col_structure</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span>
+</span><span data-line="1055">        <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">"block"</span>
+</span><span data-line="1056">        <span class="ow">and</span> <span class="n">col_structure</span> <span class="o">==</span> <span class="s2">"block"</span>
 </span><span data-line="1057">        <span class="ow">and</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">row_sb</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">col_sb</span><span class="p">)</span>
 </span><span data-line="1058">        <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_sb</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
 </span><span data-line="1059">    <span class="p">):</span>
@@ -1534,8 +1534,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1072">    <span class="k">if</span> <span class="n">actual_K</span> <span class="o">!=</span> <span class="n">expected_K</span><span class="p">:</span>
 </span><span data-line="1073">        <span class="k">if</span> <span class="n">expected_K</span> <span class="o">%</span> <span class="n">actual_K</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
 </span><span data-line="1074">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="1075">                <span class="sa">f</span><span class="s2">&quot;chain-rule block K=</span><span class="si">{</span><span class="n">actual_K</span><span class="si">}</span><span class="s2"> for (</span><span class="si">{</span><span class="n">row_name</span><span class="si">!r}</span><span class="s2">,</span><span class="si">{</span><span class="n">col_name</span><span class="si">!r}</span><span class="s2">) &quot;</span>
-</span><span data-line="1076">                <span class="sa">f</span><span class="s2">&quot;doesn&#39;t divide expected K=</span><span class="si">{</span><span class="n">expected_K</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="1075">                <span class="sa">f</span><span class="s2">"chain-rule block K=</span><span class="si">{</span><span class="n">actual_K</span><span class="si">}</span><span class="s2"> for (</span><span class="si">{</span><span class="n">row_name</span><span class="si">!r}</span><span class="s2">,</span><span class="si">{</span><span class="n">col_name</span><span class="si">!r}</span><span class="s2">) "</span>
+</span><span data-line="1076">                <span class="sa">f</span><span class="s2">"doesn't divide expected K=</span><span class="si">{</span><span class="n">expected_K</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="1077">            <span class="p">)</span>
 </span><span data-line="1078">        <span class="n">repeat</span> <span class="o">=</span> <span class="n">expected_K</span> <span class="o">//</span> <span class="n">actual_K</span>
 </span><span data-line="1079">        <span class="n">idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">expected_K</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">%</span> <span class="n">actual_K</span>
@@ -1545,16 +1545,16 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1083">
 </span><span data-line="1084">    <span class="c1"># Row sub_batch handling.</span>
 </span><span data-line="1085">    <span class="n">have_row_sub</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">&gt;</span> <span class="mi">0</span>
-</span><span data-line="1086">    <span class="k">if</span> <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span> <span class="ow">and</span> <span class="n">have_row_sub</span><span class="p">:</span>
+</span><span data-line="1086">    <span class="k">if</span> <span class="n">row_structure</span> <span class="o">==</span> <span class="s2">"dense"</span> <span class="ow">and</span> <span class="n">have_row_sub</span><span class="p">:</span>
 </span><span data-line="1087">        <span class="c1"># Fold sub_row into the row_base axis.</span>
 </span><span data-line="1088">        <span class="c1"># Shape: (*dyn, *sub_row, row_base, K) -&gt; (*dyn, sub_row_total*row_base, K)</span>
 </span><span data-line="1089">        <span class="n">block</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">flatten_sub_batch_into_first_base_axis</span><span class="p">()</span>
 </span><span data-line="1090">        <span class="n">have_row_sub</span> <span class="o">=</span> <span class="kc">False</span>
 </span><span data-line="1091">
-</span><span data-line="1092">    <span class="c1"># Col sub_batch handling: if col_structure == &quot;block&quot;, unflatten K into</span>
+</span><span data-line="1092">    <span class="c1"># Col sub_batch handling: if col_structure == "block", unflatten K into</span>
 </span><span data-line="1093">    <span class="c1"># (*sub_col, col_base) so col intmd dims appear between row and col</span>
 </span><span data-line="1094">    <span class="c1"># base. The K trailing axis equals col_sb_total * col_var_base.</span>
-</span><span data-line="1095">    <span class="k">if</span> <span class="n">col_structure</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span> <span class="ow">and</span> <span class="n">col_sb</span><span class="p">:</span>
+</span><span data-line="1095">    <span class="k">if</span> <span class="n">col_structure</span> <span class="o">==</span> <span class="s2">"block"</span> <span class="ow">and</span> <span class="n">col_sb</span><span class="p">:</span>
 </span><span data-line="1096">        <span class="c1"># block.data shape: (*dyn, [*sub_row,] row_storage, K=sub_col_total*col_base)</span>
 </span><span data-line="1097">        <span class="c1"># Reshape K -&gt; (*sub_col, col_base) so the trailing 2+len(sub_col)</span>
 </span><span data-line="1098">        <span class="c1"># axes become (row_base, *sub_col, col_base). Then permute to swap</span>
@@ -1564,7 +1564,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1102">        <span class="n">K_dim</span> <span class="o">=</span> <span class="n">old_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </span><span data-line="1103">        <span class="k">if</span> <span class="n">K_dim</span> <span class="o">!=</span> <span class="n">col_sb_total</span> <span class="o">*</span> <span class="n">col_var_base</span><span class="p">:</span>
 </span><span data-line="1104">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="1105">                <span class="sa">f</span><span class="s2">&quot;K dim </span><span class="si">{</span><span class="n">K_dim</span><span class="si">}</span><span class="s2"> != sub_col_total(</span><span class="si">{</span><span class="n">col_sb_total</span><span class="si">}</span><span class="s2">) * col_base(</span><span class="si">{</span><span class="n">col_var_base</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span data-line="1105">                <span class="sa">f</span><span class="s2">"K dim </span><span class="si">{</span><span class="n">K_dim</span><span class="si">}</span><span class="s2"> != sub_col_total(</span><span class="si">{</span><span class="n">col_sb_total</span><span class="si">}</span><span class="s2">) * col_base(</span><span class="si">{</span><span class="n">col_var_base</span><span class="si">}</span><span class="s2">)"</span>
 </span><span data-line="1106">            <span class="p">)</span>
 </span><span data-line="1107">        <span class="n">col_intmd_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">col_sb</span><span class="p">)</span>
 </span><span data-line="1108">        <span class="c1"># After reshape, axes look like:</span>
@@ -1587,10 +1587,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1125">            <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">block</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">col_intmd_shape</span><span class="p">),</span>
 </span><span data-line="1126">        <span class="p">)</span>
 </span><span data-line="1127">
-</span><span data-line="1128">    <span class="c1"># NB: we do NOT broadcast to row_batch_dyn here. The tangent&#39;s natural</span>
+</span><span data-line="1128">    <span class="c1"># NB: we do NOT broadcast to row_batch_dyn here. The tangent's natural</span>
 </span><span data-line="1129">    <span class="c1"># batch_shape is what the chain rule produced; cross-block alignment is</span>
 </span><span data-line="1130">    <span class="c1"># handled by torch broadcasting at matmul / cat time. row_batch_dyn was</span>
-</span><span data-line="1131">    <span class="c1"># only ever a hint derived from one variable&#39;s `like` template; forcing</span>
+</span><span data-line="1131">    <span class="c1"># only ever a hint derived from one variable's `like` template; forcing</span>
 </span><span data-line="1132">    <span class="c1"># the tangent into it caused size-6 vs size-1 conflicts when the</span>
 </span><span data-line="1133">    <span class="c1"># tangent had legitimate dyn axes from upstream chain-rule combines.</span>
 </span><span data-line="1134">    <span class="k">del</span> <span class="n">row_batch_dyn</span>
@@ -1598,14 +1598,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1136">
 </span><span data-line="1137">
 </span><span data-line="1138"><span class="k">def</span><span class="w"> </span><span class="nf">_intmd_sum_k</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">col_layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="1139"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Reduce along the inner-group k&#39;s intmd axes on a matmul result.</span>
+</span><span data-line="1139"><span class="w">    </span><span class="sd">"""Reduce along the inner-group k's intmd axes on a matmul result.</span>
 </span><span data-line="1140">
 </span><span data-line="1141"><span class="sd">    For BLOCK k_group, the post-mm tensor has the col-side intmd axes</span>
-</span><span data-line="1142"><span class="sd">    that were inherited from the k group&#39;s BLOCK structure. Sum them out.</span>
+</span><span data-line="1142"><span class="sd">    that were inherited from the k group's BLOCK structure. Sum them out.</span>
 </span><span data-line="1143"><span class="sd">    The intmd axes contributed by the k group are the FIRST k_sub_ndim</span>
-</span><span data-line="1144"><span class="sd">    axes of the result&#39;s sub_batch region (because the matmul preserved</span>
+</span><span data-line="1144"><span class="sd">    axes of the result's sub_batch region (because the matmul preserved</span>
 </span><span data-line="1145"><span class="sd">    them through broadcasting / inheritance).</span>
-</span><span data-line="1146"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="1146"><span class="sd">    """</span>
 </span><span data-line="1147">    <span class="n">k_sb</span> <span class="o">=</span> <span class="n">col_layout</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 </span><span data-line="1148">    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k_sb</span><span class="p">)</span>
 </span><span data-line="1149">    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">r</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1627,12 +1627,12 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1165">
 </span><span data-line="1166">
 </span><span data-line="1167"><span class="k">def</span><span class="w"> </span><span class="nf">_sum_sub_batch_all</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="1168"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Sum a vector ``Tensor`` over ALL its sub-batch (site) axes -&gt; ``sub_batch_ndim=0``.</span>
+</span><span data-line="1168"><span class="w">    </span><span class="sd">"""Sum a vector ``Tensor`` over ALL its sub-batch (site) axes -&gt; ``sub_batch_ndim=0``.</span>
 </span><span data-line="1169">
 </span><span data-line="1170"><span class="sd">    The per-site aggregation a DENSE output group applies when it consumes a</span>
 </span><span data-line="1171"><span class="sd">    BLOCK input in :meth:`AssembledMatrix.per_instance_matvec` (the Schur</span>
 </span><span data-line="1172"><span class="sd">    ``A_sp @ x_p`` cross-term).</span>
-</span><span data-line="1173"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="1173"><span class="sd">    """</span>
 </span><span data-line="1174">    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
 </span><span data-line="1175">        <span class="k">return</span> <span class="n">t</span>
 </span><span data-line="1176">    <span class="n">axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">batch_ndim</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">batch_ndim</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">))</span>
@@ -1640,11 +1640,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1178">
 </span><span data-line="1179">
 </span><span data-line="1180"><span class="k">def</span><span class="w"> </span><span class="nf">_broadcast_batch</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target_dyn</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="1181"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Broadcast the batch region to ``target_dyn``.</span>
+</span><span data-line="1181"><span class="w">    </span><span class="sd">"""Broadcast the batch region to ``target_dyn``.</span>
 </span><span data-line="1182">
 </span><span data-line="1183"><span class="sd">    If ``t`` already has the right shape, return unchanged. Excess leading</span>
 </span><span data-line="1184"><span class="sd">    dims are squeezed when size-1; non-singleton extras raise.</span>
-</span><span data-line="1185"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="1185"><span class="sd">    """</span>
 </span><span data-line="1186">    <span class="n">cur</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">)</span>
 </span><span data-line="1187">    <span class="k">if</span> <span class="n">cur</span> <span class="o">==</span> <span class="n">target_dyn</span><span class="p">:</span>
 </span><span data-line="1188">        <span class="k">return</span> <span class="n">t</span>
@@ -1665,8 +1665,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1203">    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_extra</span><span class="p">):</span>
 </span><span data-line="1204">        <span class="k">if</span> <span class="n">new_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
 </span><span data-line="1205">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="1206">                <span class="sa">f</span><span class="s2">&quot;_broadcast_batch: extra leading dim of size </span><span class="si">{</span><span class="n">new_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="1207">                <span class="sa">f</span><span class="s2">&quot;cannot be trimmed (cur=</span><span class="si">{</span><span class="n">cur</span><span class="si">}</span><span class="s2">, target=</span><span class="si">{</span><span class="n">target_dyn</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span data-line="1206">                <span class="sa">f</span><span class="s2">"_broadcast_batch: extra leading dim of size </span><span class="si">{</span><span class="n">new_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> "</span>
+</span><span data-line="1207">                <span class="sa">f</span><span class="s2">"cannot be trimmed (cur=</span><span class="si">{</span><span class="n">cur</span><span class="si">}</span><span class="s2">, target=</span><span class="si">{</span><span class="n">target_dyn</span><span class="si">}</span><span class="s2">)"</span>
 </span><span data-line="1208">            <span class="p">)</span>
 </span><span data-line="1209">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </span><span data-line="1210">    <span class="n">new_data</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="n">target_dyn</span><span class="p">,</span> <span class="o">*</span><span class="n">new_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">target_dyn</span><span class="p">)</span> <span class="p">:])</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
@@ -1678,15 +1678,15 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1216">
 </span><span data-line="1217">
 </span><span data-line="1218"><span class="k">def</span><span class="w"> </span><span class="nf">_cat_along_base</span><span class="p">(</span><span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="1219"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Concatenate Tensors along the LAST base axis. All inputs share</span>
+</span><span data-line="1219"><span class="w">    </span><span class="sd">"""Concatenate Tensors along the LAST base axis. All inputs share</span>
 </span><span data-line="1220"><span class="sd">    batch + sub_batch + non-last-base shapes; only the trailing axis varies.</span>
-</span><span data-line="1221"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="1221"><span class="sd">    """</span>
 </span><span data-line="1222">    <span class="k">if</span> <span class="ow">not</span> <span class="n">parts</span><span class="p">:</span>
-</span><span data-line="1223">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;_cat_along_base: empty parts list&quot;</span><span class="p">)</span>
+</span><span data-line="1223">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"_cat_along_base: empty parts list"</span><span class="p">)</span>
 </span><span data-line="1224">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 </span><span data-line="1225">        <span class="k">return</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="1226">    <span class="c1"># Parts may have different ndims (zero blocks carry the row_batch_dyn</span>
-</span><span data-line="1227">    <span class="c1"># leading axes, non-zero tangent blocks inherit the chain-rule&#39;s</span>
+</span><span data-line="1227">    <span class="c1"># leading axes, non-zero tangent blocks inherit the chain-rule's</span>
 </span><span data-line="1228">    <span class="c1"># natural dyn shape). Left-pad each to the max ndim with size-1 axes,</span>
 </span><span data-line="1229">    <span class="c1"># then broadcast everything except the trailing cat axis.</span>
 </span><span data-line="1230">    <span class="n">max_ndim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">)</span>
@@ -1701,7 +1701,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1239">    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
 </span><span data-line="1240">        <span class="n">shapes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">]</span>
 </span><span data-line="1241">        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span data-line="1242">            <span class="sa">f</span><span class="s2">&quot;_cat_along_base: broadcast failed with parts shapes </span><span class="si">{</span><span class="n">shapes</span><span class="si">}</span><span class="s2">; original error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="1242">            <span class="sa">f</span><span class="s2">"_cat_along_base: broadcast failed with parts shapes </span><span class="si">{</span><span class="n">shapes</span><span class="si">}</span><span class="s2">; original error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="1243">        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 </span><span data-line="1244">    <span class="n">broadcasted</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="n">target</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">padded_data</span><span class="p">]</span>
 </span><span data-line="1245">    <span class="n">cat_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">broadcasted</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
@@ -1710,20 +1710,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1248">    <span class="c1"># whatever the parts share).</span>
 </span><span data-line="1249">    <span class="n">parts_sub</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
 </span><span data-line="1250">    <span class="c1"># Result base_ndim: base axes are everything after dyn + sub. The</span>
-</span><span data-line="1251">    <span class="c1"># cat axis is the LAST base axis; preserve part&#39;s base_ndim count.</span>
+</span><span data-line="1251">    <span class="c1"># cat axis is the LAST base axis; preserve part's base_ndim count.</span>
 </span><span data-line="1252">    <span class="n">parts_base</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">base_ndim</span>
 </span><span data-line="1253">    <span class="n">new_batch_ndim</span> <span class="o">=</span> <span class="n">cat_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">parts_sub</span> <span class="o">-</span> <span class="n">parts_base</span>
 </span><span data-line="1254">    <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">cat_data</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">new_batch_ndim</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">parts_sub</span><span class="p">)</span>
 </span><span data-line="1255">
 </span><span data-line="1256">
 </span><span data-line="1257"><span class="k">def</span><span class="w"> </span><span class="nf">_cat_along_row</span><span class="p">(</span><span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="1258"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Concatenate Tensors along the row axis (-2 in base, base_ndim&gt;=2).</span>
+</span><span data-line="1258"><span class="w">    </span><span class="sd">"""Concatenate Tensors along the row axis (-2 in base, base_ndim&gt;=2).</span>
 </span><span data-line="1259">
 </span><span data-line="1260"><span class="sd">    Left-pads parts of different ndim with size-1 leading axes (same</span>
 </span><span data-line="1261"><span class="sd">    ragged-ndim tolerance as :func:`_cat_along_base`).</span>
-</span><span data-line="1262"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="1262"><span class="sd">    """</span>
 </span><span data-line="1263">    <span class="k">if</span> <span class="ow">not</span> <span class="n">parts</span><span class="p">:</span>
-</span><span data-line="1264">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;_cat_along_row: empty parts list&quot;</span><span class="p">)</span>
+</span><span data-line="1264">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"_cat_along_row: empty parts list"</span><span class="p">)</span>
 </span><span data-line="1265">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 </span><span data-line="1266">        <span class="k">return</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="1267">    <span class="n">max_ndim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">)</span>
@@ -1747,14 +1747,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1285">
 </span><span data-line="1286">
 </span><span data-line="1287"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="1288">    <span class="s2">&quot;AssembledVector&quot;</span><span class="p">,</span>
-</span><span data-line="1289">    <span class="s2">&quot;AssembledMatrix&quot;</span><span class="p">,</span>
-</span><span data-line="1290">    <span class="s2">&quot;norm&quot;</span><span class="p">,</span>
-</span><span data-line="1291">    <span class="s2">&quot;norm_sq&quot;</span><span class="p">,</span>
-</span><span data-line="1292">    <span class="s2">&quot;wrap_group_raw&quot;</span><span class="p">,</span>
-</span><span data-line="1293">    <span class="s2">&quot;wrap_block_raw&quot;</span><span class="p">,</span>
-</span><span data-line="1294">    <span class="s2">&quot;group_block_sub_batch_ndim&quot;</span><span class="p">,</span>
-</span><span data-line="1295">    <span class="s2">&quot;_build_block_matrix&quot;</span><span class="p">,</span>
+</span><span data-line="1288">    <span class="s2">"AssembledVector"</span><span class="p">,</span>
+</span><span data-line="1289">    <span class="s2">"AssembledMatrix"</span><span class="p">,</span>
+</span><span data-line="1290">    <span class="s2">"norm"</span><span class="p">,</span>
+</span><span data-line="1291">    <span class="s2">"norm_sq"</span><span class="p">,</span>
+</span><span data-line="1292">    <span class="s2">"wrap_group_raw"</span><span class="p">,</span>
+</span><span data-line="1293">    <span class="s2">"wrap_block_raw"</span><span class="p">,</span>
+</span><span data-line="1294">    <span class="s2">"group_block_sub_batch_ndim"</span><span class="p">,</span>
+</span><span data-line="1295">    <span class="s2">"_build_block_matrix"</span><span class="p">,</span>
 </span><span data-line="1296"><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">

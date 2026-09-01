@@ -417,7 +417,7 @@ data-aria-dark="Switch to auto color mode">
 <span id="building-docs"></span><h1>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h1>
 <p>The doc pipeline is <code class="docutils literal notranslate"><span class="pre">sphinx-build</span></code> driven by <code class="docutils literal notranslate"><span class="pre">doc/conf.py</span></code>, wrapped by
 <code class="docutils literal notranslate"><span class="pre">doc/scripts/build.sh</span></code>:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>-v<span class="w">               </span><span class="c1"># sphinx + extensions land here</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev]"</span><span class="w"> </span>-v<span class="w">               </span><span class="c1"># sphinx + extensions land here</span>
 </span><span data-line="2">doc/scripts/build.sh<span class="w">                     </span><span class="c1"># build to doc/_build/html</span>
 </span><span data-line="3">xdg-open<span class="w"> </span>doc/_build/html/index.html<span class="w">      </span><span class="c1"># macOS: `open ...`</span>
 </span></pre></div>

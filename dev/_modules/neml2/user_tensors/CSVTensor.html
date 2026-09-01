@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;``CSV&lt;Type&gt;`` user-tensor classes used by the verification suite.</span>
+</span><span data-line="25"><span class="sd">"""``CSV&lt;Type&gt;`` user-tensor classes used by the verification suite.</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">Each class reads a CSV file (loaded lazily, cached per-path) and returns a</span>
 </span><span data-line="28"><span class="sd">typed ``TensorWrapper`` whose leading axis indexes rows. The HIT options</span>
@@ -452,17 +452,17 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="32">
 </span><span data-line="33"><span class="sd">Two column-selection modes:</span>
 </span><span data-line="34">
-</span><span data-line="35"><span class="sd">* ``variable = &#39;foo&#39;`` -- auto-builds column names by suffix (e.g. SR2</span>
+</span><span data-line="35"><span class="sd">* ``variable = 'foo'`` -- auto-builds column names by suffix (e.g. SR2</span>
 </span><span data-line="36"><span class="sd">  =&gt; ``foo_xx`` ... ``foo_xy``). Used by the converted ``.vtest``-derived</span>
 </span><span data-line="37"><span class="sd">  files where every variable follows the suffix convention.</span>
-</span><span data-line="38"><span class="sd">* ``column_names = &#39;a b c&#39;`` -- explicit column list. Used by hand-authored</span>
+</span><span data-line="38"><span class="sd">* ``column_names = 'a b c'`` -- explicit column list. Used by hand-authored</span>
 </span><span data-line="39"><span class="sd">  ``reference.csv`` files (e.g. the traction-separation scenarios).</span>
 </span><span data-line="40">
-</span><span data-line="41"><span class="sd">SR2 storage: the ``.vtest`` files explicitly declare &quot;Mandel convention&quot;</span>
+</span><span data-line="41"><span class="sd">SR2 storage: the ``.vtest`` files explicitly declare "Mandel convention"</span>
 </span><span data-line="42"><span class="sd">in their headers, so ``CSVSR2`` returns the stacked columns verbatim with</span>
 </span><span data-line="43"><span class="sd">no sqrt(2) scaling. If a future CSV stores physical (non-Mandel) shear values,</span>
 </span><span data-line="44"><span class="sd">add an ``apply_mandel = true`` HIT option here at that point.</span>
-</span><span data-line="45"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="45"><span class="sd">"""</span>
 </span><span data-line="46">
 </span><span data-line="47"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="48">
@@ -484,11 +484,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="64">
 </span><span data-line="65"><span class="nd">@cache</span>
 </span><span data-line="66"><span class="k">def</span><span class="w"> </span><span class="nf">_load_csv</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-</span><span data-line="67"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read *path* once and return a dict of column-name -&gt; 1-D float64 tensor.</span>
+</span><span data-line="67"><span class="w">    </span><span class="sd">"""Read *path* once and return a dict of column-name -&gt; 1-D float64 tensor.</span>
 </span><span data-line="68">
 </span><span data-line="69"><span class="sd">    Uses the stdlib ``csv`` module to avoid pulling pandas into the import</span>
 </span><span data-line="70"><span class="sd">    chain just for a few-hundred-row reference file.</span>
-</span><span data-line="71"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="71"><span class="sd">    """</span>
 </span><span data-line="72">    <span class="kn">import</span><span class="w"> </span><span class="nn">csv</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_csv</span>
 </span><span data-line="73">
 </span><span data-line="74">    <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -499,25 +499,25 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="79">    <span class="n">cols</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">header</span><span class="p">}</span>
 </span><span data-line="80">    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
 </span><span data-line="81">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
-</span><span data-line="82">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: row has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span><span class="si">}</span><span class="s2"> fields but header has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="82">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: row has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span><span class="si">}</span><span class="s2"> fields but header has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="83">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span data-line="84">            <span class="n">cols</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
 </span><span data-line="85">    <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="n">cols</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 </span><span data-line="86">
 </span><span data-line="87">
 </span><span data-line="88"><span class="k">def</span><span class="w"> </span><span class="nf">_resolve_csv_path</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-</span><span data-line="89">    <span class="n">raw</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;csv_file&quot;</span><span class="p">)</span>
+</span><span data-line="89">    <span class="n">raw</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">"csv_file"</span><span class="p">)</span>
 </span><span data-line="90">    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
 </span><span data-line="91">    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
 </span><span data-line="92">        <span class="n">path</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">path</span>
 </span><span data-line="93">    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-</span><span data-line="94">        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSV file not found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="94">        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"CSV file not found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="95">    <span class="k">return</span> <span class="n">path</span>
 </span><span data-line="96">
 </span><span data-line="97">
 </span><span data-line="98"><span class="k">def</span><span class="w"> </span><span class="nf">_read_optional_column_names</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="99"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the optional ``column_names`` HIT param as a list of tokens.&quot;&quot;&quot;</span>
-</span><span data-line="100">    <span class="n">raw</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;column_names&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span data-line="99"><span class="w">    </span><span class="sd">"""Read the optional ``column_names`` HIT param as a list of tokens."""</span>
+</span><span data-line="100">    <span class="n">raw</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">"column_names"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
 </span><span data-line="101">    <span class="k">if</span> <span class="ow">not</span> <span class="n">raw</span><span class="p">:</span>
 </span><span data-line="102">        <span class="k">return</span> <span class="kc">None</span>
 </span><span data-line="103">    <span class="k">return</span> <span class="n">raw</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
@@ -530,47 +530,47 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="110"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 </span><span data-line="111">    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
 </span><span data-line="112">    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
-</span><span data-line="113">        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">csv_path</span><span class="si">}</span><span class="s2">: missing column(s) </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="113">        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">csv_path</span><span class="si">}</span><span class="s2">: missing column(s) </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="114">    <span class="k">return</span> <span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
 </span><span data-line="115">
 </span><span data-line="116">
 </span><span data-line="117"><span class="k">class</span><span class="w"> </span><span class="nc">_CSVTensorBase</span><span class="p">:</span>
-</span><span data-line="118"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Shared HIT-parsing scaffolding for the CSV&lt;Type&gt; classes.</span>
+</span><span data-line="118"><span class="w">    </span><span class="sd">"""Shared HIT-parsing scaffolding for the CSV&lt;Type&gt; classes.</span>
 </span><span data-line="119">
 </span><span data-line="120"><span class="sd">    Subclasses set ``TYPE_NAME`` (registry key), ``WRAPPER`` (the typed</span>
 </span><span data-line="121"><span class="sd">    ``TensorWrapper`` class), and override ``_default_column_names`` to</span>
 </span><span data-line="122"><span class="sd">    expand a ``variable`` prefix into per-component column names.</span>
-</span><span data-line="123"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="123"><span class="sd">    """</span>
 </span><span data-line="124">
 </span><span data-line="125">    <span class="n">TYPE_NAME</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 </span><span data-line="126">    <span class="n">WRAPPER</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]</span>
-</span><span data-line="127">    <span class="n">SECTION</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Tensors&quot;</span>
+</span><span data-line="127">    <span class="n">SECTION</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Tensors"</span>
 </span><span data-line="128">
 </span><span data-line="129">    <span class="c1"># Shared documentation schema — every CSV&lt;Type&gt; subclass inherits the same</span>
 </span><span data-line="130">    <span class="c1"># HIT surface via :meth:`from_hit`. ``variable`` and ``column_names`` are</span>
-</span><span data-line="131">    <span class="c1"># mutually exclusive (validated at parse time) but the schema can&#39;t express</span>
+</span><span data-line="131">    <span class="c1"># mutually exclusive (validated at parse time) but the schema can't express</span>
 </span><span data-line="132">    <span class="c1"># that constraint; both are declared optional and the constructor enforces</span>
 </span><span data-line="133">    <span class="c1"># the rule.</span>
 </span><span data-line="134">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
 </span><span data-line="135">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="136">            <span class="s2">&quot;csv_file&quot;</span><span class="p">,</span>
+</span><span data-line="136">            <span class="s2">"csv_file"</span><span class="p">,</span>
 </span><span data-line="137">            <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="138">            <span class="s2">&quot;Path to the CSV file. Resolved relative to the input file&#39;s directory when &quot;</span>
-</span><span data-line="139">            <span class="s2">&quot;not absolute.&quot;</span><span class="p">,</span>
+</span><span data-line="138">            <span class="s2">"Path to the CSV file. Resolved relative to the input file's directory when "</span>
+</span><span data-line="139">            <span class="s2">"not absolute."</span><span class="p">,</span>
 </span><span data-line="140">        <span class="p">),</span>
 </span><span data-line="141">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="142">            <span class="s2">&quot;variable&quot;</span><span class="p">,</span>
+</span><span data-line="142">            <span class="s2">"variable"</span><span class="p">,</span>
 </span><span data-line="143">            <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="144">            <span class="s2">&quot;Column-name prefix expanded via the per-type suffix convention (e.g. &quot;</span>
-</span><span data-line="145">            <span class="s2">&quot;``stress`` -&gt; ``stress_xx``, ``stress_yy``, ... for SR2). Mutually exclusive &quot;</span>
-</span><span data-line="146">            <span class="s2">&quot;with ``column_names``.&quot;</span><span class="p">,</span>
-</span><span data-line="147">            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span data-line="144">            <span class="s2">"Column-name prefix expanded via the per-type suffix convention (e.g. "</span>
+</span><span data-line="145">            <span class="s2">"``stress`` -&gt; ``stress_xx``, ``stress_yy``, ... for SR2). Mutually exclusive "</span>
+</span><span data-line="146">            <span class="s2">"with ``column_names``."</span><span class="p">,</span>
+</span><span data-line="147">            <span class="n">default</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
 </span><span data-line="148">        <span class="p">),</span>
 </span><span data-line="149">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="150">            <span class="s2">&quot;column_names&quot;</span><span class="p">,</span>
+</span><span data-line="150">            <span class="s2">"column_names"</span><span class="p">,</span>
 </span><span data-line="151">            <span class="nb">list</span><span class="p">,</span>
-</span><span data-line="152">            <span class="s2">&quot;Explicit whitespace-separated list of CSV column names; bypasses the &quot;</span>
-</span><span data-line="153">            <span class="s2">&quot;``variable`` suffix expansion. Mutually exclusive with ``variable``.&quot;</span><span class="p">,</span>
+</span><span data-line="152">            <span class="s2">"Explicit whitespace-separated list of CSV column names; bypasses the "</span>
+</span><span data-line="153">            <span class="s2">"``variable`` suffix expansion. Mutually exclusive with ``variable``."</span><span class="p">,</span>
 </span><span data-line="154">            <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
 </span><span data-line="155">        <span class="p">),</span>
 </span><span data-line="156">    <span class="p">)</span>
@@ -585,11 +585,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="165">        <span class="n">cols</span> <span class="o">=</span> <span class="n">_load_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">)</span>
 </span><span data-line="166">
 </span><span data-line="167">        <span class="n">explicit</span> <span class="o">=</span> <span class="n">_read_optional_column_names</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-</span><span data-line="168">        <span class="n">variable</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span data-line="168">        <span class="n">variable</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">"variable"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
 </span><span data-line="169">        <span class="k">if</span> <span class="n">explicit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">variable</span><span class="p">:</span>
 </span><span data-line="170">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="171">                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">TYPE_NAME</span><span class="si">}</span><span class="s2">: specify either &#39;variable&#39; or &#39;column_names&#39;, not both &quot;</span>
-</span><span data-line="172">                <span class="sa">f</span><span class="s2">&quot;(at </span><span class="si">{</span><span class="n">csv_path</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span data-line="171">                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">TYPE_NAME</span><span class="si">}</span><span class="s2">: specify either 'variable' or 'column_names', not both "</span>
+</span><span data-line="172">                <span class="sa">f</span><span class="s2">"(at </span><span class="si">{</span><span class="n">csv_path</span><span class="si">}</span><span class="s2">)"</span>
 </span><span data-line="173">            <span class="p">)</span>
 </span><span data-line="174">        <span class="k">if</span> <span class="n">explicit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="175">            <span class="n">names</span> <span class="o">=</span> <span class="n">explicit</span>
@@ -597,7 +597,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="177">            <span class="n">names</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_default_column_names</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
 </span><span data-line="178">        <span class="k">else</span><span class="p">:</span>
 </span><span data-line="179">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="180">                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">TYPE_NAME</span><span class="si">}</span><span class="s2">: must specify &#39;variable&#39; or &#39;column_names&#39; (at </span><span class="si">{</span><span class="n">csv_path</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span data-line="180">                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">TYPE_NAME</span><span class="si">}</span><span class="s2">: must specify 'variable' or 'column_names' (at </span><span class="si">{</span><span class="n">csv_path</span><span class="si">}</span><span class="s2">)"</span>
 </span><span data-line="181">            <span class="p">)</span>
 </span><span data-line="182">
 </span><span data-line="183">        <span class="n">columns</span> <span class="o">=</span> <span class="n">_select_columns</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">csv_path</span><span class="p">)</span>
@@ -610,11 +610,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="190">
 <div class="viewcode-block" id="CSVScalar">
 <a class="viewcode-back" href="../../../content/python_api/neml2.user_tensors.html#neml2.user_tensors.CSVScalar">[docs]</a>
-</span><span data-line="191"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;CSVScalar&quot;</span><span class="p">)</span>
+</span><span data-line="191"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"CSVScalar"</span><span class="p">)</span>
 </span><span data-line="192"><span class="k">class</span><span class="w"> </span><span class="nc">CSVScalar</span><span class="p">(</span><span class="n">_CSVTensorBase</span><span class="p">):</span>
-</span><span data-line="193"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a single column from CSV as a ``Scalar`` with shape ``(N,)``.&quot;&quot;&quot;</span>
+</span><span data-line="193"><span class="w">    </span><span class="sd">"""Load a single column from CSV as a ``Scalar`` with shape ``(N,)``."""</span>
 </span><span data-line="194">
-</span><span data-line="195">    <span class="n">TYPE_NAME</span> <span class="o">=</span> <span class="s2">&quot;CSVScalar&quot;</span>
+</span><span data-line="195">    <span class="n">TYPE_NAME</span> <span class="o">=</span> <span class="s2">"CSVScalar"</span>
 </span><span data-line="196">    <span class="n">WRAPPER</span> <span class="o">=</span> <span class="n">Scalar</span>
 </span><span data-line="197">
 </span><span data-line="198">    <span class="nd">@classmethod</span>
@@ -624,89 +624,89 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="202">    <span class="nd">@classmethod</span>
 </span><span data-line="203">    <span class="k">def</span><span class="w"> </span><span class="nf">_build</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 </span><span data-line="204">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="205">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSVScalar expects exactly 1 column, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="205">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"CSVScalar expects exactly 1 column, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="206">        <span class="k">return</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
 
 </span><span data-line="207">
 </span><span data-line="208">
 <div class="viewcode-block" id="CSVSR2">
 <a class="viewcode-back" href="../../../content/python_api/neml2.user_tensors.html#neml2.user_tensors.CSVSR2">[docs]</a>
-</span><span data-line="209"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;CSVSR2&quot;</span><span class="p">)</span>
+</span><span data-line="209"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"CSVSR2"</span><span class="p">)</span>
 </span><span data-line="210"><span class="k">class</span><span class="w"> </span><span class="nc">CSVSR2</span><span class="p">(</span><span class="n">_CSVTensorBase</span><span class="p">):</span>
-</span><span data-line="211"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load 6 columns from CSV as an ``SR2`` with shape ``(N, 6)``.</span>
+</span><span data-line="211"><span class="w">    </span><span class="sd">"""Load 6 columns from CSV as an ``SR2`` with shape ``(N, 6)``.</span>
 </span><span data-line="212">
 </span><span data-line="213"><span class="sd">    Column-name suffix order matches the C++ ``VTestTimeSeries&lt;SR2&gt;`` /</span>
 </span><span data-line="214"><span class="sd">    Mandel slot convention: ``var_xx, var_yy, var_zz, var_yz, var_xz, var_xy``.</span>
 </span><span data-line="215"><span class="sd">    Values are stacked verbatim -- ``.vtest`` files declare Mandel convention</span>
 </span><span data-line="216"><span class="sd">    so the on-disk columns already carry the sqrt(2) scaling on shear slots.</span>
-</span><span data-line="217"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="217"><span class="sd">    """</span>
 </span><span data-line="218">
-</span><span data-line="219">    <span class="n">TYPE_NAME</span> <span class="o">=</span> <span class="s2">&quot;CSVSR2&quot;</span>
+</span><span data-line="219">    <span class="n">TYPE_NAME</span> <span class="o">=</span> <span class="s2">"CSVSR2"</span>
 </span><span data-line="220">    <span class="n">WRAPPER</span> <span class="o">=</span> <span class="n">SR2</span>
-</span><span data-line="221">    <span class="n">_SUFFIXES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;xx&quot;</span><span class="p">,</span> <span class="s2">&quot;yy&quot;</span><span class="p">,</span> <span class="s2">&quot;zz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">)</span>
+</span><span data-line="221">    <span class="n">_SUFFIXES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"xx"</span><span class="p">,</span> <span class="s2">"yy"</span><span class="p">,</span> <span class="s2">"zz"</span><span class="p">,</span> <span class="s2">"yz"</span><span class="p">,</span> <span class="s2">"xz"</span><span class="p">,</span> <span class="s2">"xy"</span><span class="p">)</span>
 </span><span data-line="222">
 </span><span data-line="223">    <span class="nd">@classmethod</span>
 </span><span data-line="224">    <span class="k">def</span><span class="w"> </span><span class="nf">_default_column_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-</span><span data-line="225">        <span class="k">return</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SUFFIXES</span><span class="p">]</span>
+</span><span data-line="225">        <span class="k">return</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SUFFIXES</span><span class="p">]</span>
 </span><span data-line="226">
 </span><span data-line="227">    <span class="nd">@classmethod</span>
 </span><span data-line="228">    <span class="k">def</span><span class="w"> </span><span class="nf">_build</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SR2</span><span class="p">:</span>
 </span><span data-line="229">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">6</span><span class="p">:</span>
-</span><span data-line="230">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSVSR2 expects exactly 6 columns, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="230">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"CSVSR2 expects exactly 6 columns, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="231">        <span class="k">return</span> <span class="n">SR2</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span></div>
 
 </span><span data-line="232">
 </span><span data-line="233">
 <div class="viewcode-block" id="CSVVec">
 <a class="viewcode-back" href="../../../content/python_api/neml2.user_tensors.html#neml2.user_tensors.CSVVec">[docs]</a>
-</span><span data-line="234"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;CSVVec&quot;</span><span class="p">)</span>
+</span><span data-line="234"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"CSVVec"</span><span class="p">)</span>
 </span><span data-line="235"><span class="k">class</span><span class="w"> </span><span class="nc">CSVVec</span><span class="p">(</span><span class="n">_CSVTensorBase</span><span class="p">):</span>
-</span><span data-line="236"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load 3 columns from CSV as a ``Vec`` with shape ``(N, 3)``.&quot;&quot;&quot;</span>
+</span><span data-line="236"><span class="w">    </span><span class="sd">"""Load 3 columns from CSV as a ``Vec`` with shape ``(N, 3)``."""</span>
 </span><span data-line="237">
-</span><span data-line="238">    <span class="n">TYPE_NAME</span> <span class="o">=</span> <span class="s2">&quot;CSVVec&quot;</span>
+</span><span data-line="238">    <span class="n">TYPE_NAME</span> <span class="o">=</span> <span class="s2">"CSVVec"</span>
 </span><span data-line="239">    <span class="n">WRAPPER</span> <span class="o">=</span> <span class="n">Vec</span>
-</span><span data-line="240">    <span class="n">_SUFFIXES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)</span>
+</span><span data-line="240">    <span class="n">_SUFFIXES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="s2">"z"</span><span class="p">)</span>
 </span><span data-line="241">
 </span><span data-line="242">    <span class="nd">@classmethod</span>
 </span><span data-line="243">    <span class="k">def</span><span class="w"> </span><span class="nf">_default_column_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-</span><span data-line="244">        <span class="k">return</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SUFFIXES</span><span class="p">]</span>
+</span><span data-line="244">        <span class="k">return</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SUFFIXES</span><span class="p">]</span>
 </span><span data-line="245">
 </span><span data-line="246">    <span class="nd">@classmethod</span>
 </span><span data-line="247">    <span class="k">def</span><span class="w"> </span><span class="nf">_build</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
 </span><span data-line="248">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-</span><span data-line="249">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSVVec expects exactly 3 columns, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="249">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"CSVVec expects exactly 3 columns, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="250">        <span class="k">return</span> <span class="n">Vec</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span></div>
 
 </span><span data-line="251">
 </span><span data-line="252">
 <div class="viewcode-block" id="CSVWR2">
 <a class="viewcode-back" href="../../../content/python_api/neml2.user_tensors.html#neml2.user_tensors.CSVWR2">[docs]</a>
-</span><span data-line="253"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;CSVWR2&quot;</span><span class="p">)</span>
+</span><span data-line="253"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"CSVWR2"</span><span class="p">)</span>
 </span><span data-line="254"><span class="k">class</span><span class="w"> </span><span class="nc">CSVWR2</span><span class="p">(</span><span class="n">_CSVTensorBase</span><span class="p">):</span>
-</span><span data-line="255"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load 3 columns from CSV as a ``WR2`` (skew) with shape ``(N, 3)``.</span>
+</span><span data-line="255"><span class="w">    </span><span class="sd">"""Load 3 columns from CSV as a ``WR2`` (skew) with shape ``(N, 3)``.</span>
 </span><span data-line="256">
 </span><span data-line="257"><span class="sd">    Column-name suffix order mirrors the C++ ``VTestTimeSeries&lt;WR2&gt;`` call:</span>
 </span><span data-line="258"><span class="sd">    ``var_zy, var_xz, var_yx``. WR2 has no Mandel scaling -- values are</span>
 </span><span data-line="259"><span class="sd">    stacked verbatim.</span>
-</span><span data-line="260"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="260"><span class="sd">    """</span>
 </span><span data-line="261">
-</span><span data-line="262">    <span class="n">TYPE_NAME</span> <span class="o">=</span> <span class="s2">&quot;CSVWR2&quot;</span>
+</span><span data-line="262">    <span class="n">TYPE_NAME</span> <span class="o">=</span> <span class="s2">"CSVWR2"</span>
 </span><span data-line="263">    <span class="n">WRAPPER</span> <span class="o">=</span> <span class="n">WR2</span>
-</span><span data-line="264">    <span class="n">_SUFFIXES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;zy&quot;</span><span class="p">,</span> <span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yx&quot;</span><span class="p">)</span>
+</span><span data-line="264">    <span class="n">_SUFFIXES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"zy"</span><span class="p">,</span> <span class="s2">"xz"</span><span class="p">,</span> <span class="s2">"yx"</span><span class="p">)</span>
 </span><span data-line="265">
 </span><span data-line="266">    <span class="nd">@classmethod</span>
 </span><span data-line="267">    <span class="k">def</span><span class="w"> </span><span class="nf">_default_column_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-</span><span data-line="268">        <span class="k">return</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SUFFIXES</span><span class="p">]</span>
+</span><span data-line="268">        <span class="k">return</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SUFFIXES</span><span class="p">]</span>
 </span><span data-line="269">
 </span><span data-line="270">    <span class="nd">@classmethod</span>
 </span><span data-line="271">    <span class="k">def</span><span class="w"> </span><span class="nf">_build</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">WR2</span><span class="p">:</span>
 </span><span data-line="272">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-</span><span data-line="273">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSVWR2 expects exactly 3 columns, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="273">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"CSVWR2 expects exactly 3 columns, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="274">        <span class="k">return</span> <span class="n">WR2</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span></div>
 
 </span><span data-line="275">
 </span><span data-line="276">
-</span><span data-line="277"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;CSVScalar&quot;</span><span class="p">,</span> <span class="s2">&quot;CSVSR2&quot;</span><span class="p">,</span> <span class="s2">&quot;CSVVec&quot;</span><span class="p">,</span> <span class="s2">&quot;CSVWR2&quot;</span><span class="p">]</span>
+</span><span data-line="277"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"CSVScalar"</span><span class="p">,</span> <span class="s2">"CSVSR2"</span><span class="p">,</span> <span class="s2">"CSVVec"</span><span class="p">,</span> <span class="s2">"CSVWR2"</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

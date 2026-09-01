@@ -447,14 +447,14 @@ opt in at runtime with <code class="docutils literal notranslate"><span class="p
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">%%writefile</span> input.i
 </span><span data-line="2"><span class="c1"># Linear isotropic elasticity used by the evaluation-device tutorial.</span>
-</span><span data-line="3"><span class="c1"># Same model as the &quot;running your first model&quot; tutorial -- a small,</span>
+</span><span data-line="3"><span class="c1"># Same model as the "running your first model" tutorial -- a small,</span>
 </span><span data-line="4"><span class="c1"># device-agnostic forward operator to demonstrate how parameters and</span>
 </span><span data-line="5"><span class="c1"># inputs are moved between CPU and CUDA.</span>
 </span><span data-line="6"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
 </span><span data-line="7">  <span class="p">[</span><span class="n">elasticity</span><span class="p">]</span>
 </span><span data-line="8">    <span class="nb">type</span> <span class="o">=</span> <span class="n">LinearIsotropicElasticity</span>
-</span><span data-line="9">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">&#39;200e3          0.3&#39;</span>
-</span><span data-line="10">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="9">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">'200e3          0.3'</span>
+</span><span data-line="10">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="11">  <span class="p">[]</span>
 </span><span data-line="12"><span class="p">[]</span>
 </span></pre></div>
@@ -475,10 +475,10 @@ opt in at runtime with <code class="docutils literal notranslate"><span class="p
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 </span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
-</span><span data-line="7">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2">: device=</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">, dtype=</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="7">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2">: device=</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">, dtype=</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -506,16 +506,16 @@ buffers (recursively, for composed models).</p></li>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>  <span class="c1"># swap for torch.device(&quot;cuda&quot;) on a CUDA box</span>
+</span><span data-line="3"><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>  <span class="c1"># swap for torch.device("cuda") on a CUDA box</span>
 </span><span data-line="4">
 </span><span data-line="5"><span class="c1"># 1. Move model parameters/buffers.</span>
 </span><span data-line="6"><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
 </span><span data-line="7"><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
-</span><span data-line="8">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2">: device=</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="8">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2">: device=</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="9">
 </span><span data-line="10"><span class="c1"># 2. Allocate the input on the same device.</span>
 </span><span data-line="11"><span class="n">strain</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
-</span><span data-line="12"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;strain.device = </span><span class="si">{</span><span class="n">strain</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="12"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"strain.device = </span><span class="si">{</span><span class="n">strain</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -536,9 +536,9 @@ with <code class="docutils literal notranslate"><span class="pre">.to(device=&qu
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">stress</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span>
-</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stress.device = </span><span class="si">{</span><span class="n">stress</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="3"><span class="n">stress_host</span> <span class="o">=</span> <span class="n">stress</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">))</span>
-</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stress (host copy): </span><span class="si">{</span><span class="n">stress_host</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"stress.device = </span><span class="si">{</span><span class="n">stress</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">stress_host</span> <span class="o">=</span> <span class="n">stress</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">))</span>
+</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"stress (host copy): </span><span class="si">{</span><span class="n">stress_host</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -558,7 +558,7 @@ across the host-device boundary.</p>
 <h2>Detecting CUDA at runtime<a class="headerlink" href="#detecting-cuda-at-runtime" title="Link to this heading">#</a></h2>
 <p>Production code that wants to opportunistically use CUDA usually
 guards on <code class="docutils literal notranslate"><span class="pre">torch.cuda.is_available()</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -573,8 +573,8 @@ reload onto CPU in the handler.</p>
 raises at the first op that touches both. The fix is the same in
 both directions: move both ends to the same device.</p>
 <p>On a CUDA-equipped machine, this would raise:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>   <span class="c1"># CPU</span>
-</span><span data-line="2"><span class="n">strain</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>   <span class="c1"># CPU</span>
+</span><span data-line="2"><span class="n">strain</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
 </span><span data-line="3"><span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span>                                        <span class="c1"># RuntimeError</span>
 </span></pre></div>
 </div>

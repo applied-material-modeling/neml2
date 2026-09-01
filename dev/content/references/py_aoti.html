@@ -444,7 +444,7 @@ would never match a stock float64 artifact):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
-</span><span data-line="4">    <span class="s2">&quot;elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span>
+</span><span data-line="4">    <span class="s2">"elasticity_aoti.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span>
 </span><span data-line="5"><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -457,7 +457,7 @@ from the artifact root folder. The device and dtype are the same load-time
 choice, defaulting to <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.aoti</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">binding</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">&quot;aoti/elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">binding</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">"aoti/elasticity"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -508,20 +508,20 @@ constant stiffness tensor) comes back unbatched (<code class="docutils literal n
 <p>All three call paths take a dict keyed by the master input names
 listed in <code class="docutils literal notranslate"><span class="pre">input_names</span></code>; missing keys throw.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Forward.</span>
-</span><span data-line="2"><span class="n">out</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">forward</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">})</span>
+</span><span data-line="2"><span class="n">out</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">forward</span><span class="p">({</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">})</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="c1"># JVP: tangent dict shares keys + (*B, *base) shapes with inputs; missing keys</span>
 </span><span data-line="5"><span class="c1"># default to zero. jvp_out[name] is the directional derivative at (*B, *out_base).</span>
-</span><span data-line="6"><span class="n">out</span><span class="p">,</span> <span class="n">jvp_out</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">tangent</span><span class="o">.</span><span class="n">data</span><span class="p">})</span>
+</span><span data-line="6"><span class="n">out</span><span class="p">,</span> <span class="n">jvp_out</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">},</span> <span class="p">{</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">tangent</span><span class="o">.</span><span class="n">data</span><span class="p">})</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="c1"># Jacobian as unflattened variable-pair blocks: J[out_name][in_name] is</span>
 </span><span data-line="9"><span class="c1"># (*B, *out_base, *in_base) (e.g. SR2-&gt;SR2 -&gt; (*B, 6, 6); Scalar-&gt;SR2 -&gt; (*B, 6)).</span>
-</span><span data-line="10"><span class="n">out</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">})</span>
+</span><span data-line="10"><span class="n">out</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">})</span>
 </span></pre></div>
 </div>
 <p>The promoted-parameter map is mutable; the next call sees the new
 value:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">binding</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()[</span><span class="s2">&quot;elasticity.E&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">100e3</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">binding</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()[</span><span class="s2">"elasticity.E"</span><span class="p">]</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">100e3</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">inspect</span></code>-style diagnostics — variable names, dtypes, shapes — are

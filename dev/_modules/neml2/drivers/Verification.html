@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Native ``Verification`` driver — mirror of C++ ``VTestVerification``.</span>
+</span><span data-line="25"><span class="sd">"""Native ``Verification`` driver — mirror of C++ ``VTestVerification``.</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">Wraps a :class:`TransientDriver`, runs it, then diffs the in-memory result</span>
 </span><span data-line="28"><span class="sd">against per-variable reference tensors loaded from ``[Tensors]`` entries</span>
@@ -450,23 +450,23 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="30">
 </span><span data-line="31"><span class="sd">The HIT options mirror C++ ``VTestVerification`` 1:1 with one rename: the</span>
 </span><span data-line="32"><span class="sd">driver type is plain ``Verification`` (was ``VTestVerification``) because</span>
-</span><span data-line="33"><span class="sd">references are loaded via the generic CSV path and the driver doesn&#39;t care</span>
+</span><span data-line="33"><span class="sd">references are loaded via the generic CSV path and the driver doesn't care</span>
 </span><span data-line="34"><span class="sd">about the ``.vtest`` text format any more.</span>
 </span><span data-line="35">
 </span><span data-line="36"><span class="sd">```</span>
 </span><span data-line="37"><span class="sd">[verification]</span>
 </span><span data-line="38"><span class="sd">  type = Verification</span>
-</span><span data-line="39"><span class="sd">  driver = &#39;driver&#39;</span>
-</span><span data-line="40"><span class="sd">  SR2_names = &#39;output.stress&#39;</span>
-</span><span data-line="41"><span class="sd">  SR2_values = &#39;stresses&#39;</span>
-</span><span data-line="42"><span class="sd">  Scalar_names = &#39;output.equivalent_plastic_strain&#39;</span>
-</span><span data-line="43"><span class="sd">  Scalar_values = &#39;eqp_ref&#39;</span>
+</span><span data-line="39"><span class="sd">  driver = 'driver'</span>
+</span><span data-line="40"><span class="sd">  SR2_names = 'output.stress'</span>
+</span><span data-line="41"><span class="sd">  SR2_values = 'stresses'</span>
+</span><span data-line="42"><span class="sd">  Scalar_names = 'output.equivalent_plastic_strain'</span>
+</span><span data-line="43"><span class="sd">  Scalar_values = 'eqp_ref'</span>
 </span><span data-line="44"><span class="sd">  rtol = 1e-5</span>
 </span><span data-line="45"><span class="sd">  atol = 1e-8</span>
-</span><span data-line="46"><span class="sd">  time_steps = &#39;499&#39;      # optional; if absent, compare every step</span>
+</span><span data-line="46"><span class="sd">  time_steps = '499'      # optional; if absent, compare every step</span>
 </span><span data-line="47"><span class="sd">[]</span>
 </span><span data-line="48"><span class="sd">```</span>
-</span><span data-line="49"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="49"><span class="sd">"""</span>
 </span><span data-line="50">
 </span><span data-line="51"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="52">
@@ -491,43 +491,43 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="71"><span class="c1"># writes in their input file. The values are the wrapper classes the</span>
 </span><span data-line="72"><span class="c1"># verification driver knows how to compare. To extend, add an entry here.</span>
 </span><span data-line="73"><span class="n">_SUPPORTED_TYPES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="74">    <span class="s2">&quot;Scalar&quot;</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span>
-</span><span data-line="75">    <span class="s2">&quot;SR2&quot;</span><span class="p">:</span> <span class="n">SR2</span><span class="p">,</span>
-</span><span data-line="76">    <span class="s2">&quot;Vec&quot;</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-</span><span data-line="77">    <span class="s2">&quot;WR2&quot;</span><span class="p">:</span> <span class="n">WR2</span><span class="p">,</span>
+</span><span data-line="74">    <span class="s2">"Scalar"</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span>
+</span><span data-line="75">    <span class="s2">"SR2"</span><span class="p">:</span> <span class="n">SR2</span><span class="p">,</span>
+</span><span data-line="76">    <span class="s2">"Vec"</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
+</span><span data-line="77">    <span class="s2">"WR2"</span><span class="p">:</span> <span class="n">WR2</span><span class="p">,</span>
 </span><span data-line="78"><span class="p">}</span>
 </span><span data-line="79">
 </span><span data-line="80">
 </span><span data-line="81"><span class="k">def</span><span class="w"> </span><span class="nf">_read_token_list</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-</span><span data-line="82"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a whitespace-separated HIT param as a list; return [] if empty/missing.&quot;&quot;&quot;</span>
-</span><span data-line="83">    <span class="n">raw</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span data-line="82"><span class="w">    </span><span class="sd">"""Read a whitespace-separated HIT param as a list; return [] if empty/missing."""</span>
+</span><span data-line="83">    <span class="n">raw</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
 </span><span data-line="84">    <span class="k">return</span> <span class="n">raw</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">if</span> <span class="n">raw</span> <span class="k">else</span> <span class="p">[]</span>
 </span><span data-line="85">
 </span><span data-line="86">
 </span><span data-line="87"><span class="k">def</span><span class="w"> </span><span class="nf">_typed_ref_fields</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">HitField</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-</span><span data-line="88"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the ``&lt;Type&gt;_names`` / ``&lt;Type&gt;_values`` option pairs the driver</span>
+</span><span data-line="88"><span class="w">    </span><span class="sd">"""Build the ``&lt;Type&gt;_names`` / ``&lt;Type&gt;_values`` option pairs the driver</span>
 </span><span data-line="89"><span class="sd">    consumes for every wrapper class in :data:`_SUPPORTED_TYPES`.</span>
 </span><span data-line="90">
 </span><span data-line="91"><span class="sd">    Documentation-only — :meth:`Verification.from_hit` parses them directly. The</span>
 </span><span data-line="92"><span class="sd">    schema exists so ``neml2-syntax`` can render the full HIT surface.</span>
-</span><span data-line="93"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="93"><span class="sd">    """</span>
 </span><span data-line="94">    <span class="n">fields</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HitField</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="95">    <span class="k">for</span> <span class="n">type_name</span> <span class="ow">in</span> <span class="n">_SUPPORTED_TYPES</span><span class="p">:</span>
 </span><span data-line="96">        <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
 </span><span data-line="97">            <span class="n">option</span><span class="p">(</span>
-</span><span data-line="98">                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names&quot;</span><span class="p">,</span>
+</span><span data-line="98">                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names"</span><span class="p">,</span>
 </span><span data-line="99">                <span class="nb">list</span><span class="p">,</span>
-</span><span data-line="100">                <span class="sa">f</span><span class="s2">&quot;Result-buffer variable names (e.g. ``output.stress``) whose per-step &quot;</span>
-</span><span data-line="101">                <span class="sa">f</span><span class="s2">&quot;values are compared against ``</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values``.&quot;</span><span class="p">,</span>
+</span><span data-line="100">                <span class="sa">f</span><span class="s2">"Result-buffer variable names (e.g. ``output.stress``) whose per-step "</span>
+</span><span data-line="101">                <span class="sa">f</span><span class="s2">"values are compared against ``</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values``."</span><span class="p">,</span>
 </span><span data-line="102">                <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
 </span><span data-line="103">            <span class="p">)</span>
 </span><span data-line="104">        <span class="p">)</span>
 </span><span data-line="105">        <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
 </span><span data-line="106">            <span class="n">option</span><span class="p">(</span>
-</span><span data-line="107">                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values&quot;</span><span class="p">,</span>
+</span><span data-line="107">                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values"</span><span class="p">,</span>
 </span><span data-line="108">                <span class="nb">list</span><span class="p">,</span>
-</span><span data-line="109">                <span class="sa">f</span><span class="s2">&quot;[Tensors] block names producing the reference </span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2"> per result &quot;</span>
-</span><span data-line="110">                <span class="sa">f</span><span class="s2">&quot;variable named in ``</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names``; same length and order.&quot;</span><span class="p">,</span>
+</span><span data-line="109">                <span class="sa">f</span><span class="s2">"[Tensors] block names producing the reference </span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2"> per result "</span>
+</span><span data-line="110">                <span class="sa">f</span><span class="s2">"variable named in ``</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names``; same length and order."</span><span class="p">,</span>
 </span><span data-line="111">                <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
 </span><span data-line="112">            <span class="p">)</span>
 </span><span data-line="113">        <span class="p">)</span>
@@ -536,30 +536,30 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="116">
 <div class="viewcode-block" id="Verification">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.Verification">[docs]</a>
-</span><span data-line="117"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;Verification&quot;</span><span class="p">)</span>
+</span><span data-line="117"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"Verification"</span><span class="p">)</span>
 </span><span data-line="118"><span class="k">class</span><span class="w"> </span><span class="nc">Verification</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
-</span><span data-line="119"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a TransientDriver and diff its result against per-variable references.&quot;&quot;&quot;</span>
+</span><span data-line="119"><span class="w">    </span><span class="sd">"""Run a TransientDriver and diff its result against per-variable references."""</span>
 </span><span data-line="120">
 </span><span data-line="121">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
-</span><span data-line="122">        <span class="n">dependency</span><span class="p">(</span><span class="s2">&quot;driver&quot;</span><span class="p">,</span> <span class="s2">&quot;get_driver&quot;</span><span class="p">,</span> <span class="s2">&quot;The TransientDriver to run before diffing.&quot;</span><span class="p">),</span>
+</span><span data-line="122">        <span class="n">dependency</span><span class="p">(</span><span class="s2">"driver"</span><span class="p">,</span> <span class="s2">"get_driver"</span><span class="p">,</span> <span class="s2">"The TransientDriver to run before diffing."</span><span class="p">),</span>
 </span><span data-line="123">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="124">            <span class="s2">&quot;rtol&quot;</span><span class="p">,</span>
+</span><span data-line="124">            <span class="s2">"rtol"</span><span class="p">,</span>
 </span><span data-line="125">            <span class="nb">float</span><span class="p">,</span>
-</span><span data-line="126">            <span class="s2">&quot;Relative tolerance for per-tensor comparison.&quot;</span><span class="p">,</span>
+</span><span data-line="126">            <span class="s2">"Relative tolerance for per-tensor comparison."</span><span class="p">,</span>
 </span><span data-line="127">            <span class="n">default</span><span class="o">=</span><span class="mf">1.0e-5</span><span class="p">,</span>
 </span><span data-line="128">        <span class="p">),</span>
 </span><span data-line="129">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="130">            <span class="s2">&quot;atol&quot;</span><span class="p">,</span>
+</span><span data-line="130">            <span class="s2">"atol"</span><span class="p">,</span>
 </span><span data-line="131">            <span class="nb">float</span><span class="p">,</span>
-</span><span data-line="132">            <span class="s2">&quot;Absolute tolerance for per-tensor comparison.&quot;</span><span class="p">,</span>
+</span><span data-line="132">            <span class="s2">"Absolute tolerance for per-tensor comparison."</span><span class="p">,</span>
 </span><span data-line="133">            <span class="n">default</span><span class="o">=</span><span class="mf">1.0e-8</span><span class="p">,</span>
 </span><span data-line="134">        <span class="p">),</span>
 </span><span data-line="135">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="136">            <span class="s2">&quot;time_steps&quot;</span><span class="p">,</span>
+</span><span data-line="136">            <span class="s2">"time_steps"</span><span class="p">,</span>
 </span><span data-line="137">            <span class="nb">list</span><span class="p">,</span>
-</span><span data-line="138">            <span class="s2">&quot;Optional whitespace-separated list of step indices to compare. When absent, &quot;</span>
-</span><span data-line="139">            <span class="s2">&quot;every step is checked. A single step entry switches to snapshot comparison &quot;</span>
-</span><span data-line="140">            <span class="s2">&quot;(the reference is treated as the value at that step, not time-axis-sliced).&quot;</span><span class="p">,</span>
+</span><span data-line="138">            <span class="s2">"Optional whitespace-separated list of step indices to compare. When absent, "</span>
+</span><span data-line="139">            <span class="s2">"every step is checked. A single step entry switches to snapshot comparison "</span>
+</span><span data-line="140">            <span class="s2">"(the reference is treated as the value at that step, not time-axis-sliced)."</span><span class="p">,</span>
 </span><span data-line="141">            <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
 </span><span data-line="142">        <span class="p">),</span>
 </span><span data-line="143">        <span class="o">*</span><span class="n">_typed_ref_fields</span><span class="p">(),</span>
@@ -585,11 +585,11 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.Verification.from_hit">[docs]</a>
 </span><span data-line="162">    <span class="nd">@classmethod</span>
 </span><span data-line="163">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Verification</span><span class="p">:</span>
-</span><span data-line="164">        <span class="n">driver_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;driver&quot;</span><span class="p">)</span>
+</span><span data-line="164">        <span class="n">driver_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">"driver"</span><span class="p">)</span>
 </span><span data-line="165">        <span class="n">driver</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_driver</span><span class="p">(</span><span class="n">driver_name</span><span class="p">)</span>
 </span><span data-line="166">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">TransientDriver</span><span class="p">):</span>
 </span><span data-line="167">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="168">                <span class="sa">f</span><span class="s2">&quot;Verification expects a TransientDriver in &#39;driver&#39;, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="168">                <span class="sa">f</span><span class="s2">"Verification expects a TransientDriver in 'driver', got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="169">            <span class="p">)</span>
 </span><span data-line="170">
 </span><span data-line="171">        <span class="c1"># Walk each supported tensor type and pair up ``&lt;T&gt;_names`` with</span>
@@ -597,37 +597,37 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="173">        <span class="c1"># name strings become result-buffer prefixes (e.g. ``output.stress``).</span>
 </span><span data-line="174">        <span class="n">refs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span data-line="175">        <span class="k">for</span> <span class="n">type_name</span><span class="p">,</span> <span class="n">wrapper_cls</span> <span class="ow">in</span> <span class="n">_SUPPORTED_TYPES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="176">            <span class="n">names</span> <span class="o">=</span> <span class="n">_read_token_list</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names&quot;</span><span class="p">)</span>
-</span><span data-line="177">            <span class="n">values</span> <span class="o">=</span> <span class="n">_read_token_list</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values&quot;</span><span class="p">)</span>
+</span><span data-line="176">            <span class="n">names</span> <span class="o">=</span> <span class="n">_read_token_list</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names"</span><span class="p">)</span>
+</span><span data-line="177">            <span class="n">values</span> <span class="o">=</span> <span class="n">_read_token_list</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values"</span><span class="p">)</span>
 </span><span data-line="178">            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
 </span><span data-line="179">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="180">                    <span class="sa">f</span><span class="s2">&quot;Verification: </span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> entries but &quot;</span>
-</span><span data-line="181">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="180">                    <span class="sa">f</span><span class="s2">"Verification: </span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> entries but "</span>
+</span><span data-line="181">                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="182">                <span class="p">)</span>
 </span><span data-line="183">            <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">ref_tensor_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span data-line="184">                <span class="n">ref</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">ref_tensor_name</span><span class="p">)</span>
 </span><span data-line="185">                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">wrapper_cls</span><span class="p">):</span>
 </span><span data-line="186">                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="187">                        <span class="sa">f</span><span class="s2">&quot;Verification: reference </span><span class="si">{</span><span class="n">ref_tensor_name</span><span class="si">!r}</span><span class="s2"> for &quot;</span>
-</span><span data-line="188">                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names entry </span><span class="si">{</span><span class="n">var_name</span><span class="si">!r}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">wrapper_cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, &quot;</span>
-</span><span data-line="189">                        <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="187">                        <span class="sa">f</span><span class="s2">"Verification: reference </span><span class="si">{</span><span class="n">ref_tensor_name</span><span class="si">!r}</span><span class="s2"> for "</span>
+</span><span data-line="188">                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names entry </span><span class="si">{</span><span class="n">var_name</span><span class="si">!r}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">wrapper_cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, "</span>
+</span><span data-line="189">                        <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="190">                    <span class="p">)</span>
 </span><span data-line="191">                <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">refs</span><span class="p">:</span>
 </span><span data-line="192">                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="193">                        <span class="sa">f</span><span class="s2">&quot;Verification: duplicate reference variable name </span><span class="si">{</span><span class="n">var_name</span><span class="si">!r}</span><span class="s2">&quot;</span>
+</span><span data-line="193">                        <span class="sa">f</span><span class="s2">"Verification: duplicate reference variable name </span><span class="si">{</span><span class="n">var_name</span><span class="si">!r}</span><span class="s2">"</span>
 </span><span data-line="194">                    <span class="p">)</span>
 </span><span data-line="195">                <span class="n">refs</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref</span>
 </span><span data-line="196">
 </span><span data-line="197">        <span class="k">if</span> <span class="ow">not</span> <span class="n">refs</span><span class="p">:</span>
 </span><span data-line="198">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="199">                <span class="s2">&quot;Verification: no reference variables provided (set &quot;</span>
-</span><span data-line="200">                <span class="s2">&quot;&lt;T&gt;_names/&lt;T&gt;_values for at least one supported type)&quot;</span>
+</span><span data-line="199">                <span class="s2">"Verification: no reference variables provided (set "</span>
+</span><span data-line="200">                <span class="s2">"&lt;T&gt;_names/&lt;T&gt;_values for at least one supported type)"</span>
 </span><span data-line="201">            <span class="p">)</span>
 </span><span data-line="202">
-</span><span data-line="203">        <span class="n">rtol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;rtol&quot;</span><span class="p">,</span> <span class="mf">1.0e-5</span><span class="p">)</span>
-</span><span data-line="204">        <span class="n">atol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;atol&quot;</span><span class="p">,</span> <span class="mf">1.0e-8</span><span class="p">)</span>
+</span><span data-line="203">        <span class="n">rtol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">"rtol"</span><span class="p">,</span> <span class="mf">1.0e-5</span><span class="p">)</span>
+</span><span data-line="204">        <span class="n">atol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">"atol"</span><span class="p">,</span> <span class="mf">1.0e-8</span><span class="p">)</span>
 </span><span data-line="205">
-</span><span data-line="206">        <span class="n">time_steps_raw</span> <span class="o">=</span> <span class="n">_read_token_list</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;time_steps&quot;</span><span class="p">)</span>
+</span><span data-line="206">        <span class="n">time_steps_raw</span> <span class="o">=</span> <span class="n">_read_token_list</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"time_steps"</span><span class="p">)</span>
 </span><span data-line="207">        <span class="n">time_steps</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">time_steps_raw</span><span class="p">)</span>
 </span><span data-line="208">
 </span><span data-line="209">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
@@ -651,13 +651,13 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="224">        <span class="k">for</span> <span class="n">ref_name</span><span class="p">,</span> <span class="n">ref_wrapper</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">refs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 </span><span data-line="225">            <span class="bp">self</span><span class="o">.</span><span class="n">_compare_one</span><span class="p">(</span><span class="n">ref_name</span><span class="p">,</span> <span class="n">ref_wrapper</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">mismatches</span><span class="p">)</span>
 </span><span data-line="226">            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
-</span><span data-line="227">                <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  ... (further mismatches suppressed)&quot;</span><span class="p">)</span>
+</span><span data-line="227">                <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"  ... (further mismatches suppressed)"</span><span class="p">)</span>
 </span><span data-line="228">                <span class="k">break</span>
 </span><span data-line="229">
 </span><span data-line="230">        <span class="k">if</span> <span class="n">mismatches</span><span class="p">:</span>
 </span><span data-line="231">            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
-</span><span data-line="232">                <span class="sa">f</span><span class="s2">&quot;Verification failed (rtol=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rtol</span><span class="si">}</span><span class="s2">, atol=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">atol</span><span class="si">}</span><span class="s2">):</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="233">                <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span>
+</span><span data-line="232">                <span class="sa">f</span><span class="s2">"Verification failed (rtol=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rtol</span><span class="si">}</span><span class="s2">, atol=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">atol</span><span class="si">}</span><span class="s2">):</span><span class="se">\n</span><span class="s2">"</span>
+</span><span data-line="233">                <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span>
 </span><span data-line="234">            <span class="p">)</span>
 </span><span data-line="235">        <span class="k">return</span> <span class="kc">True</span></div>
 
@@ -669,7 +669,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="241">        <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
 </span><span data-line="242">        <span class="n">mismatches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
 </span><span data-line="243">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="244"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Compare every per-step result buffer matching *ref_name* against *ref_wrapper*.</span>
+</span><span data-line="244"><span class="w">        </span><span class="sd">"""Compare every per-step result buffer matching *ref_name* against *ref_wrapper*.</span>
 </span><span data-line="245">
 </span><span data-line="246"><span class="sd">        ``ref_name`` is the bare variable identifier (e.g. ``output.stress``).</span>
 </span><span data-line="247"><span class="sd">        Result keys carry an extra step token between prefix and suffix (e.g.</span>
@@ -677,10 +677,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="249"><span class="sd">        name into per-step keys, then compare each against the corresponding</span>
 </span><span data-line="250"><span class="sd">        row of the reference (or the whole reference when ``time_steps`` is</span>
 </span><span data-line="251"><span class="sd">        a single value — the snapshot-comparison quirk inherited from C++).</span>
-</span><span data-line="252"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="253">        <span class="n">tokens</span> <span class="o">=</span> <span class="n">ref_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+</span><span data-line="252"><span class="sd">        """</span>
+</span><span data-line="253">        <span class="n">tokens</span> <span class="o">=</span> <span class="n">ref_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
 </span><span data-line="254">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-</span><span data-line="255">            <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  invalid reference variable name </span><span class="si">{</span><span class="n">ref_name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="255">            <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  invalid reference variable name </span><span class="si">{</span><span class="n">ref_name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="256">            <span class="k">return</span>
 </span><span data-line="257">
 </span><span data-line="258">        <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
@@ -689,7 +689,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="261">        <span class="n">nstep</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span data-line="262">        <span class="n">found_any</span> <span class="o">=</span> <span class="kc">False</span>
 </span><span data-line="263">        <span class="k">for</span> <span class="n">resname</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-</span><span data-line="264">            <span class="n">rest</span> <span class="o">=</span> <span class="n">resname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+</span><span data-line="264">            <span class="n">rest</span> <span class="o">=</span> <span class="n">resname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
 </span><span data-line="265">            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
 </span><span data-line="266">                <span class="k">continue</span>
 </span><span data-line="267">            <span class="k">if</span> <span class="n">rest</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">prefix</span><span class="p">:</span>
@@ -704,7 +704,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="276">            <span class="n">found_any</span> <span class="o">=</span> <span class="kc">True</span>
 </span><span data-line="277">
 </span><span data-line="278">        <span class="k">if</span> <span class="ow">not</span> <span class="n">found_any</span><span class="p">:</span>
-</span><span data-line="279">            <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  result is missing variable </span><span class="si">{</span><span class="n">ref_name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="279">            <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  result is missing variable </span><span class="si">{</span><span class="n">ref_name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="280">            <span class="k">return</span>
 </span><span data-line="281">
 </span><span data-line="282">        <span class="n">ref_data</span> <span class="o">=</span> <span class="n">ref_wrapper</span><span class="o">.</span><span class="n">data</span>
@@ -722,12 +722,12 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="294">                <span class="n">refi</span> <span class="o">=</span> <span class="n">ref_data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 </span><span data-line="295">            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
 </span><span data-line="296">
-</span><span data-line="297">            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">prefix</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="o">*</span><span class="n">suffix</span><span class="p">])</span>
+</span><span data-line="297">            <span class="n">key</span> <span class="o">=</span> <span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">prefix</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="o">*</span><span class="n">suffix</span><span class="p">])</span>
 </span><span data-line="298">            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
 </span><span data-line="299">                <span class="c1"># Allow zero references at missing keys (C++ behavior); error on</span>
 </span><span data-line="300">                <span class="c1"># any non-zero magnitude.</span>
 </span><span data-line="301">                <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">refi</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">refi</span><span class="p">)):</span>
-</span><span data-line="302">                    <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  result is missing variable </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="302">                    <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  result is missing variable </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="303">                <span class="k">continue</span>
 </span><span data-line="304">
 </span><span data-line="305">            <span class="n">resi</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
@@ -738,19 +738,19 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="310">                <span class="n">max_abs</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
 </span><span data-line="311">                <span class="n">rel_denom</span> <span class="o">=</span> <span class="n">refi</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">refi</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
 </span><span data-line="312">                <span class="n">max_rel</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">diff</span> <span class="o">/</span> <span class="n">rel_denom</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
-</span><span data-line="313">                <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: max_abs=</span><span class="si">{</span><span class="n">max_abs</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, max_rel=</span><span class="si">{</span><span class="n">max_rel</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="313">                <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: max_abs=</span><span class="si">{</span><span class="n">max_abs</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, max_rel=</span><span class="si">{</span><span class="n">max_rel</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="314">                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
 </span><span data-line="315">                    <span class="k">return</span></div>
 
 </span><span data-line="316">
 </span><span data-line="317">
 </span><span data-line="318"><span class="k">def</span><span class="w"> </span><span class="nf">_binary_search</span><span class="p">(</span><span class="n">sorted_seq</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">target</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span data-line="319"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if *target* is in *sorted_seq* (which must be ascending).&quot;&quot;&quot;</span>
+</span><span data-line="319"><span class="w">    </span><span class="sd">"""Return True if *target* is in *sorted_seq* (which must be ascending)."""</span>
 </span><span data-line="320">    <span class="n">idx</span> <span class="o">=</span> <span class="n">bisect</span><span class="o">.</span><span class="n">bisect_left</span><span class="p">(</span><span class="n">sorted_seq</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </span><span data-line="321">    <span class="k">return</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_seq</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sorted_seq</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">==</span> <span class="n">target</span>
 </span><span data-line="322">
 </span><span data-line="323">
-</span><span data-line="324"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Verification&quot;</span><span class="p">]</span>
+</span><span data-line="324"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Verification"</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

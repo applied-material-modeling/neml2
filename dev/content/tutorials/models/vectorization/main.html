@@ -439,14 +439,14 @@ evaluate them in a single call.</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">%%writefile</span> input.i
 </span><span data-line="2"><span class="c1"># Reuses the hello-world elasticity model from the</span>
-</span><span data-line="3"><span class="c1"># &quot;Running your first model&quot; tutorial. Linear isotropic elasticity</span>
+</span><span data-line="3"><span class="c1"># "Running your first model" tutorial. Linear isotropic elasticity</span>
 </span><span data-line="4"><span class="c1"># is a trivial map (SR2 -&gt; SR2), which keeps the focus on *how* we</span>
 </span><span data-line="5"><span class="c1"># feed in a batch of strains rather than what the model is doing.</span>
 </span><span data-line="6"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
 </span><span data-line="7">  <span class="p">[</span><span class="n">elasticity</span><span class="p">]</span>
 </span><span data-line="8">    <span class="nb">type</span> <span class="o">=</span> <span class="n">LinearIsotropicElasticity</span>
-</span><span data-line="9">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">&#39;200e3          0.3&#39;</span>
-</span><span data-line="10">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="9">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">'200e3          0.3'</span>
+</span><span data-line="10">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="11">  <span class="p">[]</span>
 </span><span data-line="12"><span class="p">[]</span>
 </span></pre></div>
@@ -466,7 +466,7 @@ evaluate them in a single call.</p>
 </span><span data-line="4">
 </span><span data-line="5"><span class="n">torch</span><span class="o">.</span><span class="n">set_default_dtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="8"><span class="n">model</span>
 </span></pre></div>
 </div>
@@ -581,16 +581,16 @@ states and one batched call — and time just the model evaluations:</p>
 </span><span data-line="16"><span class="n">model</span><span class="p">(</span><span class="n">strains</span><span class="p">)</span>
 </span><span data-line="17"><span class="n">t_batch</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 </span><span data-line="18">
-</span><span data-line="19"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;python loop: </span><span class="si">{</span><span class="n">t_loop</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1e3</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">)</span>
-</span><span data-line="20"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;batched:     </span><span class="si">{</span><span class="n">t_batch</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1e3</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">)</span>
-</span><span data-line="21"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;speedup:     </span><span class="si">{</span><span class="n">t_loop</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">t_batch</span><span class="si">:</span><span class="s2">8.1f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+</span><span data-line="19"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"python loop: </span><span class="si">{</span><span class="n">t_loop</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1e3</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+</span><span data-line="20"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"batched:     </span><span class="si">{</span><span class="n">t_batch</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1e3</span><span class="si">:</span><span class="s2">8.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+</span><span data-line="21"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"speedup:     </span><span class="si">{</span><span class="n">t_loop</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">t_batch</span><span class="si">:</span><span class="s2">8.1f</span><span class="si">}</span><span class="s2">x"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">python loop:  5134.67 ms
-</span><span data-line="2">batched:         1.59 ms
-</span><span data-line="3">speedup:       3223.4x
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">python loop:  3744.36 ms
+</span><span data-line="2">batched:         5.39 ms
+</span><span data-line="3">speedup:        694.1x
 </span></pre></div>
 </div>
 </div>

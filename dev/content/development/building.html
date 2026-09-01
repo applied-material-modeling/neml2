@@ -439,7 +439,7 @@ LibTorch.</p>
 </span><span data-line="5">pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>nmhit<span class="w"> </span>scikit-build-core<span class="w"> </span>cmake<span class="w"> </span>ninja
 </span><span data-line="6">
 </span><span data-line="7"><span class="c1"># Editable install.</span>
-</span><span data-line="8">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>-v<span class="w"> </span>--no-build-isolation
+</span><span data-line="8">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev]"</span><span class="w"> </span>-v<span class="w"> </span>--no-build-isolation
 </span></pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">--no-build-isolation</span></code> builds against the <code class="docutils literal notranslate"><span class="pre">torch</span></code> already in your
@@ -471,18 +471,18 @@ clangd / clang-tidy;</p></li>
 <h2>Build-type and other overrides<a class="headerlink" href="#build-type-and-other-overrides" title="Link to this heading">#</a></h2>
 <p>Pass <code class="docutils literal notranslate"><span class="pre">--config-settings</span></code> to override a default for one install. A full
 Debug build:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>--no-build-isolation<span class="w"> </span><span class="se">\</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev]"</span><span class="w"> </span>--no-build-isolation<span class="w"> </span><span class="se">\</span>
 </span><span data-line="2"><span class="w">    </span>--config-settings<span class="o">=</span>cmake.build-type<span class="o">=</span>Debug
 </span></pre></div>
 </div>
 <p>A Coverage / ThreadSanitizer build (clang), then run the C++ tests:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nv">CC</span><span class="o">=</span>clang<span class="w"> </span><span class="nv">CXX</span><span class="o">=</span>clang++<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>--no-build-isolation<span class="w"> </span><span class="se">\</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nv">CC</span><span class="o">=</span>clang<span class="w"> </span><span class="nv">CXX</span><span class="o">=</span>clang++<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev]"</span><span class="w"> </span>--no-build-isolation<span class="w"> </span><span class="se">\</span>
 </span><span data-line="2"><span class="w">    </span>--config-settings<span class="o">=</span>cmake.build-type<span class="o">=</span>Coverage
-</span><span data-line="3">ctest<span class="w"> </span>--test-dir<span class="w"> </span>build/editable<span class="w"> </span>-L<span class="w"> </span><span class="s2">&quot;dispatcher|eager&quot;</span>
+</span><span data-line="3">ctest<span class="w"> </span>--test-dir<span class="w"> </span>build/editable<span class="w"> </span>-L<span class="w"> </span><span class="s2">"dispatcher|eager"</span>
 </span></pre></div>
 </div>
 <p>Build against a libtorch other than the active environment’s <code class="docutils literal notranslate"><span class="pre">torch</span></code>:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>--no-build-isolation<span class="w"> </span><span class="se">\</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev]"</span><span class="w"> </span>--no-build-isolation<span class="w"> </span><span class="se">\</span>
 </span><span data-line="2"><span class="w">    </span>--config-settings<span class="o">=</span>cmake.define.torch_ROOT<span class="o">=</span>/path/to/libtorch
 </span></pre></div>
 </div>
@@ -508,7 +508,7 @@ is required. From PowerShell:</p>
 </span><span data-line="2"><span class="nb">cd </span><span class="n">neml2</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">nmhit</span> <span class="n">scikit-build-core</span>
-</span><span data-line="5"><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;.[dev]&quot;</span> <span class="p">-</span><span class="n">-no-build-isolation</span> <span class="n">-v</span>
+</span><span data-line="5"><span class="n">pip</span> <span class="n">install</span> <span class="s2">".[dev]"</span> <span class="p">-</span><span class="n">-no-build-isolation</span> <span class="n">-v</span>
 </span></pre></div>
 </div>
 <ul class="simple">

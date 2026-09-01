@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;MillerIndex — a crystallographic direction or plane (h, k, l).</span>
+</span><span data-line="25"><span class="sd">"""MillerIndex — a crystallographic direction or plane (h, k, l).</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">Base shape ``(3,)``. Mirrors ``include/neml2/tensors/MillerIndex.h``. The</span>
 </span><span data-line="28"><span class="sd">stored components are the raw Miller indices (e.g. ``(1, 1, 0)`` for the</span>
@@ -454,9 +454,9 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="34"><span class="sd">``[Tensors] type = Python`` expressions can spell ``MillerIndex(...)`` and</span>
 </span><span data-line="35"><span class="sd">the eval namespace dispatches correctly. Stored as floating-point even</span>
 </span><span data-line="36"><span class="sd">though the indices are integers — this matches the C++ side, which keeps</span>
-</span><span data-line="37"><span class="sd">the storage in the model&#39;s default dtype to participate in autograd-friendly</span>
+</span><span data-line="37"><span class="sd">the storage in the model's default dtype to participate in autograd-friendly</span>
 </span><span data-line="38"><span class="sd">expressions downstream.</span>
-</span><span data-line="39"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="39"><span class="sd">"""</span>
 </span><span data-line="40">
 </span><span data-line="41"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="42">
@@ -474,12 +474,12 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.MillerIndex">[docs]</a>
 </span><span data-line="53"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span data-line="54"><span class="k">class</span><span class="w"> </span><span class="nc">MillerIndex</span><span class="p">(</span><span class="n">PrimitiveTensor</span><span class="p">):</span>
-</span><span data-line="55"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of shape ``(..., 3)`` carrying Miller indices.</span>
+</span><span data-line="55"><span class="w">    </span><span class="sd">"""Wraps a `torch.Tensor` of shape ``(..., 3)`` carrying Miller indices.</span>
 </span><span data-line="56">
 </span><span data-line="57"><span class="sd">    Inherits all arithmetic and ``zeros``/``ones``/``full``/``empty``/``fill``</span>
 </span><span data-line="58"><span class="sd">    factories from :class:`PrimitiveTensor`. No class-specific overrides — the</span>
 </span><span data-line="59"><span class="sd">    C++ analogue has the same minimal surface.</span>
-</span><span data-line="60"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="60"><span class="sd">    """</span>
 </span><span data-line="61">
 </span><span data-line="62">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
 </span><span data-line="63">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">UNSET</span>

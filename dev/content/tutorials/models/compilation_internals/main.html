@@ -464,19 +464,19 @@ should be able to remove.</p>
 </span><span data-line="2"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
 </span><span data-line="3">  <span class="p">[</span><span class="n">eq1</span><span class="p">]</span>
 </span><span data-line="4">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ScalarVariableRate</span>
-</span><span data-line="5">    <span class="n">variable</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span>
+</span><span data-line="5">    <span class="n">variable</span> <span class="o">=</span> <span class="s1">'a'</span>
 </span><span data-line="6">  <span class="p">[]</span>
 </span><span data-line="7">  <span class="p">[</span><span class="n">eq2</span><span class="p">]</span>
 </span><span data-line="8">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ScalarVariableRate</span>
-</span><span data-line="9">    <span class="n">variable</span> <span class="o">=</span> <span class="s1">&#39;b&#39;</span>
+</span><span data-line="9">    <span class="n">variable</span> <span class="o">=</span> <span class="s1">'b'</span>
 </span><span data-line="10">  <span class="p">[]</span>
 </span><span data-line="11">  <span class="p">[</span><span class="n">eq3</span><span class="p">]</span>
 </span><span data-line="12">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ScalarVariableRate</span>
-</span><span data-line="13">    <span class="n">variable</span> <span class="o">=</span> <span class="s1">&#39;c&#39;</span>
+</span><span data-line="13">    <span class="n">variable</span> <span class="o">=</span> <span class="s1">'c'</span>
 </span><span data-line="14">  <span class="p">[]</span>
 </span><span data-line="15">  <span class="p">[</span><span class="n">eq</span><span class="p">]</span>
 </span><span data-line="16">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ComposedModel</span>
-</span><span data-line="17">    <span class="n">models</span> <span class="o">=</span> <span class="s1">&#39;eq1 eq2 eq3&#39;</span>
+</span><span data-line="17">    <span class="n">models</span> <span class="o">=</span> <span class="s1">'eq1 eq2 eq3'</span>
 </span><span data-line="18">  <span class="p">[]</span>
 </span><span data-line="19"><span class="p">[]</span>
 </span></pre></div>
@@ -498,15 +498,15 @@ should be able to remove.</p>
 </span><span data-line="4">
 </span><span data-line="5"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;eq&quot;</span><span class="p">)</span>
-</span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;inputs :&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">))</span>
-</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;outputs:&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">))</span>
+</span><span data-line="7"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"eq"</span><span class="p">)</span>
+</span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="s2">"inputs :"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">))</span>
+</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">"outputs:"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">))</span>
 </span></pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">inputs : [&#39;a&#39;, &#39;a~1&#39;, &#39;t&#39;, &#39;t~1&#39;, &#39;b&#39;, &#39;b~1&#39;, &#39;c&#39;, &#39;c~1&#39;]
-</span><span data-line="2">outputs: [&#39;a_rate&#39;, &#39;b_rate&#39;, &#39;c_rate&#39;]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">inputs : ['a', 'a~1', 't', 't~1', 'b', 'b~1', 'c', 'c~1']
+</span><span data-line="2">outputs: ['a_rate', 'b_rate', 'c_rate']
 </span></pre></div>
 </div>
 </div>
@@ -531,22 +531,22 @@ declared input (a batch of 2 here, so the batch axis is a real dimension):</p>
 </span><span data-line="9"><span class="c1"># Print just the captured forward body (the tensor operations).</span>
 </span><span data-line="10"><span class="n">graph_src</span> <span class="o">=</span> <span class="n">exported</span><span class="o">.</span><span class="n">graph_module</span><span class="o">.</span><span class="n">print_readable</span><span class="p">(</span><span class="n">print_output</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span data-line="11"><span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">graph_src</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
-</span><span data-line="12">    <span class="k">if</span> <span class="s2">&quot;aten.&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;def forward&quot;</span><span class="p">,</span> <span class="s2">&quot;return&quot;</span><span class="p">)):</span>
+</span><span data-line="12">    <span class="k">if</span> <span class="s2">"aten."</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">"def forward"</span><span class="p">,</span> <span class="s2">"return"</span><span class="p">)):</span>
 </span><span data-line="13">        <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
 </span></pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">    def forward(self, inputs_0_data: &quot;f64[2]&quot;, inputs_1_data: &quot;f64[2]&quot;, inputs_2_data: &quot;f64[2]&quot;, inputs_3_data: &quot;f64[2]&quot;, inputs_4_data: &quot;f64[2]&quot;, inputs_5_data: &quot;f64[2]&quot;, inputs_6_data: &quot;f64[2]&quot;, inputs_7_data: &quot;f64[2]&quot;):
-</span><span data-line="2">        sub: &quot;f64[2]&quot; = torch.ops.aten.sub.Tensor(inputs_2_data, inputs_3_data)
-</span><span data-line="3">        sub_1: &quot;f64[2]&quot; = torch.ops.aten.sub.Tensor(inputs_0_data, inputs_1_data);  inputs_0_data = inputs_1_data = None
-</span><span data-line="4">        div: &quot;f64[2]&quot; = torch.ops.aten.div.Tensor(sub_1, sub);  sub_1 = sub = None
-</span><span data-line="5">        sub_2: &quot;f64[2]&quot; = torch.ops.aten.sub.Tensor(inputs_2_data, inputs_3_data)
-</span><span data-line="6">        sub_3: &quot;f64[2]&quot; = torch.ops.aten.sub.Tensor(inputs_4_data, inputs_5_data);  inputs_4_data = inputs_5_data = None
-</span><span data-line="7">        div_1: &quot;f64[2]&quot; = torch.ops.aten.div.Tensor(sub_3, sub_2);  sub_3 = sub_2 = None
-</span><span data-line="8">        sub_4: &quot;f64[2]&quot; = torch.ops.aten.sub.Tensor(inputs_2_data, inputs_3_data);  inputs_2_data = inputs_3_data = None
-</span><span data-line="9">        sub_5: &quot;f64[2]&quot; = torch.ops.aten.sub.Tensor(inputs_6_data, inputs_7_data);  inputs_6_data = inputs_7_data = None
-</span><span data-line="10">        div_2: &quot;f64[2]&quot; = torch.ops.aten.div.Tensor(sub_5, sub_4);  sub_5 = sub_4 = None
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">    def forward(self, inputs_0_data: "f64[2]", inputs_1_data: "f64[2]", inputs_2_data: "f64[2]", inputs_3_data: "f64[2]", inputs_4_data: "f64[2]", inputs_5_data: "f64[2]", inputs_6_data: "f64[2]", inputs_7_data: "f64[2]"):
+</span><span data-line="2">        sub: "f64[2]" = torch.ops.aten.sub.Tensor(inputs_2_data, inputs_3_data)
+</span><span data-line="3">        sub_1: "f64[2]" = torch.ops.aten.sub.Tensor(inputs_0_data, inputs_1_data);  inputs_0_data = inputs_1_data = None
+</span><span data-line="4">        div: "f64[2]" = torch.ops.aten.div.Tensor(sub_1, sub);  sub_1 = sub = None
+</span><span data-line="5">        sub_2: "f64[2]" = torch.ops.aten.sub.Tensor(inputs_2_data, inputs_3_data)
+</span><span data-line="6">        sub_3: "f64[2]" = torch.ops.aten.sub.Tensor(inputs_4_data, inputs_5_data);  inputs_4_data = inputs_5_data = None
+</span><span data-line="7">        div_1: "f64[2]" = torch.ops.aten.div.Tensor(sub_3, sub_2);  sub_3 = sub_2 = None
+</span><span data-line="8">        sub_4: "f64[2]" = torch.ops.aten.sub.Tensor(inputs_2_data, inputs_3_data);  inputs_2_data = inputs_3_data = None
+</span><span data-line="9">        sub_5: "f64[2]" = torch.ops.aten.sub.Tensor(inputs_6_data, inputs_7_data);  inputs_6_data = inputs_7_data = None
+</span><span data-line="10">        div_2: "f64[2]" = torch.ops.aten.div.Tensor(sub_5, sub_4);  sub_5 = sub_4 = None
 </span><span data-line="11">        return (div, div_1, div_2)
 </span></pre></div>
 </div>
@@ -579,7 +579,7 @@ same command from the previous tutorial) and then read what it generated:</p>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[2/3] metadata.json
 </span><span data-line="2">[3/3] eq_aoti.i
-</span><span data-line="3">Compiled &#39;eq&#39; (composed, fully baked, no derivative graphs (use -d to compile jvp/jacobian)) for [cpu] -&gt; aoti/eq
+</span><span data-line="3">Compiled 'eq' (composed, fully baked, no derivative graphs (use -d to compile jvp/jacobian)) for [cpu] -&gt; aoti/eq
 </span><span data-line="4">  metadata: aoti/eq/metadata.json
 </span><span data-line="5">  stub: aoti/eq_aoti.i
 </span><span data-line="6">  cpu: aoti/eq/cpu/float64/
@@ -594,18 +594,18 @@ same command from the previous tutorial) and then read what it generated:</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">pt2</span> <span class="o">=</span> <span class="s2">&quot;aoti/eq/cpu/float64/eq.pt2&quot;</span>
+</span><span data-line="3"><span class="n">pt2</span> <span class="o">=</span> <span class="s2">"aoti/eq/cpu/float64/eq.pt2"</span>
 </span><span data-line="4"><span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">pt2</span><span class="p">)</span> <span class="k">as</span> <span class="n">z</span><span class="p">:</span>
 </span><span data-line="5">    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">namelist</span><span class="p">():</span>
-</span><span data-line="6">        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;.so&quot;</span><span class="p">)):</span>
-</span><span data-line="7">            <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</span><span data-line="6">        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">".cpp"</span><span class="p">,</span> <span class="s2">".so"</span><span class="p">)):</span>
+</span><span data-line="7">            <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </span></pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">cr2pvutsngf23znknbuqrxhc7qxzmxpsxxlplo2axi5r36cr2rvf.wrapper.cpp
-</span><span data-line="2">c4x6rpqev7wuvvctheyorfxcv7fh7oifc3aycgnipojdpk3xk7l2.kernel.cpp
-</span><span data-line="3">cr2pvutsngf23znknbuqrxhc7qxzmxpsxxlplo2axi5r36cr2rvf.wrapper.so
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">casczoedezayuej4wxmzwtwjya6pd2biz5b7tbyzexshfr7xry4e.wrapper.cpp
+</span><span data-line="2">cvaipqbj6am7vji67gystcvlrbsu56xkyrjjajkm2jgkjbqdc6qp.kernel.cpp
+</span><span data-line="3">casczoedezayuej4wxmzwtwjya6pd2biz5b7tbyzexshfr7xry4e.wrapper.so
 </span></pre></div>
 </div>
 </div>
@@ -615,27 +615,27 @@ compiler actually emitted:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">pt2</span><span class="p">)</span> <span class="k">as</span> <span class="n">z</span><span class="p">:</span>
-</span><span data-line="2">    <span class="n">kernel</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;kernel.cpp&quot;</span><span class="p">))</span>
+</span><span data-line="2">    <span class="n">kernel</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"kernel.cpp"</span><span class="p">))</span>
 </span><span data-line="3">    <span class="n">src</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
 </span><span data-line="4">
-</span><span data-line="5"><span class="c1"># The fused kernel&#39;s name, then its arithmetic. The kernel has two loops (a</span>
+</span><span data-line="5"><span class="c1"># The fused kernel's name, then its arithmetic. The kernel has two loops (a</span>
 </span><span data-line="6"><span class="c1"># vectorized main loop and a masked tail) with identical math, so we print the</span>
 </span><span data-line="7"><span class="c1"># first one and stop once the arithmetic starts repeating.</span>
-</span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;cpp_fused&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s2">&quot;void&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">))</span>
-</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+</span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="s2">"cpp_fused"</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s2">"void"</span> <span class="ow">in</span> <span class="n">line</span><span class="p">))</span>
+</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">"..."</span><span class="p">)</span>
 </span><span data-line="10"><span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 </span><span data-line="11"><span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
 </span><span data-line="12">    <span class="n">s</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-</span><span data-line="13">    <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;auto tmp&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot; - tmp&quot;</span> <span class="ow">in</span> <span class="n">s</span> <span class="ow">or</span> <span class="s2">&quot; / tmp&quot;</span> <span class="ow">in</span> <span class="n">s</span><span class="p">):</span>
+</span><span data-line="13">    <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"auto tmp"</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">" - tmp"</span> <span class="ow">in</span> <span class="n">s</span> <span class="ow">or</span> <span class="s2">" / tmp"</span> <span class="ow">in</span> <span class="n">s</span><span class="p">):</span>
 </span><span data-line="14">        <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
 </span><span data-line="15">            <span class="k">break</span>
 </span><span data-line="16">        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-</span><span data-line="17">        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   &quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+</span><span data-line="17">        <span class="nb">print</span><span class="p">(</span><span class="s2">"   "</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">extern &quot;C&quot;  void  cpp_fused_div_sub_0(const double* in_ptr0,
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">extern "C"  void  cpp_fused_div_sub_0(const double* in_ptr0,
 </span><span data-line="2">...
 </span><span data-line="3">    auto tmp2 = tmp0 - tmp1;
 </span><span data-line="4">    auto tmp5 = tmp3 - tmp4;

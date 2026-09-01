@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Return-code enum + result dataclass shared by every nonlinear solver.&quot;&quot;&quot;</span>
+</span><span data-line="25"><span class="sd">"""Return-code enum + result dataclass shared by every nonlinear solver."""</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="28">
@@ -453,7 +453,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="RetCode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.RetCode">[docs]</a>
 </span><span data-line="33"><span class="k">class</span><span class="w"> </span><span class="nc">RetCode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-</span><span data-line="34"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Nonlinear solver return code.&quot;&quot;&quot;</span>
+</span><span data-line="34"><span class="w">    </span><span class="sd">"""Nonlinear solver return code."""</span>
 </span><span data-line="35">
 </span><span data-line="36">    <span class="n">SUCCESS</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span data-line="37">    <span class="n">MAXITER</span> <span class="o">=</span> <span class="mi">1</span>
@@ -465,19 +465,19 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.NonlinearResult">[docs]</a>
 </span><span data-line="41"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span data-line="42"><span class="k">class</span><span class="w"> </span><span class="nc">NonlinearResult</span><span class="p">:</span>
-</span><span data-line="43"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Result metadata returned by a nonlinear solve.&quot;&quot;&quot;</span>
+</span><span data-line="43"><span class="w">    </span><span class="sd">"""Result metadata returned by a nonlinear solve."""</span>
 </span><span data-line="44">
 </span><span data-line="45">    <span class="n">ret</span><span class="p">:</span> <span class="n">RetCode</span>
 </span><span data-line="46">    <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span>
 </span><span data-line="47">    <span class="c1">#: Per-iteration convergence history (``ITERATION ...`` / ``LS ITERATION</span>
 </span><span data-line="48">    <span class="c1">#: ...`` lines, max-norm over the batch). Opt-in *data* path: populated only</span>
-</span><span data-line="49">    <span class="c1">#: when the C++ solver&#39;s ``collect_log`` is set; empty otherwise. Console</span>
+</span><span data-line="49">    <span class="c1">#: when the C++ solver's ``collect_log`` is set; empty otherwise. Console</span>
 </span><span data-line="50">    <span class="c1">#: verbosity is separate -- see the ``newton`` channel in :mod:`neml2.log`.</span>
 </span><span data-line="51">    <span class="n">log</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span></div>
 
 </span><span data-line="52">
 </span><span data-line="53">
-</span><span data-line="54"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RetCode&quot;</span><span class="p">,</span> <span class="s2">&quot;NonlinearResult&quot;</span><span class="p">]</span>
+</span><span data-line="54"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"RetCode"</span><span class="p">,</span> <span class="s2">"NonlinearResult"</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

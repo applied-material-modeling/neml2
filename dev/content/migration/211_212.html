@@ -479,7 +479,7 @@ variables explicitly:</p>
 </span><span data-line="2"><span class="k">[EquationSystems]</span>
 </span><span data-line="3"><span class="w">  </span><span class="k">[eq_sys]</span>
 </span><span data-line="4"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;implicit_model&#39;</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'implicit_model'</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="7"><span class="k">[]</span>
 </span></pre></div>
@@ -488,8 +488,8 @@ variables explicitly:</p>
 </span><span data-line="2"><span class="k">[EquationSystems]</span>
 </span><span data-line="3"><span class="w">  </span><span class="k">[eq_sys]</span>
 </span><span data-line="4"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;implicit_model&#39;</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;ep Ep&#39;</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'implicit_model'</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'ep Ep'</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="8"><span class="k">[]</span>
 </span></pre></div>
@@ -499,9 +499,9 @@ unknown. Override with the <code class="docutils literal notranslate"><span clas
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[EquationSystems]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[eq_sys]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;implicit_model&#39;</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phi_P phi_S&#39;</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">residuals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phi_P_residual phi_S_residual&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'implicit_model'</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'phi_P phi_S'</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">residuals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'phi_P_residual phi_S_residual'</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="8"><span class="k">[]</span>
 </span></pre></div>
@@ -517,10 +517,10 @@ directly and supply the strain/stress controls through the generic
 </span><span data-line="2"><span class="k">[Drivers]</span>
 </span><span data-line="3"><span class="w">  </span><span class="k">[driver]</span>
 </span><span data-line="4"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SDTSolidMechanicsDriver</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="7"><span class="w">    </span><span class="na">prescribed_strains</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'model'</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'times'</span>
+</span><span data-line="7"><span class="w">    </span><span class="na">prescribed_strains</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'strains'</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'result.pt'</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="10"><span class="k">[]</span>
 </span></pre></div>
@@ -529,11 +529,11 @@ directly and supply the strain/stress controls through the generic
 </span><span data-line="2"><span class="k">[Drivers]</span>
 </span><span data-line="3"><span class="w">  </span><span class="k">[driver]</span>
 </span><span data-line="4"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="7"><span class="w">    </span><span class="na">force_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strain&#39;</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">force_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span>
-</span><span data-line="9"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'model'</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'times'</span>
+</span><span data-line="7"><span class="w">    </span><span class="na">force_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'strain'</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">force_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'strains'</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'result.pt'</span>
 </span><span data-line="10"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="11"><span class="k">[]</span>
 </span></pre></div>
@@ -552,9 +552,9 @@ ordinary model blocks in <code class="docutils literal notranslate"><span class=
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Drivers]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[driver]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;PREVIOUS_STATE&#39;</span><span class="w">   </span><span class="c1"># or LINEAR_EXTRAPOLATION, or via custom_predictor</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'model'</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'times'</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'PREVIOUS_STATE'</span><span class="w">   </span><span class="c1"># or LINEAR_EXTRAPOLATION, or via custom_predictor</span>
 </span><span data-line="7"><span class="w">    </span><span class="c1"># ...</span>
 </span><span data-line="8"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="9"><span class="k">[]</span>
@@ -562,8 +562,8 @@ ordinary model blocks in <code class="docutils literal notranslate"><span class=
 </span><span data-line="11"><span class="k">[Models]</span>
 </span><span data-line="12"><span class="w">  </span><span class="k">[model]</span>
 </span><span data-line="13"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="14"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
-</span><span data-line="15"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="14"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'eq_sys'</span>
+</span><span data-line="15"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'newton'</span>
 </span><span data-line="16"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="17"><span class="k">[]</span>
 </span></pre></div>
@@ -572,8 +572,8 @@ ordinary model blocks in <code class="docutils literal notranslate"><span class=
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Drivers]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[driver]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'model'</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'times'</span>
 </span><span data-line="6"><span class="w">    </span><span class="c1"># predictor option removed</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="8"><span class="k">[]</span>
@@ -581,14 +581,14 @@ ordinary model blocks in <code class="docutils literal notranslate"><span class=
 </span><span data-line="10"><span class="k">[Models]</span>
 </span><span data-line="11"><span class="w">  </span><span class="k">[predictor]</span>
 </span><span data-line="12"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
-</span><span data-line="13"><span class="w">    </span><span class="na">unknowns_SR2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;stress&#39;</span>
-</span><span data-line="14"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;equivalent_plastic_strain&#39;</span>
+</span><span data-line="13"><span class="w">    </span><span class="na">unknowns_SR2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'stress'</span>
+</span><span data-line="14"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'equivalent_plastic_strain'</span>
 </span><span data-line="15"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="16"><span class="w">  </span><span class="k">[model]</span>
 </span><span data-line="17"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="18"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
-</span><span data-line="19"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
-</span><span data-line="20"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
+</span><span data-line="18"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'eq_sys'</span>
+</span><span data-line="19"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'newton'</span>
+</span><span data-line="20"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'predictor'</span>
 </span><span data-line="21"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="22"><span class="k">[]</span>
 </span></pre></div>

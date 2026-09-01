@@ -511,12 +511,12 @@ solvers):</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Solvers]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[newton]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gmres&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'gmres'</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[gmres]</span>
 </span><span data-line="7"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">GMRES</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">preconditioner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;bjac&#39;</span>
-</span><span data-line="9"><span class="w">    </span><span class="na">cache_strategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;chord&#39;</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">preconditioner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'bjac'</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">cache_strategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'chord'</span>
 </span><span data-line="10"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="11"><span class="w">  </span><span class="k">[bjac]</span>
 </span><span data-line="12"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">BlockJacobiPreconditioner</span>
@@ -526,8 +526,8 @@ solvers):</p>
 </span><span data-line="16"><span class="k">[Models]</span>
 </span><span data-line="17"><span class="w">  </span><span class="k">[model]</span>
 </span><span data-line="18"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="19"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
-</span><span data-line="20"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="19"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'eq_sys'</span>
+</span><span data-line="20"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'newton'</span>
 </span><span data-line="21"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="22"><span class="k">[]</span>
 </span></pre></div>

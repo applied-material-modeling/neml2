@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Native ``TransientRegression`` — mirror of C++ ``tests/src/TransientRegression.cxx``.</span>
+</span><span data-line="25"><span class="sd">"""Native ``TransientRegression`` — mirror of C++ ``tests/src/TransientRegression.cxx``.</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">Wraps a paired :class:`TransientDriver`, runs it, then diffs the in-memory</span>
 </span><span data-line="28"><span class="sd">result dict against a gold ``.pt`` reference. The reader (:func:`_load_gold`)</span>
@@ -457,7 +457,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="37"><span class="sd">  the C++ side never recorded, like ``t~1`` for some time integrators) are</span>
 </span><span data-line="38"><span class="sd">  IGNORED — this is a cross-backend parity check, not a strict</span>
 </span><span data-line="39"><span class="sd">  identity check on the result shape.</span>
-</span><span data-line="40"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="40"><span class="sd">"""</span>
 </span><span data-line="41">
 </span><span data-line="42"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="43">
@@ -477,7 +477,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="57">
 </span><span data-line="58">
 </span><span data-line="59"><span class="k">def</span><span class="w"> </span><span class="nf">_load_gold</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-</span><span data-line="60"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a gold-file as a flat ``{key: tensor}`` dict.</span>
+</span><span data-line="60"><span class="w">    </span><span class="sd">"""Load a gold-file as a flat ``{key: tensor}`` dict.</span>
 </span><span data-line="61">
 </span><span data-line="62"><span class="sd">    Supports two on-disk formats:</span>
 </span><span data-line="63">
@@ -494,8 +494,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="74">
 </span><span data-line="75"><span class="sd">    Detection is by sniff: try the plain-dict path first, fall back to</span>
 </span><span data-line="76"><span class="sd">    TorchScript on any failure. Most existing on-disk goldens are still</span>
-</span><span data-line="77"><span class="sd">    legacy until they&#39;re regenerated.</span>
-</span><span data-line="78"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="77"><span class="sd">    legacy until they're regenerated.</span>
+</span><span data-line="78"><span class="sd">    """</span>
 </span><span data-line="79">    <span class="k">try</span><span class="p">:</span>
 </span><span data-line="80">        <span class="n">payload</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span data-line="81">    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 — torch.load raises a zoo of types on JIT archives</span>
@@ -509,28 +509,28 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="89">
 <div class="viewcode-block" id="TransientRegression">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.TransientRegression">[docs]</a>
-</span><span data-line="90"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;TransientRegression&quot;</span><span class="p">)</span>
+</span><span data-line="90"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"TransientRegression"</span><span class="p">)</span>
 </span><span data-line="91"><span class="k">class</span><span class="w"> </span><span class="nc">TransientRegression</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
-</span><span data-line="92"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a TransientDriver and diff its result against a gold ``.pt`` file.&quot;&quot;&quot;</span>
+</span><span data-line="92"><span class="w">    </span><span class="sd">"""Run a TransientDriver and diff its result against a gold ``.pt`` file."""</span>
 </span><span data-line="93">
 </span><span data-line="94">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
-</span><span data-line="95">        <span class="n">dependency</span><span class="p">(</span><span class="s2">&quot;driver&quot;</span><span class="p">,</span> <span class="s2">&quot;get_driver&quot;</span><span class="p">,</span> <span class="s2">&quot;The TransientDriver to run before diffing.&quot;</span><span class="p">),</span>
+</span><span data-line="95">        <span class="n">dependency</span><span class="p">(</span><span class="s2">"driver"</span><span class="p">,</span> <span class="s2">"get_driver"</span><span class="p">,</span> <span class="s2">"The TransientDriver to run before diffing."</span><span class="p">),</span>
 </span><span data-line="96">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="97">            <span class="s2">&quot;reference&quot;</span><span class="p">,</span>
+</span><span data-line="97">            <span class="s2">"reference"</span><span class="p">,</span>
 </span><span data-line="98">            <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="99">            <span class="s2">&quot;Path to the gold ``.pt`` file. Resolved relative to the input file&#39;s directory &quot;</span>
-</span><span data-line="100">            <span class="s2">&quot;when not absolute.&quot;</span><span class="p">,</span>
+</span><span data-line="99">            <span class="s2">"Path to the gold ``.pt`` file. Resolved relative to the input file's directory "</span>
+</span><span data-line="100">            <span class="s2">"when not absolute."</span><span class="p">,</span>
 </span><span data-line="101">        <span class="p">),</span>
 </span><span data-line="102">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="103">            <span class="s2">&quot;rtol&quot;</span><span class="p">,</span>
+</span><span data-line="103">            <span class="s2">"rtol"</span><span class="p">,</span>
 </span><span data-line="104">            <span class="nb">float</span><span class="p">,</span>
-</span><span data-line="105">            <span class="s2">&quot;Relative tolerance for per-tensor comparison.&quot;</span><span class="p">,</span>
+</span><span data-line="105">            <span class="s2">"Relative tolerance for per-tensor comparison."</span><span class="p">,</span>
 </span><span data-line="106">            <span class="n">default</span><span class="o">=</span><span class="mf">1.0e-5</span><span class="p">,</span>
 </span><span data-line="107">        <span class="p">),</span>
 </span><span data-line="108">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="109">            <span class="s2">&quot;atol&quot;</span><span class="p">,</span>
+</span><span data-line="109">            <span class="s2">"atol"</span><span class="p">,</span>
 </span><span data-line="110">            <span class="nb">float</span><span class="p">,</span>
-</span><span data-line="111">            <span class="s2">&quot;Absolute tolerance for per-tensor comparison.&quot;</span><span class="p">,</span>
+</span><span data-line="111">            <span class="s2">"Absolute tolerance for per-tensor comparison."</span><span class="p">,</span>
 </span><span data-line="112">            <span class="n">default</span><span class="o">=</span><span class="mf">1.0e-8</span><span class="p">,</span>
 </span><span data-line="113">        <span class="p">),</span>
 </span><span data-line="114">    <span class="p">)</span>
@@ -551,22 +551,22 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.TransientRegression.from_hit">[docs]</a>
 </span><span data-line="128">    <span class="nd">@classmethod</span>
 </span><span data-line="129">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransientRegression</span><span class="p">:</span>
-</span><span data-line="130">        <span class="n">driver_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;driver&quot;</span><span class="p">)</span>
+</span><span data-line="130">        <span class="n">driver_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">"driver"</span><span class="p">)</span>
 </span><span data-line="131">        <span class="n">driver</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_driver</span><span class="p">(</span><span class="n">driver_name</span><span class="p">)</span>
 </span><span data-line="132">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">TransientDriver</span><span class="p">):</span>
 </span><span data-line="133">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="134">                <span class="sa">f</span><span class="s2">&quot;TransientRegression expects a TransientDriver in &#39;driver&#39;, got &quot;</span>
-</span><span data-line="135">                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="134">                <span class="sa">f</span><span class="s2">"TransientRegression expects a TransientDriver in 'driver', got "</span>
+</span><span data-line="135">                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="136">            <span class="p">)</span>
 </span><span data-line="137">
-</span><span data-line="138">        <span class="n">reference_str</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;reference&quot;</span><span class="p">)</span>
+</span><span data-line="138">        <span class="n">reference_str</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">"reference"</span><span class="p">)</span>
 </span><span data-line="139">        <span class="n">reference</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">reference_str</span><span class="p">)</span>
 </span><span data-line="140">        <span class="k">if</span> <span class="ow">not</span> <span class="n">reference</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
-</span><span data-line="141">            <span class="c1"># Resolve relative to the .i file&#39;s directory, matching the C++ side.</span>
+</span><span data-line="141">            <span class="c1"># Resolve relative to the .i file's directory, matching the C++ side.</span>
 </span><span data-line="142">            <span class="n">reference</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">reference</span>
 </span><span data-line="143">
-</span><span data-line="144">        <span class="n">rtol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;rtol&quot;</span><span class="p">,</span> <span class="mf">1.0e-5</span><span class="p">)</span>
-</span><span data-line="145">        <span class="n">atol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;atol&quot;</span><span class="p">,</span> <span class="mf">1.0e-8</span><span class="p">)</span>
+</span><span data-line="144">        <span class="n">rtol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">"rtol"</span><span class="p">,</span> <span class="mf">1.0e-5</span><span class="p">)</span>
+</span><span data-line="145">        <span class="n">atol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">"atol"</span><span class="p">,</span> <span class="mf">1.0e-8</span><span class="p">)</span>
 </span><span data-line="146">
 </span><span data-line="147">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">reference</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span></div>
 
@@ -578,41 +578,41 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="151">        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
 </span><span data-line="152">
 </span><span data-line="153">        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-</span><span data-line="154">            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TransientRegression reference not found: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="154">            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"TransientRegression reference not found: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="155">        <span class="n">gold</span> <span class="o">=</span> <span class="n">_load_gold</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">)</span>
 </span><span data-line="156">
 </span><span data-line="157">        <span class="c1"># Pass 1 — every gold key must exist in the result.</span>
 </span><span data-line="158">        <span class="n">missing</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">gold</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">)</span>
 </span><span data-line="159">        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
 </span><span data-line="160">            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
-</span><span data-line="161">                <span class="sa">f</span><span class="s2">&quot;TransientRegression: gold has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> key(s) absent from &quot;</span>
-</span><span data-line="162">                <span class="sa">f</span><span class="s2">&quot;native result; first few: </span><span class="si">{</span><span class="n">missing</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="163">                <span class="sa">f</span><span class="s2">&quot;  reference: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="161">                <span class="sa">f</span><span class="s2">"TransientRegression: gold has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> key(s) absent from "</span>
+</span><span data-line="162">                <span class="sa">f</span><span class="s2">"native result; first few: </span><span class="si">{</span><span class="n">missing</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+</span><span data-line="163">                <span class="sa">f</span><span class="s2">"  reference: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="164">            <span class="p">)</span>
 </span><span data-line="165">
 </span><span data-line="166">        <span class="c1"># Pass 2 — each gold key matches within tolerance.</span>
 </span><span data-line="167">        <span class="c1"># detach() so requires_grad differences between the native autograd</span>
-</span><span data-line="168">        <span class="c1"># path and the C++ gold (which is always grad-free) don&#39;t trip</span>
-</span><span data-line="169">        <span class="c1"># assert_close&#39;s tensor-property checks.</span>
+</span><span data-line="168">        <span class="c1"># path and the C++ gold (which is always grad-free) don't trip</span>
+</span><span data-line="169">        <span class="c1"># assert_close's tensor-property checks.</span>
 </span><span data-line="170">        <span class="n">mismatches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="171">        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">ref</span> <span class="ow">in</span> <span class="n">gold</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 </span><span data-line="172">            <span class="n">res</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
 </span><span data-line="173">            <span class="k">try</span><span class="p">:</span>
 </span><span data-line="174">                <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atol</span><span class="p">)</span>
 </span><span data-line="175">            <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
-</span><span data-line="176">                <span class="c1"># Trim torch&#39;s multi-line msg to one short summary line.</span>
+</span><span data-line="176">                <span class="c1"># Trim torch's multi-line msg to one short summary line.</span>
 </span><span data-line="177">                <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">res</span> <span class="o">-</span> <span class="n">ref</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
 </span><span data-line="178">                <span class="n">max_abs</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
 </span><span data-line="179">                <span class="n">rel_denom</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
 </span><span data-line="180">                <span class="n">max_rel</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">diff</span> <span class="o">/</span> <span class="n">rel_denom</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
-</span><span data-line="181">                <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: max_abs=</span><span class="si">{</span><span class="n">max_abs</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, max_rel=</span><span class="si">{</span><span class="n">max_rel</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="181">                <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: max_abs=</span><span class="si">{</span><span class="n">max_abs</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, max_rel=</span><span class="si">{</span><span class="n">max_rel</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="182">                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>  <span class="c1"># cap output noise</span>
-</span><span data-line="183">                    <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  ... (further mismatches suppressed)&quot;</span><span class="p">)</span>
+</span><span data-line="183">                    <span class="n">mismatches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"  ... (further mismatches suppressed)"</span><span class="p">)</span>
 </span><span data-line="184">                    <span class="k">break</span>
 </span><span data-line="185">        <span class="k">if</span> <span class="n">mismatches</span><span class="p">:</span>
 </span><span data-line="186">            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
-</span><span data-line="187">                <span class="sa">f</span><span class="s2">&quot;TransientRegression vs </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="si">}</span><span class="s2"> failed &quot;</span>
-</span><span data-line="188">                <span class="sa">f</span><span class="s2">&quot;(rtol=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rtol</span><span class="si">}</span><span class="s2">, atol=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">atol</span><span class="si">}</span><span class="s2">):</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span>
+</span><span data-line="187">                <span class="sa">f</span><span class="s2">"TransientRegression vs </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="si">}</span><span class="s2"> failed "</span>
+</span><span data-line="188">                <span class="sa">f</span><span class="s2">"(rtol=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rtol</span><span class="si">}</span><span class="s2">, atol=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">atol</span><span class="si">}</span><span class="s2">):</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span>
 </span><span data-line="189">            <span class="p">)</span>
 </span><span data-line="190">
 </span><span data-line="191">        <span class="k">return</span> <span class="kc">True</span></div>
@@ -620,7 +620,7 @@ data-aria-dark="Switch to auto color mode">
 
 </span><span data-line="192">
 </span><span data-line="193">
-</span><span data-line="194"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TransientRegression&quot;</span><span class="p">]</span>
+</span><span data-line="194"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"TransientRegression"</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
