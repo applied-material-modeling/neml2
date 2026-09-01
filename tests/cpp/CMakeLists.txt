@@ -280,6 +280,9 @@ set_target_properties(test_eager PROPERTIES
 # argv[5]/argv[6]: an .i whose forward raises torch.linalg.LinAlgError + the
 # external module defining it, exercising the eager guard's
 # torch.linalg.LinAlgError -> recoverable ConvergenceError promotion.
+# argv[7]/argv[8]: an .i whose model __init__ raises torch.linalg.LinAlgError
+# + the module defining it, verifying the constructor-time guard keeps it FATAL
+# (no recoverable-promotion at construction).
 add_test(NAME test_eager
       COMMAND test_eager
             ${NEML2_SOURCE_DIR}/tests/aoti/forward_single/model.i
@@ -287,7 +290,9 @@ add_test(NAME test_eager
             ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/ext_model.i
             ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/ext_model.py
             ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_model.i
-            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_model.py)
+            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_model.py
+            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_ctor_model.i
+            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_ctor_model.py)
 # The embedded interpreter must find the stdlib (PYTHONHOME) + the neml2 source
 # package (PYTHONPATH); torch/lib stays on LD_LIBRARY_PATH for the transitive
 # libtorch resolution the existing tests also rely on.

@@ -145,13 +145,13 @@ main()
   NEML2_CHECK_THROWS(_assert(false, "nope"));
 
   // --- _guarded normalizes c10::LinAlgError -> recoverable ConvergenceError --
-  // A torch linalg kernel that hits a singular / non-PD matrix throws
-  // c10::LinAlgError; the guard must re-throw it as our recoverable
+  // A torch linalg kernel that hits a singular / non-positive-definite matrix
+  // throws c10::LinAlgError; the guard must re-throw it as our recoverable
   // ConvergenceError so a time-stepping consumer cuts the step and retries
   // instead of hard-failing. The original message must survive so the end user
   // can still see which factorization failed.
   {
-    bool threw = false, recoverable = false, kept_msg = false, is_fatal = false;
+    bool caught_convergence_error = false, recoverable = false, kept_msg = false, is_fatal = false;
     try
     {
       _guarded([] { TORCH_CHECK_LINALG(false, "singular test matrix"); });
@@ -163,12 +163,12 @@ main()
     }
     catch (const ConvergenceError & e)
     {
-      threw = true;
+      caught_convergence_error = true;
       recoverable = e.recoverable();
       kept_msg = std::strstr(e.what(), "singular test matrix") != nullptr;
     }
     NEML2_CHECK(!is_fatal);
-    NEML2_CHECK(threw);
+    NEML2_CHECK(caught_convergence_error);
     NEML2_CHECK(recoverable);
     NEML2_CHECK(kept_msg);
   }

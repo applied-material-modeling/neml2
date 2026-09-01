@@ -27,10 +27,11 @@
 #include <sstream>
 
 // c10::LinAlgError is a numerical failure raised by torch's linalg kernels
-// (a singular / non-invertible / non-PD factorization); a downstream time-
-// stepping consumer can recover from it by cutting the step, so the guard below
-// re-throws it as the recoverable neml2 ConvergenceError rather than letting it
-// fall through to the generic std::exception catch (which would flag it fatal).
+// (e.g., a singular / non-invertible or non-positive-definite matrix); a
+// downstream time-stepping consumer can recover from it by cutting the step, so
+// the guard below re-throws it as the recoverable neml2 ConvergenceError rather
+// than letting it fall through to the generic std::exception catch (which would
+// flag it fatal).
 #include <c10/util/Exception.h>
 
 #include "neml2/csrc/aoti/Exception.h"
@@ -73,9 +74,10 @@ _assert(bool cond, const Args &... args)
 /// neml2 exception taxonomy so a consumer has a single catch surface:
 ///   - a neml2 `Exception` (incl. the recoverable `ConvergenceError`) passes
 ///     through untouched -- its dynamic type and `recoverable()` are preserved;
-///   - a torch `c10::LinAlgError` (a singular / non-invertible / non-PD linear
-///     factorization from a torch linalg kernel) is re-thrown as the recoverable
-///     `ConvergenceError` -- like a Newton non-convergence, a time-stepping
+///   - a torch `c10::LinAlgError` (e.g., a singular / non-invertible or
+///     non-positive-definite matrix from a torch linalg kernel) is re-thrown as
+///     the recoverable `ConvergenceError` -- like a Newton non-convergence,
+///     a time-stepping
 ///     consumer can cut the step and retry. Recognized BOTH as the typed C++
 ///     exception (when RTTI matches across libraries) AND by the preserved
 ///     "torch.linalg.<op>:" message prefix on a plain `std::exception` (torch's

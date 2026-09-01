@@ -22,11 +22,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""External (out-of-package) NEML2 model whose forward raises
+"""External (out-of-package) NEML2 model whose ``__init__`` raises
 ``torch.linalg.LinAlgError`` from a real linalg kernel (Cholesky of a zero
-matrix). Used by ``test_eager.cpp`` to drive the eager runtime's
-``is_torch_linalg_error`` -> recoverable ``ConvergenceError`` promotion path
-across the embedded-Python boundary.
+matrix), so the failure occurs at model *construction* rather than at
+evaluation. Used by ``test_eager.cpp`` to verify that the eager runtime's
+constructor path classifies the LinAlgError as ``FatalError`` (config error)
+rather than promoting it to the recoverable ``ConvergenceError`` -- cutting
+the time step does not fix a bad initial parameter, so construction failures
+should not trigger a retry loop.
 """
 
 from __future__ import annotations
@@ -40,32 +43,30 @@ from neml2.schema import HitSchema, input, output
 from neml2.types import SR2
 
 
-@register_neml2_object("SingularLinAlgFailure")
-class SingularLinAlgFailure(Model):
-    """A model whose forward always trips a ``torch.linalg.LinAlgError``.
+@register_neml2_object("CtorLinAlgFailure")
+class CtorLinAlgFailure(Model):
+    """A model that fails during ``__init__`` with ``torch.linalg.LinAlgError``.
 
-    ``torch.linalg.cholesky`` on an all-zero matrix is not positive-definite and
-    raises ``torch.linalg.LinAlgError`` directly from the linalg kernel -- the
-    Python face of the ``c10::LinAlgError`` the aoti guard also promotes to
-    ``ConvergenceError``. The eager guard sees this as a ``py::error_already_set``
-    matching ``torch.linalg.LinAlgError`` and re-raises it as the recoverable
-    ``neml2::aoti::ConvergenceError``.
+    The Cholesky factorization of an all-zero matrix fails (the matrix is
+    not positive-definite), so ``torch.linalg.cholesky`` raises
+    ``torch.linalg.LinAlgError`` directly from the linalg kernel -- the same
+    exception the evaluation-time fixture triggers, but during construction.
     """
 
     hit = HitSchema(
-        input("in_stress", SR2, "Input stress (ignored)"),
-        output("out_stress", SR2, "Output stress (unreachable)"),
+        input("in_stress", SR2, "Input stress (never reached)"),
+        output("out_stress", SR2, "Output stress (never reached)"),
     )
+
+    def __init__(self, **hit_values):
+        super().__init__(**hit_values)
+        # The zero matrix is not positive-definite, so the Cholesky factorization
+        # fails and torch.linalg.LinAlgError is raised.
+        torch.linalg.cholesky(torch.zeros((2, 2)))
 
     def forward(  # type: ignore[override]
         self,
         in_stress: SR2,
         v: ChainRuleDict | None = None,
     ) -> SR2 | tuple[SR2, ChainRuleDict]:
-        # Build a zero positive-semidefinite matrix on the same device/dtype as
-        # the input, then ask torch for its Cholesky factor. The zero matrix is
-        # not positive-definite, so the Cholesky factorization fails and
-        # torch.linalg.LinAlgError is raised.
-        A = torch.zeros((2, 2), dtype=in_stress.data.dtype, device=in_stress.data.device)
-        torch.linalg.cholesky(A)
-        raise RuntimeError("unreachable: cholesky was expected to raise")  # pragma: no cover
+        raise RuntimeError("unreachable: __init__ was expected to raise")  # pragma: no cover

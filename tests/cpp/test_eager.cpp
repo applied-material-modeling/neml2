@@ -360,5 +360,36 @@ main(int argc, char ** argv)
     NEML2_CHECK(recoverable);
   }
 
+  // #7: a torch.linalg.LinAlgError raised at model *construction* time (in the
+  // Python model's __init__) must stay FATAL -- construction failures reflect
+  // config errors (invalid parameter, unstable initialization); cutting the
+  // time step does not fix them, so promoting to a recoverable ConvergenceError
+  // would trigger a futile retry loop. argv[7]/argv[8] are the CtorLinAlgFailure
+  // fixture .i + module.
+  if (argc >= 9)
+  {
+    const std::string ctor_input = argv[7];
+    const std::string ctor_module = argv[8];
+
+    bool got_fatal = false, got_conv = false;
+    try
+    {
+      // Loading (== constructing the eager Model) is what raises here; forward
+      // is unreachable.
+      load_model(ctor_input, "model", {ctor_module});
+    }
+    catch (const neml2::aoti::ConvergenceError &)
+    {
+      // Would mean the ctor guard incorrectly promoted the LinAlgError.
+      got_conv = true;
+    }
+    catch (const neml2::aoti::FatalError &)
+    {
+      got_fatal = true;
+    }
+    NEML2_CHECK(!got_conv);
+    NEML2_CHECK(got_fatal);
+  }
+
   return 0;
 }
