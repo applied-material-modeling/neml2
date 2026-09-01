@@ -325,5 +325,40 @@ main(int argc, char ** argv)
     NEML2_CHECK(at::allclose(me2.forward(ein).at("out_stress"), eout.at("out_stress")));
   }
 
+  // #6: a torch.linalg.LinAlgError raised inside a model's forward crosses the
+  // embedded-Python boundary and is normalized to a *recoverable* aoti::
+  // ConvergenceError (NOT a FatalError). Mirrors the aoti-side c10::LinAlgError
+  // -> ConvergenceError promotion in libneml2.so; here the promotion happens in
+  // the eager guard via `is_torch_linalg_error(e)`. argv[5]/argv[6] are the
+  // SingularLinAlgFailure fixture .i + module.
+  if (argc >= 7)
+  {
+    const std::string linalg_input = argv[5];
+    const std::string linalg_module = argv[6];
+
+    auto ml = load_model(linalg_input, "model", {linalg_module});
+    std::map<std::string, at::Tensor> lin;
+    lin.emplace("in_stress", at::ones({4, 6}, at::TensorOptions().dtype(ml.dtype())));
+
+    bool got_conv = false, recoverable = false, is_fatal = false;
+    try
+    {
+      ml.forward(lin);
+    }
+    catch (const neml2::aoti::FatalError &)
+    {
+      // Would mean the eager guard mis-classified the LinAlgError as fatal.
+      is_fatal = true;
+    }
+    catch (const neml2::aoti::ConvergenceError & e)
+    {
+      got_conv = true;
+      recoverable = e.recoverable(); // recoverable: a host can cut dt and retry
+    }
+    NEML2_CHECK(!is_fatal);
+    NEML2_CHECK(got_conv);
+    NEML2_CHECK(recoverable);
+  }
+
   return 0;
 }
