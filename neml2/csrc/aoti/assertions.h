@@ -76,8 +76,13 @@ _assert(bool cond, const Args &... args)
 ///   - a torch `c10::LinAlgError` (a singular / non-invertible / non-PD linear
 ///     factorization from a torch linalg kernel) is re-thrown as the recoverable
 ///     `ConvergenceError` -- like a Newton non-convergence, a time-stepping
-///     consumer can cut the step and retry. The original message is carried on
-///     the new exception so the end user still sees which factorization failed;
+///     consumer can cut the step and retry. Recognized BOTH as the typed C++
+///     exception (when RTTI matches across libraries) AND by the preserved
+///     "torch.linalg.<op>:" message prefix on a plain `std::exception` (torch's
+///     AOTI proxy_executor C API strips derived exception types when it re-
+///     throws across the C boundary, so a c10::LinAlgError from inside an AOTI-
+///     compiled graph reaches the caller as c10::Error/std::exception -- the
+///     original message text survives even though the derived type does not);
 ///   - any other foreign exception (a torch `c10::Error` from a shape / device
 ///     mismatch inside a compiled graph, `std::bad_alloc`, ...) becomes a
 ///     `FatalError`, i.e. non-recoverable -- a caller that retries on
@@ -96,15 +101,25 @@ _guarded(Fn && fn) -> decltype(fn())
   }
   catch (const c10::LinAlgError & e)
   {
-    // Uses `what()` (matching the FatalError catch below) rather than
-    // `what_without_backtrace()`: the torch backtrace is verbose but harmless,
-    // and skipping it would require a defensive nullptr / empty-string fallback
-    // whose branches cannot be reached by a normal test.
+    // Fast path: RTTI matched. Direct-throw sites (or same-library callers)
+    // land here. Uses `what()` to include the torch backtrace, matching the
+    // FatalError catch below.
     throw ConvergenceError(std::string("aoti: torch linalg failure: ") + e.what());
   }
   catch (const std::exception & e)
   {
-    throw FatalError(std::string("aoti: ") + e.what());
+    const std::string what = e.what();
+    // Fallback for a c10::LinAlgError that reached here without matching the
+    // typed catch above: torch's AOTI proxy_executor C API (see aoti_torch_
+    // proxy_executor_call_function in libtorch) catches every std::exception
+    // inside the compiled kernel and re-throws on the C++ side as a fresh
+    // c10::Error carrying the original what() text but not the derived type.
+    // A hidden-visibility RTTI split across libraries has the same effect.
+    // Detect via the "torch.linalg.<op>:" prefix torch always puts at the head
+    // of a real linalg failure's message; that prefix survives both cases.
+    if (what.find("torch.linalg.") != std::string::npos)
+      throw ConvergenceError(std::string("aoti: torch linalg failure: ") + what);
+    throw FatalError(std::string("aoti: ") + what);
   }
   catch (...)
   {

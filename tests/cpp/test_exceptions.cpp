@@ -202,6 +202,34 @@ main()
     }
     NEML2_CHECK(fatal);
   }
+  // Message-based fallback: the AOTI proxy_executor C API strips the derived
+  // c10::LinAlgError type when a linalg kernel inside an AOT-compiled graph
+  // throws, so what escapes the compiled .so is a plain std::exception that
+  // carries the original "torch.linalg.<op>:" message but not the LinAlgError
+  // type. Simulate that here -- the guard must still promote it to a recoverable
+  // ConvergenceError based on the message prefix.
+  {
+    bool got_conv = false, recoverable = false, kept_msg = false;
+    try
+    {
+      _guarded(
+          []() -> int
+          {
+            throw std::runtime_error("torch.linalg.solve: (Batch element 7856): The solver failed "
+                                     "because the input matrix is singular.");
+          });
+    }
+    catch (const ConvergenceError & e)
+    {
+      got_conv = true;
+      recoverable = e.recoverable();
+      kept_msg = std::strstr(e.what(), "torch.linalg.solve") != nullptr;
+    }
+    NEML2_CHECK(got_conv);
+    NEML2_CHECK(recoverable);
+    NEML2_CHECK(kept_msg);
+  }
+
   // --- AggregateError: fatal dominates ---------------------------------------
   { // all recoverable -> aggregate is recoverable
     std::vector<std::exception_ptr> errs{as_eptr(ConvergenceError("a")),
