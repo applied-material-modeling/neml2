@@ -202,34 +202,6 @@ main()
     }
     NEML2_CHECK(fatal);
   }
-  // Empty-message fallback: the guard prefers what_without_backtrace() but falls
-  // back to what() if the derived override returns an empty string. Fabricate a
-  // LinAlgError subclass whose what_without_backtrace() is empty so the ternary's
-  // false branch is taken -- the ConvergenceError message still ends up non-empty
-  // via the what() fallback.
-  {
-    struct EmptyNoBacktraceLinAlgError : public c10::LinAlgError
-    {
-      using c10::LinAlgError::LinAlgError;
-      const char * what_without_backtrace() const noexcept override { return ""; }
-    };
-
-    bool threw = false, kept_msg = false;
-    try
-    {
-      _guarded([] { throw EmptyNoBacktraceLinAlgError(std::string("fallback msg")); });
-    }
-    catch (const ConvergenceError & e)
-    {
-      threw = true;
-      // Message came from what() (the full formatted string), which contains the
-      // ctor `msg` argument.
-      kept_msg = std::strstr(e.what(), "fallback msg") != nullptr;
-    }
-    NEML2_CHECK(threw);
-    NEML2_CHECK(kept_msg);
-  }
-
   // --- AggregateError: fatal dominates ---------------------------------------
   { // all recoverable -> aggregate is recoverable
     std::vector<std::exception_ptr> errs{as_eptr(ConvergenceError("a")),

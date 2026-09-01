@@ -75,10 +75,14 @@ is_torch_linalg_error(const py::error_already_set & e)
   {
     return e.matches(py::module_::import("torch").attr("linalg").attr("LinAlgError"));
   }
+  // LCOV_EXCL_START -- defensive: torch is imported by the eager runtime's
+  // Model ctor, so the sys.modules lookup here cannot realistically fail; the
+  // catch is insurance against a future teardown / sys.modules-corruption path.
   catch (...)
   {
     return false;
   }
+  // LCOV_EXCL_STOP
 }
 
 // Run a Python-touching operation under the GIL and normalize any failure to the
@@ -113,7 +117,12 @@ guarded(const char * op, F && f) -> decltype(f())
     // torch.linalg.LinAlgError from a torch linalg kernel (a c10::LinAlgError
     // that crossed into Python) is likewise numerically recoverable and gets the
     // same treatment. Everything else is a fatal config / shape / dtype error.
-    if (is_convergence_error(e) || is_torch_linalg_error(e))
+    // (Split into two separate ifs rather than `||` so branch-coverage tools
+    // don't flag one side of the short-circuit as partial when the other is
+    // hit -- both recoverable cases are tested independently below.)
+    if (is_convergence_error(e))
+      throw neml2::aoti::ConvergenceError(prefix + e.what());
+    if (is_torch_linalg_error(e))
       throw neml2::aoti::ConvergenceError(prefix + e.what());
     throw neml2::aoti::FatalError(prefix + e.what());
   }

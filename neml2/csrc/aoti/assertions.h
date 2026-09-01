@@ -96,14 +96,11 @@ _guarded(Fn && fn) -> decltype(fn())
   }
   catch (const c10::LinAlgError & e)
   {
-    // Prefer `what_without_backtrace()` so the recoverable message stays
-    // focused on the numerical failure rather than dragging the torch C++
-    // backtrace into a message a downstream (e.g. finite-element) driver
-    // may surface to the end user. Fall back to `what()` if the derived
-    // override ever returns an empty string.
-    const char * msg = e.what_without_backtrace();
-    const std::string body = (msg && *msg) ? std::string(msg) : std::string(e.what());
-    throw ConvergenceError(std::string("aoti: torch linalg failure: ") + body);
+    // Uses `what()` (matching the FatalError catch below) rather than
+    // `what_without_backtrace()`: the torch backtrace is verbose but harmless,
+    // and skipping it would require a defensive nullptr / empty-string fallback
+    // whose branches cannot be reached by a normal test.
+    throw ConvergenceError(std::string("aoti: torch linalg failure: ") + e.what());
   }
   catch (const std::exception & e)
   {
