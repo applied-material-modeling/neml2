@@ -76,15 +76,15 @@ _assert(bool cond, const Args &... args)
 ///     through untouched -- its dynamic type and `recoverable()` are preserved;
 ///   - a torch `c10::LinAlgError` (e.g., a singular / non-invertible or
 ///     non-positive-definite matrix from a torch linalg kernel) is re-thrown as
-///     the recoverable `ConvergenceError` -- like a Newton non-convergence,
-///     a time-stepping
-///     consumer can cut the step and retry. Recognized BOTH as the typed C++
-///     exception (when RTTI matches across libraries) AND by the preserved
-///     "torch.linalg.<op>:" message prefix on a plain `std::exception` (torch's
-///     AOTI proxy_executor C API strips derived exception types when it re-
-///     throws across the C boundary, so a c10::LinAlgError from inside an AOTI-
-///     compiled graph reaches the caller as c10::Error/std::exception -- the
-///     original message text survives even though the derived type does not);
+///     the recoverable `ConvergenceError` -- like a Newton non-convergence, a
+///     time-stepping consumer can cut the step and retry. Recognized BOTH as
+///     the typed C++ exception (when run-time type information (RTTI) matches
+///     across libraries) AND by the preserved "torch.linalg.<op>:" message
+///     prefix on a plain `std::exception` (torch's AOTI proxy_executor C API
+///     strips derived exception types when it re-throws across the C boundary,
+///     so a c10::LinAlgError from inside an AOTI-compiled graph reaches the
+///     caller as c10::Error/std::exception -- the original message text
+///     survives even though the derived type does not);
 ///   - any other foreign exception (a torch `c10::Error` from a shape / device
 ///     mismatch inside a compiled graph, `std::bad_alloc`, ...) becomes a
 ///     `FatalError`, i.e. non-recoverable -- a caller that retries on

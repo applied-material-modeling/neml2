@@ -209,7 +209,7 @@ main()
   // type. Simulate that here -- the guard must still promote it to a recoverable
   // ConvergenceError based on the message prefix.
   {
-    bool got_conv = false, recoverable = false, kept_msg = false;
+    bool caught_convergence_error = false, recoverable = false, kept_msg = false;
     try
     {
       _guarded(
@@ -221,11 +221,11 @@ main()
     }
     catch (const ConvergenceError & e)
     {
-      got_conv = true;
+      caught_convergence_error = true;
       recoverable = e.recoverable();
       kept_msg = std::strstr(e.what(), "torch.linalg.solve") != nullptr;
     }
-    NEML2_CHECK(got_conv);
+    NEML2_CHECK(caught_convergence_error);
     NEML2_CHECK(recoverable);
     NEML2_CHECK(kept_msg);
   }
