@@ -27,16 +27,21 @@
 //   - the recoverable() classification of each concrete type;
 //   - AggregateError's "fatal dominates" aggregation;
 //   - _throw / _assert raising a FatalError;
+//   - _guarded normalizing a torch c10::LinAlgError into the recoverable
+//     ConvergenceError while carrying the original message through;
 //   - the Newton solver throwing a *recoverable* ConvergenceError on both
 //     failure modes (divergence and max-iterations), driven by a hand-rolled
 //     NonlinearSystem so no AOTI package is needed.
 
+#include <cstring>
 #include <exception>
 #include <limits>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
 #include <ATen/ATen.h>
+#include <c10/util/Exception.h>
 
 #include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/Model.h" // SolverConfig
@@ -138,6 +143,92 @@ main()
     NEML2_CHECK(!recoverable);
   }
   NEML2_CHECK_THROWS(_assert(false, "nope"));
+
+  // --- _guarded normalizes c10::LinAlgError -> recoverable ConvergenceError --
+  // A torch linalg kernel that hits a singular / non-positive-definite matrix
+  // throws c10::LinAlgError; the guard must re-throw it as our recoverable
+  // ConvergenceError so a time-stepping consumer cuts the step and retries
+  // instead of hard-failing. The original message must survive so the end user
+  // can still see which factorization failed.
+  {
+    bool caught_convergence_error = false, recoverable = false, kept_msg = false, is_fatal = false;
+    try
+    {
+      _guarded([] { TORCH_CHECK_LINALG(false, "singular test matrix"); });
+    }
+    catch (const FatalError &)
+    {
+      // Would mean the guard mis-classified this as fatal.
+      is_fatal = true;
+    }
+    catch (const ConvergenceError & e)
+    {
+      caught_convergence_error = true;
+      recoverable = e.recoverable();
+      kept_msg = std::strstr(e.what(), "singular test matrix") != nullptr;
+    }
+    NEML2_CHECK(!is_fatal);
+    NEML2_CHECK(caught_convergence_error);
+    NEML2_CHECK(recoverable);
+    NEML2_CHECK(kept_msg);
+  }
+  // A LinAlgError caught through the base neml2 Exception surface still reports
+  // recoverable() -- the vtable + typeinfo of ConvergenceError is what carries
+  // the bit across a downstream `catch (const Exception &)`.
+  {
+    bool recoverable = false;
+    try
+    {
+      _guarded([] { TORCH_CHECK_LINALG(false, "another singular case"); });
+    }
+    catch (const Exception & e)
+    {
+      recoverable = e.recoverable();
+    }
+    NEML2_CHECK(recoverable);
+  }
+  // A generic std::runtime_error is still classified fatal (only linalg-shaped
+  // torch failures are promoted to recoverable; unrelated foreign errors keep
+  // their previous behavior).
+  {
+    bool fatal = false;
+    try
+    {
+      _guarded([]() -> int { throw std::runtime_error("shape mismatch"); });
+    }
+    catch (const FatalError & e)
+    {
+      fatal = !e.recoverable();
+    }
+    NEML2_CHECK(fatal);
+  }
+  // Message-based fallback: the AOTI proxy_executor C API strips the derived
+  // c10::LinAlgError type when a linalg kernel inside an AOT-compiled graph
+  // throws, so what escapes the compiled .so is a plain std::exception that
+  // carries the original "torch.linalg.<op>:" message but not the LinAlgError
+  // type. Simulate that here -- the guard must still promote it to a recoverable
+  // ConvergenceError based on the message prefix.
+  {
+    bool caught_convergence_error = false, recoverable = false, kept_msg = false;
+    try
+    {
+      _guarded(
+          []() -> int
+          {
+            throw std::runtime_error("torch.linalg.solve: (Batch element 7856): The solver failed "
+                                     "because the input matrix is singular.");
+          });
+    }
+    catch (const ConvergenceError & e)
+    {
+      caught_convergence_error = true;
+      recoverable = e.recoverable();
+      kept_msg = std::strstr(e.what(), "torch.linalg.solve") != nullptr;
+    }
+    NEML2_CHECK(caught_convergence_error);
+    NEML2_CHECK(recoverable);
+    NEML2_CHECK(kept_msg);
+  }
 
   // --- AggregateError: fatal dominates ---------------------------------------
   { // all recoverable -> aggregate is recoverable

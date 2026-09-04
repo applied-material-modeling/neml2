@@ -61,6 +61,45 @@ is_convergence_error(const py::error_already_set & e)
   }
 }
 
+// True if the Python exception `e` is (or derives from) `torch.linalg.LinAlgError`
+// -- the Python face of a c10::LinAlgError raised by a torch linalg kernel
+// (e.g., a singular / non-invertible or non-positive-definite matrix).
+// Numerically recoverable in the same sense as a Newton non-convergence: a
+// time-stepping consumer can cut the step and retry, so the caller wants a
+// `ConvergenceError` here, not a fatal. Same fast sys.modules lookup +
+// safe-degradation pattern as `is_convergence_error` above.
+bool
+is_torch_linalg_error(const py::error_already_set & e)
+{
+  try
+  {
+    return e.matches(py::module_::import("torch").attr("linalg").attr("LinAlgError"));
+  }
+  // LCOV_EXCL_START -- defensive: torch is imported by the eager runtime's
+  // Model ctor, so the sys.modules lookup here cannot realistically fail; the
+  // catch is insurance against a future teardown / sys.modules-corruption path.
+  catch (...)
+  {
+    return false;
+  }
+  // LCOV_EXCL_STOP
+}
+
+// Policy for `guarded`'s Python-exception catch:
+//   Allow -- promote a solver ConvergenceError / torch.linalg.LinAlgError to
+//            the recoverable neml2 ConvergenceError; used by the evaluation
+//            methods (forward / jvp / jacobian / set_parameter / ...) where a
+//            time-stepping consumer can cut the step and retry.
+//   Deny  -- no promotion; every foreign failure becomes a FatalError. Used by
+//            the Model constructor: a linalg failure at construction reflects
+//            a bad input (invalid parameter, unstable initialization) that
+//            cutting the step will not help, so it should surface as fatal.
+enum class RecoverablePolicy
+{
+  Allow,
+  Deny,
+};
+
 // Run a Python-touching operation under the GIL and normalize any failure to the
 // NEML2 exception taxonomy -- mirroring the aoti runtime's `_guarded` policy of
 // presenting foreign torch/python errors through that taxonomy. The GIL is held
@@ -68,7 +107,8 @@ is_convergence_error(const py::error_already_set & e)
 // message + type is safe.
 template <class F>
 auto
-guarded(const char * op, F && f) -> decltype(f())
+guarded(const char * op, F && f, RecoverablePolicy policy = RecoverablePolicy::Allow)
+    -> decltype(f())
 {
   const std::string prefix = std::string("neml2::eager::Model::") + op + ": ";
   py::gil_scoped_acquire gil;
@@ -86,12 +126,20 @@ guarded(const char * op, F && f) -> decltype(f())
   }
   catch (const py::error_already_set & e)
   {
-    // A Python exception crossed the embedded boundary. A solver divergence /
-    // max-iters originates as neml2::aoti::ConvergenceError in libneml2.so and
-    // surfaces here as the registered neml2.aoti._aoti.ConvergenceError; re-raise
-    // it as the recoverable C++ type so a host can cut the step and retry.
+    // A Python exception crossed the embedded boundary. Under RecoverablePolicy::
+    // Allow: a solver divergence / max-iters originates as neml2::aoti::
+    // ConvergenceError in libneml2.so and surfaces here as the registered
+    // neml2.aoti._aoti.ConvergenceError, and a torch.linalg.LinAlgError from a
+    // torch linalg kernel is likewise numerically recoverable -- both get
+    // re-thrown as the recoverable C++ ConvergenceError so a host can cut the
+    // step and retry. Under Deny (construction path): both stay fatal.
     // Everything else is a fatal config / shape / dtype error.
-    if (is_convergence_error(e))
+    // (Split into two separate ifs rather than `||` so branch-coverage tools
+    // don't flag one side of the short-circuit as partial when the other is
+    // hit -- both recoverable cases are tested independently below.)
+    if (policy == RecoverablePolicy::Allow && is_convergence_error(e))
+      throw neml2::aoti::ConvergenceError(prefix + e.what());
+    if (policy == RecoverablePolicy::Allow && is_torch_linalg_error(e))
       throw neml2::aoti::ConvergenceError(prefix + e.what());
     throw neml2::aoti::FatalError(prefix + e.what());
   }
@@ -154,7 +202,11 @@ Model::Model(const std::filesystem::path & input_file,
                                            .cast<std::map<std::string, std::vector<int64_t>>>();
         _impl->device = _impl->adapter.attr("device").cast<at::Device>();
         _impl->dtype = _impl->adapter.attr("dtype").cast<at::ScalarType>();
-      });
+      },
+      // Construction-time failures reflect config errors (invalid parameter,
+      // unstable initialization); cutting the step will not help, so a
+      // torch.linalg.LinAlgError raised here stays fatal.
+      RecoverablePolicy::Deny);
 }
 
 Model::~Model() = default;
