@@ -558,13 +558,13 @@ previous chunk’s terminal adjoint.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.pyzag.NEML2BlockJacobian.device">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.13)"><span class="pre">device</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2BlockJacobian.device" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.14)"><span class="pre">device</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2BlockJacobian.device" title="Link to this definition">#</a></dt>
 <dd><p>Device of the backing tensors.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.pyzag.NEML2BlockJacobian.dtype">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.13)"><span class="pre">dtype</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2BlockJacobian.dtype" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.14)"><span class="pre">dtype</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2BlockJacobian.dtype" title="Link to this definition">#</a></dt>
 <dd><p>Dtype of the backing tensors.</p>
 </dd></dl>
 
@@ -589,7 +589,7 @@ a forward-walk Jacobian, not one from <a class="reference internal" href="#neml2
 <p>Solves <code class="docutils literal notranslate"><span class="pre">-A_last^T</span> <span class="pre">x</span> <span class="pre">=</span> <span class="pre">g_terminal</span></code> on the last step’s transposed diagonal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>g_terminal</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>g_terminal</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.pyzag.NEML2BlockVector" title="neml2.pyzag.operators._vector.NEML2BlockVector"><em>NEML2BlockVector</em></a></p>
@@ -611,7 +611,7 @@ backend pattern and let <code class="docutils literal notranslate"><span class="
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>raw_tensors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>torch.Tensor</em></a><em>]</em>)</p></li>
+<li><p><strong>raw_tensors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>torch.Tensor</em></a><em>]</em>)</p></li>
 <li><p><strong>layout</strong> (<a class="reference internal" href="neml2.es.html#neml2.es.AxisLayout" title="neml2.es.AxisLayout"><em>AxisLayout</em></a>)</p></li>
 <li><p><strong>intmd_dims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
@@ -659,13 +659,13 @@ backend pattern and let <code class="docutils literal notranslate"><span class="
 
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.pyzag.NEML2BlockVector.device">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.13)"><span class="pre">device</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2BlockVector.device" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.14)"><span class="pre">device</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2BlockVector.device" title="Link to this definition">#</a></dt>
 <dd><p>Device of the backing tensors.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.pyzag.NEML2BlockVector.dtype">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.13)"><span class="pre">dtype</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2BlockVector.dtype" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.14)"><span class="pre">dtype</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2BlockVector.dtype" title="Link to this definition">#</a></dt>
 <dd><p>Dtype of the backing tensors.</p>
 </dd></dl>
 
@@ -677,7 +677,7 @@ backend pattern and let <code class="docutils literal notranslate"><span class="
 concatenated along the feature axis – the flat form pyzag’s PCR path expects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -725,7 +725,7 @@ concatenated along the feature axis – the flat form pyzag’s PCR path expects
 <dd class="field-odd"><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -736,7 +736,7 @@ concatenated along the feature axis – the flat form pyzag’s PCR path expects
 <dd><p>Scale each plain-batch entry by the matching entry of <code class="docutils literal notranslate"><span class="pre">factor</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.pyzag.NEML2BlockVector" title="neml2.pyzag.operators._vector.NEML2BlockVector"><em>NEML2BlockVector</em></a></p>
@@ -762,7 +762,7 @@ concatenated along the feature axis – the flat form pyzag’s PCR path expects
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mask</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p></li>
 <li><p><strong>other</strong> (<em>BlockVector</em>)</p></li>
 </ul>
 </dd>
@@ -791,7 +791,7 @@ concatenated along the feature axis – the flat form pyzag’s PCR path expects
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.pyzag.NEML2PyzagModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.pyzag.</span></span><span class="sig-name descname"><span class="pre">NEML2PyzagModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/pyzag/interface.html#NEML2PyzagModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.pyzag.NEML2PyzagModel" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">NonlinearFunctionOperatorFactory</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">NonlinearFunctionOperatorFactory</span></code></p>
 <p>Adapt a NEML2 <code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem</span></code> to pyzag’s time-integration library.</p>
 <p>Implements pyzag’s <code class="docutils literal notranslate"><span class="pre">NonlinearFunctionOperatorFactory</span></code> ABC. The public name
 stays <code class="docutils literal notranslate"><span class="pre">NEML2PyzagModel</span></code> for user-facing continuity even though the base
@@ -828,7 +828,7 @@ construction with <code class="xref py py-func docutils literal notranslate"><sp
 <dd class="field-odd"><p><strong>dynamic_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -846,7 +846,7 @@ idempotent and independent of prior <a class="reference internal" href="#neml2.p
 <dd class="field-odd"><p><strong>dynamic_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -863,12 +863,12 @@ the system consumes, in the order given – which must match the force
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x_full</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p></li>
-<li><p><strong>forces</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a><em>]</em>)</p></li>
+<li><p><strong>x_full</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p></li>
+<li><p><strong>forces</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a><em>]</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, <a class="reference internal" href="#neml2.pyzag.NEML2BlockJacobian" title="neml2.pyzag.operators._jacobian.NEML2BlockJacobian"><em>NEML2BlockJacobian</em></a>]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, <a class="reference internal" href="#neml2.pyzag.NEML2BlockJacobian" title="neml2.pyzag.operators._jacobian.NEML2BlockJacobian"><em>NEML2BlockJacobian</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -886,8 +886,8 @@ the system consumes, in the order given – which must match the force
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>prev_solution</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>) – the converged state at the last step of the previous chunk.</p></li>
-<li><p><strong>forces</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a><em>]</em>) – the driving forces for this chunk (one tensor per <code class="docutils literal notranslate"><span class="pre">*forces</span></code> arg).</p></li>
+<li><p><strong>prev_solution</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>) – the converged state at the last step of the previous chunk.</p></li>
+<li><p><strong>forces</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a><em>]</em>) – the driving forces for this chunk (one tensor per <code class="docutils literal notranslate"><span class="pre">*forces</span></code> arg).</p></li>
 <li><p><strong>inverse_operator</strong> – the bidiagonal factorization class/instance pyzag uses to
 invert the chunk system (Thomas, PCR, …).</p></li>
 </ul>
@@ -950,13 +950,13 @@ invert the chunk system (Thomas, PCR, …).</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.pyzag.NEML2SolvableBlockOperator.device">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.13)"><span class="pre">device</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2SolvableBlockOperator.device" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.14)"><span class="pre">device</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2SolvableBlockOperator.device" title="Link to this definition">#</a></dt>
 <dd><p>Device of the backing tensors.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.pyzag.NEML2SolvableBlockOperator.dtype">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.13)"><span class="pre">dtype</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2SolvableBlockOperator.dtype" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.14)"><span class="pre">dtype</span></a></em><a class="headerlink" href="#neml2.pyzag.NEML2SolvableBlockOperator.dtype" title="Link to this definition">#</a></dt>
 <dd><p>Dtype of the backing tensors.</p>
 </dd></dl>
 
@@ -1116,7 +1116,7 @@ groups are unsupported.</p>
 <dd class="field-odd"><p><strong>bv</strong> (<em>BlockVector</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1144,7 +1144,7 @@ groups are unsupported.</p>
 <dd><p>Flat torch <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">nflat)</span></code> -&gt; <a class="reference internal" href="#neml2.pyzag.NEML2BlockVector" title="neml2.pyzag.NEML2BlockVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">NEML2BlockVector</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>raw</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>raw</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.pyzag.NEML2BlockVector" title="neml2.pyzag.operators._vector.NEML2BlockVector"><em>NEML2BlockVector</em></a></p>

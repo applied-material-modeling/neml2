@@ -548,7 +548,7 @@ factor of two.</p>
 <section id="optimizer-choice-and-conditioning">
 <h2>Optimizer choice and conditioning<a class="headerlink" href="#optimizer-choice-and-conditioning" title="Link to this heading">#</a></h2>
 <p>NEML2 parameters are leaf <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> tensors, so any optimizer in
-<code class="docutils literal notranslate"><span class="pre">torch.optim</span></code> works. We use <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="(in PyTorch v2.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.Adam</span></code></a> here.</p>
+<code class="docutils literal notranslate"><span class="pre">torch.optim</span></code> works. We use <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="(in PyTorch v2.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.Adam</span></code></a> here.</p>
 <p>There is one subtlety. <span class="math notranslate nohighlight">\(E\)</span> lives at <span class="math notranslate nohighlight">\(\mathcal{O}(10^5)\)</span> and <span class="math notranslate nohighlight">\(\nu\)</span> at
 <span class="math notranslate nohighlight">\(\mathcal{O}(0.3)\)</span> — almost six orders of magnitude apart. A single
 scalar learning rate that’s large enough to move <span class="math notranslate nohighlight">\(E\)</span> will catapult
