@@ -1,0 +1,235 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "0e5a91e6",
+   "metadata": {},
+   "source": [
+    "(tutorials-models-evaluation-device)=\n",
+    "# Evaluation device\n",
+    "\n",
+    "In this tutorial, we'll move a model and its inputs onto a target device (CPU here, but\n",
+    "the same calls work for CUDA or any other torch device) and run a\n",
+    "forward pass.\n",
+    "\n",
+    "The runnable cells stay on CPU so the doc build is portable. Swap\n",
+    "`\"cpu\"` for `\"cuda\"` to run on a GPU — nothing else changes.\n",
+    "\n",
+    ":::{note}\n",
+    "A freshly loaded NEML2 model sits on CPU with `torch.float64`\n",
+    "parameters. There is no separate \"CUDA build\" of NEML2 — the same\n",
+    "wheel runs on whichever devices our PyTorch install supports; we\n",
+    "opt in at runtime with `.to(...)`.\n",
+    ":::"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "84453d60",
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
+   "outputs": [],
+   "source": [
+    "# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard\n",
+    "# makes the cell a no-op everywhere else (the docs build and local Jupyter\n",
+    "# already have NEML2 installed), and the cell is hidden from the rendered docs.\n",
+    "import sys\n",
+    "\n",
+    "if \"google.colab\" in sys.modules:\n",
+    "    !pip install -q neml2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d6fd29fc",
+   "metadata": {},
+   "source": [
+    "## The input file"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "001e7a92",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%writefile input.i\n",
+    "# Linear isotropic elasticity used by the evaluation-device tutorial.\n",
+    "# Same model as the \"running your first model\" tutorial -- a small,\n",
+    "# device-agnostic forward operator to demonstrate how parameters and\n",
+    "# inputs are moved between CPU and CUDA.\n",
+    "[Models]\n",
+    "  [elasticity]\n",
+    "    type = LinearIsotropicElasticity\n",
+    "    coefficients      = '200e3          0.3'\n",
+    "    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'\n",
+    "  []\n",
+    "[]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c0342996",
+   "metadata": {},
+   "source": [
+    "## Loading and inspecting placement\n",
+    "\n",
+    "Load the model and check where its parameters live:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "1a3b1ae4",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import torch\n",
+    "import neml2\n",
+    "\n",
+    "model = neml2.load_model(\"input.i\", \"elasticity\")\n",
+    "\n",
+    "for name, p in model.named_parameters():\n",
+    "    print(f\"{name:>3}: device={p.device}, dtype={p.dtype}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9c18e2b3",
+   "metadata": {},
+   "source": [
+    "## Moving the model and its inputs\n",
+    "\n",
+    "Two pieces have to land on the target device before we call\n",
+    "`model(x)`:\n",
+    "\n",
+    "1. The **model** — `model.to(device=...)` moves its parameters and\n",
+    "   buffers (recursively, for composed models).\n",
+    "2. The **inputs** — types in `neml2.types` (like `SR2`) accept a\n",
+    "   `device=` keyword in their constructors.\n",
+    "\n",
+    "The cell below targets CPU. To run on a GPU, swap in\n",
+    "`torch.device(\"cuda\")`:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b6f688a6",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from neml2.types import SR2\n",
+    "\n",
+    "target = torch.device(\"cpu\")  # swap for torch.device(\"cuda\") on a CUDA box\n",
+    "\n",
+    "# 1. Move model parameters/buffers.\n",
+    "model.to(device=target)\n",
+    "for name, p in model.named_parameters():\n",
+    "    print(f\"{name:>3}: device={p.device}\")\n",
+    "\n",
+    "# 2. Allocate the input on the same device.\n",
+    "strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0, device=target)\n",
+    "print(f\"strain.device = {strain.device}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cd475439",
+   "metadata": {},
+   "source": [
+    "## Forward pass and bringing the result home\n",
+    "\n",
+    "With the model and input on the same device, the call looks just like\n",
+    "the CPU case. The result lives on that same device, so pull it back\n",
+    "with `.to(device=\"cpu\")` if we need it for NumPy or Matplotlib:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "37802d93",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "stress = model(strain)\n",
+    "print(f\"stress.device = {stress.device}\")\n",
+    "stress_host = stress.to(device=torch.device(\"cpu\"))\n",
+    "print(f\"stress (host copy): {stress_host}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3a9639e4",
+   "metadata": {},
+   "source": [
+    "If `target` had been `torch.device(\"cuda\")`, `stress.device` would\n",
+    "read `cuda:0` and the `.to(device=\"cpu\")` call would copy the result\n",
+    "across the host-device boundary.\n",
+    "\n",
+    "## Detecting CUDA at runtime\n",
+    "\n",
+    "Production code that wants to opportunistically use CUDA usually\n",
+    "guards on `torch.cuda.is_available()`:\n",
+    "\n",
+    "```python\n",
+    "target = torch.device(\"cuda\") if torch.cuda.is_available() else torch.device(\"cpu\")\n",
+    "model.to(device=target)\n",
+    "```\n",
+    "\n",
+    "`is_available()` returns `True` when a CUDA runtime and a visible GPU\n",
+    "are both present. If we want to fall back gracefully when the first\n",
+    "CUDA call fails, wrap the first forward in a `try / except` and\n",
+    "reload onto CPU in the handler.\n",
+    "\n",
+    "## Mixed-device errors\n",
+    "\n",
+    "If the model is on one device and the input is on another, PyTorch\n",
+    "raises at the first op that touches both. The fix is the same in\n",
+    "both directions: move both ends to the same device.\n",
+    "\n",
+    "On a CUDA-equipped machine, this would raise:\n",
+    "\n",
+    "```python\n",
+    "model = neml2.load_model(\"input.i\", \"elasticity\")   # CPU\n",
+    "strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0, device=\"cuda\")\n",
+    "model(strain)                                        # RuntimeError\n",
+    "```\n",
+    "\n",
+    "## Host-device transfer cost\n",
+    "\n",
+    "`.to(device=...)` is not free — it copies data between host and\n",
+    "device memory. A few rules of thumb:\n",
+    "\n",
+    "- **Move the model once, up front.** The parameters don't change\n",
+    "  between calls, so copying them every time wastes bandwidth.\n",
+    "- **Build inputs on the device.** Pass `device=` to the constructor\n",
+    "  (e.g. `SR2.fill(..., device=target)`) instead of building on CPU\n",
+    "  and copying.\n",
+    "- **Pull only what we need back to CPU.** Keep the integration loop\n",
+    "  on GPU and only `.to(device=\"cpu\")` the final history slice for plotting.\n",
+    "\n",
+    "## Where to go next\n",
+    "\n",
+    "- The same model also runs on batched inputs — see\n",
+    "  [](tutorials-models-vectorization).\n",
+    "- To read or mutate the model's parameters from Python, see\n",
+    "  [](tutorials-models-parameters)."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

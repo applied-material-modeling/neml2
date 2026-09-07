@@ -1,0 +1,38 @@
+(models-FiniteVolumeAppendBoundaryCondition)=
+# FiniteVolumeAppendBoundaryCondition
+
+**Source:** `models/finite_volume/FiniteVolumeAppendBoundaryCondition.py`
+
+Concatenate a single BC value onto the trailing sub-batch axis.
+
+With ``input`` shape ``(*B, N)`` the output has shape ``(*B, N+1)``.
+Left-side: $output = [bc, *input]$; right-side: ``[*input, bc]``.
+
+The bc value is a static buffer (per the KWN HIT, ``bc_value = 0.0``);
+chain rule is wired only for ``input``, where the derivative is a
+bidiagonal selector ((N+1, N) identity block with one zero row).
+The output variable name defaults to ``<input>_with_bc_<side>``.
+
+## Inputs
+
+`input` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Input tensor to append the boundary condition to.
+
+
+## Outputs
+
+`output` &mdash; `output` &middot; `Scalar`
+: Output tensor name. Defaults to input + '_with_bc_left' or '_with_bc_right'.
+
+
+## Parameters
+
+`bc_value` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Boundary condition value to append.
+
+
+## Other options
+
+`side` &mdash; `str` &middot; default `left`
+: Which side to append the boundary condition value to. Options are: right, left
+

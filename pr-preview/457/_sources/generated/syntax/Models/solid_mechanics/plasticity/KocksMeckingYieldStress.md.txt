@@ -1,0 +1,23 @@
+(models-KocksMeckingYieldStress)=
+# KocksMeckingYieldStress
+
+**Source:** `models/solid_mechanics/plasticity/KocksMeckingYieldStress.py`
+
+The yield stress given by the Kocks-Mecking model. $\sigma_y = \exp{C} \mu$ with $\mu$ the
+shear modulus and $C$ the
+horizontal intercept from the Kocks-Mecking diagram.
+
+## Outputs
+
+`yield_stress` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Output name of the yield stress
+
+
+## Parameters
+
+`C` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The Kocks-Mecking horizontal intercept
+
+`shear_modulus` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The shear modulus
+

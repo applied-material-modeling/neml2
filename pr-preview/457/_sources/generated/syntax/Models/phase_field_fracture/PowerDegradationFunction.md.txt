@@ -1,0 +1,34 @@
+(models-PowerDegradationFunction)=
+# PowerDegradationFunction
+
+**Source:** `models/phase_field_fracture/PowerDegradationFunction.py`
+
+Power degradation function used to degrade the elastic strain energy
+density,
+$g = \left( 1 - d \right)^p (1 - \eta) + \eta$,
+where $d$ is the phase-field variable, $p$ the power, and
+$\eta$ a residual degradation when $d = 1$.
+
+## Inputs
+
+`phase` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Phase-field variable
+
+
+## Outputs
+
+`degradation` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Value of the degradation function
+
+
+## Parameters
+
+`power` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Power of the degradation function
+
+
+## Other options
+
+`eta` &mdash; `float` &middot; default `0.0`
+: Residual degradation when d = 1
+

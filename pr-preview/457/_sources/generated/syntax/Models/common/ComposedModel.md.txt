@@ -1,0 +1,18 @@
+(models-ComposedModel)=
+# ComposedModel
+
+**Source:** `models/common/ComposedModel.py`
+
+Compose multiple Models together to form a single Model. The execution order
+of the composed models is determined by an internal dependency resolver such
+that input variables consumed by one model are guaranteed to be available
+from a previously executed model in the chain.
+
+## Other options
+
+`models` &mdash; `list` &middot; **required**
+: Models being composed together
+
+`additional_outputs` &mdash; `list`
+: Extra output variables to be extracted from the composed model in addition to the ones identified through dependency resolution.
+

@@ -1,0 +1,20 @@
+(models-GreenLagrangeStrain)=
+# GreenLagrangeStrain
+
+**Source:** `models/solid_mechanics/elasticity/GreenLagrangeStrain.py`
+
+Green-Lagrange strain, $E = \frac{1}{2} (C - I)$, where
+$C = F^T F$ is the right Cauchy-Green tensor and $I$ is the
+identity tensor.
+
+## Inputs
+
+`deformation_gradient` &mdash; `input` &middot; `R2` &middot; **required**
+: The deformation gradient
+
+
+## Outputs
+
+`strain` &mdash; `output` &middot; `SR2` &middot; **required**
+: The Green-Lagrange strain
+

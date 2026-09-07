@@ -1,0 +1,29 @@
+(models-ScalarLinearInterpolation)=
+# ScalarLinearInterpolation
+
+**Source:** `models/common/LinearInterpolation.py`
+
+Interpolate a Scalar as a function of the given argument. See
+neml2::Interpolation for rules on shapes of the interpolant and the
+argument. This object performs a _linear interpolation_.
+
+## Inputs
+
+`argument` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Argument used to query the interpolant
+
+
+## Outputs
+
+`output` &mdash; `output` &middot; `Scalar`
+: Scalar output of the interpolant. If not specified, the object name will be used as the output name.
+
+
+## Parameters
+
+`abscissa` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Scalar defining the abscissa values of the interpolant
+
+`ordinate` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Scalar defining the ordinate values of the interpolant
+

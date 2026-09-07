@@ -1,0 +1,18 @@
+(models-R2Determinant)=
+# R2Determinant
+
+**Source:** `models/common/Determinant.py`
+
+Determinant of a full ``R2`` tensor.
+
+## Inputs
+
+`input` &mdash; `input` &middot; `R2` &middot; **required**
+: The second order tensor to calculate the determinant of
+
+
+## Outputs
+
+`determinant` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The determinant of the input tensor
+

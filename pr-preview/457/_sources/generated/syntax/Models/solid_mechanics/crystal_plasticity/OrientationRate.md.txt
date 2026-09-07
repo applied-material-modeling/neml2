@@ -1,0 +1,31 @@
+(models-OrientationRate)=
+# OrientationRate
+
+**Source:** `models/solid_mechanics/crystal_plasticity/OrientationRate.py`
+
+Defines the rate of the crystal orientations as a spin given by
+$\Omega^e = w - w^p - \varepsilon d^p + d^p \varepsilon$ where
+$\Omega^e = \dot{Q} Q^T$, $Q$ is the orientation, $w$ is
+the vorticity, $w^p$ is the plastic vorticity, $d^p$ is the
+plastic deformation rate, and $\varepsilon$ is the elastic stretch.
+
+## Inputs
+
+`elastic_strain` &mdash; `input` &middot; `SR2` &middot; **required**
+: The name of the elastic strain tensor
+
+`vorticity` &mdash; `input` &middot; `WR2` &middot; **required**
+: The name of the vorticity tensor
+
+`plastic_deformation_rate` &mdash; `input` &middot; `SR2` &middot; **required**
+: The name of the plastic deformation rate
+
+`plastic_vorticity` &mdash; `input` &middot; `WR2` &middot; **required**
+: The name of the plastic vorticity
+
+
+## Outputs
+
+`orientation_rate` &mdash; `output` &middot; `WR2` &middot; **required**
+: The name of the orientation rate
+

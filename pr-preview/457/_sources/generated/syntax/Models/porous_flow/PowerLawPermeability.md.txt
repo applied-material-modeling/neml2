@@ -1,0 +1,33 @@
+(models-PowerLawPermeability)=
+# PowerLawPermeability
+
+**Source:** `models/porous_flow/PowerLawPermeability.py`
+
+Power-law porosity-permeability relation
+$K = K_0 \left( \frac{\varphi}{\varphi_0} \right)^p$ where
+$\varphi_0$ and $K_0$ are the reference porosity and
+permeability respectively, and $p$ is the power-law exponent.
+
+## Inputs
+
+`porosity` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Porosity
+
+
+## Outputs
+
+`permeability` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Permeability
+
+
+## Parameters
+
+`reference_permeability` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The reference permeability
+
+`reference_porosity` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The reference porosity
+
+`exponent` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The exponent in the power law
+

@@ -1,0 +1,30 @@
+(models-SemiInfiniteCoordinateTransform)=
+# SemiInfiniteCoordinateTransform
+
+**Source:** `models/finite_volume/SemiInfiniteCoordinateTransform.py`
+
+Transform a semi-infinite coordinate to x / (x + s).
+
+Linear-fractional map of an input coordinate $x$ into the unit interval
+via the shift parameter $s$. The pushforward in the $x$ direction is
+$s / (x + s)^2 * V$ (the standard d/dx of x/(x+s)); $s$ is a forward-only
+static parameter (the C++ side allows promotion to a runtime input, left for a
+follow-on since the native ``ModelUnitTest`` only checks input derivatives).
+
+## Inputs
+
+`coordinate` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Input coordinate.
+
+
+## Outputs
+
+`transformed_coordinate` &mdash; `output` &middot; `Scalar` &middot; default `state/x_hat`
+: Transformed coordinate.
+
+
+## Parameters
+
+`shift` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Shift parameter.
+

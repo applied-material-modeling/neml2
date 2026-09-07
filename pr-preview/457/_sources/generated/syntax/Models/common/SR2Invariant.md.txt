@@ -1,0 +1,27 @@
+(models-SR2Invariant)=
+# SR2Invariant
+
+**Source:** `models/common/SR2Invariant.py`
+
+Scalar invariants of an ``SR2`` tensor.
+
+Supported ``invariant_type``: ``VONMISES``, ``EFFECTIVE_STRAIN``, ``I1``.
+``I2`` is an easy follow-on when a HIT file uses it.
+
+## Inputs
+
+`tensor` &mdash; `input` &middot; `SR2` &middot; **required**
+: Symmetric second order tensor to take the invariant of
+
+
+## Outputs
+
+`invariant` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Invariant
+
+
+## Other options
+
+`invariant_type` &mdash; `str` &middot; **required**
+: Type of invariant. Options are: INVALID, EFFECTIVE_STRAIN, VONMISES, I2, I1
+
