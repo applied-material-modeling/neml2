@@ -53,7 +53,19 @@ Example usage::
     m.named_parameters()["E"].fill_(210000.0)
 """
 
-from ._aoti import ConvergenceError, Model
+from typing import TYPE_CHECKING
+
+from ._aoti import Model
 from ._shim import AOTIModel  # noqa: F401 (registers AOTIModel with native factory)
+
+if TYPE_CHECKING:
+    # Same object at runtime -- the pybind layer registers the one C++
+    # `neml2::aoti::ConvergenceError` and `neml2.solvers._exceptions` aliases it.
+    # For the type checker, though, point at that module's documented stub: the
+    # auto-generated `_aoti.pyi` carries no declaration of the failure-capture
+    # attributes (`converged_mask`, `unknowns`) callers read off a raised instance.
+    from neml2.solvers._exceptions import ConvergenceError
+else:
+    from ._aoti import ConvergenceError
 
 __all__ = ["Model", "AOTIModel", "ConvergenceError"]
