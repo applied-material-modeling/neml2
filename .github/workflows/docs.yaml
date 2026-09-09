@@ -60,7 +60,10 @@ jobs:
         # and only needed when the validator runs, so it's fetched here
         # rather than at wheel install time. The validator's error list
         # lands in the job step summary via $GITHUB_STEP_SUMMARY.
-        run: playwright install --with-deps chromium
+        run: |
+          # Remove the unrelated Chrome repository to keep CI stable.
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
+          playwright install --with-deps chromium
       - name: Validate built doc site (MathJax, JS errors, broken assets)
         run: python doc/scripts/check_doc_render.py doc/_build/html
       - name: Write build metadata for the deploy job
