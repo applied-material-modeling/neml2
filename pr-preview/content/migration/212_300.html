@@ -615,7 +615,7 @@ sub-batch axis — the same source of truth <code class="docutils literal notran
 </span><span data-line="8"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[strain_template]</span>
 </span><span data-line="10"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FillSR2</span>
-</span><span data-line="11"><span class="w">    </span><span class="na">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;0.01 0 0 0 0 0&#39;</span>
+</span><span data-line="11"><span class="w">    </span><span class="na">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'0.01 0 0 0 0 0'</span>
 </span><span data-line="12"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="13"><span class="k">[]</span>
 </span></pre></div>
@@ -624,11 +624,11 @@ sub-batch axis — the same source of truth <code class="docutils literal notran
 </span><span data-line="2"><span class="k">[Tensors]</span>
 </span><span data-line="3"><span class="w">  </span><span class="k">[times]</span>
 </span><span data-line="4"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(0).dynamic_batch, Scalar(1).dynamic_batch, 5)&#39;</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'linspace(Scalar(0).dynamic_batch, Scalar(1).dynamic_batch, 5)'</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[strain_template]</span>
 </span><span data-line="8"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="9"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;SR2.fill(0.01, 0, 0, 0, 0, 0)&#39;</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'SR2.fill(0.01, 0, 0, 0, 0, 0)'</span>
 </span><span data-line="10"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="11"><span class="k">[]</span>
 </span></pre></div>
@@ -697,7 +697,7 @@ on <code class="docutils literal notranslate"><span class="pre">neml2.texture</s
 <h2>Documentation pipeline<a class="headerlink" href="#documentation-pipeline" title="Link to this heading">#</a></h2>
 <p>The documentation pipeline moved from Doxygen + custom Python scripts
 to Sphinx with the shibuya theme and MyST-NB. The Python contract:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>-v
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span><span class="s2">".[dev]"</span><span class="w"> </span>-v
 </span><span data-line="2">doc/scripts/build.sh
 </span></pre></div>
 </div>

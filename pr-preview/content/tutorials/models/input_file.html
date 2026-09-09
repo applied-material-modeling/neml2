@@ -446,8 +446,8 @@ pair.</p>
 </span><span data-line="2"><span class="k">[section]</span>
 </span><span data-line="3"><span class="w">  </span><span class="na">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w">                   </span><span class="c1"># an integer</span>
 </span><span data-line="4"><span class="w">  </span><span class="na">bar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3.14159</span><span class="w">             </span><span class="c1"># a float</span>
-</span><span data-line="5"><span class="w">  </span><span class="na">baz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;string value&#39;</span><span class="w">      </span><span class="c1"># a string</span>
-</span><span data-line="6"><span class="w">  </span><span class="na">qux</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;a b c&#39;</span><span class="w">             </span><span class="c1"># a 1-D array (whitespace-separated, quoted)</span>
+</span><span data-line="5"><span class="w">  </span><span class="na">baz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'string value'</span><span class="w">      </span><span class="c1"># a string</span>
+</span><span data-line="6"><span class="w">  </span><span class="na">qux</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'a b c'</span><span class="w">             </span><span class="c1"># a 1-D array (whitespace-separated, quoted)</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[nested_section]</span>
 </span><span data-line="8"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SomeRegisteredType</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[]</span>
@@ -466,8 +466,8 @@ object. Its <code class="docutils literal notranslate"><span class="pre">type</s
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Models]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[elasticity]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;200e3          0.3&#39;</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">'200e3          0.3'</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="7"><span class="k">[]</span>
 </span></pre></div>
@@ -555,15 +555,15 @@ for sharing a <code class="docutils literal notranslate"><span class="pre">[Tens
 </span><span data-line="4"><span class="k">[Models]</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[elasticity]</span>
 </span><span data-line="6"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="7"><span class="w">    </span><span class="na">coefficients</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${E} ${nu}&#39;</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="7"><span class="w">    </span><span class="na">coefficients</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'${E} ${nu}'</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="10"><span class="k">[]</span>
 </span><span data-line="11">
 </span><span data-line="12"><span class="c1"># Pull from the environment / chain pieces together:</span>
 </span><span data-line="13"><span class="na">prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/opt/neml2</span>
 </span><span data-line="14"><span class="na">lib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${raw ${prefix} /lib}</span><span class="w">  </span><span class="c1"># → /opt/neml2/lib</span>
-</span><span data-line="15"><span class="na">home</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${env HOME}</span><span class="w">           </span><span class="c1"># value of the HOME env var, &quot;&quot; if unset</span>
+</span><span data-line="15"><span class="na">home</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${env HOME}</span><span class="w">           </span><span class="c1"># value of the HOME env var, "" if unset</span>
 </span></pre></div>
 </div>
 <p>The substitution happens at value-extraction time, so the right-hand

@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Boundary wrapper converting pyzag flat torch tensors to neml2-backed blocks.&quot;&quot;&quot;</span>
+</span><span data-line="25"><span class="sd">"""Boundary wrapper converting pyzag flat torch tensors to neml2-backed blocks."""</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="28">
@@ -459,32 +459,32 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2Wrapper">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2Wrapper">[docs]</a>
 </span><span data-line="39"><span class="k">class</span><span class="w"> </span><span class="nc">NEML2Wrapper</span><span class="p">:</span>
-</span><span data-line="40"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert between pyzag flat torch tensors and neml2-backed block objects.&quot;&quot;&quot;</span>
+</span><span data-line="40"><span class="w">    </span><span class="sd">"""Convert between pyzag flat torch tensors and neml2-backed block objects."""</span>
 </span><span data-line="41">
 </span><span data-line="42">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="43"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Bind the wrapper to the state ``layout`` used for all conversions.&quot;&quot;&quot;</span>
+</span><span data-line="43"><span class="w">        </span><span class="sd">"""Bind the wrapper to the state ``layout`` used for all conversions."""</span>
 </span><span data-line="44">        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">layout</span>
 </span><span data-line="45">
 <div class="viewcode-block" id="NEML2Wrapper.wrap_vector">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2Wrapper.wrap_vector">[docs]</a>
 </span><span data-line="46">    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="47"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Flat torch ``(..., nflat)`` -&gt; :class:`NEML2BlockVector`.&quot;&quot;&quot;</span>
+</span><span data-line="47"><span class="w">        </span><span class="sd">"""Flat torch ``(..., nflat)`` -&gt; :class:`NEML2BlockVector`."""</span>
 </span><span data-line="48">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="o">.</span><span class="n">from_av</span><span class="p">(</span><span class="n">AssembledVector</span><span class="o">.</span><span class="n">from_flat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="n">raw</span><span class="p">))</span></div>
 
 </span><span data-line="49">
 <div class="viewcode-block" id="NEML2Wrapper.unwrap_vector">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2Wrapper.unwrap_vector">[docs]</a>
 </span><span data-line="50">    <span class="k">def</span><span class="w"> </span><span class="nf">unwrap_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bv</span><span class="p">:</span> <span class="n">BlockVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="51"><span class="w">        </span><span class="sd">&quot;&quot;&quot;:class:`NEML2BlockVector` -&gt; flat torch ``(..., nflat)``.&quot;&quot;&quot;</span>
+</span><span data-line="51"><span class="w">        </span><span class="sd">""":class:`NEML2BlockVector` -&gt; flat torch ``(..., nflat)``."""</span>
 </span><span data-line="52">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bv</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
-</span><span data-line="53">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;NEML2Wrapper.unwrap_vector requires NEML2BlockVector.&quot;</span><span class="p">)</span>
+</span><span data-line="53">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"NEML2Wrapper.unwrap_vector requires NEML2BlockVector."</span><span class="p">)</span>
 </span><span data-line="54">        <span class="k">return</span> <span class="n">bv</span><span class="o">.</span><span class="n">to_av</span><span class="p">()</span><span class="o">.</span><span class="n">to_flat</span><span class="p">()</span></div>
 
 </span><span data-line="55">
 <div class="viewcode-block" id="NEML2Wrapper.wrap_jacobian">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2Wrapper.wrap_jacobian">[docs]</a>
 </span><span data-line="56">    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diag</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">sub</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockJacobian</span><span class="p">:</span>
-</span><span data-line="57"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap diag / sub ``AssembledMatrix`` blocks into an :class:`NEML2BlockJacobian`.&quot;&quot;&quot;</span>
+</span><span data-line="57"><span class="w">        </span><span class="sd">"""Wrap diag / sub ``AssembledMatrix`` blocks into an :class:`NEML2BlockJacobian`."""</span>
 </span><span data-line="58">        <span class="k">return</span> <span class="n">NEML2BlockJacobian</span><span class="p">(</span><span class="n">diag</span><span class="p">,</span> <span class="n">sub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">)</span></div>
 </div>
 

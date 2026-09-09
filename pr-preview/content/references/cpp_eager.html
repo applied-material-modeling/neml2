@@ -464,23 +464,23 @@ the eager and compiled runtimes by changing only the load call and the header.</
 </span><span data-line="4"><span class="k">[Models]</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[model]</span>
 </span><span data-line="6"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="7"><span class="w">    </span><span class="na">strain</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strain&#39;</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;stress&#39;</span>
-</span><span data-line="9"><span class="w">    </span><span class="na">coefficients</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;100 0.3&#39;</span>
-</span><span data-line="10"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="7"><span class="w">    </span><span class="na">strain</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'strain'</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'stress'</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">coefficients</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'100 0.3'</span>
+</span><span data-line="10"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="11"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="12"><span class="k">[]</span>
 </span></pre></div>
 </div>
 </div>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;neml2/csrc/eager/load_model.h&quot;</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cp">#include</span><span class="w"> </span><span class="cpf">"neml2/csrc/eager/load_model.h"</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">neml2</span><span class="o">::</span><span class="nn">eager</span><span class="p">;</span>
 </span><span data-line="4">
-</span><span data-line="5"><span class="c1">// Loads the model named &quot;model&quot; straight from the .i by embedding Python.</span>
-</span><span data-line="6"><span class="k">auto</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">load_model</span><span class="p">(</span><span class="s">&quot;tests/aoti/forward_single/model.i&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;model&quot;</span><span class="p">);</span>
+</span><span data-line="5"><span class="c1">// Loads the model named "model" straight from the .i by embedding Python.</span>
+</span><span data-line="6"><span class="k">auto</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">load_model</span><span class="p">(</span><span class="s">"tests/aoti/forward_single/model.i"</span><span class="p">,</span><span class="w"> </span><span class="s">"model"</span><span class="p">);</span>
 </span><span data-line="7">
-</span><span data-line="8"><span class="c1">// Build each input at its canonical (*B, *base_shape) shape, on the model&#39;s</span>
+</span><span data-line="8"><span class="c1">// Build each input at its canonical (*B, *base_shape) shape, on the model's</span>
 </span><span data-line="9"><span class="c1">// device + dtype (NEML2 runs in float64). For SR2 strain the base shape is {6}.</span>
 </span><span data-line="10"><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">opts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">at</span><span class="o">::</span><span class="n">TensorOptions</span><span class="p">().</span><span class="n">dtype</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">dtype</span><span class="p">()).</span><span class="n">device</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">device</span><span class="p">());</span>
 </span><span data-line="11"><span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span><span class="w"> </span><span class="n">inputs</span><span class="p">;</span>
@@ -492,7 +492,7 @@ the eager and compiled runtimes by changing only the load call and the header.</
 </span><span data-line="17"><span class="w">  </span><span class="n">inputs</span><span class="p">.</span><span class="n">emplace</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">input_names</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">at</span><span class="o">::</span><span class="n">randn</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p">));</span>
 </span><span data-line="18"><span class="p">}</span>
 </span><span data-line="19">
-</span><span data-line="20"><span class="k">auto</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">);</span><span class="w">   </span><span class="c1">// {&quot;stress&quot;: (8, 6) tensor}</span>
+</span><span data-line="20"><span class="k">auto</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">);</span><span class="w">   </span><span class="c1">// {"stress": (8, 6) tensor}</span>
 </span></pre></div>
 </div>
 <p>The reported <code class="docutils literal notranslate"><span class="pre">input_names</span></code> / <code class="docutils literal notranslate"><span class="pre">input_base_shapes</span></code> (and the outputs) are derived
@@ -510,10 +510,10 @@ counterpart of the <code class="docutils literal notranslate"><span class="pre">
 external Python extensions (file paths, package directories, or importable dotted
 module names) as the optional <code class="docutils literal notranslate"><span class="pre">load</span></code> argument; each is imported — registering its
 <code class="docutils literal notranslate"><span class="pre">&#64;register_neml2_object</span></code> types into the factory — <em>before</em> the model is built:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1">// my_model.py defines `@register_neml2_object(&quot;MyModel&quot;) class MyModel(Model): ...`</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1">// my_model.py defines `@register_neml2_object("MyModel") class MyModel(Model): ...`</span>
 </span><span data-line="2"><span class="c1">// and my_model.i has `type = MyModel`. Without the load argument, MyModel is an</span>
 </span><span data-line="3"><span class="c1">// unknown type and the load fails.</span>
-</span><span data-line="4"><span class="k">auto</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">load_model</span><span class="p">(</span><span class="s">&quot;my_model.i&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;model&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">&quot;path/to/my_model.py&quot;</span><span class="p">});</span>
+</span><span data-line="4"><span class="k">auto</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">load_model</span><span class="p">(</span><span class="s">"my_model.i"</span><span class="p">,</span><span class="w"> </span><span class="s">"model"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">"path/to/my_model.py"</span><span class="p">});</span>
 </span></pre></div>
 </div>
 <p>Resolution and ordering match the CLI (<code class="docutils literal notranslate"><span class="pre">neml2.cli._extensions.load_user_extensions</span></code>).
@@ -527,7 +527,7 @@ model’s chain rule (the same <code class="docutils literal notranslate"><span 
 for forward and implicit (Newton) models alike. Both are <strong>variable-native</strong>: the
 boundary works in variables, not flattened group vectors.</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1">// Jacobian-vector product: jvp_out[name] is the directional derivative at the</span>
-</span><span data-line="2"><span class="c1">// output&#39;s natural (*B, *out_base) shape.</span>
+</span><span data-line="2"><span class="c1">// output's natural (*B, *out_base) shape.</span>
 </span><span data-line="3"><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">jvp_out</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">jvp</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span><span class="w"> </span><span class="n">tangents</span><span class="p">);</span><span class="w">   </span><span class="c1">// tangents keyed + shaped like</span>
 </span><span data-line="4"><span class="w">                                                 </span><span class="c1">// inputs; a missing key is zero.</span>
 </span><span data-line="5">

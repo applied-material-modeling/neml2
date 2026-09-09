@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Schur-complement linear solver for block-partitioned systems.&quot;&quot;&quot;</span>
+</span><span data-line="25"><span class="sd">"""Schur-complement linear solver for block-partitioned systems."""</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="28">
@@ -462,9 +462,9 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="42">
 <div class="viewcode-block" id="SchurComplement">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.SchurComplement">[docs]</a>
-</span><span data-line="43"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;SchurComplement&quot;</span><span class="p">)</span>
+</span><span data-line="43"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"SchurComplement"</span><span class="p">)</span>
 </span><span data-line="44"><span class="k">class</span><span class="w"> </span><span class="nc">SchurComplement</span><span class="p">:</span>
-</span><span data-line="45"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Schur complement linear solver. Solves a block-partitioned system</span>
+</span><span data-line="45"><span class="w">    </span><span class="sd">"""Schur complement linear solver. Solves a block-partitioned system</span>
 </span><span data-line="46"><span class="sd">    ``A x = b`` by forming and solving the Schur complement of the primary</span>
 </span><span data-line="47"><span class="sd">    block.</span>
 </span><span data-line="48">
@@ -472,29 +472,29 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="50"><span class="sd">    :class:`~neml2.types.Tensor`-backed :class:`AssembledMatrix` /</span>
 </span><span data-line="51"><span class="sd">    :class:`AssembledVector` arithmetic -- ``A_pp.solve(...)``,</span>
 </span><span data-line="52"><span class="sd">    ``A_sp @ Y``, ``A_ss - A_sp @ Y`` all forward to the typed primitive.</span>
-</span><span data-line="53"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="53"><span class="sd">    """</span>
 </span><span data-line="54">
-</span><span data-line="55">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">&quot;Solvers&quot;</span>
+</span><span data-line="55">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">"Solvers"</span>
 </span><span data-line="56">
 </span><span data-line="57">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
 </span><span data-line="58">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="59">            <span class="s2">&quot;residual_primary_group&quot;</span><span class="p">,</span>
+</span><span data-line="59">            <span class="s2">"residual_primary_group"</span><span class="p">,</span>
 </span><span data-line="60">            <span class="nb">int</span><span class="p">,</span>
-</span><span data-line="61">            <span class="s2">&quot;Row (residual) group index of the primary block. The system must have exactly 2 &quot;</span>
-</span><span data-line="62">            <span class="s2">&quot;residual groups; the other group is automatically the Schur complement residual &quot;</span>
-</span><span data-line="63">            <span class="s2">&quot;group.&quot;</span><span class="p">,</span>
+</span><span data-line="61">            <span class="s2">"Row (residual) group index of the primary block. The system must have exactly 2 "</span>
+</span><span data-line="62">            <span class="s2">"residual groups; the other group is automatically the Schur complement residual "</span>
+</span><span data-line="63">            <span class="s2">"group."</span><span class="p">,</span>
 </span><span data-line="64">            <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 </span><span data-line="65">        <span class="p">),</span>
 </span><span data-line="66">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="67">            <span class="s2">&quot;unknown_primary_group&quot;</span><span class="p">,</span>
+</span><span data-line="67">            <span class="s2">"unknown_primary_group"</span><span class="p">,</span>
 </span><span data-line="68">            <span class="nb">int</span><span class="p">,</span>
-</span><span data-line="69">            <span class="s2">&quot;Column (unknown) group index of the primary block. The system must have exactly 2 &quot;</span>
-</span><span data-line="70">            <span class="s2">&quot;unknown groups; the other group is automatically the Schur complement unknown group.&quot;</span><span class="p">,</span>
+</span><span data-line="69">            <span class="s2">"Column (unknown) group index of the primary block. The system must have exactly 2 "</span>
+</span><span data-line="70">            <span class="s2">"unknown groups; the other group is automatically the Schur complement unknown group."</span><span class="p">,</span>
 </span><span data-line="71">            <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 </span><span data-line="72">        <span class="p">),</span>
-</span><span data-line="73">        <span class="n">dependency</span><span class="p">(</span><span class="s2">&quot;primary_solver&quot;</span><span class="p">,</span> <span class="s2">&quot;get_solver&quot;</span><span class="p">,</span> <span class="s2">&quot;Linear solver used for the primary block A_pp&quot;</span><span class="p">),</span>
+</span><span data-line="73">        <span class="n">dependency</span><span class="p">(</span><span class="s2">"primary_solver"</span><span class="p">,</span> <span class="s2">"get_solver"</span><span class="p">,</span> <span class="s2">"Linear solver used for the primary block A_pp"</span><span class="p">),</span>
 </span><span data-line="74">        <span class="n">dependency</span><span class="p">(</span>
-</span><span data-line="75">            <span class="s2">&quot;schur_solver&quot;</span><span class="p">,</span> <span class="s2">&quot;get_solver&quot;</span><span class="p">,</span> <span class="s2">&quot;Linear solver used for the Schur complement block S&quot;</span>
+</span><span data-line="75">            <span class="s2">"schur_solver"</span><span class="p">,</span> <span class="s2">"get_solver"</span><span class="p">,</span> <span class="s2">"Linear solver used for the Schur complement block S"</span>
 </span><span data-line="76">        <span class="p">),</span>
 </span><span data-line="77">    <span class="p">)</span>
 </span><span data-line="78">
@@ -503,10 +503,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="79">    <span class="nd">@classmethod</span>
 </span><span data-line="80">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SchurComplement</span><span class="p">:</span>
 </span><span data-line="81">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-</span><span data-line="82">            <span class="n">residual_primary_group</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;residual_primary_group&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-</span><span data-line="83">            <span class="n">unknown_primary_group</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;unknown_primary_group&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-</span><span data-line="84">            <span class="n">primary_solver</span><span class="o">=</span><span class="n">factory</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;primary_solver&quot;</span><span class="p">)),</span>
-</span><span data-line="85">            <span class="n">schur_solver</span><span class="o">=</span><span class="n">factory</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;schur_solver&quot;</span><span class="p">)),</span>
+</span><span data-line="82">            <span class="n">residual_primary_group</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">"residual_primary_group"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span><span data-line="83">            <span class="n">unknown_primary_group</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">"unknown_primary_group"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span><span data-line="84">            <span class="n">primary_solver</span><span class="o">=</span><span class="n">factory</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">"primary_solver"</span><span class="p">)),</span>
+</span><span data-line="85">            <span class="n">schur_solver</span><span class="o">=</span><span class="n">factory</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">"schur_solver"</span><span class="p">)),</span>
 </span><span data-line="86">        <span class="p">)</span></div>
 
 </span><span data-line="87">
@@ -519,9 +519,9 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="94">        <span class="n">schur_solver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span data-line="95">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="96">        <span class="k">if</span> <span class="n">residual_primary_group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
-</span><span data-line="97">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;residual_primary_group must be 0 or 1, got </span><span class="si">{</span><span class="n">residual_primary_group</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="97">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"residual_primary_group must be 0 or 1, got </span><span class="si">{</span><span class="n">residual_primary_group</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="98">        <span class="k">if</span> <span class="n">unknown_primary_group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
-</span><span data-line="99">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unknown_primary_group must be 0 or 1, got </span><span class="si">{</span><span class="n">unknown_primary_group</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="99">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown_primary_group must be 0 or 1, got </span><span class="si">{</span><span class="n">unknown_primary_group</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="100">        <span class="bp">self</span><span class="o">.</span><span class="n">_rp</span> <span class="o">=</span> <span class="n">residual_primary_group</span>
 </span><span data-line="101">        <span class="bp">self</span><span class="o">.</span><span class="n">_rs</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">residual_primary_group</span>
 </span><span data-line="102">        <span class="bp">self</span><span class="o">.</span><span class="n">_up</span> <span class="o">=</span> <span class="n">unknown_primary_group</span>
@@ -545,7 +545,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="117">    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span>
 </span><span data-line="118">        <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
 </span><span data-line="119">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="120">                <span class="sa">f</span><span class="s2">&quot;SchurComplement requires b to have exactly 2 groups (got </span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span data-line="120">                <span class="sa">f</span><span class="s2">"SchurComplement requires b to have exactly 2 groups (got </span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">)"</span>
 </span><span data-line="121">            <span class="p">)</span>
 </span><span data-line="122">
 </span><span data-line="123">        <span class="n">A_pp</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_up</span><span class="p">)</span>
@@ -571,20 +571,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="143">        <span class="k">return</span> <span class="n">AssembledVector</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="n">tensors</span><span class="p">)</span>
 </span><span data-line="144">
 </span><span data-line="145">    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="146">        <span class="c1"># B must have 2 row groups (matches A&#39;s primary/Schur split).</span>
-</span><span data-line="147">        <span class="c1"># B&#39;s col groups index independent right-hand-sides; solve each</span>
+</span><span data-line="146">        <span class="c1"># B must have 2 row groups (matches A's primary/Schur split).</span>
+</span><span data-line="147">        <span class="c1"># B's col groups index independent right-hand-sides; solve each</span>
 </span><span data-line="148">        <span class="c1"># col group separately and concat to assemble the full result.</span>
 </span><span data-line="149">        <span class="c1"># The single-col-group restriction is only an algorithmic</span>
 </span><span data-line="150">        <span class="c1"># convenience -- the Schur identities are linear in B and apply</span>
 </span><span data-line="151">        <span class="c1"># per-col-group unchanged. Multi-col-group B is produced when</span>
-</span><span data-line="152">        <span class="c1"># the equation system&#39;s glayout splits givens into per-structure</span>
+</span><span data-line="152">        <span class="c1"># the equation system's glayout splits givens into per-structure</span>
 </span><span data-line="153">        <span class="c1"># groups (e.g. mxpc with a BLOCK per-grain history group + a</span>
 </span><span data-line="154">        <span class="c1"># DENSE global force group); a flat single-group B would force</span>
 </span><span data-line="155">        <span class="c1"># the per-grain history cross-block at O(N^2).</span>
 </span><span data-line="156">        <span class="k">if</span> <span class="n">B</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
 </span><span data-line="157">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="158">                <span class="sa">f</span><span class="s2">&quot;SchurComplement requires B to have exactly 2 row groups &quot;</span>
-</span><span data-line="159">                <span class="sa">f</span><span class="s2">&quot;(got </span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span data-line="158">                <span class="sa">f</span><span class="s2">"SchurComplement requires B to have exactly 2 row groups "</span>
+</span><span data-line="159">                <span class="sa">f</span><span class="s2">"(got </span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">)"</span>
 </span><span data-line="160">            <span class="p">)</span>
 </span><span data-line="161">
 </span><span data-line="162">        <span class="n">A_pp</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_up</span><span class="p">)</span>
@@ -615,8 +615,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="187">    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_A</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="188">        <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
 </span><span data-line="189">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="190">                <span class="s2">&quot;SchurComplement requires A to have exactly 2 row groups and 2 column &quot;</span>
-</span><span data-line="191">                <span class="sa">f</span><span class="s2">&quot;groups (got </span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span data-line="190">                <span class="s2">"SchurComplement requires A to have exactly 2 row groups and 2 column "</span>
+</span><span data-line="191">                <span class="sa">f</span><span class="s2">"groups (got </span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">)"</span>
 </span><span data-line="192">            <span class="p">)</span>
 </span><span data-line="193">        <span class="c1"># A_pp must be square for `primary_solver` to invert it. Surface</span>
 </span><span data-line="194">        <span class="c1"># this at the SchurComplement boundary so the error names the</span>
@@ -627,16 +627,16 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="199">        <span class="n">up_size</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">group_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_up</span><span class="p">)</span>
 </span><span data-line="200">        <span class="k">if</span> <span class="n">rp_size</span> <span class="o">!=</span> <span class="n">up_size</span><span class="p">:</span>
 </span><span data-line="201">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="202">                <span class="sa">f</span><span class="s2">&quot;SchurComplement primary block A_pp must be square: &quot;</span>
-</span><span data-line="203">                <span class="sa">f</span><span class="s2">&quot;residual group </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rp</span><span class="si">}</span><span class="s2"> has size </span><span class="si">{</span><span class="n">rp_size</span><span class="si">}</span><span class="s2">, &quot;</span>
-</span><span data-line="204">                <span class="sa">f</span><span class="s2">&quot;unknown group </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_up</span><span class="si">}</span><span class="s2"> has size </span><span class="si">{</span><span class="n">up_size</span><span class="si">}</span><span class="s2">. &quot;</span>
-</span><span data-line="205">                <span class="sa">f</span><span class="s2">&quot;Re-check (residual_primary_group, unknown_primary_group) &quot;</span>
-</span><span data-line="206">                <span class="sa">f</span><span class="s2">&quot;against the layout&#39;s group sizes.&quot;</span>
+</span><span data-line="202">                <span class="sa">f</span><span class="s2">"SchurComplement primary block A_pp must be square: "</span>
+</span><span data-line="203">                <span class="sa">f</span><span class="s2">"residual group </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rp</span><span class="si">}</span><span class="s2"> has size </span><span class="si">{</span><span class="n">rp_size</span><span class="si">}</span><span class="s2">, "</span>
+</span><span data-line="204">                <span class="sa">f</span><span class="s2">"unknown group </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_up</span><span class="si">}</span><span class="s2"> has size </span><span class="si">{</span><span class="n">up_size</span><span class="si">}</span><span class="s2">. "</span>
+</span><span data-line="205">                <span class="sa">f</span><span class="s2">"Re-check (residual_primary_group, unknown_primary_group) "</span>
+</span><span data-line="206">                <span class="sa">f</span><span class="s2">"against the layout's group sizes."</span>
 </span><span data-line="207">            <span class="p">)</span></div>
 
 </span><span data-line="208">
 </span><span data-line="209">
-</span><span data-line="210"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SchurComplement&quot;</span><span class="p">]</span>
+</span><span data-line="210"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"SchurComplement"</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Generic intermediate layer for fixed-base-shape typed-tensor wrappers.</span>
+</span><span data-line="25"><span class="sd">"""Generic intermediate layer for fixed-base-shape typed-tensor wrappers.</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">`PrimitiveTensor` sits between :class:`TensorWrapper` (purely abstract — shape</span>
 </span><span data-line="28"><span class="sd">decomposition + region views + ``_rewrap``/``to``) and each concrete leaf</span>
@@ -459,7 +459,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="39"><span class="sd">2. **Generic shape factories** — ``zeros`` / ``ones`` / ``full`` /</span>
 </span><span data-line="40"><span class="sd">   ``empty`` — keyed on ``cls.BASE_SHAPE``. Each takes a dynamic batch</span>
 </span><span data-line="41"><span class="sd">   shape as ``*batch`` positional args and pads the call to torch with</span>
-</span><span data-line="42"><span class="sd">   the primitive&#39;s compile-time base shape.</span>
+</span><span data-line="42"><span class="sd">   the primitive's compile-time base shape.</span>
 </span><span data-line="43"><span class="sd">3. **Generic ``fill`` template** — accept exactly ``prod(BASE_SHAPE)``</span>
 </span><span data-line="44"><span class="sd">   scalar components and reshape into the base. ``SR2`` overrides this</span>
 </span><span data-line="45"><span class="sd">   to add Mandel-aware overloads (1 / 3 / 6 component forms with √2</span>
@@ -467,13 +467,13 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="47">
 </span><span data-line="48"><span class="sd">Mirrors the v2 C++ ``PrimitiveTensor&lt;Derived, S...&gt;`` CRTP template at</span>
 </span><span data-line="49"><span class="sd">``include/neml2/tensors/PrimitiveTensor.h``. The Python equivalent uses</span>
-</span><span data-line="50"><span class="sd">inheritance + ``Self`` typing instead of C++ macros — Python doesn&#39;t need</span>
+</span><span data-line="50"><span class="sd">inheritance + ``Self`` typing instead of C++ macros — Python doesn't need</span>
 </span><span data-line="51"><span class="sd">the macros, but the layering and naming carry over.</span>
 </span><span data-line="52">
 </span><span data-line="53"><span class="sd">``PrimitiveTensor`` is not itself a ``@dataclass``; the leaves are</span>
 </span><span data-line="54"><span class="sd">``@dataclass(frozen=True, eq=False)`` and pick up ``data: torch.Tensor``</span>
 </span><span data-line="55"><span class="sd">plus ``sub_batch_ndim: int = 0`` as their concrete fields.</span>
-</span><span data-line="56"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="56"><span class="sd">"""</span>
 </span><span data-line="57">
 </span><span data-line="58"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="59">
@@ -499,14 +499,14 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="PrimitiveTensor">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.PrimitiveTensor">[docs]</a>
 </span><span data-line="79"><span class="k">class</span><span class="w"> </span><span class="nc">PrimitiveTensor</span><span class="p">(</span><span class="n">TensorWrapper</span><span class="p">):</span>
-</span><span data-line="80"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Fixed-base-shape typed tensor with inherited arithmetic and factories.&quot;&quot;&quot;</span>
+</span><span data-line="80"><span class="w">    </span><span class="sd">"""Fixed-base-shape typed tensor with inherited arithmetic and factories."""</span>
 </span><span data-line="81">
 </span><span data-line="82">    <span class="c1"># ``BASE_NDIM`` / ``BASE_SHAPE`` are inherited as ``ClassVar`` annotations</span>
 </span><span data-line="83">    <span class="c1"># from ``TensorWrapper``; each concrete leaf supplies the values.</span>
 </span><span data-line="84">
 </span><span data-line="85">    <span class="c1"># Lazy hook so the ``Self × Scalar`` branch in ``_binary`` can identify</span>
 </span><span data-line="86">    <span class="c1"># Scalar without an import cycle. Populated by ``scalar.py`` at module</span>
-</span><span data-line="87">    <span class="c1"># load time. Stays ``None`` if ``Scalar`` hasn&#39;t been imported yet — in</span>
+</span><span data-line="87">    <span class="c1"># load time. Stays ``None`` if ``Scalar`` hasn't been imported yet — in</span>
 </span><span data-line="88">    <span class="c1"># which case the Scalar branch is skipped and the op falls through to</span>
 </span><span data-line="89">    <span class="c1"># ``NotImplemented`` (matching the pre-refactor behavior on non-Scalar</span>
 </span><span data-line="90">    <span class="c1"># inputs).</span>
@@ -515,22 +515,22 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="93">    <span class="c1"># ---- generic arithmetic dispatch ----</span>
 </span><span data-line="94">
 </span><span data-line="95">    <span class="k">def</span><span class="w"> </span><span class="nf">_binary</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">op_fn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span data-line="96"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Dispatch a binary op between ``self`` and ``other``.</span>
+</span><span data-line="96"><span class="w">        </span><span class="sd">"""Dispatch a binary op between ``self`` and ``other``.</span>
 </span><span data-line="97">
 </span><span data-line="98"><span class="sd">        Handles the two cases every primitive needs uniformly:</span>
 </span><span data-line="99">
 </span><span data-line="100"><span class="sd">        1. ``other`` is the same concrete type: align sub-batch, apply ``op_fn``</span>
 </span><span data-line="101"><span class="sd">           to the underlying tensors, re-wrap. Per-axis ``sub_batch_state`` is</span>
 </span><span data-line="102"><span class="sd">           combined via :func:`combine_sub_batch_state` so axes that are</span>
-</span><span data-line="103"><span class="sd">           ``&quot;broadcast&quot;`` on *both* sides stay compact through the op.</span>
-</span><span data-line="104"><span class="sd">        2. ``other`` is a ``Scalar``: align sub-batch, broadcast the scalar&#39;s</span>
-</span><span data-line="105"><span class="sd">           data against the wrapper&#39;s base shape via :func:`align_scalar_base`,</span>
+</span><span data-line="103"><span class="sd">           ``"broadcast"`` on *both* sides stay compact through the op.</span>
+</span><span data-line="104"><span class="sd">        2. ``other`` is a ``Scalar``: align sub-batch, broadcast the scalar's</span>
+</span><span data-line="105"><span class="sd">           data against the wrapper's base shape via :func:`align_scalar_base`,</span>
 </span><span data-line="106"><span class="sd">           apply ``op_fn``, re-wrap.</span>
 </span><span data-line="107">
 </span><span data-line="108"><span class="sd">        Cross-type cases (e.g. ``R2 @ SR2``) and primitive-times-literal</span>
 </span><span data-line="109"><span class="sd">        (``Scalar + 1.5``) fall through to ``NotImplemented`` — the calling</span>
 </span><span data-line="110"><span class="sd">        leaf is expected to override the op and handle them explicitly.</span>
-</span><span data-line="111"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="111"><span class="sd">        """</span>
 </span><span data-line="112">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
 </span><span data-line="113">            <span class="p">[</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">],</span> <span class="n">sb</span> <span class="o">=</span> <span class="n">align_sub_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
 </span><span data-line="114">            <span class="n">state</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">combine_sub_batch_state</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">)</span>
@@ -563,7 +563,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="141">        <span class="k">return</span> <span class="bp">NotImplemented</span>
 </span><span data-line="142">
 </span><span data-line="143">    <span class="k">def</span><span class="w"> </span><span class="nf">_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">op_fn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span data-line="144"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Dispatch a scaling op (``*`` / ``/``) — same as :meth:`_binary` plus</span>
+</span><span data-line="144"><span class="w">        </span><span class="sd">"""Dispatch a scaling op (``*`` / ``/``) — same as :meth:`_binary` plus</span>
 </span><span data-line="145"><span class="sd">        a ``float`` / ``int`` literal branch. Used by ``__mul__`` and</span>
 </span><span data-line="146"><span class="sd">        ``__truediv__`` where component-wise scaling by a Python number has</span>
 </span><span data-line="147"><span class="sd">        unambiguous meaning. ``__add__`` / ``__sub__`` deliberately do *not*</span>
@@ -573,7 +573,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="151"><span class="sd">        The literal branch preserves :attr:`sub_batch_state` since the op</span>
 </span><span data-line="152"><span class="sd">        is pure pointwise on ``data`` and changes nothing about the</span>
 </span><span data-line="153"><span class="sd">        per-axis storage mode.</span>
-</span><span data-line="154"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="154"><span class="sd">        """</span>
 </span><span data-line="155">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
 </span><span data-line="156">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">op_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">other</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
 </span><span data-line="157">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binary</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">op_fn</span><span class="p">)</span>
@@ -619,8 +619,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="197">    <span class="k">def</span><span class="w"> </span><span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 </span><span data-line="198">        <span class="c1"># ``other - self``. Only meaningful if ``other`` is a same-type wrapper</span>
 </span><span data-line="199">        <span class="c1"># or a Scalar, both of which would have defined their own ``__sub__``</span>
-</span><span data-line="200">        <span class="c1"># already — so the only path we&#39;d land here is when the LHS&#39;s</span>
-</span><span data-line="201">        <span class="c1"># ``__sub__`` returned ``NotImplemented``. That&#39;s the cross-type case</span>
+</span><span data-line="200">        <span class="c1"># already — so the only path we'd land here is when the LHS's</span>
+</span><span data-line="201">        <span class="c1"># ``__sub__`` returned ``NotImplemented``. That's the cross-type case</span>
 </span><span data-line="202">        <span class="c1"># the leaves handle, not this generic helper.</span>
 </span><span data-line="203">        <span class="k">return</span> <span class="bp">NotImplemented</span>
 </span><span data-line="204">
@@ -638,7 +638,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="214">        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="215">        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="216">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span data-line="217"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Zero-filled wrapper of dynamic shape ``batch`` and base ``cls.BASE_SHAPE``.&quot;&quot;&quot;</span>
+</span><span data-line="217"><span class="w">        </span><span class="sd">"""Zero-filled wrapper of dynamic shape ``batch`` and base ``cls.BASE_SHAPE``."""</span>
 </span><span data-line="218">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="o">*</span><span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
 
 </span><span data-line="219">
@@ -651,7 +651,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="224">        <span class="o">*</span><span class="p">,</span>
 </span><span data-line="225">        <span class="n">sub_batch_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="226">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span data-line="227"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Zero-filled wrapper inheriting ``template``&#39;s K + dynamic batch layout.</span>
+</span><span data-line="227"><span class="w">        </span><span class="sd">"""Zero-filled wrapper inheriting ``template``'s K + dynamic batch layout.</span>
 </span><span data-line="228">
 </span><span data-line="229"><span class="sd">        ``sub_batch_shape`` (defaulting to ``template.sub_batch_shape``)</span>
 </span><span data-line="230"><span class="sd">        overrides the sub-batch region, useful when the caller needs a</span>
@@ -660,10 +660,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="233"><span class="sd">        (``k_ndim`` / ``k_state`` / ``k_pairing``) is carried from</span>
 </span><span data-line="234"><span class="sd">        ``template`` so the result aligns rank-by-rank for downstream</span>
 </span><span data-line="235"><span class="sd">        chain-rule binary ops (zeros are direction-agnostic in K, so</span>
-</span><span data-line="236"><span class="sd">        inheriting ``template``&#39;s state is the only choice that keeps</span>
+</span><span data-line="236"><span class="sd">        inheriting ``template``'s state is the only choice that keeps</span>
 </span><span data-line="237"><span class="sd">        the leading K axes positionally consistent with the operand the</span>
 </span><span data-line="238"><span class="sd">        result will combine with).</span>
-</span><span data-line="239"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="239"><span class="sd">        """</span>
 </span><span data-line="240">        <span class="n">sb</span> <span class="o">=</span> <span class="p">(</span>
 </span><span data-line="241">            <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">)</span>
 </span><span data-line="242">            <span class="k">if</span> <span class="n">sub_batch_shape</span> <span class="ow">is</span> <span class="kc">None</span>
@@ -691,7 +691,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="261">        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="262">        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="263">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span data-line="264"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Ones-filled wrapper of dynamic shape ``batch`` and base ``cls.BASE_SHAPE``.&quot;&quot;&quot;</span>
+</span><span data-line="264"><span class="w">        </span><span class="sd">"""Ones-filled wrapper of dynamic shape ``batch`` and base ``cls.BASE_SHAPE``."""</span>
 </span><span data-line="265">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="o">*</span><span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
 
 </span><span data-line="266">
@@ -705,7 +705,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="272">        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="273">        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="274">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span data-line="275"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrapper of given shape filled with ``fill_value``.&quot;&quot;&quot;</span>
+</span><span data-line="275"><span class="w">        </span><span class="sd">"""Wrapper of given shape filled with ``fill_value``."""</span>
 </span><span data-line="276">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="o">*</span><span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">),</span> <span class="n">fill_value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
 
 </span><span data-line="277">
@@ -718,7 +718,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="282">        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="283">        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="284">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span data-line="285"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrapper of given shape with undefined data.&quot;&quot;&quot;</span>
+</span><span data-line="285"><span class="w">        </span><span class="sd">"""Wrapper of given shape with undefined data."""</span>
 </span><span data-line="286">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="o">*</span><span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
 
 </span><span data-line="287">
@@ -733,17 +733,17 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="294">        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="295">        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="296">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span data-line="297"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a wrapper from ``prod(BASE_SHAPE)`` scalar components.</span>
+</span><span data-line="297"><span class="w">        </span><span class="sd">"""Build a wrapper from ``prod(BASE_SHAPE)`` scalar components.</span>
 </span><span data-line="298">
 </span><span data-line="299"><span class="sd">        Components are taken in row-major order and reshaped to ``cls.BASE_SHAPE``.</span>
 </span><span data-line="300"><span class="sd">        Subclasses with non-trivial packing semantics (e.g. ``SR2`` with Mandel</span>
 </span><span data-line="301"><span class="sd">        √2 shear scaling, or short-form 1/3-component overloads) override this.</span>
-</span><span data-line="302"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="302"><span class="sd">        """</span>
 </span><span data-line="303">        <span class="n">expected</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">)</span> <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span> <span class="k">else</span> <span class="mi">1</span>
 </span><span data-line="304">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
 </span><span data-line="305">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="306">                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.fill expects </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> components &quot;</span>
-</span><span data-line="307">                <span class="sa">f</span><span class="s2">&quot;(prod of BASE_SHAPE=</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="306">                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.fill expects </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> components "</span>
+</span><span data-line="307">                <span class="sa">f</span><span class="s2">"(prod of BASE_SHAPE=</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="308">            <span class="p">)</span>
 </span><span data-line="309">        <span class="n">flat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 </span><span data-line="310">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">)</span> <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span> <span class="k">else</span> <span class="n">flat</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span></div>

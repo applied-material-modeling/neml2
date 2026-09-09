@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Adapt a NEML2 ``ModelNonlinearSystem`` to pyzag&#39;s ``NonlinearFunctionOperatorFactory``.&quot;&quot;&quot;</span>
+</span><span data-line="25"><span class="sd">"""Adapt a NEML2 ``ModelNonlinearSystem`` to pyzag's ``NonlinearFunctionOperatorFactory``."""</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="28">
@@ -474,7 +474,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="54">    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 </span><span data-line="55">    <span class="n">new_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="56"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AxisLayout</span><span class="p">:</span>
-</span><span data-line="57"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Group-preserving sub-layout of variables whose lag matches ``order``.&quot;&quot;&quot;</span>
+</span><span data-line="57"><span class="w">    </span><span class="sd">"""Group-preserving sub-layout of variables whose lag matches ``order``."""</span>
 </span><span data-line="58">    <span class="n">target_order</span> <span class="o">=</span> <span class="n">new_order</span> <span class="k">if</span> <span class="n">new_order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
 </span><span data-line="59">    <span class="n">grouped</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="60">    <span class="n">specs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -493,20 +493,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="73">            <span class="n">grouped</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kept</span><span class="p">)</span>
 </span><span data-line="74">            <span class="n">structure</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">gi</span><span class="p">])</span>
 </span><span data-line="75">    <span class="k">if</span> <span class="ow">not</span> <span class="n">grouped</span><span class="p">:</span>
-</span><span data-line="76">        <span class="k">return</span> <span class="n">AxisLayout</span><span class="p">([[]],</span> <span class="p">{},</span> <span class="p">{},</span> <span class="p">(</span><span class="s2">&quot;dense&quot;</span><span class="p">,))</span>
+</span><span data-line="76">        <span class="k">return</span> <span class="n">AxisLayout</span><span class="p">([[]],</span> <span class="p">{},</span> <span class="p">{},</span> <span class="p">(</span><span class="s2">"dense"</span><span class="p">,))</span>
 </span><span data-line="77">    <span class="k">return</span> <span class="n">AxisLayout</span><span class="p">(</span><span class="n">grouped</span><span class="p">,</span> <span class="n">specs</span><span class="p">,</span> <span class="n">sub</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">structure</span><span class="p">))</span>
 </span><span data-line="78">
 </span><span data-line="79">
 </span><span data-line="80"><span class="k">def</span><span class="w"> </span><span class="nf">_expand_am_dynamic</span><span class="p">(</span>
 </span><span data-line="81">    <span class="n">am</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">target_dynamic_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 </span><span data-line="82"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="83"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Broadcast each block&#39;s dynamic dims up to ``target_dynamic_shape``.</span>
+</span><span data-line="83"><span class="w">    </span><span class="sd">"""Broadcast each block's dynamic dims up to ``target_dynamic_shape``.</span>
 </span><span data-line="84">
 </span><span data-line="85"><span class="sd">    A block already at the full dynamic shape passes through untouched; only</span>
 </span><span data-line="86"><span class="sd">    genuinely time-broadcast (smaller-dynamic) blocks are expanded and</span>
-</span><span data-line="87"><span class="sd">    materialized -- so the whole diagonal Jacobian isn&#39;t recopied on every</span>
+</span><span data-line="87"><span class="sd">    materialized -- so the whole diagonal Jacobian isn't recopied on every</span>
 </span><span data-line="88"><span class="sd">    ``evaluate_raw`` when its blocks are already full-size (the common case).</span>
-</span><span data-line="89"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="89"><span class="sd">    """</span>
 </span><span data-line="90">    <span class="n">target</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">target_dynamic_shape</span><span class="p">)</span>
 </span><span data-line="91">    <span class="n">blocks</span> <span class="o">=</span> <span class="p">[</span>
 </span><span data-line="92">        <span class="p">[</span><span class="n">t</span> <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">)</span> <span class="o">==</span> <span class="n">target</span> <span class="k">else</span> <span class="n">t</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="n">target</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">row</span><span class="p">]</span>
@@ -518,9 +518,9 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2PyzagModel">
 <a class="viewcode-back" href="../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2PyzagModel">[docs]</a>
 </span><span data-line="98"><span class="k">class</span><span class="w"> </span><span class="nc">NEML2PyzagModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">nonlinear</span><span class="o">.</span><span class="n">NonlinearFunctionOperatorFactory</span><span class="p">):</span>
-</span><span data-line="99"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Adapt a NEML2 ``ModelNonlinearSystem`` to pyzag&#39;s time-integration library.</span>
+</span><span data-line="99"><span class="w">    </span><span class="sd">"""Adapt a NEML2 ``ModelNonlinearSystem`` to pyzag's time-integration library.</span>
 </span><span data-line="100">
-</span><span data-line="101"><span class="sd">    Implements pyzag&#39;s ``NonlinearFunctionOperatorFactory`` ABC. The public name</span>
+</span><span data-line="101"><span class="sd">    Implements pyzag's ``NonlinearFunctionOperatorFactory`` ABC. The public name</span>
 </span><span data-line="102"><span class="sd">    stays ``NEML2PyzagModel`` for user-facing continuity even though the base</span>
 </span><span data-line="103"><span class="sd">    protocol is now the *factory* (pyzag 2.0) rather than the old</span>
 </span><span data-line="104"><span class="sd">    ``NonlinearRecursiveFunction``.</span>
@@ -537,7 +537,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="115"><span class="sd">    Construction yields a ``py-eager`` model. To accelerate the residual with</span>
 </span><span data-line="116"><span class="sd">    in-process ``torch.compile`` (``py-jit``), opt in explicitly after</span>
 </span><span data-line="117"><span class="sd">    construction with :func:`neml2.compile` -- e.g. ``neml2.compile(model)``.</span>
-</span><span data-line="118"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="118"><span class="sd">    """</span>
 </span><span data-line="119">
 </span><span data-line="120">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
 </span><span data-line="121">        <span class="bp">self</span><span class="p">,</span>
@@ -547,27 +547,27 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="125">        <span class="n">include_parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="126">        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 </span><span data-line="127">    <span class="p">):</span>
-</span><span data-line="128"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Wire the NEML2 system into pyzag layouts and mirror trainable parameters.</span>
+</span><span data-line="128"><span class="w">        </span><span class="sd">"""Wire the NEML2 system into pyzag layouts and mirror trainable parameters.</span>
 </span><span data-line="129">
 </span><span data-line="130"><span class="sd">        See the class docstring for the constructor arguments.</span>
-</span><span data-line="131"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="131"><span class="sd">        """</span>
 </span><span data-line="132">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </span><span data-line="133">
 </span><span data-line="134">        <span class="k">if</span> <span class="n">exclude_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">include_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="135">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="136">                <span class="s2">&quot;exclude_parameters and include_parameters are mutually exclusive; &quot;</span>
-</span><span data-line="137">                <span class="s2">&quot;pass at most one (omit both to train all parameters).&quot;</span>
+</span><span data-line="136">                <span class="s2">"exclude_parameters and include_parameters are mutually exclusive; "</span>
+</span><span data-line="137">                <span class="s2">"pass at most one (omit both to train all parameters)."</span>
 </span><span data-line="138">            <span class="p">)</span>
 </span><span data-line="139">
 </span><span data-line="140">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="n">ModelNonlinearSystem</span><span class="p">):</span>
 </span><span data-line="141">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="142">                <span class="sa">f</span><span class="s2">&quot;sys should be a neml2.es.ModelNonlinearSystem, &quot;</span>
-</span><span data-line="143">                <span class="sa">f</span><span class="s2">&quot;instead got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span><span class="si">}</span><span class="s2">. Use neml2.load_nonlinear_system &quot;</span>
-</span><span data-line="144">                <span class="s2">&quot;or load_input(path).get_equation_system(name) to obtain one.&quot;</span>
+</span><span data-line="142">                <span class="sa">f</span><span class="s2">"sys should be a neml2.es.ModelNonlinearSystem, "</span>
+</span><span data-line="143">                <span class="sa">f</span><span class="s2">"instead got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span><span class="si">}</span><span class="s2">. Use neml2.load_nonlinear_system "</span>
+</span><span data-line="144">                <span class="s2">"or load_input(path).get_equation_system(name) to obtain one."</span>
 </span><span data-line="145">            <span class="p">)</span>
 </span><span data-line="146">
 </span><span data-line="147">        <span class="bp">self</span><span class="o">.</span><span class="n">sys</span> <span class="o">=</span> <span class="n">sys</span>
-</span><span data-line="148">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+</span><span data-line="148">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"model"</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
 </span><span data-line="149">        <span class="bp">self</span><span class="o">.</span><span class="n">_lookback</span> <span class="o">=</span> <span class="mi">1</span>
 </span><span data-line="150">
 </span><span data-line="151">        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_maps</span><span class="p">()</span>
@@ -577,34 +577,34 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="155">
 </span><span data-line="156">    <span class="nd">@property</span>
 </span><span data-line="157">    <span class="k">def</span><span class="w"> </span><span class="nf">lookback</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="158"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of previous time steps the residual depends on (always 1 for NEML2).&quot;&quot;&quot;</span>
+</span><span data-line="158"><span class="w">        </span><span class="sd">"""Number of previous time steps the residual depends on (always 1 for NEML2)."""</span>
 </span><span data-line="159">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lookback</span>
 </span><span data-line="160">
 </span><span data-line="161">    <span class="nd">@lookback</span><span class="o">.</span><span class="n">setter</span>
 </span><span data-line="162">    <span class="k">def</span><span class="w"> </span><span class="nf">lookback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookback</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-</span><span data-line="163"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the lookback; NEML2 residuals are one-step, so only ``1`` is accepted.&quot;&quot;&quot;</span>
+</span><span data-line="163"><span class="w">        </span><span class="sd">"""Set the lookback; NEML2 residuals are one-step, so only ``1`` is accepted."""</span>
 </span><span data-line="164">        <span class="k">if</span> <span class="n">lookback</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="165">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;NEML2 models only support lookback of 1&quot;</span><span class="p">)</span>
+</span><span data-line="165">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"NEML2 models only support lookback of 1"</span><span class="p">)</span>
 </span><span data-line="166">        <span class="bp">self</span><span class="o">.</span><span class="n">_lookback</span> <span class="o">=</span> <span class="n">lookback</span>
 </span><span data-line="167">
 </span><span data-line="168">    <span class="nd">@property</span>
 </span><span data-line="169">    <span class="k">def</span><span class="w"> </span><span class="nf">nstate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="170"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Total flattened size of the state (unknown) layout.&quot;&quot;&quot;</span>
+</span><span data-line="170"><span class="w">        </span><span class="sd">"""Total flattened size of the state (unknown) layout."""</span>
 </span><span data-line="171">        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayout</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">BASE_SHAPE</span> <span class="ow">or</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span>
 </span><span data-line="172">
 </span><span data-line="173">    <span class="nd">@property</span>
 </span><span data-line="174">    <span class="k">def</span><span class="w"> </span><span class="nf">nforce</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="175"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Total flattened size of the force (given/driving) layout.&quot;&quot;&quot;</span>
+</span><span data-line="175"><span class="w">        </span><span class="sd">"""Total flattened size of the force (given/driving) layout."""</span>
 </span><span data-line="176">        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flayout</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">BASE_SHAPE</span> <span class="ow">or</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">flayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span>
 </span><span data-line="177">
 </span><span data-line="178">    <span class="nd">@property</span>
 </span><span data-line="179">    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># type: ignore[override]  # base abstract property is unannotated (-&gt; None)</span>
-</span><span data-line="180"><span class="w">        </span><span class="sd">&quot;&quot;&quot;The :class:`~neml2.pyzag.operators.NEML2Wrapper` for the current state layout.&quot;&quot;&quot;</span>
+</span><span data-line="180"><span class="w">        </span><span class="sd">"""The :class:`~neml2.pyzag.operators.NEML2Wrapper` for the current state layout."""</span>
 </span><span data-line="181">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wrapper</span>
 </span><span data-line="182">
 </span><span data-line="183">    <span class="k">def</span><span class="w"> </span><span class="nf">_infer_sub_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value_dict</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span> <span class="n">dynamic_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span data-line="184"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Each variable&#39;s runtime sub_batch shape, inferred from its tensor and</span>
-</span><span data-line="185"><span class="sd">        held to the input file&#39;s declaration where there is one.</span>
+</span><span data-line="184"><span class="w">        </span><span class="sd">"""Each variable's runtime sub_batch shape, inferred from its tensor and</span>
+</span><span data-line="185"><span class="sd">        held to the input file's declaration where there is one.</span>
 </span><span data-line="186">
 </span><span data-line="187"><span class="sd">        pyzag is handed every state and force tensor up front, so unlike the</span>
 </span><span data-line="188"><span class="sd">        driver it never has to invent a shape -- inference always has something</span>
@@ -613,7 +613,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="191"><span class="sd">        mis-shaped initial condition surfaces much later as a packing error</span>
 </span><span data-line="192"><span class="sd">        against a residual of a different length. Where</span>
 </span><span data-line="193"><span class="sd">        ``[Settings]/example_batch_shape`` states the extent, check it here.</span>
-</span><span data-line="194"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="194"><span class="sd">        """</span>
 </span><span data-line="195">        <span class="n">declared_all</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sys</span><span class="o">.</span><span class="n">declared_sub_batch_shapes</span>
 </span><span data-line="196">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span data-line="197">        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">vars</span><span class="p">():</span>
@@ -623,10 +623,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="201">            <span class="n">declared</span> <span class="o">=</span> <span class="n">declared_all</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">declared_all</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">lag_order</span><span class="p">(</span><span class="n">name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
 </span><span data-line="202">            <span class="k">if</span> <span class="n">declared</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">declared</span><span class="p">)</span> <span class="o">!=</span> <span class="n">inferred</span><span class="p">:</span>
 </span><span data-line="203">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="204">                    <span class="sa">f</span><span class="s2">&quot;NEML2PyzagModel: [Settings]/example_batch_shape declares &quot;</span>
-</span><span data-line="205">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> sub_batch=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">declared</span><span class="p">)</span><span class="si">}</span><span class="s2">, but the supplied value has &quot;</span>
-</span><span data-line="206">                    <span class="sa">f</span><span class="s2">&quot;sub_batch=</span><span class="si">{</span><span class="n">inferred</span><span class="si">}</span><span class="s2"> (shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, dynamic_dim=&quot;</span>
-</span><span data-line="207">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dynamic_dim</span><span class="si">}</span><span class="s2">). Drop one or make them agree.&quot;</span>
+</span><span data-line="204">                    <span class="sa">f</span><span class="s2">"NEML2PyzagModel: [Settings]/example_batch_shape declares "</span>
+</span><span data-line="205">                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> sub_batch=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">declared</span><span class="p">)</span><span class="si">}</span><span class="s2">, but the supplied value has "</span>
+</span><span data-line="206">                    <span class="sa">f</span><span class="s2">"sub_batch=</span><span class="si">{</span><span class="n">inferred</span><span class="si">}</span><span class="s2"> (shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, dynamic_dim="</span>
+</span><span data-line="207">                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">dynamic_dim</span><span class="si">}</span><span class="s2">). Drop one or make them agree."</span>
 </span><span data-line="208">                <span class="p">)</span>
 </span><span data-line="209">            <span class="n">out</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">inferred</span>
 </span><span data-line="210">        <span class="k">return</span> <span class="n">out</span>
@@ -634,7 +634,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="212">    <span class="k">def</span><span class="w"> </span><span class="nf">_assemble_dict_to_flat</span><span class="p">(</span>
 </span><span data-line="213">        <span class="bp">self</span><span class="p">,</span> <span class="n">value_dict</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span> <span class="n">dynamic_dim</span><span class="p">:</span> <span class="nb">int</span>
 </span><span data-line="214">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="215"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Pack a per-variable tensor dict into a single flat tensor for ``layout``.&quot;&quot;&quot;</span>
+</span><span data-line="215"><span class="w">        </span><span class="sd">"""Pack a per-variable tensor dict into a single flat tensor for ``layout``."""</span>
 </span><span data-line="216">        <span class="n">typed</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span data-line="217">        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">vars</span><span class="p">():</span>
 </span><span data-line="218">            <span class="n">raw</span> <span class="o">=</span> <span class="n">value_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
@@ -645,13 +645,13 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2PyzagModel.assemble_state">
 <a class="viewcode-back" href="../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2PyzagModel.assemble_state">[docs]</a>
 </span><span data-line="223">    <span class="k">def</span><span class="w"> </span><span class="nf">assemble_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ic_dict</span><span class="p">,</span> <span class="n">dynamic_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="224"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a flat initial-state tensor from a per-variable IC dict.</span>
+</span><span data-line="224"><span class="w">        </span><span class="sd">"""Build a flat initial-state tensor from a per-variable IC dict.</span>
 </span><span data-line="225">
 </span><span data-line="226"><span class="sd">        The runtime state / old-state / residual layouts are derived fresh from</span>
 </span><span data-line="227"><span class="sd">        the pristine baselines captured in :meth:`_setup_maps`, so this is</span>
 </span><span data-line="228"><span class="sd">        idempotent and independent of prior :meth:`assemble_state` /</span>
 </span><span data-line="229"><span class="sd">        :meth:`assemble_forces` calls.</span>
-</span><span data-line="230"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="230"><span class="sd">        """</span>
 </span><span data-line="231">        <span class="n">sb_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_infer_sub_batch</span><span class="p">(</span><span class="n">ic_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slayout_base</span><span class="p">,</span> <span class="n">dynamic_dim</span><span class="p">)</span>
 </span><span data-line="232">        <span class="bp">self</span><span class="o">.</span><span class="n">slayout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slayout_base</span><span class="o">.</span><span class="n">with_sub_batch_shapes</span><span class="p">(</span>
 </span><span data-line="233">            <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="n">sb_state</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">sb_state</span><span class="p">}</span>
@@ -673,11 +673,11 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2PyzagModel.assemble_forces">
 <a class="viewcode-back" href="../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2PyzagModel.assemble_forces">[docs]</a>
 </span><span data-line="248">    <span class="k">def</span><span class="w"> </span><span class="nf">assemble_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces_dict</span><span class="p">,</span> <span class="n">dynamic_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="249"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a flat forces tensor from a per-variable forces dict.</span>
+</span><span data-line="249"><span class="w">        </span><span class="sd">"""Build a flat forces tensor from a per-variable forces dict.</span>
 </span><span data-line="250">
 </span><span data-line="251"><span class="sd">        Derived fresh from the pristine force baselines (see</span>
 </span><span data-line="252"><span class="sd">        :meth:`assemble_state`); idempotent and order-independent.</span>
-</span><span data-line="253"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="253"><span class="sd">        """</span>
 </span><span data-line="254">        <span class="n">sb_force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_infer_sub_batch</span><span class="p">(</span><span class="n">forces_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flayout_base</span><span class="p">,</span> <span class="n">dynamic_dim</span><span class="p">)</span>
 </span><span data-line="255">        <span class="bp">self</span><span class="o">.</span><span class="n">flayout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flayout_base</span><span class="o">.</span><span class="n">with_sub_batch_shapes</span><span class="p">(</span>
 </span><span data-line="256">            <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="n">sb_force</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">sb_force</span><span class="p">}</span>
@@ -696,7 +696,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="266">        <span class="n">forces</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
 </span><span data-line="267">        <span class="n">inverse_operator</span><span class="p">,</span>
 </span><span data-line="268">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nonlinear</span><span class="o">.</span><span class="n">ChunkOp</span><span class="p">:</span>
-</span><span data-line="269"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the pyzag chunk operator for one solve window.</span>
+</span><span data-line="269"><span class="w">        </span><span class="sd">"""Build the pyzag chunk operator for one solve window.</span>
 </span><span data-line="270">
 </span><span data-line="271"><span class="sd">        Args:</span>
 </span><span data-line="272"><span class="sd">            prev_solution: the converged state at the last step of the previous chunk.</span>
@@ -706,7 +706,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="276">
 </span><span data-line="277"><span class="sd">        Returns:</span>
 </span><span data-line="278"><span class="sd">            A :class:`pyzag.nonlinear.ChunkOp` bound to this factory.</span>
-</span><span data-line="279"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="279"><span class="sd">        """</span>
 </span><span data-line="280">        <span class="k">return</span> <span class="n">nonlinear</span><span class="o">.</span><span class="n">ChunkOp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prev_solution</span><span class="p">,</span> <span class="n">forces</span><span class="p">,</span> <span class="n">inverse_operator</span><span class="p">)</span></div>
 
 </span><span data-line="281">
@@ -715,14 +715,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="282">    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_raw</span><span class="p">(</span>
 </span><span data-line="283">        <span class="bp">self</span><span class="p">,</span> <span class="n">x_full</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">forces</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
 </span><span data-line="284">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">NEML2BlockJacobian</span><span class="p">]:</span>
-</span><span data-line="285"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return ``(r, NEML2BlockJacobian)`` for one chunk&#39;s state and forces.</span>
+</span><span data-line="285"><span class="w">        </span><span class="sd">"""Return ``(r, NEML2BlockJacobian)`` for one chunk's state and forces.</span>
 </span><span data-line="286">
 </span><span data-line="287"><span class="sd">        pyzag passes the driving forces as a list (one tensor per ``*forces``</span>
 </span><span data-line="288"><span class="sd">        argument to :func:`pyzag.nonlinear.solve`, each chunk-sliced). They are</span>
 </span><span data-line="289"><span class="sd">        concatenated along the feature axis into the single flat forces tensor</span>
 </span><span data-line="290"><span class="sd">        the system consumes, in the order given -- which must match the force</span>
 </span><span data-line="291"><span class="sd">        (given-variable) layout, exactly as :meth:`assemble_forces` produces it.</span>
-</span><span data-line="292"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="292"><span class="sd">        """</span>
 </span><span data-line="293">        <span class="bp">self</span><span class="o">.</span><span class="n">_update_parameter_values</span><span class="p">()</span>
 </span><span data-line="294">        <span class="n">forces_flat</span> <span class="o">=</span> <span class="n">forces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">forces</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">forces</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="295">        <span class="bp">self</span><span class="o">.</span><span class="n">_update_sys</span><span class="p">(</span><span class="n">x_full</span><span class="p">,</span> <span class="n">forces_flat</span><span class="p">)</span>
@@ -732,24 +732,24 @@ data-aria-dark="Switch to auto color mode">
 
 </span><span data-line="299">
 </span><span data-line="300">    <span class="k">def</span><span class="w"> </span><span class="nf">_check_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span data-line="301"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Every old-state / old-force variable must have a current counterpart.&quot;&quot;&quot;</span>
+</span><span data-line="301"><span class="w">        </span><span class="sd">"""Every old-state / old-force variable must have a current counterpart."""</span>
 </span><span data-line="302">        <span class="n">snvars_renamed</span> <span class="o">=</span> <span class="p">{</span><span class="n">change_lag_order</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">snlayout</span><span class="o">.</span><span class="n">vars</span><span class="p">()}</span>
 </span><span data-line="303">        <span class="k">if</span> <span class="ow">not</span> <span class="n">snvars_renamed</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayout</span><span class="o">.</span><span class="n">vars</span><span class="p">()):</span>
 </span><span data-line="304">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="305">                <span class="s2">&quot;Input old state variables must be a subset of input state &quot;</span>
-</span><span data-line="306">                <span class="sa">f</span><span class="s2">&quot;variables. State variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">; &quot;</span>
-</span><span data-line="307">                <span class="sa">f</span><span class="s2">&quot;old state variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snlayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span data-line="305">                <span class="s2">"Input old state variables must be a subset of input state "</span>
+</span><span data-line="306">                <span class="sa">f</span><span class="s2">"variables. State variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">; "</span>
+</span><span data-line="307">                <span class="sa">f</span><span class="s2">"old state variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snlayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">."</span>
 </span><span data-line="308">            <span class="p">)</span>
 </span><span data-line="309">        <span class="n">fnvars_renamed</span> <span class="o">=</span> <span class="p">{</span><span class="n">change_lag_order</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fnlayout</span><span class="o">.</span><span class="n">vars</span><span class="p">()}</span>
 </span><span data-line="310">        <span class="k">if</span> <span class="ow">not</span> <span class="n">fnvars_renamed</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flayout</span><span class="o">.</span><span class="n">vars</span><span class="p">()):</span>
 </span><span data-line="311">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="312">                <span class="s2">&quot;Input old force variables must be a subset of input force &quot;</span>
-</span><span data-line="313">                <span class="sa">f</span><span class="s2">&quot;variables. Force variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">; &quot;</span>
-</span><span data-line="314">                <span class="sa">f</span><span class="s2">&quot;old force variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fnlayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span data-line="312">                <span class="s2">"Input old force variables must be a subset of input force "</span>
+</span><span data-line="313">                <span class="sa">f</span><span class="s2">"variables. Force variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">; "</span>
+</span><span data-line="314">                <span class="sa">f</span><span class="s2">"old force variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fnlayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span><span class="si">}</span><span class="s2">."</span>
 </span><span data-line="315">            <span class="p">)</span>
 </span><span data-line="316">
 </span><span data-line="317">    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span data-line="318"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the state / force / residual layouts and their old-variable subsets.&quot;&quot;&quot;</span>
+</span><span data-line="318"><span class="w">        </span><span class="sd">"""Build the state / force / residual layouts and their old-variable subsets."""</span>
 </span><span data-line="319">        <span class="n">glayout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sys</span><span class="o">.</span><span class="n">glayout</span>
 </span><span data-line="320">        <span class="n">gvar_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">glayout</span><span class="o">.</span><span class="n">vars</span><span class="p">())</span>
 </span><span data-line="321">
@@ -775,7 +775,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="341">        <span class="n">exclude_parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="342">        <span class="n">include_parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="343">    <span class="p">):</span>
-</span><span data-line="344"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Mirror each HIT-named NEML2 parameter as a ``torch.nn.Parameter``.&quot;&quot;&quot;</span>
+</span><span data-line="344"><span class="w">        </span><span class="sd">"""Mirror each HIT-named NEML2 parameter as a ``torch.nn.Parameter``."""</span>
 </span><span data-line="345">        <span class="n">exclude</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">exclude_parameters</span> <span class="ow">or</span> <span class="p">[])</span>
 </span><span data-line="346">        <span class="n">include</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">include_parameters</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">set</span><span class="p">(</span><span class="n">include_parameters</span><span class="p">)</span>
 </span><span data-line="347">
@@ -784,11 +784,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="350">        <span class="n">available</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 </span><span data-line="351">
 </span><span data-line="352">        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sys</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
-</span><span data-line="353">            <span class="n">mod_hit</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;_hit_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span data-line="353">            <span class="n">mod_hit</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">"_hit_name"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 </span><span data-line="354">            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">mod_hit</span> <span class="ow">and</span> <span class="n">mod_hit</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">()):</span>
 </span><span data-line="355">                <span class="k">continue</span>
 </span><span data-line="356">            <span class="k">for</span> <span class="n">leaf_name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">(</span><span class="n">recurse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-</span><span data-line="357">                <span class="n">flat</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mod_hit</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">leaf_name</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="357">                <span class="n">flat</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">mod_hit</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">leaf_name</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="358">                <span class="n">available</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
 </span><span data-line="359">                <span class="k">if</span> <span class="n">flat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_targets</span><span class="p">:</span>
 </span><span data-line="360">                    <span class="k">continue</span>
@@ -806,17 +806,17 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="372">            <span class="n">unknown</span> <span class="o">=</span> <span class="n">include</span> <span class="o">-</span> <span class="n">available</span>
 </span><span data-line="373">            <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
 </span><span data-line="374">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="375">                    <span class="sa">f</span><span class="s2">&quot;include_parameters contains unknown parameter(s): </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span><span class="si">}</span><span class="s2">. &quot;</span>
-</span><span data-line="376">                    <span class="sa">f</span><span class="s2">&quot;Available parameters: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">available</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span data-line="375">                    <span class="sa">f</span><span class="s2">"include_parameters contains unknown parameter(s): </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span><span class="si">}</span><span class="s2">. "</span>
+</span><span data-line="376">                    <span class="sa">f</span><span class="s2">"Available parameters: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">available</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
 </span><span data-line="377">                <span class="p">)</span>
 </span><span data-line="378">
 </span><span data-line="379">    <span class="k">def</span><span class="w"> </span><span class="nf">_update_parameter_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span data-line="380"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Bind the factory&#39;s parameter tensors onto the underlying NEML2 model.&quot;&quot;&quot;</span>
+</span><span data-line="380"><span class="w">        </span><span class="sd">"""Bind the factory's parameter tensors onto the underlying NEML2 model."""</span>
 </span><span data-line="381">        <span class="k">for</span> <span class="n">pname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_names</span><span class="p">:</span>
 </span><span data-line="382">            <span class="n">new_value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pname</span><span class="p">)</span>
 </span><span data-line="383">            <span class="n">module</span><span class="p">,</span> <span class="n">leaf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_targets</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span>
-</span><span data-line="384">            <span class="n">typed_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;_typed_storage_classes&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">leaf</span><span class="p">)</span>
-</span><span data-line="385">            <span class="n">sbn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;_typed_storage_sub_batch_ndim&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span data-line="384">            <span class="n">typed_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">"_typed_storage_classes"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">leaf</span><span class="p">)</span>
+</span><span data-line="385">            <span class="n">sbn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">"_typed_storage_sub_batch_ndim"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </span><span data-line="386">
 </span><span data-line="387">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
 </span><span data-line="388">                <span class="n">module</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -829,7 +829,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="395">                <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">bound</span><span class="p">)</span>
 </span><span data-line="396">
 </span><span data-line="397">    <span class="k">def</span><span class="w"> </span><span class="nf">_update_sys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">forces</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-</span><span data-line="398"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Disassemble pyzag state / forces into the per-variable dicts the system consumes.&quot;&quot;&quot;</span>
+</span><span data-line="398"><span class="w">        </span><span class="sd">"""Disassemble pyzag state / forces into the per-variable dicts the system consumes."""</span>
 </span><span data-line="399">        <span class="k">assert</span> <span class="n">state</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">forces</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </span><span data-line="400">
 </span><span data-line="401">        <span class="n">state_now</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">lookback</span> <span class="p">:]</span>
@@ -871,7 +871,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="437">        <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
 </span><span data-line="438">        <span class="n">rename_to_lag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="439">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]:</span>
-</span><span data-line="440"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Split a flat ``(*batch, nflat)`` tensor into a per-variable typed wrapper dict.&quot;&quot;&quot;</span>
+</span><span data-line="440"><span class="w">        </span><span class="sd">"""Split a flat ``(*batch, nflat)`` tensor into a per-variable typed wrapper dict."""</span>
 </span><span data-line="441">        <span class="n">values</span> <span class="o">=</span> <span class="n">AssembledVector</span><span class="o">.</span><span class="n">from_flat</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">flat</span><span class="p">)</span><span class="o">.</span><span class="n">disassemble</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
 </span><span data-line="442">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span data-line="443">        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">vars</span><span class="p">():</span>
@@ -882,22 +882,22 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="448">    <span class="k">def</span><span class="w"> </span><span class="nf">_adapt_for_pyzag</span><span class="p">(</span>
 </span><span data-line="449">        <span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">AssembledVector</span>
 </span><span data-line="450">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">AssembledMatrix</span><span class="p">]:</span>
-</span><span data-line="451"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert NEML2 ``(A, B, b)`` into pyzag-native ``(r, J_diag, J_sub)``.</span>
+</span><span data-line="451"><span class="w">        </span><span class="sd">"""Convert NEML2 ``(A, B, b)`` into pyzag-native ``(r, J_diag, J_sub)``.</span>
 </span><span data-line="452">
 </span><span data-line="453"><span class="sd">        ``A`` is returned by :meth:`ModelNonlinearSystem.A_and_B_and_b` with the</span>
 </span><span data-line="454"><span class="sd">        residual (``blayout``) rows and unknown (``ulayout``) columns. The two</span>
 </span><span data-line="455"><span class="sd">        differ only in variable names, so the square diagonal operator is</span>
-</span><span data-line="456"><span class="sd">        relabeled to ``(slayout, slayout)`` -- the same square operator NEML2&#39;s</span>
+</span><span data-line="456"><span class="sd">        relabeled to ``(slayout, slayout)`` -- the same square operator NEML2's</span>
 </span><span data-line="457"><span class="sd">        own Newton assembles -- which lets the delegated Schur / LU solve treat</span>
 </span><span data-line="458"><span class="sd">        it as unknown-to-unknown.</span>
 </span><span data-line="459">
-</span><span data-line="460"><span class="sd">        ``J_diag`` is broadcast to the residual&#39;s batch shape because ``A``&#39;s</span>
+</span><span data-line="460"><span class="sd">        ``J_diag`` is broadcast to the residual's batch shape because ``A``'s</span>
 </span><span data-line="461"><span class="sd">        blocks may be time-broadcast / non-contiguous. ``J_sub`` needs no such</span>
 </span><span data-line="462"><span class="sd">        expansion: :meth:`_build_jn_pyzag` already allocates its blocks at the</span>
 </span><span data-line="463"><span class="sd">        full target batch shape.</span>
-</span><span data-line="464"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="465">        <span class="n">_require_le_one_intmd</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="s2">&quot;A (dr/du)&quot;</span><span class="p">)</span>
-</span><span data-line="466">        <span class="n">_require_le_one_intmd</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="s2">&quot;B (dr/dg)&quot;</span><span class="p">)</span>
+</span><span data-line="464"><span class="sd">        """</span>
+</span><span data-line="465">        <span class="n">_require_le_one_intmd</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="s2">"A (dr/du)"</span><span class="p">)</span>
+</span><span data-line="466">        <span class="n">_require_le_one_intmd</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="s2">"B (dr/dg)"</span><span class="p">)</span>
 </span><span data-line="467">        <span class="n">r</span> <span class="o">=</span> <span class="o">-</span><span class="n">b</span><span class="o">.</span><span class="n">to_flat</span><span class="p">()</span>
 </span><span data-line="468">        <span class="n">target_batch</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </span><span data-line="469">
@@ -907,7 +907,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="473">        <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">J_diag</span><span class="p">,</span> <span class="n">J_sub</span>
 </span><span data-line="474">
 </span><span data-line="475">    <span class="k">def</span><span class="w"> </span><span class="nf">_build_jn_pyzag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">target_batch</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="476"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Assemble the subdiagonal ``Jn = dr/du_old`` from the old-state columns of ``B``.&quot;&quot;&quot;</span>
+</span><span data-line="476"><span class="w">        </span><span class="sd">"""Assemble the subdiagonal ``Jn = dr/du_old`` from the old-state columns of ``B``."""</span>
 </span><span data-line="477">        <span class="n">cells</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">disassemble</span><span class="p">()</span><span class="o">.</span><span class="n">cells</span>
 </span><span data-line="478">        <span class="n">prow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlayout</span>
 </span><span data-line="479">        <span class="n">pcol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snlayout</span>
@@ -919,12 +919,12 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="485">            <span class="n">rnames</span> <span class="o">=</span> <span class="n">prow</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 </span><span data-line="486">            <span class="n">row_bases</span> <span class="o">=</span> <span class="p">[</span><span class="n">_storage_size</span><span class="p">(</span><span class="n">prow</span><span class="o">.</span><span class="n">type_of</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">rnames</span><span class="p">]</span>
 </span><span data-line="487">            <span class="n">row_off</span> <span class="o">=</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">row_bases</span><span class="p">[:</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row_bases</span><span class="p">))]</span>
-</span><span data-line="488">            <span class="n">row_is_block</span> <span class="o">=</span> <span class="n">prow</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span>
+</span><span data-line="488">            <span class="n">row_is_block</span> <span class="o">=</span> <span class="n">prow</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"block"</span>
 </span><span data-line="489">            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pcol</span><span class="o">.</span><span class="n">ngroup</span><span class="p">):</span>
 </span><span data-line="490">                <span class="n">cnames</span> <span class="o">=</span> <span class="n">pcol</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
 </span><span data-line="491">                <span class="n">col_bases</span> <span class="o">=</span> <span class="p">[</span><span class="n">_storage_size</span><span class="p">(</span><span class="n">pcol</span><span class="o">.</span><span class="n">type_of</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">cnames</span><span class="p">]</span>
 </span><span data-line="492">                <span class="n">col_off</span> <span class="o">=</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">col_bases</span><span class="p">[:</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">col_bases</span><span class="p">))]</span>
-</span><span data-line="493">                <span class="n">col_is_block</span> <span class="o">=</span> <span class="n">pcol</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;block&quot;</span>
+</span><span data-line="493">                <span class="n">col_is_block</span> <span class="o">=</span> <span class="n">pcol</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"block"</span>
 </span><span data-line="494">
 </span><span data-line="495">                <span class="k">if</span> <span class="n">row_is_block</span><span class="p">:</span>
 </span><span data-line="496">                    <span class="n">intmd</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">prow</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
@@ -961,7 +961,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="527">        <span class="n">rb</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 </span><span data-line="528">        <span class="n">cb</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 </span><span data-line="529">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="530"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Broadcast a disassembled cell to ``(*target_batch, *intmd, rb, cb)``.&quot;&quot;&quot;</span>
+</span><span data-line="530"><span class="w">        </span><span class="sd">"""Broadcast a disassembled cell to ``(*target_batch, *intmd, rb, cb)``."""</span>
 </span><span data-line="531">        <span class="n">x</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">data</span>  <span class="c1"># data-ok pyzag boundary</span>
 </span><span data-line="532">        <span class="n">sbn</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
 </span><span data-line="533">        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">intmd</span><span class="p">)</span> <span class="o">-</span> <span class="n">sbn</span><span class="p">):</span>

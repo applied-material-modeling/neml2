@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Matrix-free stabilized biconjugate gradient (BiCGStab) linear solver.&quot;&quot;&quot;</span>
+</span><span data-line="25"><span class="sd">"""Matrix-free stabilized biconjugate gradient (BiCGStab) linear solver."""</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="28">
@@ -461,59 +461,59 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="41">
 <div class="viewcode-block" id="BiCGStab">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.BiCGStab">[docs]</a>
-</span><span data-line="42"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;BiCGStab&quot;</span><span class="p">)</span>
+</span><span data-line="42"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"BiCGStab"</span><span class="p">)</span>
 </span><span data-line="43"><span class="k">class</span><span class="w"> </span><span class="nc">BiCGStab</span><span class="p">(</span><span class="n">_KrylovSolver</span><span class="p">):</span>
-</span><span data-line="44"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Matrix-free BiCGStab linear solver for the implicit Newton step.</span>
+</span><span data-line="44"><span class="w">    </span><span class="sd">"""Matrix-free BiCGStab linear solver for the implicit Newton step.</span>
 </span><span data-line="45">
 </span><span data-line="46"><span class="sd">    A short-recurrence alternative to :class:`GMRES` (no growing Krylov basis, so</span>
 </span><span data-line="47"><span class="sd">    a bounded per-iteration memory), two matvecs per iteration. Like ``GMRES`` it</span>
 </span><span data-line="48"><span class="sd">    is matrix-free (applies ``J.v`` via ``Matvec``) and configured as a ``Newton``</span>
 </span><span data-line="49"><span class="sd">    ``linear_solver``. Has no restart width (the ``max_its`` budget bounds</span>
 </span><span data-line="50"><span class="sd">    the iteration count).</span>
-</span><span data-line="51"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="51"><span class="sd">    """</span>
 </span><span data-line="52">
-</span><span data-line="53">    <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;bicgstab&quot;</span>
+</span><span data-line="53">    <span class="n">method</span> <span class="o">=</span> <span class="s2">"bicgstab"</span>
 </span><span data-line="54">
 </span><span data-line="55">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
 </span><span data-line="56">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="57">            <span class="s2">&quot;max_its&quot;</span><span class="p">,</span>
+</span><span data-line="57">            <span class="s2">"max_its"</span><span class="p">,</span>
 </span><span data-line="58">            <span class="nb">int</span><span class="p">,</span>
-</span><span data-line="59">            <span class="s2">&quot;Maximum inner (Krylov) iterations per Newton step&quot;</span><span class="p">,</span>
+</span><span data-line="59">            <span class="s2">"Maximum inner (Krylov) iterations per Newton step"</span><span class="p">,</span>
 </span><span data-line="60">            <span class="n">default</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
 </span><span data-line="61">        <span class="p">),</span>
 </span><span data-line="62">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="63">            <span class="s2">&quot;abs_tol&quot;</span><span class="p">,</span>
+</span><span data-line="63">            <span class="s2">"abs_tol"</span><span class="p">,</span>
 </span><span data-line="64">            <span class="nb">float</span><span class="p">,</span>
-</span><span data-line="65">            <span class="s2">&quot;Absolute inner-residual tolerance (0 disables the absolute test)&quot;</span><span class="p">,</span>
+</span><span data-line="65">            <span class="s2">"Absolute inner-residual tolerance (0 disables the absolute test)"</span><span class="p">,</span>
 </span><span data-line="66">            <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
 </span><span data-line="67">        <span class="p">),</span>
 </span><span data-line="68">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="69">            <span class="s2">&quot;rel_tol&quot;</span><span class="p">,</span>
+</span><span data-line="69">            <span class="s2">"rel_tol"</span><span class="p">,</span>
 </span><span data-line="70">            <span class="nb">float</span><span class="p">,</span>
-</span><span data-line="71">            <span class="s2">&quot;Relative inner-residual tolerance. Loose is fine (and faster): the &quot;</span>
-</span><span data-line="72">            <span class="s2">&quot;outer Newton re-solves each step, so an inexact inner solve still &quot;</span>
-</span><span data-line="73">            <span class="s2">&quot;converges -- tighten only for stiff/ill-conditioned systems&quot;</span><span class="p">,</span>
+</span><span data-line="71">            <span class="s2">"Relative inner-residual tolerance. Loose is fine (and faster): the "</span>
+</span><span data-line="72">            <span class="s2">"outer Newton re-solves each step, so an inexact inner solve still "</span>
+</span><span data-line="73">            <span class="s2">"converges -- tighten only for stiff/ill-conditioned systems"</span><span class="p">,</span>
 </span><span data-line="74">            <span class="n">default</span><span class="o">=</span><span class="mf">1.0e-4</span><span class="p">,</span>
 </span><span data-line="75">        <span class="p">),</span>
 </span><span data-line="76">        <span class="n">dependency</span><span class="p">(</span>
-</span><span data-line="77">            <span class="s2">&quot;preconditioner&quot;</span><span class="p">,</span>
-</span><span data-line="78">            <span class="s2">&quot;get_solver&quot;</span><span class="p">,</span>
-</span><span data-line="79">            <span class="s2">&quot;Preconditioner object (a [Solvers] NoPreconditioner / Jacobi / &quot;</span>
-</span><span data-line="80">            <span class="s2">&quot;BlockJacobi / FullPreconditioner); unset = no preconditioner&quot;</span><span class="p">,</span>
+</span><span data-line="77">            <span class="s2">"preconditioner"</span><span class="p">,</span>
+</span><span data-line="78">            <span class="s2">"get_solver"</span><span class="p">,</span>
+</span><span data-line="79">            <span class="s2">"Preconditioner object (a [Solvers] NoPreconditioner / Jacobi / "</span>
+</span><span data-line="80">            <span class="s2">"BlockJacobi / FullPreconditioner); unset = no preconditioner"</span><span class="p">,</span>
 </span><span data-line="81">            <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span data-line="82">        <span class="p">),</span>
 </span><span data-line="83">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="84">            <span class="s2">&quot;cache_strategy&quot;</span><span class="p">,</span>
+</span><span data-line="84">            <span class="s2">"cache_strategy"</span><span class="p">,</span>
 </span><span data-line="85">            <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="86">            <span class="s2">&quot;Preconditioner rebuild policy across Newton iterations: &quot;</span>
-</span><span data-line="87">            <span class="s2">&quot;none (rebuild each step) | chord (build once, reuse) | &quot;</span>
-</span><span data-line="88">            <span class="s2">&quot;max_its (rebuild when a solve exceeds cache_max_its iterations)&quot;</span><span class="p">,</span>
-</span><span data-line="89">            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+</span><span data-line="86">            <span class="s2">"Preconditioner rebuild policy across Newton iterations: "</span>
+</span><span data-line="87">            <span class="s2">"none (rebuild each step) | chord (build once, reuse) | "</span>
+</span><span data-line="88">            <span class="s2">"max_its (rebuild when a solve exceeds cache_max_its iterations)"</span><span class="p">,</span>
+</span><span data-line="89">            <span class="n">default</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
 </span><span data-line="90">        <span class="p">),</span>
 </span><span data-line="91">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="92">            <span class="s2">&quot;cache_max_its&quot;</span><span class="p">,</span>
+</span><span data-line="92">            <span class="s2">"cache_max_its"</span><span class="p">,</span>
 </span><span data-line="93">            <span class="nb">int</span><span class="p">,</span>
-</span><span data-line="94">            <span class="s2">&quot;Iteration bar that triggers a preconditioner rebuild under the max_its cache strategy&quot;</span><span class="p">,</span>
+</span><span data-line="94">            <span class="s2">"Iteration bar that triggers a preconditioner rebuild under the max_its cache strategy"</span><span class="p">,</span>
 </span><span data-line="95">            <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 </span><span data-line="96">        <span class="p">),</span>
 </span><span data-line="97">    <span class="p">)</span>
@@ -522,20 +522,20 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.BiCGStab.from_hit">[docs]</a>
 </span><span data-line="99">    <span class="nd">@classmethod</span>
 </span><span data-line="100">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BiCGStab</span><span class="p">:</span>
-</span><span data-line="101">        <span class="n">pc_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;preconditioner&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span data-line="101">        <span class="n">pc_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">"preconditioner"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
 </span><span data-line="102">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-</span><span data-line="103">            <span class="n">max_its</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;max_its&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
-</span><span data-line="104">            <span class="n">abs_tol</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;abs_tol&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-</span><span data-line="105">            <span class="n">rel_tol</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;rel_tol&quot;</span><span class="p">,</span> <span class="mf">1.0e-4</span><span class="p">),</span>
+</span><span data-line="103">            <span class="n">max_its</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">"max_its"</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
+</span><span data-line="104">            <span class="n">abs_tol</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">"abs_tol"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+</span><span data-line="105">            <span class="n">rel_tol</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">"rel_tol"</span><span class="p">,</span> <span class="mf">1.0e-4</span><span class="p">),</span>
 </span><span data-line="106">            <span class="n">preconditioner</span><span class="o">=</span><span class="n">factory</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">pc_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">pc_name</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="107">            <span class="n">cache_strategy</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;cache_strategy&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">),</span>
-</span><span data-line="108">            <span class="n">cache_max_its</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;cache_max_its&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+</span><span data-line="107">            <span class="n">cache_strategy</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">"cache_strategy"</span><span class="p">,</span> <span class="s2">"none"</span><span class="p">),</span>
+</span><span data-line="108">            <span class="n">cache_max_its</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">"cache_max_its"</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
 </span><span data-line="109">        <span class="p">)</span></div>
 </div>
 
 </span><span data-line="110">
 </span><span data-line="111">
-</span><span data-line="112"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;BiCGStab&quot;</span><span class="p">]</span>
+</span><span data-line="112"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"BiCGStab"</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

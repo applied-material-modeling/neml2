@@ -445,8 +445,8 @@ leading axes change. First, a small elasticity model to evaluate:</p>
 </span><span data-line="2"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
 </span><span data-line="3">  <span class="p">[</span><span class="n">elasticity</span><span class="p">]</span>
 </span><span data-line="4">    <span class="nb">type</span> <span class="o">=</span> <span class="n">LinearIsotropicElasticity</span>
-</span><span data-line="5">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">&#39;200e3          0.3&#39;</span>
-</span><span data-line="6">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="5">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">'200e3          0.3'</span>
+</span><span data-line="6">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="7">  <span class="p">[]</span>
 </span><span data-line="8"><span class="p">[]</span>
 </span></pre></div>
@@ -464,15 +464,15 @@ leading axes change. First, a small elasticity model to evaluate:</p>
 </span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span>
 </span><span data-line="4">
-</span><span data-line="5"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;elasticity.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"elasticity.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="n">single</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># base only, no batch axes</span>
 </span><span data-line="8"><span class="n">batch</span> <span class="o">=</span> <span class="n">SR2</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10_000</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># one leading batch dim</span>
 </span><span data-line="9"><span class="n">grid</span> <span class="o">=</span> <span class="n">SR2</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># two leading batch dims</span>
 </span><span data-line="10">
-</span><span data-line="11"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;single -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">single</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
-</span><span data-line="12"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;batch  -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
-</span><span data-line="13"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;grid   -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="11"><span class="nb">print</span><span class="p">(</span><span class="s2">"single -&gt;"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">single</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="12"><span class="nb">print</span><span class="p">(</span><span class="s2">"batch  -&gt;"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="13"><span class="nb">print</span><span class="p">(</span><span class="s2">"grid   -&gt;"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
 </span></pre></div>
 </div>
 </div>
@@ -503,10 +503,10 @@ one:</p>
 </span><span data-line="3"><span class="n">pressure</span> <span class="o">=</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>  <span class="c1"># shape (5,)</span>
 </span><span data-line="4"><span class="n">unit</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># base only, shape (6,)</span>
 </span><span data-line="5"><span class="n">scaled</span> <span class="o">=</span> <span class="n">pressure</span> <span class="o">*</span> <span class="n">unit</span>  <span class="c1"># (5,) Scalar × (6,) SR2</span>
-</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Scalar(5) * SR2(base) -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">scaled</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">"Scalar(5) * SR2(base) -&gt;"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">scaled</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="n">offset</span> <span class="o">=</span> <span class="n">SR2</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> <span class="o">+</span> <span class="n">unit</span>  <span class="c1"># (5, 6) + (6,)</span>
-</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SR2(5) + SR2(base)    -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">offset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">"SR2(5) + SR2(base)    -&gt;"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">offset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
 </span></pre></div>
 </div>
 </div>
@@ -529,8 +529,8 @@ batch size, and the result still knows which axis is per-site:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">glob</span> <span class="o">=</span> <span class="n">Scalar</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>  <span class="c1"># a global scalar, no sub-batch</span>
 </span><span data-line="2"><span class="n">per_site</span> <span class="o">=</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">retag</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># length-20 sub-batch</span>
 </span><span data-line="3"><span class="n">combined</span> <span class="o">=</span> <span class="n">glob</span> <span class="o">*</span> <span class="n">per_site</span>
-</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sub_batch_shape -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">combined</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">))</span>
-</span><span data-line="5"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sub_batch_ndim  -&gt;&quot;</span><span class="p">,</span> <span class="n">combined</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="s2">"sub_batch_shape -&gt;"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">combined</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">))</span>
+</span><span data-line="5"><span class="nb">print</span><span class="p">(</span><span class="s2">"sub_batch_ndim  -&gt;"</span><span class="p">,</span> <span class="n">combined</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -553,7 +553,7 @@ canonical case — here 20 interpolation points marked as the sub-batch:</p>
 </span><span data-line="2"><span class="p">[</span><span class="n">Tensors</span><span class="p">]</span>
 </span><span data-line="3">  <span class="p">[</span><span class="n">T_controls</span><span class="p">]</span>
 </span><span data-line="4">    <span class="nb">type</span> <span class="o">=</span> <span class="n">Python</span>
-</span><span data-line="5">    <span class="n">expr</span> <span class="o">=</span> <span class="s1">&#39;linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)&#39;</span>
+</span><span data-line="5">    <span class="n">expr</span> <span class="o">=</span> <span class="s1">'linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)'</span>
 </span><span data-line="6">  <span class="p">[]</span>
 </span><span data-line="7"><span class="p">[]</span>
 </span></pre></div>
@@ -567,9 +567,9 @@ canonical case — here 20 interpolation points marked as the sub-batch:</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">controls</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="s2">&quot;controls.i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="s2">&quot;T_controls&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sub_batch_shape -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">controls</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">))</span>
-</span><span data-line="3"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sub_batch_ndim  -&gt;&quot;</span><span class="p">,</span> <span class="n">controls</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">controls</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="s2">"controls.i"</span><span class="p">)</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="s2">"T_controls"</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">"sub_batch_shape -&gt;"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">controls</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">))</span>
+</span><span data-line="3"><span class="nb">print</span><span class="p">(</span><span class="s2">"sub_batch_ndim  -&gt;"</span><span class="p">,</span> <span class="n">controls</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>

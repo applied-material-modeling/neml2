@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;pyzag ``BlockVector`` backed by a neml2 ``AssembledVector``.&quot;&quot;&quot;</span>
+</span><span data-line="25"><span class="sd">"""pyzag ``BlockVector`` backed by a neml2 ``AssembledVector``."""</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="28">
@@ -460,13 +460,13 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockVector">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector">[docs]</a>
 </span><span data-line="40"><span class="k">class</span><span class="w"> </span><span class="nc">NEML2BlockVector</span><span class="p">(</span><span class="n">BlockVector</span><span class="p">):</span>
-</span><span data-line="41"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Block vector held as per-group torch tensors with neml2 layout metadata.</span>
+</span><span data-line="41"><span class="w">    </span><span class="sd">"""Block vector held as per-group torch tensors with neml2 layout metadata.</span>
 </span><span data-line="42">
 </span><span data-line="43"><span class="sd">    Per-group torch tensors plus explicit ``intmd_dims`` mirror the dense</span>
 </span><span data-line="44"><span class="sd">    backend pattern and let ``__setitem__`` / ``clone`` work in place. A neml2</span>
 </span><span data-line="45"><span class="sd">    ``AssembledVector`` is materialized only at the neml2 boundary (via</span>
 </span><span data-line="46"><span class="sd">    :meth:`to_av`), where the linear solvers and matmul consume it.</span>
-</span><span data-line="47"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="47"><span class="sd">    """</span>
 </span><span data-line="48">
 </span><span data-line="49">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
 </span><span data-line="50">        <span class="bp">self</span><span class="p">,</span>
@@ -474,24 +474,24 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="52">        <span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
 </span><span data-line="53">        <span class="n">intmd_dims</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="54">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="55"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Hold one raw ``(nblk, batch, *intmd, dofs)`` tensor per layout group.</span>
+</span><span data-line="55"><span class="w">        </span><span class="sd">"""Hold one raw ``(nblk, batch, *intmd, dofs)`` tensor per layout group.</span>
 </span><span data-line="56">
 </span><span data-line="57"><span class="sd">        Args:</span>
 </span><span data-line="58"><span class="sd">            raw_tensors: one tensor per group of ``layout`` (length must match ``layout.ngroup``).</span>
 </span><span data-line="59"><span class="sd">            layout: the neml2 :class:`~neml2.es.axis_layout.AxisLayout` describing the groups.</span>
 </span><span data-line="60"><span class="sd">            intmd_dims: number of intermediate (sub-batch/site) dims per group; defaults to</span>
-</span><span data-line="61"><span class="sd">                each group&#39;s layout-declared value.</span>
-</span><span data-line="62"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="61"><span class="sd">                each group's layout-declared value.</span>
+</span><span data-line="62"><span class="sd">        """</span>
 </span><span data-line="63">        <span class="k">if</span> <span class="n">intmd_dims</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="64">            <span class="n">intmd_dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">layout</span><span class="o">.</span><span class="n">group_intmd_ndim</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">)]</span>
 </span><span data-line="65">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_tensors</span><span class="p">)</span> <span class="o">!=</span> <span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">:</span>
 </span><span data-line="66">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="67">                <span class="sa">f</span><span class="s2">&quot;NEML2BlockVector expects </span><span class="si">{</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2"> per-group tensors, &quot;</span>
-</span><span data-line="68">                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_tensors</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span data-line="67">                <span class="sa">f</span><span class="s2">"NEML2BlockVector expects </span><span class="si">{</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2"> per-group tensors, "</span>
+</span><span data-line="68">                <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_tensors</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
 </span><span data-line="69">            <span class="p">)</span>
 </span><span data-line="70">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intmd_dims</span><span class="p">)</span> <span class="o">!=</span> <span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">:</span>
 </span><span data-line="71">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="72">                <span class="sa">f</span><span class="s2">&quot;intmd_dims length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">intmd_dims</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match layout.ngroup (</span><span class="si">{</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">).&quot;</span>
+</span><span data-line="72">                <span class="sa">f</span><span class="s2">"intmd_dims length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">intmd_dims</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match layout.ngroup (</span><span class="si">{</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="si">}</span><span class="s2">)."</span>
 </span><span data-line="73">            <span class="p">)</span>
 </span><span data-line="74">        <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">raw_tensors</span><span class="p">)</span>
 </span><span data-line="75">        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">layout</span>
@@ -500,7 +500,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockVector.to_av">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.to_av">[docs]</a>
 </span><span data-line="78">    <span class="k">def</span><span class="w"> </span><span class="nf">to_av</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span>
-</span><span data-line="79"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Materialize as a neml2 ``AssembledVector``.&quot;&quot;&quot;</span>
+</span><span data-line="79"><span class="w">        </span><span class="sd">"""Materialize as a neml2 ``AssembledVector``."""</span>
 </span><span data-line="80">        <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
 </span><span data-line="81">            <span class="n">Tensor</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
 </span><span data-line="82">            <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intmd_dims</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -512,7 +512,7 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.from_av">[docs]</a>
 </span><span data-line="86">    <span class="nd">@classmethod</span>
 </span><span data-line="87">    <span class="k">def</span><span class="w"> </span><span class="nf">from_av</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">av</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="88"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct from a neml2 ``AssembledVector``.&quot;&quot;&quot;</span>
+</span><span data-line="88"><span class="w">        </span><span class="sd">"""Construct from a neml2 ``AssembledVector``."""</span>
 </span><span data-line="89">        <span class="n">intmd_dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">av</span><span class="o">.</span><span class="n">tensors</span><span class="p">]</span>
 </span><span data-line="90">        <span class="n">raw_tensors</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">av</span><span class="o">.</span><span class="n">tensors</span><span class="p">]</span>  <span class="c1"># data-ok pyzag boundary</span>
 </span><span data-line="91">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="n">av</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="n">intmd_dims</span><span class="p">)</span></div>
@@ -520,27 +520,27 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="92">
 </span><span data-line="93">    <span class="nd">@property</span>
 </span><span data-line="94">    <span class="k">def</span><span class="w"> </span><span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
-</span><span data-line="95"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Device of the backing tensors.&quot;&quot;&quot;</span>
+</span><span data-line="95"><span class="w">        </span><span class="sd">"""Device of the backing tensors."""</span>
 </span><span data-line="96">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">device</span>
 </span><span data-line="97">
 </span><span data-line="98">    <span class="nd">@property</span>
 </span><span data-line="99">    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
-</span><span data-line="100"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Dtype of the backing tensors.&quot;&quot;&quot;</span>
+</span><span data-line="100"><span class="w">        </span><span class="sd">"""Dtype of the backing tensors."""</span>
 </span><span data-line="101">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
 </span><span data-line="102">
 </span><span data-line="103">    <span class="nd">@property</span>
 </span><span data-line="104">    <span class="k">def</span><span class="w"> </span><span class="nf">nblk</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="105"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of blocks along the dynamic (time) axis.&quot;&quot;&quot;</span>
+</span><span data-line="105"><span class="w">        </span><span class="sd">"""Number of blocks along the dynamic (time) axis."""</span>
 </span><span data-line="106">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="107">
 </span><span data-line="108">    <span class="nd">@property</span>
 </span><span data-line="109">    <span class="k">def</span><span class="w"> </span><span class="nf">batch_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="110"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Size of the plain (non-dynamic) batch axis.&quot;&quot;&quot;</span>
+</span><span data-line="110"><span class="w">        </span><span class="sd">"""Size of the plain (non-dynamic) batch axis."""</span>
 </span><span data-line="111">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </span><span data-line="112">
 </span><span data-line="113">    <span class="nd">@property</span>
 </span><span data-line="114">    <span class="k">def</span><span class="w"> </span><span class="nf">block_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="115"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Total per-block degrees of freedom summed across all groups (incl. intmd dims).&quot;&quot;&quot;</span>
+</span><span data-line="115"><span class="w">        </span><span class="sd">"""Total per-block degrees of freedom summed across all groups (incl. intmd dims)."""</span>
 </span><span data-line="116">        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span data-line="117">        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">:</span>
 </span><span data-line="118">            <span class="n">g</span> <span class="o">=</span> <span class="mi">1</span>
@@ -552,14 +552,14 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockVector.clone">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.clone">[docs]</a>
 </span><span data-line="124">    <span class="k">def</span><span class="w"> </span><span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="125"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Deep copy, cloning every backing tensor.&quot;&quot;&quot;</span>
+</span><span data-line="125"><span class="w">        </span><span class="sd">"""Deep copy, cloning every backing tensor."""</span>
 </span><span data-line="126">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">([</span><span class="n">t</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intmd_dims</span><span class="p">)</span></div>
 
 </span><span data-line="127">
 <div class="viewcode-block" id="NEML2BlockVector.norm">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.norm">[docs]</a>
 </span><span data-line="128">    <span class="k">def</span><span class="w"> </span><span class="nf">norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="129"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Combined L2 norm over the whole multi-group state, per block and batch.&quot;&quot;&quot;</span>
+</span><span data-line="129"><span class="w">        </span><span class="sd">"""Combined L2 norm over the whole multi-group state, per block and batch."""</span>
 </span><span data-line="130">        <span class="n">per_group_sq</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="131">        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intmd_dims</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span data-line="132">            <span class="n">flat</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=-</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
@@ -570,20 +570,20 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockVector.flatten">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.flatten">[docs]</a>
 </span><span data-line="136">    <span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="137"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Concatenate all groups into one ``(batch, nblk * dofs)`` tensor.</span>
+</span><span data-line="137"><span class="w">        </span><span class="sd">"""Concatenate all groups into one ``(batch, nblk * dofs)`` tensor.</span>
 </span><span data-line="138">
 </span><span data-line="139"><span class="sd">        Each group is transposed to put the batch axis first, then flattened and</span>
-</span><span data-line="140"><span class="sd">        concatenated along the feature axis -- the flat form pyzag&#39;s PCR path expects.</span>
-</span><span data-line="141"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="140"><span class="sd">        concatenated along the feature axis -- the flat form pyzag's PCR path expects.</span>
+</span><span data-line="141"><span class="sd">        """</span>
 </span><span data-line="142">        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">t</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 </span><span data-line="143">
 <div class="viewcode-block" id="NEML2BlockVector.where">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.where">[docs]</a>
 </span><span data-line="144">    <span class="k">def</span><span class="w"> </span><span class="nf">where</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">BlockVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="145"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Batchwise select: keep ``self`` where ``mask`` is true, else ``other``.&quot;&quot;&quot;</span>
+</span><span data-line="145"><span class="w">        </span><span class="sd">"""Batchwise select: keep ``self`` where ``mask`` is true, else ``other``."""</span>
 </span><span data-line="146">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
-</span><span data-line="147">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;NEML2BlockVector.where expects NEML2BlockVector.&quot;</span><span class="p">)</span>
+</span><span data-line="147">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"NEML2BlockVector.where expects NEML2BlockVector."</span><span class="p">)</span>
 </span><span data-line="148">        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="149">        <span class="k">for</span> <span class="n">t_self</span><span class="p">,</span> <span class="n">t_other</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span data-line="150">            <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_self</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
@@ -594,7 +594,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockVector.scale_batches">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.scale_batches">[docs]</a>
 </span><span data-line="154">    <span class="k">def</span><span class="w"> </span><span class="nf">scale_batches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="155"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Scale each plain-batch entry by the matching entry of ``factor``.&quot;&quot;&quot;</span>
+</span><span data-line="155"><span class="w">        </span><span class="sd">"""Scale each plain-batch entry by the matching entry of ``factor``."""</span>
 </span><span data-line="156">        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="157">        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">:</span>
 </span><span data-line="158">            <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
@@ -605,20 +605,20 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="NEML2BlockVector.flip">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.flip">[docs]</a>
 </span><span data-line="162">    <span class="k">def</span><span class="w"> </span><span class="nf">flip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="163"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Reverse every group along ``dim`` (used to walk time backward in the adjoint).&quot;&quot;&quot;</span>
+</span><span data-line="163"><span class="w">        </span><span class="sd">"""Reverse every group along ``dim`` (used to walk time backward in the adjoint)."""</span>
 </span><span data-line="164">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">(</span>
 </span><span data-line="165">            <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intmd_dims</span>
 </span><span data-line="166">        <span class="p">)</span></div>
 
 </span><span data-line="167">
 </span><span data-line="168">    <span class="k">def</span><span class="w"> </span><span class="fm">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="169"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Elementwise negation.&quot;&quot;&quot;</span>
+</span><span data-line="169"><span class="w">        </span><span class="sd">"""Elementwise negation."""</span>
 </span><span data-line="170">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">([</span><span class="o">-</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intmd_dims</span><span class="p">)</span>
 </span><span data-line="171">
 </span><span data-line="172">    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">BlockVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="173"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Elementwise sum of two matching-layout block vectors.&quot;&quot;&quot;</span>
+</span><span data-line="173"><span class="w">        </span><span class="sd">"""Elementwise sum of two matching-layout block vectors."""</span>
 </span><span data-line="174">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
-</span><span data-line="175">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;NEML2BlockVector can only add to NEML2BlockVector.&quot;</span><span class="p">)</span>
+</span><span data-line="175">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"NEML2BlockVector can only add to NEML2BlockVector."</span><span class="p">)</span>
 </span><span data-line="176">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">(</span>
 </span><span data-line="177">            <span class="p">[</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
 </span><span data-line="178">            <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span>
@@ -626,9 +626,9 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="180">        <span class="p">)</span>
 </span><span data-line="181">
 </span><span data-line="182">    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">BlockVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="183"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Elementwise difference of two matching-layout block vectors.&quot;&quot;&quot;</span>
+</span><span data-line="183"><span class="w">        </span><span class="sd">"""Elementwise difference of two matching-layout block vectors."""</span>
 </span><span data-line="184">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
-</span><span data-line="185">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;NEML2BlockVector can only subtract NEML2BlockVector.&quot;</span><span class="p">)</span>
+</span><span data-line="185">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"NEML2BlockVector can only subtract NEML2BlockVector."</span><span class="p">)</span>
 </span><span data-line="186">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">(</span>
 </span><span data-line="187">            <span class="p">[</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
 </span><span data-line="188">            <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span>
@@ -636,11 +636,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="190">        <span class="p">)</span>
 </span><span data-line="191">
 </span><span data-line="192">    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="193"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Scale every group by a scalar or broadcastable tensor.&quot;&quot;&quot;</span>
+</span><span data-line="193"><span class="w">        </span><span class="sd">"""Scale every group by a scalar or broadcastable tensor."""</span>
 </span><span data-line="194">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">([</span><span class="n">t</span> <span class="o">*</span> <span class="n">other</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intmd_dims</span><span class="p">)</span>
 </span><span data-line="195">
 </span><span data-line="196">    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="197"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Slice along the dynamic (time) axis, keeping that axis (an int index is re-expanded).&quot;&quot;&quot;</span>
+</span><span data-line="197"><span class="w">        </span><span class="sd">"""Slice along the dynamic (time) axis, keeping that axis (an int index is re-expanded)."""</span>
 </span><span data-line="198">        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span data-line="199">        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">:</span>
 </span><span data-line="200">            <span class="n">sliced</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
@@ -650,9 +650,9 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="204">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intmd_dims</span><span class="p">)</span>
 </span><span data-line="205">
 </span><span data-line="206">    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">BlockVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="207"><span class="w">        </span><span class="sd">&quot;&quot;&quot;In-place write into the ``idx`` slice of the dynamic axis, per group.&quot;&quot;&quot;</span>
+</span><span data-line="207"><span class="w">        </span><span class="sd">"""In-place write into the ``idx`` slice of the dynamic axis, per group."""</span>
 </span><span data-line="208">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
-</span><span data-line="209">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;NEML2BlockVector can only assign from NEML2BlockVector.&quot;</span><span class="p">)</span>
+</span><span data-line="209">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"NEML2BlockVector can only assign from NEML2BlockVector."</span><span class="p">)</span>
 </span><span data-line="210">        <span class="k">for</span> <span class="n">t_self</span><span class="p">,</span> <span class="n">t_val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span data-line="211">            <span class="n">t_self</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_val</span>
 </span><span data-line="212">
@@ -660,12 +660,12 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.cat">[docs]</a>
 </span><span data-line="213">    <span class="nd">@classmethod</span>
 </span><span data-line="214">    <span class="k">def</span><span class="w"> </span><span class="nf">cat</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">vectors</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">BlockVector</span><span class="p">],</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="215"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Concatenate matching-layout block vectors group-by-group along ``dim``.&quot;&quot;&quot;</span>
+</span><span data-line="215"><span class="w">        </span><span class="sd">"""Concatenate matching-layout block vectors group-by-group along ``dim``."""</span>
 </span><span data-line="216">        <span class="k">if</span> <span class="ow">not</span> <span class="n">vectors</span><span class="p">:</span>
-</span><span data-line="217">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cat requires at least one vector&quot;</span><span class="p">)</span>
+</span><span data-line="217">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"cat requires at least one vector"</span><span class="p">)</span>
 </span><span data-line="218">        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vectors</span><span class="p">:</span>
 </span><span data-line="219">            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
-</span><span data-line="220">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;All vectors must be NEML2BlockVector.&quot;</span><span class="p">)</span>
+</span><span data-line="220">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"All vectors must be NEML2BlockVector."</span><span class="p">)</span>
 </span><span data-line="221">        <span class="n">typed</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">list</span><span class="p">[</span><span class="n">NEML2BlockVector</span><span class="p">],</span> <span class="n">vectors</span><span class="p">)</span>
 </span><span data-line="222">        <span class="n">first</span> <span class="o">=</span> <span class="n">typed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="223">        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
@@ -678,9 +678,9 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockVector.zeros_like">[docs]</a>
 </span><span data-line="228">    <span class="nd">@classmethod</span>
 </span><span data-line="229">    <span class="k">def</span><span class="w"> </span><span class="nf">zeros_like</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">BlockVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="230"><span class="w">        </span><span class="sd">&quot;&quot;&quot;A zero vector with the same layout, shapes, dtype, and device as ``other``.&quot;&quot;&quot;</span>
+</span><span data-line="230"><span class="w">        </span><span class="sd">"""A zero vector with the same layout, shapes, dtype, and device as ``other``."""</span>
 </span><span data-line="231">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
-</span><span data-line="232">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;NEML2BlockVector.zeros_like requires NEML2BlockVector.&quot;</span><span class="p">)</span>
+</span><span data-line="232">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"NEML2BlockVector.zeros_like requires NEML2BlockVector."</span><span class="p">)</span>
 </span><span data-line="233">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">(</span>
 </span><span data-line="234">            <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">],</span>
 </span><span data-line="235">            <span class="n">other</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span>

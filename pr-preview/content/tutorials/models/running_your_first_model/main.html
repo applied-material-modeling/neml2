@@ -448,15 +448,15 @@ this tutorial’s input file to disk:</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">%%writefile</span> input.i
 </span><span data-line="2"><span class="c1"># Minimal hello-world NEML2 input file.</span>
-</span><span data-line="3"><span class="c1"># A single linear isotropic elastic model named &quot;elasticity&quot;:</span>
+</span><span data-line="3"><span class="c1"># A single linear isotropic elastic model named "elasticity":</span>
 </span><span data-line="4"><span class="c1">#   E  = 200 GPa</span>
 </span><span data-line="5"><span class="c1">#   nu = 0.3</span>
 </span><span data-line="6"><span class="c1"># Maps a symmetric strain tensor (SR2) to a symmetric stress tensor (SR2).</span>
 </span><span data-line="7"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
 </span><span data-line="8">  <span class="p">[</span><span class="n">elasticity</span><span class="p">]</span>
 </span><span data-line="9">    <span class="nb">type</span> <span class="o">=</span> <span class="n">LinearIsotropicElasticity</span>
-</span><span data-line="10">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">&#39;200e3          0.3&#39;</span>
-</span><span data-line="11">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="10">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">'200e3          0.3'</span>
+</span><span data-line="11">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="12">  <span class="p">[]</span>
 </span><span data-line="13"><span class="p">[]</span>
 </span></pre></div>
@@ -481,7 +481,7 @@ named model as a Python object we can call like a function:</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="4"><span class="n">model</span>
 </span></pre></div>
 </div>

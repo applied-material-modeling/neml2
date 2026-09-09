@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Python-native crystallography Data base class.</span>
+</span><span data-line="25"><span class="sd">"""Python-native crystallography Data base class.</span>
 </span><span data-line="26">
 </span><span data-line="27"><span class="sd">Mirrors the C++ ``neml2::crystallography::CrystalGeometry`` ``[Data]`` block.</span>
 </span><span data-line="28"><span class="sd">Each instance carries the precomputed slip-system geometry — symmetric Schmid</span>
@@ -455,7 +455,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="35"><span class="sd">tensor is a constant the moment the input HIT file is loaded. Concrete</span>
 </span><span data-line="36"><span class="sd">crystal systems (e.g. :class:`~neml2.data.CubicCrystal.CubicCrystal`)</span>
 </span><span data-line="37"><span class="sd">construct a :class:`CrystalGeometry` from their own symmetry operators.</span>
-</span><span data-line="38"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="38"><span class="sd">"""</span>
 </span><span data-line="39">
 </span><span data-line="40"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="41">
@@ -473,7 +473,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="53">    <span class="n">sym</span><span class="p">,</span>
 </span><span data-line="54"><span class="p">)</span>
 </span><span data-line="55">
-</span><span data-line="56"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;CrystalGeometry&quot;</span><span class="p">]</span>
+</span><span data-line="56"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"CrystalGeometry"</span><span class="p">]</span>
 </span><span data-line="57">
 </span><span data-line="58">
 </span><span data-line="59"><span class="c1"># ---------------------------------------------------------------------------</span>
@@ -482,32 +482,32 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="62">
 </span><span data-line="63">
 </span><span data-line="64"><span class="k">def</span><span class="w"> </span><span class="nf">_miller_to_cartesian</span><span class="p">(</span><span class="n">mi</span><span class="p">:</span> <span class="n">MillerIndex</span><span class="p">,</span> <span class="n">lattice</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="65"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a single Miller index to a Cartesian ``(3,)`` raw tensor.</span>
+</span><span data-line="65"><span class="w">    </span><span class="sd">"""Convert a single Miller index to a Cartesian ``(3,)`` raw tensor.</span>
 </span><span data-line="66">
 </span><span data-line="67"><span class="sd">    ``lattice`` is the ``(3, 3)`` matrix whose rows are the three lattice</span>
 </span><span data-line="68"><span class="sd">    vectors (or reciprocal lattice vectors). Mirrors the C++</span>
 </span><span data-line="69"><span class="sd">    ``miller_to_cartesian`` static in ``CrystalGeometry.cxx`` after a GCD</span>
 </span><span data-line="70"><span class="sd">    normalisation of the index.</span>
-</span><span data-line="71"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="71"><span class="sd">    """</span>
 </span><span data-line="72">    <span class="c1"># GCD normalisation — divide by gcd of components (handles e.g. (2,2,0) -&gt; (1,1,0)).</span>
 </span><span data-line="73">    <span class="n">d</span> <span class="o">=</span> <span class="n">mi</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
 </span><span data-line="74">    <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-</span><span data-line="75">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_miller_to_cartesian expects a single MillerIndex (3,), got </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="75">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"_miller_to_cartesian expects a single MillerIndex (3,), got </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="76">    <span class="n">g</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">gcd</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">gcd</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()),</span> <span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())),</span> <span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()))</span>
 </span><span data-line="77">    <span class="k">if</span> <span class="n">g</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
 </span><span data-line="78">        <span class="n">g</span> <span class="o">=</span> <span class="mi">1</span>
 </span><span data-line="79">    <span class="n">dr</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">lattice</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 </span><span data-line="80">    <span class="c1"># vdot of each lattice vector (row) with dr — yields per-axis components.</span>
-</span><span data-line="81">    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij,j-&gt;i&quot;</span><span class="p">,</span> <span class="n">lattice</span><span class="p">,</span> <span class="n">dr</span><span class="p">)</span>
+</span><span data-line="81">    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"ij,j-&gt;i"</span><span class="p">,</span> <span class="n">lattice</span><span class="p">,</span> <span class="n">dr</span><span class="p">)</span>
 </span><span data-line="82">
 </span><span data-line="83">
 </span><span data-line="84"><span class="k">def</span><span class="w"> </span><span class="nf">_make_reciprocal_lattice</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="85"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Reciprocal lattice from real lattice (rows are vectors).</span>
+</span><span data-line="85"><span class="w">    </span><span class="sd">"""Reciprocal lattice from real lattice (rows are vectors).</span>
 </span><span data-line="86">
 </span><span data-line="87"><span class="sd">    $A$ is ``(3, 3)`` with rows ``a1, a2, a3``; output rows are</span>
 </span><span data-line="88"><span class="sd">    $b1 = (a2 x a3) / (a1 . (a2 x a3))$ etc. — same convention as the C++</span>
 </span><span data-line="89"><span class="sd">    ``make_reciprocal_lattice`` helper.</span>
-</span><span data-line="90"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="90"><span class="sd">    """</span>
 </span><span data-line="91">    <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 </span><span data-line="92">    <span class="n">c23</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">a2</span><span class="p">,</span> <span class="n">a3</span><span class="p">)</span>
 </span><span data-line="93">    <span class="n">c31</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">a3</span><span class="p">,</span> <span class="n">a1</span><span class="p">)</span>
@@ -519,12 +519,12 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="99">
 </span><span data-line="100">
 </span><span data-line="101"><span class="k">def</span><span class="w"> </span><span class="nf">_unique_bidirectional</span><span class="p">(</span><span class="n">ops</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">inp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="102"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply each symmetry op to ``inp`` and return unique vectors up to sign.</span>
+</span><span data-line="102"><span class="w">    </span><span class="sd">"""Apply each symmetry op to ``inp`` and return unique vectors up to sign.</span>
 </span><span data-line="103">
 </span><span data-line="104"><span class="sd">    ``ops`` is ``(N, 3, 3)``; ``inp`` is ``(3,)``; output is ``(K, 3)`` with</span>
 </span><span data-line="105"><span class="sd">    ``K &lt;= N``. Mirrors ``neml2::crystallography::unique_bidirectional``.</span>
-</span><span data-line="106"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="107">    <span class="n">candidates</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;nij,j-&gt;ni&quot;</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">inp</span><span class="p">)</span>  <span class="c1"># (N, 3)</span>
+</span><span data-line="106"><span class="sd">    """</span>
+</span><span data-line="107">    <span class="n">candidates</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"nij,j-&gt;ni"</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">inp</span><span class="p">)</span>  <span class="c1"># (N, 3)</span>
 </span><span data-line="108">    <span class="n">unique</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 </span><span data-line="109">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">candidates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
 </span><span data-line="110">        <span class="n">vi</span> <span class="o">=</span> <span class="n">candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -540,7 +540,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="120">
 </span><span data-line="121">
 </span><span data-line="122"><span class="k">def</span><span class="w"> </span><span class="nf">_unit</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="123"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Unit-norm a ``(*, 3)`` raw vector.&quot;&quot;&quot;</span>
+</span><span data-line="123"><span class="w">    </span><span class="sd">"""Unit-norm a ``(*, 3)`` raw vector."""</span>
 </span><span data-line="124">    <span class="n">n</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">v</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">eps</span><span class="p">)</span>
 </span><span data-line="125">    <span class="k">return</span> <span class="n">v</span> <span class="o">/</span> <span class="n">n</span>
 </span><span data-line="126">
@@ -551,7 +551,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="131">    <span class="n">slip_directions</span><span class="p">:</span> <span class="n">MillerIndex</span><span class="p">,</span>
 </span><span data-line="132">    <span class="n">slip_planes</span><span class="p">:</span> <span class="n">MillerIndex</span><span class="p">,</span>
 </span><span data-line="133"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-</span><span data-line="134"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute per-slip-system Cartesian directions, planes, burgers, group offsets.</span>
+</span><span data-line="134"><span class="w">    </span><span class="sd">"""Compute per-slip-system Cartesian directions, planes, burgers, group offsets.</span>
 </span><span data-line="135">
 </span><span data-line="136"><span class="sd">    Mirrors ``CrystalGeometry::setup_schmid_tensors`` in</span>
 </span><span data-line="137"><span class="sd">    ``src/neml2/models/crystallography/CrystalGeometry.cxx``. Returns:</span>
@@ -564,7 +564,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="144"><span class="sd">    Each input Miller family ``(d_i, n_i)`` produces one slip group; the</span>
 </span><span data-line="145"><span class="sd">    perpendicular-pair filter discards symmetry images where the rotated</span>
 </span><span data-line="146"><span class="sd">    direction is no longer perpendicular to the rotated plane normal.</span>
-</span><span data-line="147"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="147"><span class="sd">    """</span>
 </span><span data-line="148">    <span class="n">B</span> <span class="o">=</span> <span class="n">_make_reciprocal_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">)</span>
 </span><span data-line="149">
 </span><span data-line="150">    <span class="n">cmds</span> <span class="o">=</span> <span class="n">slip_directions</span><span class="o">.</span><span class="n">data</span>
@@ -575,8 +575,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="155">        <span class="n">cmps</span> <span class="o">=</span> <span class="n">cmps</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </span><span data-line="156">    <span class="k">if</span> <span class="n">cmds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">cmps</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
 </span><span data-line="157">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="158">            <span class="sa">f</span><span class="s2">&quot;slip_directions and slip_planes must have matching shape; got &quot;</span>
-</span><span data-line="159">            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">cmds</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">cmps</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="158">            <span class="sa">f</span><span class="s2">"slip_directions and slip_planes must have matching shape; got "</span>
+</span><span data-line="159">            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">cmds</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">cmps</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
 </span><span data-line="160">        <span class="p">)</span>
 </span><span data-line="161">
 </span><span data-line="162">    <span class="n">n_families</span> <span class="o">=</span> <span class="n">cmds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -598,7 +598,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="178">        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">direction_options</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
 </span><span data-line="179">            <span class="n">di</span> <span class="o">=</span> <span class="n">direction_options</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
 </span><span data-line="180">            <span class="c1"># Dot di against every rotated plane normal.</span>
-</span><span data-line="181">            <span class="n">dps</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ni,i-&gt;n&quot;</span><span class="p">,</span> <span class="n">plane_options</span><span class="p">,</span> <span class="n">di</span><span class="p">)</span>
+</span><span data-line="181">            <span class="n">dps</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"ni,i-&gt;n"</span><span class="p">,</span> <span class="n">plane_options</span><span class="p">,</span> <span class="n">di</span><span class="p">)</span>
 </span><span data-line="182">            <span class="c1"># Keep planes where |di . n_k| ~= 0 (perpendicular).</span>
 </span><span data-line="183">            <span class="n">zero</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">dps</span><span class="p">)</span>
 </span><span data-line="184">            <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">dps</span><span class="o">.</span><span class="n">abs</span><span class="p">(),</span> <span class="n">zero</span><span class="p">)</span>
@@ -612,7 +612,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="192">
 </span><span data-line="193">    <span class="k">if</span> <span class="ow">not</span> <span class="n">dirs_acc</span><span class="p">:</span>
 </span><span data-line="194">        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span data-line="195">            <span class="s2">&quot;No slip systems generated — check Miller indices and crystal class consistency.&quot;</span>
+</span><span data-line="195">            <span class="s2">"No slip systems generated — check Miller indices and crystal class consistency."</span>
 </span><span data-line="196">        <span class="p">)</span>
 </span><span data-line="197">
 </span><span data-line="198">    <span class="n">cart_dirs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">dirs_acc</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -629,7 +629,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="CrystalGeometry">
 <a class="viewcode-back" href="../../../content/python_api/neml2.data.html#neml2.data.CrystalGeometry">[docs]</a>
 </span><span data-line="209"><span class="k">class</span><span class="w"> </span><span class="nc">CrystalGeometry</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-</span><span data-line="210"><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Slip-system geometry shared by all CP leaves in a single crystal model.</span>
+</span><span data-line="210"><span class="w">    </span><span class="sa">r</span><span class="sd">"""Slip-system geometry shared by all CP leaves in a single crystal model.</span>
 </span><span data-line="211">
 </span><span data-line="212"><span class="sd">    Constructed once at HIT-load time by the factory; CP slip leaves</span>
 </span><span data-line="213"><span class="sd">    (``ResolvedShear``, ``PlasticDeformationRate``, ``PlasticVorticity``)</span>
@@ -638,7 +638,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="216">
 </span><span data-line="217"><span class="sd">    ``nn.Module`` is the parent so that assigning a ``CrystalGeometry`` to a</span>
 </span><span data-line="218"><span class="sd">    CP leaf via ``self._cg = crystal_geometry`` registers it as a sub-module —</span>
-</span><span data-line="219"><span class="sd">    ``leaf.to(&#39;cuda&#39;)`` then moves the Schmid / lattice buffers via the</span>
+</span><span data-line="219"><span class="sd">    ``leaf.to('cuda')`` then moves the Schmid / lattice buffers via the</span>
 </span><span data-line="220"><span class="sd">    standard PyTorch buffer-propagation path. Without this, the buffers stay</span>
 </span><span data-line="221"><span class="sd">    on CPU and Inductor trips a device-mismatch on the first ``bmm`` against</span>
 </span><span data-line="222"><span class="sd">    a CUDA input during ``torch.export``. Wrapper-typed views ($A$, $M$,</span>
@@ -674,7 +674,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="252"><span class="sd">    M : SR2 (``sub_batch_ndim=1``)</span>
 </span><span data-line="253"><span class="sd">    W : WR2 (``sub_batch_ndim=1``)</span>
 </span><span data-line="254"><span class="sd">    slip_directions, slip_planes : MillerIndex</span>
-</span><span data-line="255"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="255"><span class="sd">    """</span>
 </span><span data-line="256">
 </span><span data-line="257">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
 </span><span data-line="258">        <span class="bp">self</span><span class="p">,</span>
@@ -686,34 +686,34 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="264">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="265">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </span><span data-line="266">        <span class="c1"># Raw-tensor buffers — these are what ``.to(device)`` moves.</span>
-</span><span data-line="267">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;sym_ops_data&quot;</span><span class="p">,</span> <span class="n">sym_ops</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</span><span data-line="268">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;lattice_vectors&quot;</span><span class="p">,</span> <span class="n">lattice_vectors</span><span class="p">)</span>
+</span><span data-line="267">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"sym_ops_data"</span><span class="p">,</span> <span class="n">sym_ops</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="268">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"lattice_vectors"</span><span class="p">,</span> <span class="n">lattice_vectors</span><span class="p">)</span>
 </span><span data-line="269">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-</span><span data-line="270">            <span class="s2">&quot;reciprocal_lattice_vectors&quot;</span><span class="p">,</span> <span class="n">_make_reciprocal_lattice</span><span class="p">(</span><span class="n">lattice_vectors</span><span class="p">)</span>
+</span><span data-line="270">            <span class="s2">"reciprocal_lattice_vectors"</span><span class="p">,</span> <span class="n">_make_reciprocal_lattice</span><span class="p">(</span><span class="n">lattice_vectors</span><span class="p">)</span>
 </span><span data-line="271">        <span class="p">)</span>
-</span><span data-line="272">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;slip_directions_data&quot;</span><span class="p">,</span> <span class="n">slip_directions</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</span><span data-line="273">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;slip_planes_data&quot;</span><span class="p">,</span> <span class="n">slip_planes</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="272">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"slip_directions_data"</span><span class="p">,</span> <span class="n">slip_directions</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="273">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"slip_planes_data"</span><span class="p">,</span> <span class="n">slip_planes</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 </span><span data-line="274">
 </span><span data-line="275">        <span class="n">cart_dirs</span><span class="p">,</span> <span class="n">cart_planes</span><span class="p">,</span> <span class="n">burgers</span><span class="p">,</span> <span class="n">offsets</span> <span class="o">=</span> <span class="n">_setup_schmid_tensors</span><span class="p">(</span>
 </span><span data-line="276">            <span class="n">lattice_vectors</span><span class="p">,</span> <span class="n">sym_ops</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">slip_directions</span><span class="p">,</span> <span class="n">slip_planes</span>
 </span><span data-line="277">        <span class="p">)</span>
-</span><span data-line="278">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;cartesian_slip_directions&quot;</span><span class="p">,</span> <span class="n">cart_dirs</span><span class="p">)</span>
-</span><span data-line="279">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;cartesian_slip_planes&quot;</span><span class="p">,</span> <span class="n">cart_planes</span><span class="p">)</span>
-</span><span data-line="280">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;burgers&quot;</span><span class="p">,</span> <span class="n">burgers</span><span class="p">)</span>
+</span><span data-line="278">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"cartesian_slip_directions"</span><span class="p">,</span> <span class="n">cart_dirs</span><span class="p">)</span>
+</span><span data-line="279">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"cartesian_slip_planes"</span><span class="p">,</span> <span class="n">cart_planes</span><span class="p">)</span>
+</span><span data-line="280">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"burgers"</span><span class="p">,</span> <span class="n">burgers</span><span class="p">)</span>
 </span><span data-line="281">        <span class="bp">self</span><span class="o">.</span><span class="n">slip_offsets</span> <span class="o">=</span> <span class="n">offsets</span>
 </span><span data-line="282">
 </span><span data-line="283">        <span class="c1"># Schmid tensors live with sub_batch_ndim=1 (the leading nslip axis is</span>
 </span><span data-line="284">        <span class="c1"># the per-site sub-batch dim — see D-049). Stored as raw buffers; the</span>
 </span><span data-line="285">        <span class="c1"># ``A`` / ``M`` / ``W`` properties below rewrap on access.</span>
-</span><span data-line="286">        <span class="n">A_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ni,nj-&gt;nij&quot;</span><span class="p">,</span> <span class="n">_unit</span><span class="p">(</span><span class="n">cart_dirs</span><span class="p">),</span> <span class="n">_unit</span><span class="p">(</span><span class="n">cart_planes</span><span class="p">))</span>
+</span><span data-line="286">        <span class="n">A_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"ni,nj-&gt;nij"</span><span class="p">,</span> <span class="n">_unit</span><span class="p">(</span><span class="n">cart_dirs</span><span class="p">),</span> <span class="n">_unit</span><span class="p">(</span><span class="n">cart_planes</span><span class="p">))</span>
 </span><span data-line="287">        <span class="n">A_r2</span> <span class="o">=</span> <span class="n">R2</span><span class="p">(</span><span class="n">A_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</span><span data-line="288">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;A_data&quot;</span><span class="p">,</span> <span class="n">A_data</span><span class="p">)</span>
-</span><span data-line="289">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;M_data&quot;</span><span class="p">,</span> <span class="n">sym</span><span class="p">(</span><span class="n">A_r2</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</span><span data-line="290">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;W_data&quot;</span><span class="p">,</span> <span class="n">skew</span><span class="p">(</span><span class="n">A_r2</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="288">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"A_data"</span><span class="p">,</span> <span class="n">A_data</span><span class="p">)</span>
+</span><span data-line="289">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"M_data"</span><span class="p">,</span> <span class="n">sym</span><span class="p">(</span><span class="n">A_r2</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="290">        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">"W_data"</span><span class="p">,</span> <span class="n">skew</span><span class="p">(</span><span class="n">A_r2</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 </span><span data-line="291">
 </span><span data-line="292">    <span class="c1"># ---- wrapper-typed views over the raw buffers ----</span>
-</span><span data-line="293">    <span class="c1"># Each rebuilds the wrapper from the current buffer state so the wrapper&#39;s</span>
-</span><span data-line="294">    <span class="c1"># device tracks the module&#39;s device after ``.to(...)``.</span>
+</span><span data-line="293">    <span class="c1"># Each rebuilds the wrapper from the current buffer state so the wrapper's</span>
+</span><span data-line="294">    <span class="c1"># device tracks the module's device after ``.to(...)``.</span>
 </span><span data-line="295">
 </span><span data-line="296">    <span class="nd">@property</span>
 </span><span data-line="297">    <span class="k">def</span><span class="w"> </span><span class="nf">sym_ops</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R2</span><span class="p">:</span>
@@ -753,7 +753,7 @@ data-aria-dark="Switch to auto color mode">
 <a class="viewcode-back" href="../../../content/python_api/neml2.data.html#neml2.data.CrystalGeometry.nslip_in_group">[docs]</a>
 </span><span data-line="330">    <span class="k">def</span><span class="w"> </span><span class="nf">nslip_in_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 </span><span data-line="331">        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nslip_groups</span><span class="p">:</span>
-</span><span data-line="332">            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;slip group </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> out of range [0, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nslip_groups</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</span><span data-line="332">            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"slip group </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> out of range [0, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nslip_groups</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 </span><span data-line="333">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">slip_offsets</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">slip_offsets</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 </div>
 

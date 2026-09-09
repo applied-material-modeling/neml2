@@ -446,15 +446,15 @@ autograd rather than the physics:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">%%writefile</span> input.i
-</span><span data-line="2"><span class="c1"># Same linear-isotropic-elastic &quot;elasticity&quot; model used in the earlier</span>
+</span><span data-line="2"><span class="c1"># Same linear-isotropic-elastic "elasticity" model used in the earlier</span>
 </span><span data-line="3"><span class="c1"># tutorials, repeated here so the autograd page is self-contained.</span>
 </span><span data-line="4"><span class="c1">#   E  = 200 GPa</span>
 </span><span data-line="5"><span class="c1">#   nu = 0.3</span>
 </span><span data-line="6"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
 </span><span data-line="7">  <span class="p">[</span><span class="n">elasticity</span><span class="p">]</span>
 </span><span data-line="8">    <span class="nb">type</span> <span class="o">=</span> <span class="n">LinearIsotropicElasticity</span>
-</span><span data-line="9">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">&#39;200e3          0.3&#39;</span>
-</span><span data-line="10">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="9">    <span class="n">coefficients</span>      <span class="o">=</span> <span class="s1">'200e3          0.3'</span>
+</span><span data-line="10">    <span class="n">coefficient_types</span> <span class="o">=</span> <span class="s1">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="11">  <span class="p">[]</span>
 </span><span data-line="12"><span class="p">[]</span>
 </span></pre></div>
@@ -470,7 +470,7 @@ autograd rather than the physics:</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="4"><span class="n">model</span>
 </span></pre></div>
 </div>
@@ -490,7 +490,7 @@ other PyTorch module:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
-</span><span data-line="2">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">&lt;10g</span><span class="si">}</span><span class="s2">  requires_grad=</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="2">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">&lt;10g</span><span class="si">}</span><span class="s2">  requires_grad=</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -559,8 +559,8 @@ through this access:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dL/dE  = </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="3"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dL/dnu = </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dL/dE  = </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="3"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dL/dnu = </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -594,8 +594,8 @@ directly:</p>
 </span><span data-line="4"><span class="c1"># Differentiate the xx-component of stress w.r.t. both parameters.</span>
 </span><span data-line="5"><span class="n">sigma_xx</span> <span class="o">=</span> <span class="n">stress</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="6"><span class="n">dE</span><span class="p">,</span> <span class="n">dnu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">sigma_xx</span><span class="p">,</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="p">])</span>
-</span><span data-line="7"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d(sigma_xx)/dE  = </span><span class="si">{</span><span class="n">dE</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d(sigma_xx)/dnu = </span><span class="si">{</span><span class="n">dnu</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="7"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d(sigma_xx)/dE  = </span><span class="si">{</span><span class="n">dE</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d(sigma_xx)/dnu = </span><span class="si">{</span><span class="n">dnu</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>

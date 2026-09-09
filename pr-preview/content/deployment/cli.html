@@ -494,30 +494,30 @@ isotropic elastic model named <code class="docutils literal notranslate"><span c
 </span><span data-line="6"><span class="k">[Tensors]</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[times]</span>
 </span><span data-line="8"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="9"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(0).dynamic_batch, Scalar(1).dynamic_batch, 5)&#39;</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'linspace(Scalar(0).dynamic_batch, Scalar(1).dynamic_batch, 5)'</span>
 </span><span data-line="10"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="11"><span class="w">  </span><span class="k">[strains]</span>
 </span><span data-line="12"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="13"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64).reshape(1, 6) * torch.linspace(0.0, 1.0, 5, dtype=torch.float64).reshape(5, 1))&#39;</span>
+</span><span data-line="13"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64).reshape(1, 6) * torch.linspace(0.0, 1.0, 5, dtype=torch.float64).reshape(5, 1))'</span>
 </span><span data-line="14"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="15"><span class="k">[]</span>
 </span><span data-line="16">
 </span><span data-line="17"><span class="k">[Models]</span>
 </span><span data-line="18"><span class="w">  </span><span class="k">[elasticity]</span>
 </span><span data-line="19"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="20"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;200e3          0.3&#39;</span>
-</span><span data-line="21"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="20"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">'200e3          0.3'</span>
+</span><span data-line="21"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="22"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="23"><span class="k">[]</span>
 </span><span data-line="24">
 </span><span data-line="25"><span class="k">[Drivers]</span>
 </span><span data-line="26"><span class="w">  </span><span class="k">[driver]</span>
 </span><span data-line="27"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
-</span><span data-line="28"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elasticity&#39;</span>
-</span><span data-line="29"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="30"><span class="w">    </span><span class="na">prescribed_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strain&#39;</span>
-</span><span data-line="31"><span class="w">    </span><span class="na">prescribed_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span>
-</span><span data-line="32"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
+</span><span data-line="28"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'elasticity'</span>
+</span><span data-line="29"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'times'</span>
+</span><span data-line="30"><span class="w">    </span><span class="na">prescribed_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'strain'</span>
+</span><span data-line="31"><span class="w">    </span><span class="na">prescribed_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'strains'</span>
+</span><span data-line="32"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'result.pt'</span>
 </span><span data-line="33"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="34"><span class="k">[]</span>
 </span></pre></div>
@@ -534,7 +534,7 @@ sweep — without writing any Python.</p>
 </span><span data-line="3">                 input driver
 </span><span data-line="4">
 </span><span data-line="5">Run a driver from an input file. Trailing positional tokens are treated as HIT
-</span><span data-line="6">overrides (e.g. &#39;Models/elasticity/E:=210000&#39;).
+</span><span data-line="6">overrides (e.g. 'Models/elasticity/E:=210000').
 </span><span data-line="7">
 </span><span data-line="8">positional arguments:
 </span><span data-line="9">  input                 path to the input file
@@ -542,11 +542,11 @@ sweep — without writing any Python.</p>
 </span><span data-line="11">
 </span><span data-line="12">options:
 </span><span data-line="13">  -h, --help            show this help message and exit
-</span><span data-line="14">  --device {cpu,cuda}   Set torch&#39;s default device before loading. Tensors
+</span><span data-line="14">  --device {cpu,cuda}   Set torch's default device before loading. Tensors
 </span><span data-line="15">                        built by [Tensors] Python expressions inherit this.
 </span><span data-line="16">                        Default: cpu.
 </span><span data-line="17">  --dtype {float64,float32}
-</span><span data-line="18">                        Set torch&#39;s default dtype before loading. NEML2 models
+</span><span data-line="18">                        Set torch's default dtype before loading. NEML2 models
 </span><span data-line="19">                        are uniformly float64 by convention; AOTI artifacts
 </span><span data-line="20">                        compile-pin their dtype and the runtime rejects silent
 </span><span data-line="21">                        coercion, so float64 is the safe default. Override
@@ -589,7 +589,7 @@ one screenful.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">usage: neml2-inspect [-h] [--json] [--load PATH] input model
 </span><span data-line="2">
 </span><span data-line="3">Summarize the structure of a model. Trailing positional tokens are treated as
-</span><span data-line="4">HIT overrides (e.g. &#39;Models/elasticity/E:=210000&#39;).
+</span><span data-line="4">HIT overrides (e.g. 'Models/elasticity/E:=210000').
 </span><span data-line="5">
 </span><span data-line="6">positional arguments:
 </span><span data-line="7">  input        path to the input file
@@ -626,7 +626,7 @@ one screenful.</p>
 <p>The same data is available as a JSON document for programmatic
 consumption via <code class="docutils literal notranslate"><span class="pre">--json</span></code>:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">$ neml2-inspect --json input.i elasticity
-</span><span data-line="2">{&quot;name&quot;: &quot;LinearIsotropicElasticity&quot;, &quot;inputs&quot;: [{&quot;name&quot;: &quot;strain&quot;, &quot;type&quot;: &quot;SR2&quot;}], &quot;outputs&quot;: [{&quot;name&quot;: &quot;stress&quot;, &quot;type&quot;: &quot;SR2&quot;}], &quot;parameters&quot;: [{&quot;name&quot;: &quot;E&quot;, &quot;dtype&quot;: &quot;torch.float64&quot;, &quot;device&quot;: &quot;cpu&quot;, &quot;shape&quot;: []}, {&quot;name&quot;: &quot;nu&quot;, &quot;dtype&quot;: &quot;torch.float64&quot;, &quot;device&quot;: &quot;cpu&quot;, &quot;shape&quot;: []}], &quot;buffers&quot;: [], &quot;retcode&quot;: 0}
+</span><span data-line="2">{"name": "LinearIsotropicElasticity", "inputs": [{"name": "strain", "type": "SR2"}], "outputs": [{"name": "stress", "type": "SR2"}], "parameters": [{"name": "E", "dtype": "torch.float64", "device": "cpu", "shape": []}, {"name": "nu", "dtype": "torch.float64", "device": "cpu", "shape": []}], "buffers": [], "retcode": 0}
 </span><span data-line="3">...
 </span></pre></div>
 </div>
@@ -665,18 +665,18 @@ restrict to a single input-file section:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">$ neml2-syntax --section Drivers --summary --json -
 </span><span data-line="2">[
 </span><span data-line="3">  {
-</span><span data-line="4">    &quot;type&quot;: &quot;TransientDriver&quot;,
-</span><span data-line="5">    &quot;section&quot;: &quot;Drivers&quot;,
-</span><span data-line="6">    &quot;doc&quot;: &quot;Drive a model over a prescribed time history.\n\nMirrors C++ ``TransientDriver``. See module docstring for differences.&quot;,
-</span><span data-line="7">    &quot;source_path&quot;: &quot;drivers/TransientDriver.py&quot;,
-</span><span data-line="8">    &quot;class_name&quot;: &quot;&quot;
+</span><span data-line="4">    "type": "TransientDriver",
+</span><span data-line="5">    "section": "Drivers",
+</span><span data-line="6">    "doc": "Drive a model over a prescribed time history.\n\nMirrors C++ ``TransientDriver``. See module docstring for differences.",
+</span><span data-line="7">    "source_path": "drivers/TransientDriver.py",
+</span><span data-line="8">    "class_name": ""
 </span><span data-line="9">  },
 </span><span data-line="10">  {
-</span><span data-line="11">    &quot;type&quot;: &quot;TransientRegression&quot;,
-</span><span data-line="12">    &quot;section&quot;: &quot;Drivers&quot;,
-</span><span data-line="13">    &quot;doc&quot;: &quot;Run a TransientDriver and diff its result against a gold ``.pt`` file.&quot;,
-</span><span data-line="14">    &quot;source_path&quot;: &quot;drivers/TransientRegression.py&quot;,
-</span><span data-line="15">    &quot;class_name&quot;: &quot;&quot;
+</span><span data-line="11">    "type": "TransientRegression",
+</span><span data-line="12">    "section": "Drivers",
+</span><span data-line="13">    "doc": "Run a TransientDriver and diff its result against a gold ``.pt`` file.",
+</span><span data-line="14">    "source_path": "drivers/TransientRegression.py",
+</span><span data-line="15">    "class_name": ""
 </span><span data-line="16">  },
 </span><span data-line="17">  {
 </span><span data-line="18">...
@@ -688,19 +688,19 @@ class — the same data the documentation’s syntax catalog under
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">$ neml2-syntax --type LinearIsotropicElasticity --json -
 </span><span data-line="2">[
 </span><span data-line="3">  {
-</span><span data-line="4">    &quot;type&quot;: &quot;LinearIsotropicElasticity&quot;,
-</span><span data-line="5">    &quot;section&quot;: &quot;Models&quot;,
-</span><span data-line="6">    &quot;doc&quot;: &quot;Relate elastic strain to stress (or stress to strain, in compliance form)\nfor a linear isotropic material.&quot;,
-</span><span data-line="7">    &quot;source_path&quot;: &quot;models/solid_mechanics/elasticity/LinearIsotropicElasticity.py&quot;,
-</span><span data-line="8">    &quot;class_name&quot;: &quot;&quot;,
-</span><span data-line="9">    &quot;options&quot;: [
+</span><span data-line="4">    "type": "LinearIsotropicElasticity",
+</span><span data-line="5">    "section": "Models",
+</span><span data-line="6">    "doc": "Relate elastic strain to stress (or stress to strain, in compliance form)\nfor a linear isotropic material.",
+</span><span data-line="7">    "source_path": "models/solid_mechanics/elasticity/LinearIsotropicElasticity.py",
+</span><span data-line="8">    "class_name": "",
+</span><span data-line="9">    "options": [
 </span><span data-line="10">      {
-</span><span data-line="11">        &quot;name&quot;: &quot;strain&quot;,
-</span><span data-line="12">        &quot;doc&quot;: &quot;Elastic strain&quot;,
-</span><span data-line="13">        &quot;ftype&quot;: &quot;INPUT&quot;,
-</span><span data-line="14">        &quot;required&quot;: true,
-</span><span data-line="15">        &quot;type&quot;: &quot;SR2&quot;,
-</span><span data-line="16">        &quot;value&quot;: &quot;&quot;
+</span><span data-line="11">        "name": "strain",
+</span><span data-line="12">        "doc": "Elastic strain",
+</span><span data-line="13">        "ftype": "INPUT",
+</span><span data-line="14">        "required": true,
+</span><span data-line="15">        "type": "SR2",
+</span><span data-line="16">        "value": ""
 </span><span data-line="17">      },
 </span><span data-line="18">...
 </span></pre></div>
@@ -736,13 +736,13 @@ into a frozen graph for performance.</p>
 </span><span data-line="19">                        and walks you through the options (model/driver,
 </span><span data-line="20">                        promotable parameters, derivative pairs, devices,
 </span><span data-line="21">                        ...), then runs the resulting compile. Requires the
-</span><span data-line="22">                        &#39;questionary&#39; package.
+</span><span data-line="22">                        'questionary' package.
 </span><span data-line="23">  --model NAME          Compile the named [Models] block. The emitted stub
 </span><span data-line="24">                        contains only the AOTIModel shim for this model -- no
 </span><span data-line="25">                        [Drivers] block. Pair with a custom driver in a
 </span><span data-line="26">                        separate file when you want to run it.
 </span><span data-line="27">  --driver NAME         Compile whatever model the named [Drivers] block
-</span><span data-line="28">                        targets (via its `model = &#39;...&#39;` field). The stub
+</span><span data-line="28">                        targets (via its `model = '...'` field). The stub
 </span><span data-line="29">                        keeps the named driver so the result is runnable as-is
 </span><span data-line="30">                        via `neml2-run`. Use this when you want a self-
 </span><span data-line="31">                        contained, drop-in replacement for the original
@@ -783,19 +783,19 @@ into a frozen graph for performance.</p>
 </span><span data-line="66">  -d OUT:IN, --derivative OUT:IN
 </span><span data-line="67">                        Compile the derivative (Jacobian / JVP) graph for the
 </span><span data-line="68">                        OUT:IN output-input pair. Repeatable. Omit a side to
-</span><span data-line="69">                        select all on that side: &#39;stress:strain&#39; is one pair,
-</span><span data-line="70">                        &#39;stress:&#39; all inputs of stress, &#39;:strain&#39; all outputs
-</span><span data-line="71">                        wrt strain, &#39;:&#39; all pairs. With no -d flags NO
+</span><span data-line="69">                        select all on that side: 'stress:strain' is one pair,
+</span><span data-line="70">                        'stress:' all inputs of stress, ':strain' all outputs
+</span><span data-line="71">                        wrt strain, ':' all pairs. With no -d flags NO
 </span><span data-line="72">                        derivative graphs are compiled (smallest artifact) and
 </span><span data-line="73">                        the runtime jvp()/jacobian() raise until recompiled
 </span><span data-line="74">                        with -d.
 </span><span data-line="75">  --example-batch-shape SPEC
 </span><span data-line="76">                        Example shape used when tracing. Two forms: --example-
-</span><span data-line="77">                        batch-shape &#39;(2,)&#39; (uniform across all inputs)
-</span><span data-line="78">                        --example-batch-shape strain=&#39;(2;100)&#39; --example-
-</span><span data-line="79">                        batch-shape temperature=&#39;(2,)&#39; (per-variable;
+</span><span data-line="77">                        batch-shape '(2,)' (uniform across all inputs)
+</span><span data-line="78">                        --example-batch-shape strain='(2;100)' --example-
+</span><span data-line="79">                        batch-shape temperature='(2,)' (per-variable;
 </span><span data-line="80">                        repeatable) The semicolon delimits dynamic-batch from
-</span><span data-line="81">                        sub-batch axes -- &#39;(2;100)&#39; means dyn=(2,),
+</span><span data-line="81">                        sub-batch axes -- '(2;100)' means dyn=(2,),
 </span><span data-line="82">                        sub=(100,). Overrides [Settings]/example_batch_shape.
 </span><span data-line="83">  --dynamic-batch       Compile a dynamic-batch artifact: the leading batch
 </span><span data-line="84">                        dim of the example shape becomes a runtime-variable
@@ -805,9 +805,9 @@ into a frozen graph for performance.</p>
 </span><span data-line="88">                        a baked parameter has rank&gt;=1 and would specialize the
 </span><span data-line="89">                        dynamic dim.
 </span><span data-line="90">  --rename-input ORIG:NEW
-</span><span data-line="91">                        Rename an input variable at the compiled artifact&#39;s
+</span><span data-line="91">                        Rename an input variable at the compiled artifact's
 </span><span data-line="92">                        boundary: a downstream consumer sees NEW while the
-</span><span data-line="93">                        model&#39;s internal wiring keeps ORIG. Repeatable. Only
+</span><span data-line="93">                        model's internal wiring keeps ORIG. Repeatable. Only
 </span><span data-line="94">                        valid with --model (not --driver).
 </span><span data-line="95">  --rename-output ORIG:NEW
 </span><span data-line="96">                        Rename an output variable at the boundary (the
@@ -878,7 +878,7 @@ flag prints a <code class="docutils literal notranslate"><span class="pre">pip</
 installed <code class="docutils literal notranslate"><span class="pre">neml2</span></code> package (currently <code class="docutils literal notranslate"><span class="pre">neml2.aoti._aoti</span></code>). The stubs are
 written next to their <code class="docutils literal notranslate"><span class="pre">.so</span></code> files so that pyright and IDE autocompletion
 resolve <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">._aoti</span> <span class="pre">import</span> <span class="pre">Model</span></code> cleanly.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">neml2-stub: generating stubs for neml2.aoti._aoti -&gt; /opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">neml2-stub: generating stubs for neml2.aoti._aoti -&gt; /opt/hostedtoolcache/Python/3.10.21/x64/lib/python3.10/site-packages
 </span><span data-line="2">usage: pybind11-stubgen [-h] [-o OUTPUT_DIR] [--root-suffix ROOT_SUFFIX]
 </span><span data-line="3">                        [--ignore-invalid-expressions REGEX]
 </span><span data-line="4">                        [--ignore-invalid-identifiers REGEX]
@@ -914,25 +914,25 @@ resolve <code class="docutils literal notranslate"><span class="pre">from</span>
 </span><span data-line="34">                        regex&gt;:&lt;path-to-class&gt; format. Example:
 </span><span data-line="35">                        `MyEnum:foo.bar.Baz`
 </span><span data-line="36">  --numpy-array-wrap-with-annotated
-</span><span data-line="37">                        Replace numpy/scipy arrays of &#39;ARRAY_T[TYPE, [*DIMS],
-</span><span data-line="38">                        *FLAGS]&#39; format with &#39;Annotated[ARRAY_T, TYPE,
-</span><span data-line="39">                        FixedSize|DynamicSize(*DIMS), *FLAGS]&#39;
+</span><span data-line="37">                        Replace numpy/scipy arrays of 'ARRAY_T[TYPE, [*DIMS],
+</span><span data-line="38">                        *FLAGS]' format with 'Annotated[ARRAY_T, TYPE,
+</span><span data-line="39">                        FixedSize|DynamicSize(*DIMS), *FLAGS]'
 </span><span data-line="40">  --numpy-array-use-type-var
-</span><span data-line="41">                        Replace &#39;numpy.ndarray[numpy.float32[m, 1]]&#39; with
-</span><span data-line="42">                        &#39;numpy.ndarray[tuple[M, typing.Literal[1]],
-</span><span data-line="43">                        numpy.dtype[numpy.float32]]&#39;
+</span><span data-line="41">                        Replace 'numpy.ndarray[numpy.float32[m, 1]]' with
+</span><span data-line="42">                        'numpy.ndarray[tuple[M, typing.Literal[1]],
+</span><span data-line="43">                        numpy.dtype[numpy.float32]]'
 </span><span data-line="44">  --numpy-array-remove-parameters
-</span><span data-line="45">                        Replace &#39;numpy.ndarray[...]&#39; with &#39;numpy.ndarray&#39;
+</span><span data-line="45">                        Replace 'numpy.ndarray[...]' with 'numpy.ndarray'
 </span><span data-line="46">  --print-invalid-expressions-as-is
-</span><span data-line="47">                        Suppress the replacement with &#39;...&#39; of invalid
+</span><span data-line="47">                        Suppress the replacement with '...' of invalid
 </span><span data-line="48">                        expressionsfound in annotations
 </span><span data-line="49">  --print-safe-value-reprs REGEX
 </span><span data-line="50">                        Override the print-safe check for values matching
 </span><span data-line="51">                        REGEX
 </span><span data-line="52">  --exit-code           On error exits with 1 and skips stub generation
-</span><span data-line="53">  --dry-run             Don&#39;t write stubs. Parses module and report errors
+</span><span data-line="53">  --dry-run             Don't write stubs. Parses module and report errors
 </span><span data-line="54">  --stub-extension EXT  The file extension of the generated stubs. Must be
-</span><span data-line="55">                        &#39;pyi&#39; (default) or &#39;py&#39;
+</span><span data-line="55">                        'pyi' (default) or 'py'
 </span></pre></div>
 </div>
 <p>This tool is primarily used by CI (between install and pyright) and by the

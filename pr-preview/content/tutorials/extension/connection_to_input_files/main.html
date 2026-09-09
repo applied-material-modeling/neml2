@@ -465,19 +465,19 @@ buffer. Write it out as <code class="docutils literal notranslate"><span class="
 </span><span data-line="16"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">Vec</span>
 </span><span data-line="17">
 </span><span data-line="18">
-</span><span data-line="19"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;ProjectileAcceleration&quot;</span><span class="p">)</span>
+</span><span data-line="19"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"ProjectileAcceleration"</span><span class="p">)</span>
 </span><span data-line="20"><span class="k">class</span><span class="w"> </span><span class="nc">ProjectileAcceleration</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-</span><span data-line="21"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Projectile acceleration under gravity and linear drag: a = g - mu * v.&quot;&quot;&quot;</span>
+</span><span data-line="21"><span class="w">    </span><span class="sd">"""Projectile acceleration under gravity and linear drag: a = g - mu * v."""</span>
 </span><span data-line="22">
 </span><span data-line="23">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
-</span><span data-line="24">        <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">&quot;Projectile velocity&quot;</span><span class="p">),</span>
-</span><span data-line="25">        <span class="n">output</span><span class="p">(</span><span class="s2">&quot;acceleration&quot;</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">&quot;Projectile acceleration&quot;</span><span class="p">),</span>
-</span><span data-line="26">        <span class="n">parameter</span><span class="p">(</span><span class="s2">&quot;dynamic_viscosity&quot;</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="s2">&quot;Drag coefficient mu&quot;</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;mu&quot;</span><span class="p">),</span>
+</span><span data-line="24">        <span class="nb">input</span><span class="p">(</span><span class="s2">"velocity"</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">"Projectile velocity"</span><span class="p">),</span>
+</span><span data-line="25">        <span class="n">output</span><span class="p">(</span><span class="s2">"acceleration"</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">"Projectile acceleration"</span><span class="p">),</span>
+</span><span data-line="26">        <span class="n">parameter</span><span class="p">(</span><span class="s2">"dynamic_viscosity"</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="s2">"Drag coefficient mu"</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="s2">"mu"</span><span class="p">),</span>
 </span><span data-line="27">        <span class="n">buffer</span><span class="p">(</span>
-</span><span data-line="28">            <span class="s2">&quot;gravity&quot;</span><span class="p">,</span>
+</span><span data-line="28">            <span class="s2">"gravity"</span><span class="p">,</span>
 </span><span data-line="29">            <span class="n">Vec</span><span class="p">,</span>
-</span><span data-line="30">            <span class="s2">&quot;Gravitational acceleration vector&quot;</span><span class="p">,</span>
-</span><span data-line="31">            <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span>
+</span><span data-line="30">            <span class="s2">"Gravitational acceleration vector"</span><span class="p">,</span>
+</span><span data-line="31">            <span class="n">attr</span><span class="o">=</span><span class="s2">"g"</span><span class="p">,</span>
 </span><span data-line="32">            <span class="n">default</span><span class="o">=</span><span class="n">Vec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.81</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 </span><span data-line="33">        <span class="p">),</span>
 </span><span data-line="34">    <span class="p">)</span>
@@ -515,8 +515,8 @@ helpers and what they accept.</p></li>
 </span><span data-line="2"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
 </span><span data-line="3">  <span class="p">[</span><span class="n">accel</span><span class="p">]</span>
 </span><span data-line="4">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ProjectileAcceleration</span>
-</span><span data-line="5">    <span class="n">velocity</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span>
-</span><span data-line="6">    <span class="n">acceleration</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span>
+</span><span data-line="5">    <span class="n">velocity</span> <span class="o">=</span> <span class="s1">'v'</span>
+</span><span data-line="6">    <span class="n">acceleration</span> <span class="o">=</span> <span class="s1">'a'</span>
 </span><span data-line="7">    <span class="n">dynamic_viscosity</span> <span class="o">=</span> <span class="mf">0.05</span>
 </span><span data-line="8">  <span class="p">[]</span>
 </span><span data-line="9"><span class="p">[]</span>
@@ -551,12 +551,12 @@ it first. In a normal script that’s just an <code class="docutils literal notr
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"."</span><span class="p">)</span>
 </span><span data-line="4"><span class="kn">import</span><span class="w"> </span><span class="nn">projectile</span>  <span class="c1"># the @register_neml2_object runs at import time</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="7">
-</span><span data-line="8"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;accel&quot;</span><span class="p">)</span>
+</span><span data-line="8"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"accel"</span><span class="p">)</span>
 </span><span data-line="9"><span class="n">model</span>
 </span></pre></div>
 </div>
@@ -576,7 +576,7 @@ it first. In a normal script that’s just an <code class="docutils literal notr
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">({&#39;v&#39;: neml2.types.vec.Vec}, {&#39;a&#39;: neml2.types.vec.Vec})
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">({'v': neml2.types.vec.Vec}, {'a': neml2.types.vec.Vec})
 </span></pre></div>
 </div>
 </div>

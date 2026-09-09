@@ -425,7 +425,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
 </span><span data-line="6"><span class="c1">#</span>
 </span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the "Software"), to deal</span>
 </span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
 </span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
 </span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
@@ -434,7 +434,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
 </span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
 </span><span data-line="16"><span class="c1">#</span>
-</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
 </span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
 </span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
 </span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
@@ -442,7 +442,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
 </span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
 </span><span data-line="24">
-</span><span data-line="25"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="25"><span class="sd">"""</span>
 </span><span data-line="26"><span class="sd">Export pipeline: ``torch.export`` → ``torch._inductor.aoti_compile_and_package``.</span>
 </span><span data-line="27">
 </span><span data-line="28"><span class="sd">This module wraps the leading-underscore ``torch._inductor`` APIs behind a</span>
@@ -452,7 +452,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="32"><span class="sd">and from Python via ``load_package``.</span>
 </span><span data-line="33">
 </span><span data-line="34"><span class="sd">Pinned to torch 2.12.0 — see RISK.md R-001 and decision D-001.</span>
-</span><span data-line="35"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="35"><span class="sd">"""</span>
 </span><span data-line="36">
 </span><span data-line="37"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="38">
@@ -469,7 +469,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="49">
 </span><span data-line="50">
 </span><span data-line="51"><span class="k">def</span><span class="w"> </span><span class="nf">_patch_inductor_int_array_cache_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="52"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Backport pytorch/pytorch#178147 onto torch 2.12&#39;s inductor cpp_wrapper.</span>
+</span><span data-line="52"><span class="w">    </span><span class="sd">"""Backport pytorch/pytorch#178147 onto torch 2.12's inductor cpp_wrapper.</span>
 </span><span data-line="53">
 </span><span data-line="54"><span class="sd">    ``CppWrapperCpu.codegen_int_array_var`` caches the emitted ``int_array_N``</span>
 </span><span data-line="55"><span class="sd">    name keyed on ``(int_array, id(writeline), known_statically, id(graph))``.</span>
@@ -480,7 +480,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="60"><span class="sd">    ``int_array_N`` name without re-emitting its declaration in the new scope,</span>
 </span><span data-line="61"><span class="sd">    producing wrapper.cpp lines like ``aoti_torch_cpu_bmm_out(..., int_array_0,</span>
 </span><span data-line="62"><span class="sd">    ...)`` with no matching ``static const int64_t int_array_0[]`` declaration.</span>
-</span><span data-line="63"><span class="sd">    The C++ build fails with ``&#39;int_array_0&#39; was not declared in this scope``.</span>
+</span><span data-line="63"><span class="sd">    The C++ build fails with ``'int_array_0' was not declared in this scope``.</span>
 </span><span data-line="64">
 </span><span data-line="65"><span class="sd">    The upstream fix keys on ``id(writeline.__self__)`` instead so the cache</span>
 </span><span data-line="66"><span class="sd">    survives bound-method recreation. This patch applies the same change in</span>
@@ -490,20 +490,20 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="70"><span class="sd">    segments produce a ``linalg_solve`` proxy-executor fallback that takes the</span>
 </span><span data-line="71"><span class="sd">    cache-corrupting path); will also fire on any future model with similar</span>
 </span><span data-line="72"><span class="sd">    structure.</span>
-</span><span data-line="73"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="73"><span class="sd">    """</span>
 </span><span data-line="74">    <span class="k">try</span><span class="p">:</span>
 </span><span data-line="75">        <span class="kn">from</span><span class="w"> </span><span class="nn">torch._inductor.codegen</span><span class="w"> </span><span class="kn">import</span> <span class="n">cpp_wrapper_cpu</span> <span class="k">as</span> <span class="n">_ccw</span>  <span class="c1"># noqa: PLC0415</span>
 </span><span data-line="76">    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
 </span><span data-line="77">        <span class="k">return</span>  <span class="c1"># nothing to patch; downstream torch reshuffle</span>
-</span><span data-line="78">    <span class="bp">cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_ccw</span><span class="p">,</span> <span class="s2">&quot;CppWrapperCpu&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-</span><span data-line="79">    <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;codegen_int_array_var&quot;</span><span class="p">):</span>
+</span><span data-line="78">    <span class="bp">cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_ccw</span><span class="p">,</span> <span class="s2">"CppWrapperCpu"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span data-line="79">    <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">"codegen_int_array_var"</span><span class="p">):</span>
 </span><span data-line="80">        <span class="k">return</span>
-</span><span data-line="81">    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;_neml2_int_array_patched&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+</span><span data-line="81">    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">"_neml2_int_array_patched"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
 </span><span data-line="82">        <span class="k">return</span>
 </span><span data-line="83">    <span class="n">_orig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">codegen_int_array_var</span>
 </span><span data-line="84">
 </span><span data-line="85">    <span class="k">def</span><span class="w"> </span><span class="nf">codegen_int_array_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">int_array</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">writeline</span><span class="p">,</span> <span class="n">known_statically</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span data-line="86">        <span class="n">writeline_key</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">writeline</span><span class="o">.</span><span class="vm">__self__</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">writeline</span><span class="p">,</span> <span class="s2">&quot;__self__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">id</span><span class="p">(</span><span class="n">writeline</span><span class="p">)</span>
+</span><span data-line="86">        <span class="n">writeline_key</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">writeline</span><span class="o">.</span><span class="vm">__self__</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">writeline</span><span class="p">,</span> <span class="s2">"__self__"</span><span class="p">)</span> <span class="k">else</span> <span class="nb">id</span><span class="p">(</span><span class="n">writeline</span><span class="p">)</span>
 </span><span data-line="87">        <span class="n">cache_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">int_array</span><span class="p">,</span> <span class="n">writeline_key</span><span class="p">,</span> <span class="n">known_statically</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span> <span class="k">if</span> <span class="n">graph</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 </span><span data-line="88">        <span class="k">if</span> <span class="n">cache_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">codegen_int_array_var_cache</span><span class="p">:</span>
 </span><span data-line="89">            <span class="bp">self</span><span class="o">.</span><span class="n">codegen_int_array_var_cache</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_codegen_int_array_var_impl</span><span class="p">(</span>
@@ -520,7 +520,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="100">
 </span><span data-line="101">
 </span><span data-line="102"><span class="k">def</span><span class="w"> </span><span class="nf">_clear_elf_execstack</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
-</span><span data-line="103"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Clear the PF_X (executable) bit from the GNU_STACK segment of an ELF SO.</span>
+</span><span data-line="103"><span class="w">    </span><span class="sd">"""Clear the PF_X (executable) bit from the GNU_STACK segment of an ELF SO.</span>
 </span><span data-line="104">
 </span><span data-line="105"><span class="sd">    PyTorch 2.12 generates assembly constants files without a</span>
 </span><span data-line="106"><span class="sd">    ``.note.GNU-stack`` annotation, causing the linker to conservatively mark</span>
@@ -528,109 +528,109 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="108"><span class="sd">    W^X policies (``noexecstack`` enforced) refuse to ``dlopen`` such objects.</span>
 </span><span data-line="109"><span class="sd">    This function strips that requirement in-place on the ELF binary so the SO</span>
 </span><span data-line="110"><span class="sd">    can be loaded without kernel restrictions.</span>
-</span><span data-line="111"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="111"><span class="sd">    """</span>
 </span><span data-line="112">    <span class="n">buf</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</span><span data-line="113">    <span class="k">if</span> <span class="n">buf</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x7f</span><span class="s2">ELF&quot;</span><span class="p">:</span>
+</span><span data-line="113">    <span class="k">if</span> <span class="n">buf</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x7f</span><span class="s2">ELF"</span><span class="p">:</span>
 </span><span data-line="114">        <span class="k">return</span> <span class="n">data</span>
-</span><span data-line="115">    <span class="n">endian</span> <span class="o">=</span> <span class="s2">&quot;&lt;&quot;</span> <span class="k">if</span> <span class="n">buf</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;&gt;&quot;</span>
+</span><span data-line="115">    <span class="n">endian</span> <span class="o">=</span> <span class="s2">"&lt;"</span> <span class="k">if</span> <span class="n">buf</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">"&gt;"</span>
 </span><span data-line="116">    <span class="n">is64</span> <span class="o">=</span> <span class="n">buf</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
 </span><span data-line="117">    <span class="k">if</span> <span class="n">is64</span><span class="p">:</span>
-</span><span data-line="118">        <span class="p">(</span><span class="n">e_phoff</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
-</span><span data-line="119">        <span class="n">e_phentsize</span><span class="p">,</span> <span class="n">e_phnum</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;HH&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">54</span><span class="p">)</span>
+</span><span data-line="118">        <span class="p">(</span><span class="n">e_phoff</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">"Q"</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+</span><span data-line="119">        <span class="n">e_phentsize</span><span class="p">,</span> <span class="n">e_phnum</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">"HH"</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">54</span><span class="p">)</span>
 </span><span data-line="120">        <span class="n">flags_offset_in_phdr</span> <span class="o">=</span> <span class="mi">4</span>
 </span><span data-line="121">    <span class="k">else</span><span class="p">:</span>
-</span><span data-line="122">        <span class="p">(</span><span class="n">e_phoff</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span>
-</span><span data-line="123">        <span class="n">e_phentsize</span><span class="p">,</span> <span class="n">e_phnum</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;HH&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+</span><span data-line="122">        <span class="p">(</span><span class="n">e_phoff</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">"I"</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span>
+</span><span data-line="123">        <span class="n">e_phentsize</span><span class="p">,</span> <span class="n">e_phnum</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">"HH"</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
 </span><span data-line="124">        <span class="n">flags_offset_in_phdr</span> <span class="o">=</span> <span class="mi">24</span>
 </span><span data-line="125">    <span class="n">PT_GNU_STACK</span><span class="p">,</span> <span class="n">PF_X</span> <span class="o">=</span> <span class="mh">0x6474E551</span><span class="p">,</span> <span class="mh">0x1</span>
 </span><span data-line="126">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">e_phnum</span><span class="p">):</span>
 </span><span data-line="127">        <span class="n">off</span> <span class="o">=</span> <span class="n">e_phoff</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">e_phentsize</span>
-</span><span data-line="128">        <span class="p">(</span><span class="n">p_type</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span>
+</span><span data-line="128">        <span class="p">(</span><span class="n">p_type</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">"I"</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span>
 </span><span data-line="129">        <span class="k">if</span> <span class="n">p_type</span> <span class="o">==</span> <span class="n">PT_GNU_STACK</span><span class="p">:</span>
 </span><span data-line="130">            <span class="n">foff</span> <span class="o">=</span> <span class="n">off</span> <span class="o">+</span> <span class="n">flags_offset_in_phdr</span>
-</span><span data-line="131">            <span class="p">(</span><span class="n">flags</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">foff</span><span class="p">)</span>
+</span><span data-line="131">            <span class="p">(</span><span class="n">flags</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">"I"</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">foff</span><span class="p">)</span>
 </span><span data-line="132">            <span class="k">if</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="n">PF_X</span><span class="p">:</span>
-</span><span data-line="133">                <span class="n">struct</span><span class="o">.</span><span class="n">pack_into</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">foff</span><span class="p">,</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">PF_X</span><span class="p">)</span>
+</span><span data-line="133">                <span class="n">struct</span><span class="o">.</span><span class="n">pack_into</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">"I"</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">foff</span><span class="p">,</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">PF_X</span><span class="p">)</span>
 </span><span data-line="134">    <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
 </span><span data-line="135">
 </span><span data-line="136">
 </span><span data-line="137"><span class="k">def</span><span class="w"> </span><span class="nf">_patch_pt2_noexecstack</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="138"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Rewrite all ELF ``.so`` files inside a ``.pt2`` zip with non-executable stack.&quot;&quot;&quot;</span>
+</span><span data-line="138"><span class="w">    </span><span class="sd">"""Rewrite all ELF ``.so`` files inside a ``.pt2`` zip with non-executable stack."""</span>
 </span><span data-line="139">    <span class="n">raw</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
-</span><span data-line="140">    <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zin</span><span class="p">:</span>
+</span><span data-line="140">    <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">zin</span><span class="p">:</span>
 </span><span data-line="141">        <span class="n">infos</span> <span class="o">=</span> <span class="n">zin</span><span class="o">.</span><span class="n">infolist</span><span class="p">()</span>
 </span><span data-line="142">        <span class="n">contents</span> <span class="o">=</span> <span class="p">{</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="p">:</span> <span class="n">zin</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">infos</span><span class="p">}</span>
 </span><span data-line="143">    <span class="n">out</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
-</span><span data-line="144">    <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zout</span><span class="p">:</span>
+</span><span data-line="144">    <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">zout</span><span class="p">:</span>
 </span><span data-line="145">        <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">infos</span><span class="p">:</span>
 </span><span data-line="146">            <span class="n">data</span> <span class="o">=</span> <span class="n">contents</span><span class="p">[</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="p">]</span>
-</span><span data-line="147">            <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.so&quot;</span><span class="p">):</span>
+</span><span data-line="147">            <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".so"</span><span class="p">):</span>
 </span><span data-line="148">                <span class="n">data</span> <span class="o">=</span> <span class="n">_clear_elf_execstack</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span><span data-line="149">            <span class="n">zout</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </span><span data-line="150">    <span class="n">path</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
 </span><span data-line="151">
 </span><span data-line="152">
 </span><span data-line="153"><span class="k">def</span><span class="w"> </span><span class="nf">_wants_cuda</span><span class="p">(</span><span class="n">example_inputs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span data-line="154"><span class="w">    </span><span class="sd">&quot;&quot;&quot;True iff any tensor leaf inside *example_inputs* is on a CUDA device.</span>
+</span><span data-line="154"><span class="w">    </span><span class="sd">"""True iff any tensor leaf inside *example_inputs* is on a CUDA device.</span>
 </span><span data-line="155">
-</span><span data-line="156"><span class="sd">    Mirrors :func:`_walk_tensors`&#39;s recursion so dataclass-wrapped typed</span>
+</span><span data-line="156"><span class="sd">    Mirrors :func:`_walk_tensors`'s recursion so dataclass-wrapped typed</span>
 </span><span data-line="157"><span class="sd">    tensors and ``(tuple|list)`` packs are inspected too.</span>
-</span><span data-line="158"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="158"><span class="sd">    """</span>
 </span><span data-line="159">    <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">is_cuda</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">example_inputs</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">_walk_tensors</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span>
 </span><span data-line="160">
 </span><span data-line="161">
 </span><span data-line="162"><span class="k">def</span><span class="w"> </span><span class="nf">_check_cuda_toolchain_available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="163"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise a recipe-bearing ``RuntimeError`` when ``nvcc`` is missing.</span>
+</span><span data-line="163"><span class="w">    </span><span class="sd">"""Raise a recipe-bearing ``RuntimeError`` when ``nvcc`` is missing.</span>
 </span><span data-line="164">
-</span><span data-line="165"><span class="sd">    Inductor&#39;s CUDA backend needs ``nvcc`` to compile the generated</span>
+</span><span data-line="165"><span class="sd">    Inductor's CUDA backend needs ``nvcc`` to compile the generated</span>
 </span><span data-line="166"><span class="sd">    kernels. The default ``torch`` wheel bundles the CUDA *runtime* but</span>
 </span><span data-line="167"><span class="sd">    not the compiler -- without ``nvcc`` you hit a cryptic</span>
 </span><span data-line="168"><span class="sd">    ``OSError: CUDA_HOME environment variable is not set`` deep inside</span>
 </span><span data-line="169"><span class="sd">    ``torch._inductor`` partway through the AOT compile. Surface the</span>
 </span><span data-line="170"><span class="sd">    install recipe early instead.</span>
-</span><span data-line="171"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="171"><span class="sd">    """</span>
 </span><span data-line="172">    <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 </span><span data-line="173">
 </span><span data-line="174">    <span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.cpp_extension</span><span class="w"> </span><span class="kn">import</span> <span class="n">CUDA_HOME</span>
 </span><span data-line="175">
-</span><span data-line="176">    <span class="n">nvcc</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;nvcc&quot;</span><span class="p">)</span>
+</span><span data-line="176">    <span class="n">nvcc</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">"nvcc"</span><span class="p">)</span>
 </span><span data-line="177">    <span class="k">if</span> <span class="ow">not</span> <span class="n">nvcc</span> <span class="ow">and</span> <span class="n">CUDA_HOME</span><span class="p">:</span>
-</span><span data-line="178">        <span class="n">candidate</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">CUDA_HOME</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;bin&quot;</span> <span class="o">/</span> <span class="s2">&quot;nvcc&quot;</span>
+</span><span data-line="178">        <span class="n">candidate</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">CUDA_HOME</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"bin"</span> <span class="o">/</span> <span class="s2">"nvcc"</span>
 </span><span data-line="179">        <span class="k">if</span> <span class="n">candidate</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
 </span><span data-line="180">            <span class="n">nvcc</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
 </span><span data-line="181">    <span class="k">if</span> <span class="n">nvcc</span><span class="p">:</span>
 </span><span data-line="182">        <span class="k">return</span>
 </span><span data-line="183">    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span data-line="184">        <span class="s2">&quot;compile_model: CUDA AOTI export requires `nvcc` but none was found &quot;</span>
-</span><span data-line="185">        <span class="s2">&quot;(neither on PATH nor under CUDA_HOME).</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="186">        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="187">        <span class="s2">&quot;The default torch wheel bundles the CUDA *runtime* (libcudart etc.) &quot;</span>
-</span><span data-line="188">        <span class="s2">&quot;but not the compiler. The lightest-weight fix:</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="189">        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="190">        <span class="s2">&quot;    pip install nvidia-cuda-nvcc</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="191">        <span class="s2">&quot;    export CUDA_HOME=</span><span class="se">\&quot;</span><span class="s2">$(python -c &#39;</span><span class="se">\\\n</span><span class="s2">&quot;</span>
-</span><span data-line="192">        <span class="s2">&quot;        import pathlib, site</span><span class="se">\\</span><span class="s2">n&quot;</span>
-</span><span data-line="193">        <span class="s2">&quot;        print(next(p for sp in site.getsitepackages()</span><span class="se">\\</span><span class="s2">n&quot;</span>
-</span><span data-line="194">        <span class="s1">&#39;                   for p in pathlib.Path(sp, &quot;nvidia&quot;).glob(&quot;cu*&quot;)</span><span class="se">\\</span><span class="s1">n&#39;</span>
-</span><span data-line="195">        <span class="s1">&#39;                   if (p / &quot;bin/nvcc&quot;).exists()))</span><span class="se">\&#39;</span><span class="s1">)&quot;</span><span class="se">\n</span><span class="s1">&#39;</span>
-</span><span data-line="196">        <span class="s1">&#39;    export PATH=&quot;$CUDA_HOME/bin:$PATH&quot;</span><span class="se">\n</span><span class="s1">&#39;</span>
-</span><span data-line="197">        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="198">        <span class="s2">&quot;Or use a system install (`apt install nvidia-cuda-toolkit`, conda&#39;s &quot;</span>
-</span><span data-line="199">        <span class="s2">&quot;`cudatoolkit-dev`, NVIDIA&#39;s network installer) and point CUDA_HOME at &quot;</span>
-</span><span data-line="200">        <span class="s2">&quot;its root. See doc/content/installation/deps.md for details. &quot;</span>
-</span><span data-line="201">        <span class="s2">&quot;CPU AOTI export needs none of this -- only inputs on a CUDA device &quot;</span>
-</span><span data-line="202">        <span class="s2">&quot;trigger this check.&quot;</span>
+</span><span data-line="184">        <span class="s2">"compile_model: CUDA AOTI export requires `nvcc` but none was found "</span>
+</span><span data-line="185">        <span class="s2">"(neither on PATH nor under CUDA_HOME).</span><span class="se">\n</span><span class="s2">"</span>
+</span><span data-line="186">        <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+</span><span data-line="187">        <span class="s2">"The default torch wheel bundles the CUDA *runtime* (libcudart etc.) "</span>
+</span><span data-line="188">        <span class="s2">"but not the compiler. The lightest-weight fix:</span><span class="se">\n</span><span class="s2">"</span>
+</span><span data-line="189">        <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+</span><span data-line="190">        <span class="s2">"    pip install nvidia-cuda-nvcc</span><span class="se">\n</span><span class="s2">"</span>
+</span><span data-line="191">        <span class="s2">"    export CUDA_HOME=</span><span class="se">\"</span><span class="s2">$(python -c '</span><span class="se">\\\n</span><span class="s2">"</span>
+</span><span data-line="192">        <span class="s2">"        import pathlib, site</span><span class="se">\\</span><span class="s2">n"</span>
+</span><span data-line="193">        <span class="s2">"        print(next(p for sp in site.getsitepackages()</span><span class="se">\\</span><span class="s2">n"</span>
+</span><span data-line="194">        <span class="s1">'                   for p in pathlib.Path(sp, "nvidia").glob("cu*")</span><span class="se">\\</span><span class="s1">n'</span>
+</span><span data-line="195">        <span class="s1">'                   if (p / "bin/nvcc").exists()))</span><span class="se">\'</span><span class="s1">)"</span><span class="se">\n</span><span class="s1">'</span>
+</span><span data-line="196">        <span class="s1">'    export PATH="$CUDA_HOME/bin:$PATH"</span><span class="se">\n</span><span class="s1">'</span>
+</span><span data-line="197">        <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+</span><span data-line="198">        <span class="s2">"Or use a system install (`apt install nvidia-cuda-toolkit`, conda's "</span>
+</span><span data-line="199">        <span class="s2">"`cudatoolkit-dev`, NVIDIA's network installer) and point CUDA_HOME at "</span>
+</span><span data-line="200">        <span class="s2">"its root. See doc/content/installation/deps.md for details. "</span>
+</span><span data-line="201">        <span class="s2">"CPU AOTI export needs none of this -- only inputs on a CUDA device "</span>
+</span><span data-line="202">        <span class="s2">"trigger this check."</span>
 </span><span data-line="203">    <span class="p">)</span>
 </span><span data-line="204">
 </span><span data-line="205">
 </span><span data-line="206"><span class="k">def</span><span class="w"> </span><span class="nf">_walk_tensors</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
-</span><span data-line="207"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield every ``torch.Tensor`` leaf inside a (possibly nested) export arg.</span>
+</span><span data-line="207"><span class="w">    </span><span class="sd">"""Yield every ``torch.Tensor`` leaf inside a (possibly nested) export arg.</span>
 </span><span data-line="208">
 </span><span data-line="209"><span class="sd">    Mirrors the recursion in :func:`compile_model._dyn_spec` so the same</span>
 </span><span data-line="210"><span class="sd">    structural assumptions apply: dataclass wrappers (typed tensors) are</span>
 </span><span data-line="211"><span class="sd">    descended via their non-static fields; tuples/lists are walked</span>
 </span><span data-line="212"><span class="sd">    element-wise; primitive non-tensor leaves are silently skipped.</span>
-</span><span data-line="213"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="213"><span class="sd">    """</span>
 </span><span data-line="214">    <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_dc</span>  <span class="c1"># noqa: PLC0415</span>
 </span><span data-line="215">
 </span><span data-line="216">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -661,14 +661,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="239">    <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 </span><span data-line="240">    <span class="n">inductor_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="241"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-</span><span data-line="242"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export ``model`` and AOT-compile to a ``.pt2`` package at ``package_path``.</span>
+</span><span data-line="242"><span class="w">    </span><span class="sd">"""Export ``model`` and AOT-compile to a ``.pt2`` package at ``package_path``.</span>
 </span><span data-line="243">
 </span><span data-line="244"><span class="sd">    Parameters</span>
 </span><span data-line="245"><span class="sd">    ----------</span>
 </span><span data-line="246"><span class="sd">    model</span>
 </span><span data-line="247"><span class="sd">        A ``torch.nn.Module`` whose forward takes/returns ``torch.Tensor``s</span>
 </span><span data-line="248"><span class="sd">        (or tuples thereof). Buffers are baked in as constants; ``nn.Parameter``s</span>
-</span><span data-line="249"><span class="sd">        are not supported by AOTInductor&#39;s forward-only pipeline (see</span>
+</span><span data-line="249"><span class="sd">        are not supported by AOTInductor's forward-only pipeline (see</span>
 </span><span data-line="250"><span class="sd">        RISK.md R-007).</span>
 </span><span data-line="251"><span class="sd">    example_inputs</span>
 </span><span data-line="252"><span class="sd">        Positional tensors with representative dtype/device and a representative</span>
@@ -691,7 +691,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="269"><span class="sd">    inductor_configs</span>
 </span><span data-line="270"><span class="sd">        Optional dict forwarded to ``aoti_compile_and_package`` as</span>
 </span><span data-line="271"><span class="sd">        ``inductor_configs=...``. Use this to enable knobs like</span>
-</span><span data-line="272"><span class="sd">        ``{&quot;triton.cudagraphs&quot;: True}`` for CUDA-graph capture on graphs whose</span>
+</span><span data-line="272"><span class="sd">        ``{"triton.cudagraphs": True}`` for CUDA-graph capture on graphs whose</span>
 </span><span data-line="273"><span class="sd">        per-call kernel-launch overhead matters (e.g. ``DenseNewtonStep``).</span>
 </span><span data-line="274"><span class="sd">        ``None`` (the default) leaves Inductor at its compile-time defaults.</span>
 </span><span data-line="275">
@@ -699,21 +699,21 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="277"><span class="sd">    -------</span>
 </span><span data-line="278"><span class="sd">    Path</span>
 </span><span data-line="279"><span class="sd">        The absolute path to the produced ``.pt2`` artifact.</span>
-</span><span data-line="280"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="280"><span class="sd">    """</span>
 </span><span data-line="281">    <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 </span><span data-line="282">
 </span><span data-line="283">    <span class="c1"># Preflight: if any example input lives on a CUDA device, the Inductor</span>
 </span><span data-line="284">    <span class="c1"># backend will JIT/AOT-compile CUDA kernels and that requires ``nvcc``</span>
-</span><span data-line="285">    <span class="c1"># on the host -- torch&#39;s default wheel bundles the CUDA *runtime* but</span>
+</span><span data-line="285">    <span class="c1"># on the host -- torch's default wheel bundles the CUDA *runtime* but</span>
 </span><span data-line="286">    <span class="c1"># not the compiler. Detect early and emit a recipe instead of letting</span>
 </span><span data-line="287">    <span class="c1"># the user hit the cryptic ``OSError: CUDA_HOME environment variable</span>
 </span><span data-line="288">    <span class="c1"># is not set`` deep inside Inductor.</span>
 </span><span data-line="289">    <span class="k">if</span> <span class="n">_wants_cuda</span><span class="p">(</span><span class="n">example_inputs</span><span class="p">):</span>
 </span><span data-line="290">        <span class="n">_check_cuda_toolchain_available</span><span class="p">()</span>
 </span><span data-line="291">
-</span><span data-line="292">    <span class="c1"># Mirror the model&#39;s forward signature in the dynamic_shapes structure.</span>
+</span><span data-line="292">    <span class="c1"># Mirror the model's forward signature in the dynamic_shapes structure.</span>
 </span><span data-line="293">    <span class="c1"># `torch.export` collapses a ``*args`` (VAR_POSITIONAL) pack into a single</span>
-</span><span data-line="294">    <span class="c1"># nested tuple &quot;argument&quot;, while each named positional parameter stays a</span>
+</span><span data-line="294">    <span class="c1"># nested tuple "argument", while each named positional parameter stays a</span>
 </span><span data-line="295">    <span class="c1"># top-level entry. Forward signatures come in three shapes:</span>
 </span><span data-line="296">    <span class="c1">#   * pure ``*inputs``                     → every example feeds the pack</span>
 </span><span data-line="297">    <span class="c1">#   * named positionals + ``*promoted_params``   → first N examples are named,</span>
@@ -734,25 +734,25 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="312">    <span class="k">if</span> <span class="n">dynamic_batch_dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="313">        <span class="n">dynamic_shapes</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span data-line="314">    <span class="k">else</span><span class="p">:</span>
-</span><span data-line="315">        <span class="n">batch</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">batch_max</span><span class="p">)</span>
+</span><span data-line="315">        <span class="n">batch</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"batch"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">batch_max</span><span class="p">)</span>
 </span><span data-line="316">        <span class="n">leaf_spec</span> <span class="o">=</span> <span class="p">{</span><span class="n">dynamic_batch_dim</span><span class="p">:</span> <span class="n">batch</span><span class="p">}</span>
 </span><span data-line="317">
 </span><span data-line="318">        <span class="c1"># Mirror the typed-tensor pytree drop list in `neml2/types/_pytree.py`:</span>
 </span><span data-line="319">        <span class="c1"># every field listed here is registered as ``drop_field_names`` on</span>
-</span><span data-line="320">        <span class="c1"># the dataclass, so torch.export&#39;s flatten does not surface it as a</span>
+</span><span data-line="320">        <span class="c1"># the dataclass, so torch.export's flatten does not surface it as a</span>
 </span><span data-line="321">        <span class="c1"># subtree. ``_dyn_spec`` must skip the same names — otherwise an</span>
 </span><span data-line="322">        <span class="c1"># empty ``sub_batch_state = ()`` field is treated as a pytree</span>
 </span><span data-line="323">        <span class="c1"># subtree and the resulting spec has more entries than torch</span>
-</span><span data-line="324">        <span class="c1"># expects (&quot;Node arity mismatch; expected 1, but got 3&quot;).</span>
+</span><span data-line="324">        <span class="c1"># expects ("Node arity mismatch; expected 1, but got 3").</span>
 </span><span data-line="325">        <span class="n">_DROPPED_PYTREE_FIELDS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
 </span><span data-line="326">            <span class="p">(</span>
-</span><span data-line="327">                <span class="s2">&quot;sub_batch_ndim&quot;</span><span class="p">,</span>
-</span><span data-line="328">                <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span>
-</span><span data-line="329">                <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span>
-</span><span data-line="330">                <span class="s2">&quot;sub_batch_labels&quot;</span><span class="p">,</span>
-</span><span data-line="331">                <span class="s2">&quot;k_ndim&quot;</span><span class="p">,</span>
-</span><span data-line="332">                <span class="s2">&quot;k_state&quot;</span><span class="p">,</span>
-</span><span data-line="333">                <span class="s2">&quot;k_pairing&quot;</span><span class="p">,</span>
+</span><span data-line="327">                <span class="s2">"sub_batch_ndim"</span><span class="p">,</span>
+</span><span data-line="328">                <span class="s2">"sub_batch_state"</span><span class="p">,</span>
+</span><span data-line="329">                <span class="s2">"sub_batch_meta"</span><span class="p">,</span>
+</span><span data-line="330">                <span class="s2">"sub_batch_labels"</span><span class="p">,</span>
+</span><span data-line="331">                <span class="s2">"k_ndim"</span><span class="p">,</span>
+</span><span data-line="332">                <span class="s2">"k_state"</span><span class="p">,</span>
+</span><span data-line="333">                <span class="s2">"k_pairing"</span><span class="p">,</span>
 </span><span data-line="334">            <span class="p">)</span>
 </span><span data-line="335">        <span class="p">)</span>
 </span><span data-line="336">
@@ -777,7 +777,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="355">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
 </span><span data-line="356">                <span class="c1"># Skip dynamic-batch marking for tensors with no axis to mark</span>
 </span><span data-line="357">                <span class="c1"># (0-d scalars). This covers promoted-parameter inputs whose</span>
-</span><span data-line="358">                <span class="c1"># shape was scalar in the source model -- they&#39;re size-pinned</span>
+</span><span data-line="358">                <span class="c1"># shape was scalar in the source model -- they're size-pinned</span>
 </span><span data-line="359">                <span class="c1"># at compile time and never get a batch axis.</span>
 </span><span data-line="360">                <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">dynamic_batch_dim</span><span class="p">:</span>
 </span><span data-line="361">                    <span class="k">return</span> <span class="p">{}</span>
@@ -785,8 +785,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="363">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
 </span><span data-line="364">                <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)(</span><span class="n">_dyn_spec</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">)</span>
 </span><span data-line="365">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="366">                <span class="sa">f</span><span class="s2">&quot;compile_model: unsupported input type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">; &quot;</span>
-</span><span data-line="367">                <span class="s2">&quot;expected torch.Tensor, registered dataclass, or tuple/list thereof&quot;</span>
+</span><span data-line="366">                <span class="sa">f</span><span class="s2">"compile_model: unsupported input type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">; "</span>
+</span><span data-line="367">                <span class="s2">"expected torch.Tensor, registered dataclass, or tuple/list thereof"</span>
 </span><span data-line="368">            <span class="p">)</span>
 </span><span data-line="369">
 </span><span data-line="370">        <span class="n">specs</span> <span class="o">=</span> <span class="p">[</span><span class="n">_dyn_spec</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">example_inputs</span><span class="p">]</span>
@@ -801,10 +801,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="379">        <span class="k">else</span><span class="p">:</span>
 </span><span data-line="380">            <span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">specs</span><span class="p">)</span>
 </span><span data-line="381">
-</span><span data-line="382">        <span class="c1"># Opt out of torch&#39;s 0/1 specialization on the dynamic batch dim.</span>
-</span><span data-line="383">        <span class="c1"># ``Dim(&quot;batch&quot;, min=1, ...)`` still adds an internal ``&gt; 1`` assertion</span>
+</span><span data-line="382">        <span class="c1"># Opt out of torch's 0/1 specialization on the dynamic batch dim.</span>
+</span><span data-line="383">        <span class="c1"># ``Dim("batch", min=1, ...)`` still adds an internal ``&gt; 1`` assertion</span>
 </span><span data-line="384">        <span class="c1"># (torch ``symbolic_shapes._add_assertion``) that bakes a static</span>
-</span><span data-line="385">        <span class="c1"># ``batch_max &gt;= 2`` precondition into the wrapper&#39;s xnumel math --</span>
+</span><span data-line="385">        <span class="c1"># ``batch_max &gt;= 2`` precondition into the wrapper's xnumel math --</span>
 </span><span data-line="386">        <span class="c1"># downstream Triton kernels then issue out-of-bounds pointer arithmetic</span>
 </span><span data-line="387">        <span class="c1"># when called at batch=1. Marking the dim as unbacked tells torch to</span>
 </span><span data-line="388">        <span class="c1"># treat its value as data-dependent and emit a true dynamic kernel.</span>
@@ -818,8 +818,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="396">        <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_inspect</span>  <span class="c1"># noqa: PLC0415</span>
 </span><span data-line="397">
 </span><span data-line="398">        <span class="n">_mark_unbacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_dynamo</span><span class="o">.</span><span class="n">decorators</span><span class="o">.</span><span class="n">mark_unbacked</span>
-</span><span data-line="399">        <span class="n">_has_min_max</span> <span class="o">=</span> <span class="s2">&quot;min&quot;</span> <span class="ow">in</span> <span class="n">_inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">_mark_unbacked</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span>
-</span><span data-line="400">        <span class="n">_bound_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">batch_max</span><span class="p">}</span> <span class="k">if</span> <span class="n">_has_min_max</span> <span class="k">else</span> <span class="p">{}</span>
+</span><span data-line="399">        <span class="n">_has_min_max</span> <span class="o">=</span> <span class="s2">"min"</span> <span class="ow">in</span> <span class="n">_inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">_mark_unbacked</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span>
+</span><span data-line="400">        <span class="n">_bound_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="n">batch_max</span><span class="p">}</span> <span class="k">if</span> <span class="n">_has_min_max</span> <span class="k">else</span> <span class="p">{}</span>
 </span><span data-line="401">        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">example_inputs</span><span class="p">:</span>
 </span><span data-line="402">            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">_walk_tensors</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
 </span><span data-line="403">                <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">dynamic_batch_dim</span><span class="p">:</span>
@@ -829,14 +829,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="407">    <span class="n">package_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span data-line="408">    <span class="c1"># The export + inductor compile trip two torch-internal deprecations the caller</span>
 </span><span data-line="409">    <span class="c1"># cannot act on (torch calling its own deprecated APIs): the LeafSpec pytree</span>
-</span><span data-line="410">    <span class="c1"># call during ``export()``&#39;s deepcopy, and ``torch.jit.script_method`` while</span>
+</span><span data-line="410">    <span class="c1"># call during ``export()``'s deepcopy, and ``torch.jit.script_method`` while</span>
 </span><span data-line="411">    <span class="c1"># inductor imports ``torch.utils.mkldnn``. Silence them only for the lowering;</span>
 </span><span data-line="412">    <span class="c1"># the specs live in ``neml2/_warnings.py`` (shared with the tests).</span>
 </span><span data-line="413">    <span class="k">with</span> <span class="n">ignore_warnings</span><span class="p">(</span><span class="n">TORCH_TREESPEC_LEAFSPEC</span><span class="p">,</span> <span class="n">TORCH_JIT_PY314</span><span class="p">):</span>
 </span><span data-line="414">        <span class="n">ep</span> <span class="o">=</span> <span class="n">export</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">,</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span>
-</span><span data-line="415">        <span class="n">aoti_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;package_path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">package_path</span><span class="p">)}</span>
+</span><span data-line="415">        <span class="n">aoti_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"package_path"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">package_path</span><span class="p">)}</span>
 </span><span data-line="416">        <span class="k">if</span> <span class="n">inductor_configs</span><span class="p">:</span>
-</span><span data-line="417">            <span class="n">aoti_kwargs</span><span class="p">[</span><span class="s2">&quot;inductor_configs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inductor_configs</span>
+</span><span data-line="417">            <span class="n">aoti_kwargs</span><span class="p">[</span><span class="s2">"inductor_configs"</span><span class="p">]</span> <span class="o">=</span> <span class="n">inductor_configs</span>
 </span><span data-line="418">        <span class="n">aoti_compile_and_package</span><span class="p">(</span><span class="n">ep</span><span class="p">,</span> <span class="o">**</span><span class="n">aoti_kwargs</span><span class="p">)</span>
 </span><span data-line="419">    <span class="c1"># Clear GNU_STACK executable bit from compiled SOs (PyTorch 2.12 assembles</span>
 </span><span data-line="420">    <span class="c1"># constants without .note.GNU-stack, causing linker to mark SO as RWE).</span>
@@ -848,11 +848,11 @@ data-aria-dark="Switch to auto color mode">
 <div class="viewcode-block" id="load_package">
 <a class="viewcode-back" href="../../../content/python_api/neml2.models.export.html#neml2.models.export.load_package">[docs]</a>
 </span><span data-line="425"><span class="k">def</span><span class="w"> </span><span class="nf">load_package</span><span class="p">(</span><span class="n">package_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="426"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a ``.pt2`` package produced by :func:`compile_model` for in-Python use.</span>
+</span><span data-line="426"><span class="w">    </span><span class="sd">"""Load a ``.pt2`` package produced by :func:`compile_model` for in-Python use.</span>
 </span><span data-line="427">
 </span><span data-line="428"><span class="sd">    This is the round-trip companion to :func:`compile_model`; the C++ side</span>
 </span><span data-line="429"><span class="sd">    loads the same artifact via ``neml2::aoti::Model`` (``include/neml2/aoti/Model.h``).</span>
-</span><span data-line="430"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="430"><span class="sd">    """</span>
 </span><span data-line="431">    <span class="kn">from</span><span class="w"> </span><span class="nn">torch._inductor</span><span class="w"> </span><span class="kn">import</span> <span class="n">aoti_load_package</span>
 </span><span data-line="432">
 </span><span data-line="433">    <span class="k">return</span> <span class="n">aoti_load_package</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">package_path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()))</span></div>
