@@ -64,7 +64,7 @@ _MIXED = {
 _B = 2
 
 
-def _model_i(max_substepping_level: int, linear_solver: str = "lu") -> str:
+def _model_i(max_substepping_level: int, linear_solver: str = "lu", max_its: int = 25) -> str:
     """A minimal NONLINEAR scalar implicit (Perzyna cubic rate + backward Euler):
     ``r(x) = x - x~1 - (t - t~1) * (max(x,0))^3``. A small step converges
     single-shot; a huge step overshoots to a non-finite residual and cannot. The
@@ -109,7 +109,7 @@ def _model_i(max_substepping_level: int, linear_solver: str = "lu") -> str:
     type = Newton
     abs_tol = 1e-10
     rel_tol = 1e-08
-    max_its = 25
+    max_its = {max_its}
     linear_solver = '{linear_solver}'
   []
   [lu]
@@ -135,9 +135,11 @@ def _model_i(max_substepping_level: int, linear_solver: str = "lu") -> str:
 """
 
 
-def _write_model(tmp: Path, max_substepping_level: int, linear_solver: str = "lu") -> Path:
+def _write_model(
+    tmp: Path, max_substepping_level: int, linear_solver: str = "lu", max_its: int = 25
+) -> Path:
     src = tmp / f"model_L{max_substepping_level}_{linear_solver}.i"
-    src.write_text(_model_i(max_substepping_level, linear_solver))
+    src.write_text(_model_i(max_substepping_level, linear_solver, max_its))
     return src
 
 
@@ -145,11 +147,11 @@ def _mixed_tensors() -> dict[str, torch.Tensor]:
     return {k: torch.tensor(v, dtype=torch.float64) for k, v in _MIXED.items()}
 
 
-def _py_eager_fail(src: Path) -> ConvergenceError:
-    """Drive the pure-Python model on the mixed batch into a (whole-batch)
+def _py_eager_fail(src: Path, ins: dict[str, torch.Tensor] | None = None) -> ConvergenceError:
+    """Drive the pure-Python model on a mixed batch into a (whole-batch)
     non-convergence and return the raised ConvergenceError."""
     m = neml2.load_model(str(src), "model").to(torch.float64)
-    ins = _mixed_tensors()
+    ins = _mixed_tensors() if ins is None else ins
     args = tuple(m.input_spec[n](ins[n]) for n in m.input_spec)
     with pytest.raises(ConvergenceError) as ei:
         m(*args)
@@ -193,6 +195,12 @@ def eager_gmres_src(tmp_path_factory) -> Path:
     """Same model with a matrix-free (GMRES) linear solver -- a masked re-solve is
     only available for direct solvers, so capture degrades to a bare error here."""
     return _write_model(tmp_path_factory.mktemp("eager_gmres"), 0, linear_solver="gmres")
+
+
+@pytest.fixture(scope="module")
+def eager_zero_iteration_src(tmp_path_factory) -> Path:
+    """A zero-iteration solve leaves the scalar initial unknown unexpanded."""
+    return _write_model(tmp_path_factory.mktemp("eager_zero_iteration"), 0, max_its=0)
 
 
 @pytest.fixture(scope="module")
@@ -253,6 +261,13 @@ def _assert_mixed_enriched(err, *, typed: bool, shape: tuple[int, ...] = (_B,)) 
 def test_py_eager_capture_enriches_error(monkeypatch, eager_src):
     monkeypatch.setenv(_ENV, "1")
     _assert_mixed_enriched(_py_eager_fail(eager_src), typed=True)
+
+
+def test_py_eager_zero_iteration_capture_enriches_error(monkeypatch, eager_zero_iteration_src):
+    monkeypatch.setenv(_ENV, "1")
+    err = _py_eager_fail(eager_zero_iteration_src, _mixed_2d_tensors())
+    assert tuple(err.converged_mask.shape) == (2, 2)
+    assert tuple(err.unknowns["x"].shape) == (2, 2)
 
 
 def test_cpp_aoti_nonsubstep_capture_enriches_error(monkeypatch, nonsubstep_artifact):
