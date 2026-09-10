@@ -52,6 +52,11 @@ class NonlinearSystem;
 /// than returning, so a returned result is by construction converged.
 struct NewtonResult
 {
+  /// Per-unknown-group iterate. Whenever ``converged_mask`` is populated (the
+  /// ``solve_masked`` path) this carries the residual's dynamic-batch leading
+  /// axes, so ``u`` and ``converged_mask`` index the same rows -- a broadcast
+  /// (unbatched) ``u0`` is materialized on entry. The throwing ``solve`` makes
+  /// no such promise: it leaves ``converged_mask`` undefined.
   std::vector<at::Tensor> u;
   bool converged = false;
   /// Per-dynamic-batch-element convergence mask (bool, dynamic-batch shape).

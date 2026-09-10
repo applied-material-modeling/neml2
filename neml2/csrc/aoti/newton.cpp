@@ -459,6 +459,22 @@ Newton::solve_masked(const NonlinearSystem & sys, const std::vector<at::Tensor> 
           ")");
   auto b0_norm = pergroup_norm_sq(b_outs, residual_layout).sqrt();
 
+  // Materialize broadcast initial guesses to the residual's dynamic batch.
+  // Without an iteration to broadcast u through a Newton update, solve_masked
+  // would otherwise return unbatched best-effort iterates beside a batched mask.
+  for (std::size_t k = 0; k < u.size(); ++k)
+  {
+    const int64_t trail = group_trail(unknown_layout[k]);
+    _assert(u[k].dim() >= trail,
+            "Newton::solve_masked: unknown group ndim=",
+            u[k].dim(),
+            " < trail ndim=",
+            trail);
+    std::vector<int64_t> target(b0_norm.sizes().begin(), b0_norm.sizes().end());
+    target.insert(target.end(), u[k].sizes().end() - trail, u[k].sizes().end());
+    u[k] = u[k].expand(target).contiguous();
+  }
+
   const bool console_debug = nlog::enabled(nlog::Channel::Newton, nlog::Level::Debug);
   const bool collect = _cfg.collect_log;
   std::vector<std::string> log;
