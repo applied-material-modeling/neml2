@@ -53,7 +53,7 @@ ruff:
     - pyproject.toml
 
 pyright:
-  version: "1.1.411"
+  version: "1.1.414"
   files:
     - pyproject.toml
 
