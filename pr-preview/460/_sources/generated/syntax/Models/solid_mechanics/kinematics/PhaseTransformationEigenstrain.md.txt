@@ -1,0 +1,25 @@
+(models-PhaseTransformationEigenstrain)=
+# PhaseTransformationEigenstrain
+
+**Source:** `models/solid_mechanics/kinematics/PhaseTransformationEigenstrain.py`
+
+Define the (cummulative, as opposed to instantaneous) linear isotropic phase
+transformation (from phase A to phase B) eigenstrain, i.e.
+$\boldsymbol{\varepsilon}_\mathrm{PT} = \Delta V f \boldsymbol{I}$, where $\Delta V$ is the
+volume fraction change when going from phase A to B, $f$
+is the phase fraction (0 to 1, A to B).
+
+## Inputs
+
+`phase_fraction` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Phase fraction
+
+`volume_fraction_change` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Change in volume fraction going from phase A to phase B
+
+
+## Outputs
+
+`eigenstrain` &mdash; `output` &middot; `SR2` &middot; **required**
+: Eigenstrain
+
