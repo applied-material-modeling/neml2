@@ -436,7 +436,7 @@ duplicate-provider validation are both enforced.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.models.resolver.DependencyResolver">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.models.resolver.</span></span><span class="sig-name descname"><span class="pre">DependencyResolver</span></span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Resolve execution order for a collection of <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> nodes.</p>
 <p>A model A is a dependency of model B if A’s <code class="docutils literal notranslate"><span class="pre">provided_items</span></code> intersects
 B’s <code class="docutils literal notranslate"><span class="pre">consumed_items</span></code>. The resolver enforces that each variable is
@@ -479,10 +479,10 @@ inbound from the chain’s perspective.</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference internal" href="neml2.aoti.html#neml2.aoti.Model" title="neml2.aoti.Model"><em>Model</em></a><em>]</em>)</p>
+<dd class="field-odd"><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference internal" href="neml2.aoti.html#neml2.aoti.Model" title="neml2.aoti.Model"><em>Model</em></a><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)">type</a>[<a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper">TensorWrapper</a>]]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)">type</a>[<a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper">TensorWrapper</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -504,12 +504,12 @@ external consumption of the winner’s output.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference internal" href="neml2.aoti.html#neml2.aoti.Model" title="neml2.aoti.Model"><em>Model</em></a><em>]</em>)</p></li>
-<li><p><strong>additional_outputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference internal" href="neml2.aoti.html#neml2.aoti.Model" title="neml2.aoti.Model"><em>Model</em></a><em>]</em>)</p></li>
+<li><p><strong>additional_outputs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)">type</a>[<a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper">TensorWrapper</a>]]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)">type</a>[<a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper">TensorWrapper</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -520,12 +520,12 @@ external consumption of the winner’s output.</p>
 <dd><p>Return models sorted so every dependency runs before its consumer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If two models provide the same variable name without
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If two models provide the same variable name without
     <a class="reference internal" href="neml2.schema.html#neml2.schema.output" title="neml2.schema.output"><code class="xref py py-func docutils literal notranslate"><span class="pre">output()</span></code></a> priority disambiguation, or if a
     cycle exists.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference internal" href="neml2.aoti.html#neml2.aoti.Model" title="neml2.aoti.Model">Model</a>]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference internal" href="neml2.aoti.html#neml2.aoti.Model" title="neml2.aoti.Model">Model</a>]</p>
 </dd>
 </dl>
 </dd></dl>
