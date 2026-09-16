@@ -92,7 +92,7 @@ dev = [
   "ruff==0.16.5",
   # typecheck
   # dependencies: pyright.version
-  "pyright==1.1.411",
+  "pyright==1.1.414",
   "PyYAML",
   "matplotlib",
   "numpy",
