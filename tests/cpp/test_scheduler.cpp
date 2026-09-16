@@ -95,9 +95,10 @@ main()
     NEML2_CHECK_THROWS(mpi_device_index(0, 1, 2));
   }
 
-  // parse_mpi_devices: CPU and CUDA are both accepted (a pure-CPU MPI run passes
-  // {"cpu"}); an empty list or an unsupported device type is rejected. MPI-free,
-  // so tested directly without an MPI runtime.
+  // parse_mpi_devices: CPU and every known accelerator family (CUDA/XPU/HIP/MPS)
+  // are accepted; unknown strings are rejected. MPI-free, so tested directly
+  // without an MPI runtime and without needing any accelerator hardware -- the
+  // scheduler only parses device strings via `at::Device`.
   {
     const auto cpu = parse_mpi_devices({"cpu"});
     NEML2_CHECK(cpu.size() == 1);
@@ -121,8 +122,28 @@ main()
     NEML2_CHECK(bare.front().is_cuda());
     NEML2_CHECK(!bare.front().has_index());
 
+    // The uniqueness / bare-vs-pinned rules generalize per-family, so XPU
+    // strings parse with the same semantics as CUDA (no XPU hardware required).
+    const auto xpus = parse_mpi_devices({"xpu:0", "xpu:1"});
+    NEML2_CHECK(xpus.size() == 2);
+    NEML2_CHECK(xpus.at(0).type() == at::kXPU);
+    NEML2_CHECK(xpus.at(1).index() == 1);
+
+    const auto xpu_bare = parse_mpi_devices({"xpu"});
+    NEML2_CHECK(xpu_bare.size() == 1);
+    NEML2_CHECK(xpu_bare.front().type() == at::kXPU);
+
+    // MPS and HIP are also accepted families.
+    NEML2_CHECK(parse_mpi_devices({"mps"}).front().type() == at::kMPS);
+    NEML2_CHECK(parse_mpi_devices({"hip:0"}).front().type() == at::kHIP);
+
+    // A CPU + mixed-accelerator pool is legal, so long as each family's own
+    // uniqueness rules hold.
+    const auto cpu_cuda_xpu = parse_mpi_devices({"cpu", "cuda:0", "xpu:0"});
+    NEML2_CHECK(cpu_cuda_xpu.size() == 3);
+
     NEML2_CHECK_THROWS(parse_mpi_devices({}));      // empty list
-    NEML2_CHECK_THROWS(parse_mpi_devices({"mps"})); // unsupported device type
+    NEML2_CHECK_THROWS(parse_mpi_devices({"foo"})); // unrecognised device string
 
     // `cpu` and unpinned `cuda` each name a single device -> at most once.
     NEML2_CHECK_THROWS(parse_mpi_devices({"cpu", "cpu"}));
@@ -132,6 +153,16 @@ main()
     NEML2_CHECK_THROWS(parse_mpi_devices({"cuda:0", "cuda:0"})); // duplicate index
     NEML2_CHECK_THROWS(parse_mpi_devices({"cuda:0", "cuda"}));   // mixed pinned/unpinned
     NEML2_CHECK_THROWS(parse_mpi_devices({"cuda", "cuda:0"}));   // mixed (other order)
+
+    // Same rules apply per family: XPU uniqueness / no-mixing.
+    NEML2_CHECK_THROWS(parse_mpi_devices({"xpu:0", "xpu:0"})); // duplicate xpu index
+    NEML2_CHECK_THROWS(parse_mpi_devices({"xpu", "xpu:0"}));   // mixed xpu pinned/unpinned
+    NEML2_CHECK_THROWS(parse_mpi_devices({"xpu", "xpu"}));     // duplicate bare xpu
+
+    // Cross-family: bare `cuda` + bare `xpu` is legal (different families each
+    // name a distinct device); bare + pinned within a family is not.
+    const auto cross = parse_mpi_devices({"cuda", "xpu"});
+    NEML2_CHECK(cross.size() == 2);
   }
 
   return 0;

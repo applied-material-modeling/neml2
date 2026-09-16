@@ -76,13 +76,13 @@ StaticHybridScheduler::StaticHybridScheduler(const Config & config)
     // One worker thread per device runs that device's AOTI graph, which itself
     // saturates torch's intra-op (OpenMP) pool with ~ncpu threads. Two workers
     // both targeting the CPU would oversubscribe the same cores for no gain, so
-    // a hybrid pool admits at most one CPU; the rest must be distinct GPUs (use
-    // explicit indices: cuda:0, cuda:1, ...).
+    // a hybrid pool admits at most one CPU; the rest must be distinct
+    // accelerator devices (use explicit indices: cuda:0, cuda:1, xpu:0, ...).
     if (parse_device(config.devices[i]).is_cpu())
       _assert(++cpu_count == 1,
               "StaticHybridScheduler: more than one CPU device requested. A hybrid pool "
               "may include at most one CPU (concurrent CPU graphs only oversubscribe the "
-              "intra-op thread pool); use one CPU plus distinct GPUs.");
+              "intra-op thread pool); use one CPU plus distinct accelerator devices.");
     _assert(batch_sizes[i] > 0,
             "StaticHybridScheduler: device '",
             config.devices[i],

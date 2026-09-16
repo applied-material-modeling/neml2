@@ -23,8 +23,10 @@
 // THE SOFTWARE.
 
 #include <set>
+#include <unordered_map>
 
 #include "neml2/csrc/dispatchers/MPISimpleScheduler.h"
+#include "neml2/csrc/aoti/DeviceLayout.h"
 #include "neml2/csrc/aoti/assertions.h"
 
 #ifdef NEML2_MPI
@@ -57,46 +59,77 @@ parse_mpi_devices(const std::vector<std::string> & devices)
 {
   _assert(!devices.empty(), "MPISimpleScheduler: `devices` must be non-empty.");
 
+  // Uniqueness bookkeeping, per accelerator family: at most one bare entry
+  // (e.g. "cuda"), unique indices among pinned entries (e.g. "cuda:0", "cuda:1"),
+  // and no mixing bare with pinned within the same family (an unpinned `cuda`
+  // could alias one of the pinned GPUs). CPU is its own single-slot family.
+  struct FamilyState
+  {
+    std::size_t bare = 0;
+    std::set<int> indices;
+  };
+
   std::vector<at::Device> parsed;
   parsed.reserve(devices.size());
   std::size_t ncpu = 0;
-  std::size_t nbare_cuda = 0;
-  std::set<int> cuda_indices;
+  std::unordered_map<at::DeviceType, FamilyState> accel_state;
   for (const auto & d : devices)
   {
-    // at::Device(std::string) parses "cpu" / "cuda" / "cuda:N" and throws a
-    // c10::Error on an unrecognised string.
+    // at::Device(std::string) parses "cpu" / "cuda" / "cuda:N" / "xpu" / "xpu:N"
+    // / ... and throws a c10::Error on an unrecognised string.
     at::Device dev(d);
-    _assert(dev.is_cpu() || dev.is_cuda(),
+    _assert(dev.is_cpu() || is_accelerator(dev.type()),
             "MPISimpleScheduler: device '",
             d,
-            "' is not a CPU or CUDA device; only those are supported.");
+            "' is not a CPU or a supported accelerator (CUDA, XPU, HIP, MPS).");
     if (dev.is_cpu())
       ++ncpu;
-    else if (!dev.has_index())
-      ++nbare_cuda;
     else
-      _assert(cuda_indices.insert(static_cast<int>(dev.index())).second,
-              "MPISimpleScheduler: CUDA device index ",
-              static_cast<int>(dev.index()),
-              " appears more than once; each CUDA device must pin a unique index.");
+    {
+      auto & st = accel_state[dev.type()];
+      if (!dev.has_index())
+        ++st.bare;
+      else
+        _assert(st.indices.insert(static_cast<int>(dev.index())).second,
+                "MPISimpleScheduler: ",
+                c10::DeviceTypeName(dev.type(), /*lower_case=*/true),
+                " device index ",
+                static_cast<int>(dev.index()),
+                " appears more than once; each device in a family must pin a unique index.");
+    }
     parsed.push_back(dev);
   }
 
   // Each entry must denote a distinct device, otherwise round-robin would map
-  // distinct ranks onto the same physical device. `cpu` and unpinned `cuda` each
-  // name a single device (at most once); pinned CUDA indices must be unique
-  // (checked above); and an unpinned `cuda` cannot be mixed with pinned ones --
-  // it could alias one of the pinned GPUs.
+  // distinct ranks onto the same physical device. `cpu` and each family's
+  // unpinned form (e.g. `cuda`, `xpu`) each name a single device (at most once);
+  // pinned indices per family must be unique (checked above); and an unpinned
+  // family entry cannot mix with pinned ones from the same family.
   _assert(ncpu <= 1,
           "MPISimpleScheduler: `cpu` may appear at most once in `devices`; it names a single "
           "device.");
-  _assert(nbare_cuda <= 1,
-          "MPISimpleScheduler: unpinned `cuda` may appear at most once in `devices`; pin distinct "
-          "GPUs with indices (e.g. cuda:0, cuda:1) to use more than one.");
-  _assert(nbare_cuda == 0 || cuda_indices.empty(),
-          "MPISimpleScheduler: cannot mix pinned and unpinned CUDA devices; pin every CUDA device "
-          "with a unique index (e.g. cuda:0, cuda:1) or pin none.");
+  for (const auto & [fam, st] : accel_state)
+  {
+    const auto fam_name = c10::DeviceTypeName(fam, /*lower_case=*/true);
+    _assert(st.bare <= 1,
+            "MPISimpleScheduler: unpinned `",
+            fam_name,
+            "` may appear at most once in `devices`; pin distinct devices with indices (e.g. ",
+            fam_name,
+            ":0, ",
+            fam_name,
+            ":1) to use more than one.");
+    _assert(st.bare == 0 || st.indices.empty(),
+            "MPISimpleScheduler: cannot mix pinned and unpinned `",
+            fam_name,
+            "` devices; pin every ",
+            fam_name,
+            " device with a unique index (e.g. ",
+            fam_name,
+            ":0, ",
+            fam_name,
+            ":1) or pin none.");
+  }
 
   return parsed;
 }

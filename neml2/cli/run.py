@@ -29,8 +29,20 @@ from __future__ import annotations
 import argparse
 import sys
 
+from .._accelerator import KNOWN_FAMILIES, parse_device_spec
 from ..factory import load_input
 from ._extensions import add_load_argument, load_user_extensions
+
+
+def _device_arg(s: str) -> str:
+    """argparse type: validate and normalize a --device spec to its canonical str.
+
+    Accepts bare family names (``cpu``, ``cuda``, ``xpu``, ``hip``, ``mps``) and
+    indexed forms (``cuda:1``, ``xpu:0``). Returns the canonical torch spelling
+    (``str(torch.device(...))``) so ``torch.set_default_device`` and downstream
+    consumers work with a string.
+    """
+    return str(parse_device_spec(s))
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -46,10 +58,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--device",
         default="cpu",
-        choices=["cpu", "cuda"],
+        type=_device_arg,
+        metavar="DEVICE",
         help=(
             "Set torch's default device before loading. Tensors built by "
-            "[Tensors] Python expressions inherit this. Default: cpu."
+            f"[Tensors] Python expressions inherit this. Any of {list(KNOWN_FAMILIES)}, "
+            "optionally with a device index (e.g. cuda:1, xpu:0). Default: cpu."
         ),
     )
     parser.add_argument(

@@ -5,7 +5,7 @@ if(NOT DEFINED _torch_ALREADY_INCLUDED)
   set(_torch_ALREADY_INCLUDED TRUE)
 
   # List of valid components
-  set(_torch_known_components core cuda python)
+  set(_torch_known_components core cuda xpu python)
 endif()
 
 # -----------------------------------------------------------------------------
@@ -154,6 +154,38 @@ if("cuda" IN_LIST torch_FIND_COMPONENTS AND NOT TARGET torch::cuda)
       set(torch_cuda_FOUND TRUE)
     else()
       set(torch_cuda_FOUND FALSE)
+    endif()
+  endif()
+endif()
+
+# -----------------------------------------------------------------------------
+# torch::xpu
+# -----------------------------------------------------------------------------
+# Optional accelerator target parallel to torch::cuda. Only tests need this to
+# gate an XPU fixture -- libneml2 itself links only torch::core and reaches XPU
+# transparently at runtime via torch's dispatch (same story as CUDA today).
+if("xpu" IN_LIST torch_FIND_COMPONENTS AND NOT TARGET torch::xpu)
+  if(NOT TARGET torch::core)
+    set(torch_NOT_FOUND_MESSAGE "torch::xpu requires torch::core, which was not found")
+  else()
+    find_library(c10_xpu_LIBRARY NAMES c10_xpu PATH_SUFFIXES lib HINTS ${_torch_search_paths})
+    find_library(torch_xpu_LIBRARY NAMES torch_xpu PATH_SUFFIXES lib HINTS ${_torch_search_paths})
+
+    if(c10_xpu_LIBRARY AND torch_xpu_LIBRARY)
+      # Make sure the link directories are consistent
+      get_filename_component(c10_xpu_LINK_DIR ${c10_xpu_LIBRARY} DIRECTORY)
+      get_filename_component(torch_xpu_LINK_DIR ${torch_xpu_LIBRARY} DIRECTORY)
+
+      if(NOT c10_xpu_LINK_DIR STREQUAL torch_xpu_LINK_DIR)
+        set(torch_NOT_FOUND_MESSAGE "Inconsistent link directories for torch xpu libraries. This might happen if multiple versions of torch are installed. Please ensure all torch libraries are from the same version. libc10_xpu is found in ${c10_xpu_LINK_DIR}, libtorch_xpu is found in ${torch_xpu_LINK_DIR}.")
+      endif()
+
+      add_library(torch::xpu INTERFACE IMPORTED)
+      target_link_directories(torch::xpu INTERFACE ${c10_xpu_LINK_DIR})
+      target_link_libraries(torch::xpu INTERFACE torch::core ${c10_xpu_LIBRARY} ${torch_xpu_LIBRARY})
+      set(torch_xpu_FOUND TRUE)
+    else()
+      set(torch_xpu_FOUND FALSE)
     endif()
   endif()
 endif()

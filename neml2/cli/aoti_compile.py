@@ -117,18 +117,22 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "stub next to it unless --no-stub."
         ),
     )
+    from neml2._accelerator import KNOWN_FAMILIES  # noqa: PLC0415
+
     parser.add_argument(
         "--device",
         nargs="+",
         default=["cpu"],
-        choices=["cpu", "cuda"],
+        choices=list(KNOWN_FAMILIES),
         metavar="DEVICE",
         help=(
-            "Target device(s) for the artifact, baked at export time. Accepts "
-            "more than one (e.g. --device cpu cuda): one complete artifact is "
-            "emitted per device into a subfolder named by the device "
-            "(<output-dir>/cpu/, <output-dir>/cuda/), ready for a multi-device "
-            "dispatcher to load."
+            "Target device family(ies) for the artifact, baked at export time. "
+            "Accepts more than one (e.g. --device cpu cuda xpu): one complete "
+            "artifact is emitted per family into a subfolder named by the family "
+            "(<output-dir>/cpu/, <output-dir>/cuda/, <output-dir>/xpu/), ready for "
+            "a multi-device dispatcher to load. XPU/HIP/MPS require a torch build "
+            "with that accelerator (see doc/content/references/accelerators.md); "
+            "the runtime toolchain preflight raises with an install recipe if not."
         ),
     )
     parser.add_argument(
@@ -761,13 +765,17 @@ def main(argv: list[str] | None = None) -> int:
         if not args.quiet:
             print(f"[{_progress['k']}/{total_files}] {name}", file=sys.stderr)
 
-    if args.jobs > 1 and "cuda" in devices:
-        print(
-            f"neml2-compile: warning: -j{args.jobs} with --device cuda spawns "
-            f"{args.jobs} worker processes, each initializing its own CUDA context "
-            "and invoking nvcc; watch GPU/host memory (consider -j1 for cuda).",
-            file=sys.stderr,
-        )
+    if args.jobs > 1:
+        _accel_targets = sorted(d for d in devices if d != "cpu")
+        if _accel_targets:
+            _fams = ", ".join(_accel_targets)
+            print(
+                f"neml2-compile: warning: -j{args.jobs} with --device {_fams} spawns "
+                f"{args.jobs} worker processes, each initializing its own accelerator "
+                "context and invoking the per-family codegen compiler; watch GPU/host "
+                "memory (consider -j1 for accelerator targets).",
+                file=sys.stderr,
+            )
 
     # Compile every device, parallelizing across the full (device x segment) grid
     # (jobs bounds the workers across ALL cells, so multiple devices compile

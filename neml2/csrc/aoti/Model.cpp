@@ -47,6 +47,8 @@
 #include <nlohmann/json.hpp>
 #include <torch/csrc/inductor/aoti_package/model_package_loader.h>
 
+#include "neml2/csrc/aoti/DeviceLayout.h"
+
 namespace neml2::aoti
 {
 namespace
@@ -197,12 +199,14 @@ parse_dtype(const std::string & s)
   return at::kDouble;
 }
 
-// The folder-name form (inverse of parse_dtype) used for the
-// per-`<device>/<dtype>/` artifact leaf.
+// The folder-name form used for the per-`<device>/<dtype>/` artifact leaf.
+// Delegates to `device_folder_name` (DeviceLayout.h) so the writer
+// (`neml2._accelerator.folder_name`) and this loader stay on the same
+// spelling for every torch-known accelerator family, not just cpu/cuda.
 std::string
 device_type_str(at::Device d)
 {
-  return d.is_cuda() ? "cuda" : "cpu";
+  return device_folder_name(d);
 }
 
 std::string
@@ -306,9 +310,10 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
           "'. Expected 'composed'.");
 
   // Concrete loader index: -1 lets the loader use the current device (cpu, or
-  // the ambient cuda device); a concrete cuda index pins this Model to a GPU.
-  const int dev_idx =
-      (_device.is_cuda() && _device.has_index()) ? static_cast<int>(_device.index()) : -1;
+  // the ambient accelerator); an explicit index pins this Model to a specific
+  // device. `has_index()` is the right predicate for any indexed accelerator
+  // family (cuda, xpu, hip, ...), not just CUDA.
+  const int dev_idx = _device.has_index() ? static_cast<int>(_device.index()) : -1;
 
   // .pt2 basenames are resolved against the per-(device, dtype) leaf. The leaf
   // must exist for the requested run; fail with the available leaves listed rather
