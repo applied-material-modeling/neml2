@@ -1,4 +1,4 @@
-(accelerators)=
+(accelerators-page)=
 # Accelerators (device families)
 
 NEML2 targets any device family torch itself supports. Today that means CPU,

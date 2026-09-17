@@ -642,6 +642,30 @@ def _parse_example_batch_shape_cli(entries: list[str]) -> dict[str, str] | str |
     return uniform[0] if uniform else per_var
 
 
+def _accelerator_jobs_warning(jobs: int, devices: list[str]) -> str | None:
+    """Return a warning message when parallel compile jobs target accelerator
+    families, else ``None``.
+
+    Extracted from ``main`` to keep the branch unit-testable without spinning up
+    a real compile: each accelerator worker process starts its own device
+    context and shells out to the per-family codegen compiler (nvcc for CUDA,
+    the analogous binary for XPU/HIP), which can blow the host or GPU memory
+    budget if the pool is large.
+    """
+    if jobs <= 1:
+        return None
+    accel_targets = sorted(d for d in devices if d != "cpu")
+    if not accel_targets:
+        return None
+    fams = ", ".join(accel_targets)
+    return (
+        f"neml2-compile: warning: -j{jobs} with --device {fams} spawns "
+        f"{jobs} worker processes, each initializing its own accelerator "
+        "context and invoking the per-family codegen compiler; watch GPU/host "
+        "memory (consider -j1 for accelerator targets)."
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
     # Trailing tokens are forwarded to the HIT parser as overrides
@@ -765,17 +789,9 @@ def main(argv: list[str] | None = None) -> int:
         if not args.quiet:
             print(f"[{_progress['k']}/{total_files}] {name}", file=sys.stderr)
 
-    if args.jobs > 1:
-        _accel_targets = sorted(d for d in devices if d != "cpu")
-        if _accel_targets:
-            _fams = ", ".join(_accel_targets)
-            print(
-                f"neml2-compile: warning: -j{args.jobs} with --device {_fams} spawns "
-                f"{args.jobs} worker processes, each initializing its own accelerator "
-                "context and invoking the per-family codegen compiler; watch GPU/host "
-                "memory (consider -j1 for accelerator targets).",
-                file=sys.stderr,
-            )
+    _warn_msg = _accelerator_jobs_warning(args.jobs, devices)
+    if _warn_msg is not None:
+        print(_warn_msg, file=sys.stderr)
 
     # Compile every device, parallelizing across the full (device x segment) grid
     # (jobs bounds the workers across ALL cells, so multiple devices compile

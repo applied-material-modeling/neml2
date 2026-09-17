@@ -128,3 +128,39 @@ class TestAotiShimDeviceValidation:
 
         with pytest.raises(ValueError, match="unknown device family"):
             AOTIModel(tmp_path, device="foo")
+
+
+class TestAcceleratorJobsWarning:
+    """The `_j > 1 with an accelerator target` warning printed by neml2-compile.
+
+    Extracted from `main()` as `_accelerator_jobs_warning` so the branch is
+    unit-testable without spinning up a real compile pool.
+    """
+
+    def test_returns_none_for_serial(self):
+        from neml2.cli.aoti_compile import _accelerator_jobs_warning
+
+        assert _accelerator_jobs_warning(1, ["cpu", "cuda"]) is None
+
+    def test_returns_none_for_cpu_only_parallel(self):
+        from neml2.cli.aoti_compile import _accelerator_jobs_warning
+
+        # Multiple workers on CPU alone is fine -- the warning is only about
+        # accelerator contexts + codegen compilers.
+        assert _accelerator_jobs_warning(4, ["cpu"]) is None
+
+    def test_warns_for_parallel_cuda(self):
+        from neml2.cli.aoti_compile import _accelerator_jobs_warning
+
+        msg = _accelerator_jobs_warning(4, ["cpu", "cuda"])
+        assert msg is not None
+        assert "-j4" in msg
+        assert "cuda" in msg
+
+    def test_warns_for_parallel_multi_accelerator(self):
+        from neml2.cli.aoti_compile import _accelerator_jobs_warning
+
+        msg = _accelerator_jobs_warning(2, ["cpu", "cuda", "xpu"])
+        assert msg is not None
+        # Families listed sorted, cpu omitted.
+        assert "cuda, xpu" in msg

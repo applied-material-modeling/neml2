@@ -77,6 +77,13 @@ class TestParseDeviceSpec:
         with pytest.raises(ValueError, match="unknown device family 'meta'"):
             parse_device_spec("meta")
 
+    def test_rejects_wrong_type_input(self):
+        # ``torch.device(None)`` raises TypeError (not RuntimeError). Cover the
+        # second branch of the ``except (RuntimeError, TypeError)`` clause so
+        # a non-string spec still surfaces the neml2 known-families message.
+        with pytest.raises(ValueError, match="unknown device family"):
+            parse_device_spec(None)  # type: ignore[arg-type]
+
 
 class TestFolderName:
     @pytest.mark.parametrize("fam", KNOWN_FAMILIES)
@@ -173,3 +180,31 @@ class TestCheckToolchain:
         with patch("neml2._accelerator.torch", SimpleNamespace(backends=fake_backends)):
             with pytest.raises(RuntimeError, match="MPS AOTI export requires"):
                 check_toolchain("mps")
+
+
+class TestExportPreflightBranch:
+    """Cover the `if _target_family is not None:` accelerator-preflight branch
+    in `neml2.models.export.compile_model` -- CPU-only test paths never
+    exercise it because every example input lives on CPU.
+
+    A ``meta`` tensor is non-CPU as far as ``target_accelerator_family`` is
+    concerned, and ``check_toolchain("meta")`` raises ``ValueError`` (meta is
+    not in KNOWN_FAMILIES). That's the shortest path to prove the preflight
+    ran; we never enter the actual Inductor compile.
+    """
+
+    def test_non_cpu_example_input_triggers_toolchain_check(self, tmp_path):
+        import torch.nn as nn
+
+        from neml2.models.export import compile_model
+
+        class Identity(nn.Module):
+            def forward(self, x):
+                return x
+
+        with pytest.raises(ValueError, match="no toolchain preflight registered"):
+            compile_model(
+                Identity(),
+                (torch.zeros(2, device="meta"),),
+                tmp_path / "unused.pt2",
+            )
