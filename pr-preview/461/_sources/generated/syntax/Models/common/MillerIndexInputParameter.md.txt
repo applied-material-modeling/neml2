@@ -1,0 +1,18 @@
+(models-MillerIndexInputParameter)=
+# MillerIndexInputParameter
+
+**Source:** `models/common/InputParameter.py`
+
+MillerIndex-valued input parameter. Mirrors ``InputParameter<MillerIndex>``.
+
+## Inputs
+
+`variable` &mdash; `input` &middot; `MillerIndex` &middot; **required**
+: The input variable that defines this parameter
+
+
+## Outputs
+
+`parameter` &mdash; `output` &middot; `MillerIndex` &middot; **required**
+: Output parameter
+
