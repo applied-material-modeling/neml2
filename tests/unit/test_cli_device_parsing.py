@@ -33,6 +33,8 @@ host regardless of installed torch backends.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from neml2._accelerator import KNOWN_FAMILIES
@@ -164,3 +166,92 @@ class TestAcceleratorJobsWarning:
         assert msg is not None
         # Families listed sorted, cpu omitted.
         assert "cuda, xpu" in msg
+
+
+class TestDeviceDtypeCompatCli:
+    """`--device` x `--dtype` compatibility gate: `mps + float64` is the only
+    hard-invalid combination today. `neml2-compile` warns on each dropped
+    combination and errors when nothing valid remains; `neml2-run` (single
+    device) errors straight out.
+    """
+
+    _INPUT = Path(__file__).resolve().parents[2] / "tests" / "aoti" / "forward_single" / "model.i"
+
+    def test_compile_errors_when_all_invalid(self, tmp_path, capsys):
+        from neml2.cli.aoti_compile import main
+
+        # argparse's parser.error() calls sys.exit(2) -> SystemExit; catch it
+        # rather than expect a normal return, matching the CLI-error convention.
+        with pytest.raises(SystemExit) as excinfo:
+            main(
+                [
+                    str(self._INPUT),
+                    "--model",
+                    "model",
+                    "--device",
+                    "mps",
+                    "--dtype",
+                    "float64",
+                    "--output-dir",
+                    str(tmp_path),
+                ]
+            )
+        assert excinfo.value.code == 2
+        err = capsys.readouterr().err
+        assert "no supported (device, dtype) combinations" in err
+
+    def test_compile_warns_and_drops_partial_invalid(self, tmp_path, capsys, monkeypatch):
+        # Stub the actual compile so we only exercise the warn+drop path.
+        # `export_model_multidevice` is called with the filtered devices as
+        # its 4th positional arg and dtype as a keyword; the stub captures
+        # both and returns a minimum metadata shape main() consumes.
+        from neml2.cli import aoti_compile as compile_mod
+
+        recorded: dict = {}
+
+        def _stub_export(*args, **kwargs):
+            recorded["devices"] = args[3]
+            recorded["dtype"] = kwargs.get("dtype")
+            return {
+                "schema_version": 14,
+                "type": "composed",
+                "inputs": [],
+                "outputs": [],
+                "derivatives": [],
+                "parameter_derivatives": [],
+            }
+
+        monkeypatch.setattr(compile_mod, "export_model_multidevice", _stub_export)
+
+        rc = compile_mod.main(
+            [
+                str(self._INPUT),
+                "--model",
+                "model",
+                "--device",
+                "cpu",
+                "mps",
+                "--dtype",
+                "float64",
+                "--output-dir",
+                str(tmp_path),
+                "--no-stub",
+            ]
+        )
+        err = capsys.readouterr().err
+        assert rc == 0
+        assert "ignoring mps + float64" in err.lower()
+        # The valid combination survived; the invalid one was dropped.
+        assert recorded["devices"] == ["cpu"]
+        assert recorded["dtype"] == "float64"
+
+    def test_run_errors_on_invalid_combination(self, capsys):
+        from neml2.cli.run import main
+
+        with pytest.raises(SystemExit) as excinfo:
+            main([str(self._INPUT), "driver", "--device", "mps", "--dtype", "float64"])
+        assert excinfo.value.code == 2
+        err = capsys.readouterr().err
+        assert "unsupported (device, dtype) combination" in err
+        assert "mps" in err
+        assert "float64" in err

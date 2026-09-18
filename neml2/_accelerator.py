@@ -45,6 +45,16 @@ import torch
 # ``neml2/csrc/aoti/DeviceLayout.h::is_accelerator``.
 KNOWN_FAMILIES: tuple[str, ...] = ("cpu", "cuda", "xpu", "hip", "mps")
 
+# torch device families that need no per-family compile-time toolchain preflight
+# and that the C++ runtime treats as "no-op" from the accelerator dispatch's
+# point of view. ``cpu`` runs on whatever host compiler torch was built against;
+# ``meta`` is torch's shape-only device (no data, no kernels) used by test /
+# tracing scaffolding, so it never needs a real toolchain either. Every other
+# family reachable through ``target_accelerator_family`` must have a
+# ``TOOLCHAIN_CHECKS`` entry; an unrecognised family fails loudly instead of
+# sneaking through to a compile the C++ runtime can't route.
+_NON_ACCELERATOR_FAMILIES: tuple[str, ...] = ("cpu", "meta")
+
 
 def parse_device_spec(s: str) -> torch.device:
     """Parse a device spec (``"cpu"``, ``"cuda"``, ``"xpu:0"``, ...) into
@@ -82,16 +92,35 @@ def folder_name(dev: torch.device | str) -> str:
 
 
 def target_accelerator_family(tensors: Iterable[torch.Tensor]) -> str | None:
-    """Return the first non-``cpu`` ``device.type`` seen across *tensors*,
-    or ``None`` if every tensor is on CPU.
+    """Return the first *accelerator* family seen across *tensors*, or ``None``
+    if every tensor's device family is one that needs no toolchain preflight
+    (``cpu``, ``meta``).
 
-    The AOTI compile preflight uses this to decide which per-family
-    toolchain check to run (:func:`check_toolchain`).
+    Rules, matching the C++ dispatcher's device routing:
+
+    - A family in :data:`_NON_ACCELERATOR_FAMILIES` (``cpu``, ``meta``) is
+      transparently skipped -- it needs no per-family codegen compiler, and the
+      C++ runtime doesn't route it as an accelerator.
+    - A family in :data:`KNOWN_FAMILIES` and not in the non-accelerator set
+      (i.e. ``cuda`` / ``xpu`` / ``hip`` / ``mps``) is returned so the AOTI
+      compile preflight can run :func:`check_toolchain` for it.
+    - Anything else is a bug: the C++ folder-name mapping and the dispatcher
+      can't route it, so silently letting a compile continue would produce an
+      artifact NEML2's runtime cannot load. Raise :class:`ValueError` at the
+      front instead.
     """
     for t in tensors:
         fam = t.device.type
-        if fam != "cpu":
+        if fam in _NON_ACCELERATOR_FAMILIES:
+            continue
+        if fam in KNOWN_FAMILIES:
             return fam
+        raise ValueError(
+            f"neml2: example input on device family '{fam}' is not one NEML2 "
+            f"knows how to route. Known accelerator families: "
+            f"{', '.join(f for f in KNOWN_FAMILIES if f not in _NON_ACCELERATOR_FAMILIES)} "
+            f"(plus {', '.join(_NON_ACCELERATOR_FAMILIES)} which need no toolchain)."
+        )
     return None
 
 
@@ -234,3 +263,45 @@ def check_toolchain(family: str) -> None:
             f"Known families: {', '.join(KNOWN_FAMILIES)}."
         )
     TOOLCHAIN_CHECKS[family]()
+
+
+# ---- Device x dtype compatibility ------------------------------------------
+#
+# Not every device family supports every floating-point dtype torch itself
+# knows about. Today only one hard restriction matters for NEML2:
+#
+#   MPS (Apple Silicon) has no float64 kernel path. Even the ATen fallback
+#   throws at runtime; there is no software emulation.
+#
+# The table is a small allow-list keyed by family. Add rows as more restricted
+# accelerators enter ``KNOWN_FAMILIES``. Families absent from the table are
+# assumed to accept every dtype ``neml2-compile`` supports (float64 + float32).
+_UNSUPPORTED_DTYPES: dict[str, frozenset[str]] = {
+    "mps": frozenset({"float64"}),
+}
+
+
+def is_compatible(family: str, dtype: str) -> bool:
+    """Return whether (device *family*, *dtype*) is a supported combination.
+
+    Only rejects known-bad pairs (from :data:`_UNSUPPORTED_DTYPES`); an unknown
+    family is treated as permissive so this predicate never fabricates a new
+    restriction. The CLI callers filter their user-supplied combinations
+    through this and warn / error accordingly.
+    """
+    return dtype not in _UNSUPPORTED_DTYPES.get(family, frozenset())
+
+
+def partition_compatible_devices(devices: Iterable[str], dtype: str) -> tuple[list[str], list[str]]:
+    """Split *devices* into (compatible, incompatible) with the given *dtype*.
+
+    Preserves input order in both output lists. The CLI uses this to warn on
+    every dropped ``(device, dtype)`` combination and to error out when nothing
+    valid remains.
+    """
+    ok: list[str] = []
+    bad: list[str] = []
+    for d in devices:
+        fam = parse_device_spec(d).type
+        (ok if is_compatible(fam, dtype) else bad).append(d)
+    return ok, bad

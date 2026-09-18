@@ -756,6 +756,27 @@ def main(argv: list[str] | None = None) -> int:
     # `--device cpu cpu` doesn't compile twice.
     devices = list(dict.fromkeys(args.device))
 
+    # Drop (device, --dtype) combinations that torch itself does not support
+    # (e.g. mps + float64: Apple's MPS backend has no fp64 path). Warn on each
+    # dropped combination and error if nothing valid remains -- letting a
+    # `--device mps --dtype float64` run silently would either crash inside
+    # Inductor or produce an artifact that faults at load time.
+    from neml2._accelerator import partition_compatible_devices  # noqa: PLC0415
+
+    devices, dropped = partition_compatible_devices(devices, args.dtype)
+    for d in dropped:
+        print(
+            f"neml2-compile: warning: ignoring {d} + {args.dtype} "
+            f"(this accelerator does not support this dtype); skipping.",
+            file=sys.stderr,
+        )
+    if not devices:
+        parser.error(
+            f"no supported (device, dtype) combinations from --device "
+            f"{args.device} --dtype {args.dtype}. Every requested combination "
+            f"was dropped as unsupported."
+        )
+
     # Enumerate every file the compile will generate so progress can report
     # [k/N]. The artifact set is device-independent, so a single plan (on cpu, to
     # avoid initializing CUDA in the parent) sizes the whole multi-device run;

@@ -86,7 +86,21 @@ def main(argv: list[str] | None = None) -> int:
     # ``parse_known_args`` separates the two declared positionals from any
     # trailing HIT-override tokens. Using REMAINDER would greedily capture
     # subsequent flags too.
-    args, additional_args = _build_parser().parse_known_args(argv)
+    parser = _build_parser()
+    args, additional_args = parser.parse_known_args(argv)
+
+    # Refuse a (device, dtype) combination torch itself does not support
+    # (e.g. mps + float64: Apple's MPS backend has no fp64 path). Fail fast
+    # here rather than crashing inside torch further down. Only the family
+    # matters -- an indexed spec like "mps:0" narrows to the same family.
+    from neml2._accelerator import is_compatible, parse_device_spec  # noqa: PLC0415
+
+    _fam = parse_device_spec(args.device).type
+    if not is_compatible(_fam, args.dtype):
+        parser.error(
+            f"unsupported (device, dtype) combination: {args.device} + "
+            f"{args.dtype}. This accelerator does not support this dtype."
+        )
 
     # Set process-wide torch defaults BEFORE load_input so [Tensors] Python
     # expressions (``torch.tensor([...])``, ``torch.linspace(...)``, ...) build
