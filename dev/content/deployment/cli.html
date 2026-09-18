@@ -165,6 +165,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
@@ -529,7 +530,7 @@ isotropic elastic model named <code class="docutils literal notranslate"><span c
 <code class="docutils literal notranslate"><span class="pre">run()</span></code> method. Use it whenever you want to step a model through a load
 history from the shell — from a shell script, a CI job, a parameter
 sweep — without writing any Python.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">usage: neml2-run [-h] [--device {cpu,cuda}] [--dtype {float64,float32}]
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">usage: neml2-run [-h] [--device DEVICE] [--dtype {float64,float32}]
 </span><span data-line="2">                 [--load PATH]
 </span><span data-line="3">                 input driver
 </span><span data-line="4">
@@ -542,22 +543,24 @@ sweep — without writing any Python.</p>
 </span><span data-line="11">
 </span><span data-line="12">options:
 </span><span data-line="13">  -h, --help            show this help message and exit
-</span><span data-line="14">  --device {cpu,cuda}   Set torch's default device before loading. Tensors
+</span><span data-line="14">  --device DEVICE       Set torch's default device before loading. Tensors
 </span><span data-line="15">                        built by [Tensors] Python expressions inherit this.
-</span><span data-line="16">                        Default: cpu.
-</span><span data-line="17">  --dtype {float64,float32}
-</span><span data-line="18">                        Set torch's default dtype before loading. NEML2 models
-</span><span data-line="19">                        are uniformly float64 by convention; AOTI artifacts
-</span><span data-line="20">                        compile-pin their dtype and the runtime rejects silent
-</span><span data-line="21">                        coercion, so float64 is the safe default. Override
-</span><span data-line="22">                        only if you know the artifact was compiled with
-</span><span data-line="23">                        float32.
-</span><span data-line="24">  --load PATH           Import a user extension before processing. PATH is
-</span><span data-line="25">                        either a filesystem path to a .py file / package
-</span><span data-line="26">                        directory, or a dotted module name already importable
-</span><span data-line="27">                        from sys.path. Repeatable; modules are imported in the
-</span><span data-line="28">                        order given so later modules may depend on names
-</span><span data-line="29">                        registered by earlier ones.
+</span><span data-line="16">                        Any of ['cpu', 'cuda', 'xpu', 'hip', 'mps'],
+</span><span data-line="17">                        optionally with a device index (e.g. cuda:1, xpu:0).
+</span><span data-line="18">                        Default: cpu.
+</span><span data-line="19">  --dtype {float64,float32}
+</span><span data-line="20">                        Set torch's default dtype before loading. NEML2 models
+</span><span data-line="21">                        are uniformly float64 by convention; AOTI artifacts
+</span><span data-line="22">                        compile-pin their dtype and the runtime rejects silent
+</span><span data-line="23">                        coercion, so float64 is the safe default. Override
+</span><span data-line="24">                        only if you know the artifact was compiled with
+</span><span data-line="25">                        float32.
+</span><span data-line="26">  --load PATH           Import a user extension before processing. PATH is
+</span><span data-line="27">                        either a filesystem path to a .py file / package
+</span><span data-line="28">                        directory, or a dotted module name already importable
+</span><span data-line="29">                        from sys.path. Repeatable; modules are imported in the
+</span><span data-line="30">                        order given so later modules may depend on names
+</span><span data-line="31">                        registered by earlier ones.
 </span></pre></div>
 </div>
 <p>Running our shared example: <code class="docutils literal notranslate"><span class="pre">neml2-run</span></code> itself emits no output on
@@ -753,80 +756,85 @@ into a frozen graph for performance.</p>
 </span><span data-line="36">                        binaries), with a standalone &lt;DIR&gt;/&lt;NAME&gt;_aoti.i stub
 </span><span data-line="37">                        next to it unless --no-stub.
 </span><span data-line="38">  --device DEVICE [DEVICE ...]
-</span><span data-line="39">                        Target device(s) for the artifact, baked at export
-</span><span data-line="40">                        time. Accepts more than one (e.g. --device cpu cuda):
-</span><span data-line="41">                        one complete artifact is emitted per device into a
-</span><span data-line="42">                        subfolder named by the device (&lt;output-dir&gt;/cpu/,
-</span><span data-line="43">                        &lt;output-dir&gt;/cuda/), ready for a multi-device
-</span><span data-line="44">                        dispatcher to load.
-</span><span data-line="45">  --dtype {float64,float32}
-</span><span data-line="46">                        Floating-point dtype for the artifact (baked at export
-</span><span data-line="47">                        time).
-</span><span data-line="48">  -j N, --jobs N        Compile independent segments in parallel using up to N
-</span><span data-line="49">                        worker processes (spawn). Default 1 (serial). Only a
-</span><span data-line="50">                        multi-segment model (a ComposedModel containing an
-</span><span data-line="51">                        ImplicitUpdate) benefits; single-segment models ignore
-</span><span data-line="52">                        N, and N is capped at the number of segments (one task
-</span><span data-line="53">                        per segment). With --device cuda each worker spawns
-</span><span data-line="54">                        its own CUDA context and invokes nvcc -- watch memory.
-</span><span data-line="55">  --no-stub             Skip the standalone &lt;model&gt;_aoti.i stub (compile the
-</span><span data-line="56">                        artifact folder only). The stub is a neml2-run / py-
-</span><span data-line="57">                        aoti convenience; the artifact folder (metadata.json +
-</span><span data-line="58">                        &lt;device&gt;/&lt;dtype&gt;/ binaries) is self-describing, so
-</span><span data-line="59">                        cpp-aoti / cpp-dispatch never need it. Default: the
-</span><span data-line="60">                        stub is emitted.
-</span><span data-line="61">  -p NAME, --parameter NAME
-</span><span data-line="62">                        Promote a parameter or buffer (fully-qualified dotted
-</span><span data-line="63">                        name) to runtime-flexible status -- it becomes a graph
-</span><span data-line="64">                        input rather than a baked constant. Repeatable. With
-</span><span data-line="65">                        no -p flags the model is fully baked.
-</span><span data-line="66">  -d OUT:IN, --derivative OUT:IN
-</span><span data-line="67">                        Compile the derivative (Jacobian / JVP) graph for the
-</span><span data-line="68">                        OUT:IN output-input pair. Repeatable. Omit a side to
-</span><span data-line="69">                        select all on that side: 'stress:strain' is one pair,
-</span><span data-line="70">                        'stress:' all inputs of stress, ':strain' all outputs
-</span><span data-line="71">                        wrt strain, ':' all pairs. With no -d flags NO
-</span><span data-line="72">                        derivative graphs are compiled (smallest artifact) and
-</span><span data-line="73">                        the runtime jvp()/jacobian() raise until recompiled
-</span><span data-line="74">                        with -d.
-</span><span data-line="75">  --example-batch-shape SPEC
-</span><span data-line="76">                        Example shape used when tracing. Two forms: --example-
-</span><span data-line="77">                        batch-shape '(2,)' (uniform across all inputs)
-</span><span data-line="78">                        --example-batch-shape strain='(2;100)' --example-
-</span><span data-line="79">                        batch-shape temperature='(2,)' (per-variable;
-</span><span data-line="80">                        repeatable) The semicolon delimits dynamic-batch from
-</span><span data-line="81">                        sub-batch axes -- '(2;100)' means dyn=(2,),
-</span><span data-line="82">                        sub=(100,). Overrides [Settings]/example_batch_shape.
-</span><span data-line="83">  --dynamic-batch       Compile a dynamic-batch artifact: the leading batch
-</span><span data-line="84">                        dim of the example shape becomes a runtime-variable
-</span><span data-line="85">                        torch.export Dim. Default unless overridden by
-</span><span data-line="86">                        [Settings]/dynamic_batch in the input.
-</span><span data-line="87">  --no-dynamic-batch    Pin the batch dim at the example shape. Required when
-</span><span data-line="88">                        a baked parameter has rank&gt;=1 and would specialize the
-</span><span data-line="89">                        dynamic dim.
-</span><span data-line="90">  --rename-input ORIG:NEW
-</span><span data-line="91">                        Rename an input variable at the compiled artifact's
-</span><span data-line="92">                        boundary: a downstream consumer sees NEW while the
-</span><span data-line="93">                        model's internal wiring keeps ORIG. Repeatable. Only
-</span><span data-line="94">                        valid with --model (not --driver).
-</span><span data-line="95">  --rename-output ORIG:NEW
-</span><span data-line="96">                        Rename an output variable at the boundary (the
-</span><span data-line="97">                        consumer sees NEW; the internals keep ORIG).
-</span><span data-line="98">                        Repeatable. Only valid with --model.
-</span><span data-line="99">  --rename-parameter ORIG:NEW
-</span><span data-line="100">                        Rename a promoted parameter at the boundary (the
-</span><span data-line="101">                        consumer sees NEW; the internals keep the qualified
-</span><span data-line="102">                        ORIG). ORIG must be a promoted parameter (see -p).
+</span><span data-line="39">                        Target device family(ies) for the artifact, baked at
+</span><span data-line="40">                        export time. Accepts more than one (e.g. --device cpu
+</span><span data-line="41">                        cuda xpu): one complete artifact is emitted per family
+</span><span data-line="42">                        into a subfolder named by the family (&lt;output-
+</span><span data-line="43">                        dir&gt;/cpu/, &lt;output-dir&gt;/cuda/, &lt;output-dir&gt;/xpu/),
+</span><span data-line="44">                        ready for a multi-device dispatcher to load.
+</span><span data-line="45">                        XPU/HIP/MPS require a torch build with that
+</span><span data-line="46">                        accelerator (see
+</span><span data-line="47">                        doc/content/references/accelerators.md); the runtime
+</span><span data-line="48">                        toolchain preflight raises with an install recipe if
+</span><span data-line="49">                        not.
+</span><span data-line="50">  --dtype {float64,float32}
+</span><span data-line="51">                        Floating-point dtype for the artifact (baked at export
+</span><span data-line="52">                        time).
+</span><span data-line="53">  -j N, --jobs N        Compile independent segments in parallel using up to N
+</span><span data-line="54">                        worker processes (spawn). Default 1 (serial). Only a
+</span><span data-line="55">                        multi-segment model (a ComposedModel containing an
+</span><span data-line="56">                        ImplicitUpdate) benefits; single-segment models ignore
+</span><span data-line="57">                        N, and N is capped at the number of segments (one task
+</span><span data-line="58">                        per segment). With --device cuda each worker spawns
+</span><span data-line="59">                        its own CUDA context and invokes nvcc -- watch memory.
+</span><span data-line="60">  --no-stub             Skip the standalone &lt;model&gt;_aoti.i stub (compile the
+</span><span data-line="61">                        artifact folder only). The stub is a neml2-run / py-
+</span><span data-line="62">                        aoti convenience; the artifact folder (metadata.json +
+</span><span data-line="63">                        &lt;device&gt;/&lt;dtype&gt;/ binaries) is self-describing, so
+</span><span data-line="64">                        cpp-aoti / cpp-dispatch never need it. Default: the
+</span><span data-line="65">                        stub is emitted.
+</span><span data-line="66">  -p NAME, --parameter NAME
+</span><span data-line="67">                        Promote a parameter or buffer (fully-qualified dotted
+</span><span data-line="68">                        name) to runtime-flexible status -- it becomes a graph
+</span><span data-line="69">                        input rather than a baked constant. Repeatable. With
+</span><span data-line="70">                        no -p flags the model is fully baked.
+</span><span data-line="71">  -d OUT:IN, --derivative OUT:IN
+</span><span data-line="72">                        Compile the derivative (Jacobian / JVP) graph for the
+</span><span data-line="73">                        OUT:IN output-input pair. Repeatable. Omit a side to
+</span><span data-line="74">                        select all on that side: 'stress:strain' is one pair,
+</span><span data-line="75">                        'stress:' all inputs of stress, ':strain' all outputs
+</span><span data-line="76">                        wrt strain, ':' all pairs. With no -d flags NO
+</span><span data-line="77">                        derivative graphs are compiled (smallest artifact) and
+</span><span data-line="78">                        the runtime jvp()/jacobian() raise until recompiled
+</span><span data-line="79">                        with -d.
+</span><span data-line="80">  --example-batch-shape SPEC
+</span><span data-line="81">                        Example shape used when tracing. Two forms: --example-
+</span><span data-line="82">                        batch-shape '(2,)' (uniform across all inputs)
+</span><span data-line="83">                        --example-batch-shape strain='(2;100)' --example-
+</span><span data-line="84">                        batch-shape temperature='(2,)' (per-variable;
+</span><span data-line="85">                        repeatable) The semicolon delimits dynamic-batch from
+</span><span data-line="86">                        sub-batch axes -- '(2;100)' means dyn=(2,),
+</span><span data-line="87">                        sub=(100,). Overrides [Settings]/example_batch_shape.
+</span><span data-line="88">  --dynamic-batch       Compile a dynamic-batch artifact: the leading batch
+</span><span data-line="89">                        dim of the example shape becomes a runtime-variable
+</span><span data-line="90">                        torch.export Dim. Default unless overridden by
+</span><span data-line="91">                        [Settings]/dynamic_batch in the input.
+</span><span data-line="92">  --no-dynamic-batch    Pin the batch dim at the example shape. Required when
+</span><span data-line="93">                        a baked parameter has rank&gt;=1 and would specialize the
+</span><span data-line="94">                        dynamic dim.
+</span><span data-line="95">  --rename-input ORIG:NEW
+</span><span data-line="96">                        Rename an input variable at the compiled artifact's
+</span><span data-line="97">                        boundary: a downstream consumer sees NEW while the
+</span><span data-line="98">                        model's internal wiring keeps ORIG. Repeatable. Only
+</span><span data-line="99">                        valid with --model (not --driver).
+</span><span data-line="100">  --rename-output ORIG:NEW
+</span><span data-line="101">                        Rename an output variable at the boundary (the
+</span><span data-line="102">                        consumer sees NEW; the internals keep ORIG).
 </span><span data-line="103">                        Repeatable. Only valid with --model.
-</span><span data-line="104">  -q, --quiet           Suppress the per-file compilation progress chrome. The
-</span><span data-line="105">                        final artifact-path summary and any errors are still
-</span><span data-line="106">                        printed.
-</span><span data-line="107">  --load PATH           Import a user extension before processing. PATH is
-</span><span data-line="108">                        either a filesystem path to a .py file / package
-</span><span data-line="109">                        directory, or a dotted module name already importable
-</span><span data-line="110">                        from sys.path. Repeatable; modules are imported in the
-</span><span data-line="111">                        order given so later modules may depend on names
-</span><span data-line="112">                        registered by earlier ones.
+</span><span data-line="104">  --rename-parameter ORIG:NEW
+</span><span data-line="105">                        Rename a promoted parameter at the boundary (the
+</span><span data-line="106">                        consumer sees NEW; the internals keep the qualified
+</span><span data-line="107">                        ORIG). ORIG must be a promoted parameter (see -p).
+</span><span data-line="108">                        Repeatable. Only valid with --model.
+</span><span data-line="109">  -q, --quiet           Suppress the per-file compilation progress chrome. The
+</span><span data-line="110">                        final artifact-path summary and any errors are still
+</span><span data-line="111">                        printed.
+</span><span data-line="112">  --load PATH           Import a user extension before processing. PATH is
+</span><span data-line="113">                        either a filesystem path to a .py file / package
+</span><span data-line="114">                        directory, or a dotted module name already importable
+</span><span data-line="115">                        from sys.path. Repeatable; modules are imported in the
+</span><span data-line="116">                        order given so later modules may depend on names
+</span><span data-line="117">                        registered by earlier ones.
 </span></pre></div>
 </div>
 <p>Derivative graphs are opt-in: with no <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag only <code class="docutils literal notranslate"><span class="pre">forward</span></code> is

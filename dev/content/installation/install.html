@@ -165,6 +165,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
@@ -497,8 +498,10 @@ steps:</p>
 <li><p>Run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">neml2</span></code>.</p></li>
 </ol>
 <p>NEML2 picks up whichever torch is already on the import path, so any
-accelerator torch supports works too. For moving a model onto a device
-and allocating inputs there, see <a class="reference internal" href="../tutorials/models/evaluation_device/main.html#tutorials-models-evaluation-device"><span class="std std-ref">Evaluation device</span></a>.</p>
+accelerator torch supports works too — CUDA, XPU, HIP, MPS. See
+<a class="reference external" href="https://docs.pytorch.org/docs/stable/torch.html#accelerators" title="PyTorch 2.14"><span class="iref myst">Accelerators</span></a> for the accepted <code class="docutils literal notranslate"><span class="pre">--device</span></code> values and the per-family
+runtime requirements. For moving a model onto a device and allocating
+inputs there, see <a class="reference internal" href="../tutorials/models/evaluation_device/main.html#tutorials-models-evaluation-device"><span class="std std-ref">Evaluation device</span></a>.</p>
 </section>
 </section>
 

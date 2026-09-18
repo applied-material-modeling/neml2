@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Ways to evaluate a model - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Python integration" href="python.html" /><link rel="prev" title="Migrating from v2.0.0 to v2.1.0" href="../migration/200_210.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Accelerators (device families) - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Compilation pipeline" href="pipeline.html" /><link rel="prev" title="AOTI packages" href="aoti_packages.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="Ways to evaluate a model"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="Accelerators (device families)"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -136,12 +136,12 @@ data-aria-dark="Switch to auto color mode">
 </li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Deployment &amp; integration</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Ways to evaluate a model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="python.html">Python integration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cpp.html">C++ integration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="verbosity.html">Controlling verbosity</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/overview.html">Ways to evaluate a model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -155,18 +155,18 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../development/benchmarking.html">Benchmarking</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../references/py_eager.html"><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/py_jit.html"><code class="docutils literal notranslate"><span class="pre">py-jit</span></code> — in-process <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/py_aoti.html"><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/sub_batch.html">Sub-batch axes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/accelerators.html">Accelerators (device families)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="py_eager.html"><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_jit.html"><code class="docutils literal notranslate"><span class="pre">py-jit</span></code> — in-process <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_aoti.html"><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sub_batch.html">Sub-batch axes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Accelerators (device families)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/index.html">chemical_reactions</a><ul>
@@ -386,12 +386,11 @@ data-aria-dark="Switch to auto color mode">
       <i class="i-lucide close"></i>
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
-<li><a class="reference internal" href="#one-authoring-surface-many-runtimes">One authoring surface, many runtimes</a></li>
-<li><a class="reference internal" href="#at-a-glance">At a glance</a></li>
-<li><a class="reference internal" href="#the-routes">The routes</a></li>
-<li><a class="reference internal" href="#choosing-a-runtime">Choosing a runtime</a></li>
-<li><a class="reference internal" href="#runtimes-vs-consumers">Runtimes vs. consumers</a></li>
-<li><a class="reference internal" href="#see-also">See also</a></li>
+<li><a class="reference internal" href="#accepted-device-values">Accepted <code class="docutils literal notranslate"><span class="pre">--device</span></code> values</a></li>
+<li><a class="reference internal" href="#per-family-requirements">Per-family requirements</a></li>
+<li><a class="reference internal" href="#on-disk-layout">On-disk layout</a></li>
+<li><a class="reference internal" href="#dispatcher-mixing-families">Dispatcher: mixing families</a></li>
+<li><a class="reference internal" href="#adding-a-new-accelerator-family">Adding a new accelerator family</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -409,7 +408,7 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="1" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">Ways to evaluate a model</strong>
+        <strong itemprop="name">Accelerators (device families)</strong>
         <meta itemprop="position" content="2" />
       </li></ol>
     <div class="xl:hidden ml-1">
@@ -422,212 +421,133 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="ways-to-evaluate-a-model">
-<span id="deployment-overview"></span><h1>Ways to evaluate a model<a class="headerlink" href="#ways-to-evaluate-a-model" title="Link to this heading">#</a></h1>
-<p>A NEML2 model is authored once, in Python — a <code class="docutils literal notranslate"><span class="pre">Model</span></code> is a plain
-<code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> composed from smaller registered pieces, and Python is the
-<em>only</em> authoring surface. Once a model exists, the same model can be evaluated
-through several different runtimes, depending on whether you are iterating
-interactively, training, or deploying into a host application.</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="accelerators-device-families">
+<span id="accelerators-page"></span><h1>Accelerators (device families)<a class="headerlink" href="#accelerators-device-families" title="Link to this heading">#</a></h1>
+<p>NEML2 targets any device family torch itself supports. Today that means CPU,
+CUDA, XPU (Intel GPU), HIP (AMD GPU via native <code class="docutils literal notranslate"><span class="pre">torch.hip</span></code>), and MPS (Apple
+Silicon). The compile CLI, the on-disk artifact layout, the Python shim, and
+the C++ AOTI loader + dispatcher all speak the same lowercase family names
+(<code class="docutils literal notranslate"><span class="pre">cpu</span></code>, <code class="docutils literal notranslate"><span class="pre">cuda</span></code>, <code class="docutils literal notranslate"><span class="pre">xpu</span></code>, <code class="docutils literal notranslate"><span class="pre">hip</span></code>, <code class="docutils literal notranslate"><span class="pre">mps</span></code>) — the runtime is device-opaque, so adding
+a new family is a small change at a handful of choke points.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If you are an <em>end user</em> of an application built on NEML2, you evaluate models
-through whatever interface that application exposes — you do not choose a runtime
-and can stop reading here. This page is for developers integrating NEML2 into
-their own Python, C++, or command-line workflow. The deployment guides
-(<a class="reference internal" href="python.html#python-integration"><span class="std std-ref">Python integration</span></a>, <a class="reference internal" href="cpp.html#external-project-integration"><span class="std std-ref">C++ integration</span></a>, <a class="reference internal" href="cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a>)
-cover getting set up; the reference pages linked below cover each route’s
-evaluation API. All routes share one verbosity control — see
-<a class="reference internal" href="verbosity.html#verbosity-control"><span class="std std-ref">Controlling verbosity</span></a>.</p>
+<p>CPU and CUDA are the two families NEML2 exercises end-to-end in CI. XPU, HIP
+(native), and MPS are <strong>wired</strong> and unit-tested at the string-parsing and
+metadata boundaries, but not yet validated on the hardware they target. If you
+run on one of those, please open an issue with the outcome — the code paths
+share the same generic runtime, so parity is expected, but real-hardware
+confirmation is welcome.</p>
 </div>
-<p>All runtimes operate on the same starting point: a
-<a class="reference external" href="https://github.com/applied-material-modeling/neml2-hit">HIT</a> input file that
-names one or more models. The minimal example referenced throughout lives at
-<code class="docutils literal notranslate"><span class="pre">tutorials/models/running_your_first_model/input.i</span></code>:</p>
-<section id="one-authoring-surface-many-runtimes">
-<h2>One authoring surface, many runtimes<a class="headerlink" href="#one-authoring-surface-many-runtimes" title="Link to this heading">#</a></h2>
-<figure class="align-center" id="id2">
-<img alt="The six NEML2 evaluation routes as a host × mode matrix" src="../../_images/neml2_evaluation_routes.svg" />
-<figcaption>
-<p><span class="caption-number">Fig. 1 </span><span class="caption-text">The six routes by host (Python / C++) and mode (eager / <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> / AOTI).
-A model is authored once in Python; the empty cell is real (there is no in-process
-<code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> route in C++).</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
-</figcaption>
-</figure>
-<p>The four families differ in <em>where</em> the model runs and <em>what it costs to start</em>.
-The AOTI family is one artifact (<code class="docutils literal notranslate"><span class="pre">.pt2</span></code> package + metadata + HIT stub) consumed
-by two different hosts — running a compiled model from C++ and from Python is the
-same compile, not two.</p>
-</section>
-<section id="at-a-glance">
-<h2>At a glance<a class="headerlink" href="#at-a-glance" title="Link to this heading">#</a></h2>
-<p>Each runtime has a short <strong>codename</strong> of the form <code class="docutils literal notranslate"><span class="pre">host-mode</span></code> (<code class="docutils literal notranslate"><span class="pre">py</span></code> / <code class="docutils literal notranslate"><span class="pre">cpp</span></code>
-crossed with <code class="docutils literal notranslate"><span class="pre">eager</span></code> / <code class="docutils literal notranslate"><span class="pre">jit</span></code> / <code class="docutils literal notranslate"><span class="pre">aoti</span></code>). Use it in bug reports and discussion
-threads to say which path you’re on without a paragraph of description — “this
-reproduces on <code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> but not <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>” is unambiguous.</p>
-<p>Every runtime supports <code class="docutils literal notranslate"><span class="pre">forward</span></code>. They differ on sensitivities and on whether
-they accept <em>sub-batch</em> models (e.g. crystal plasticity, which carries a per-slip
-inner batch dimension — see <a class="reference internal" href="../references/sub_batch.html#sub-batch-declaration"><span class="std std-ref">Sub-batch axes</span></a> for how the extent is
-declared and which routes read it):</p>
+<section id="accepted-device-values">
+<h2>Accepted <code class="docutils literal notranslate"><span class="pre">--device</span></code> values<a class="headerlink" href="#accepted-device-values" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device</span></code> and <code class="docutils literal notranslate"><span class="pre">neml2-run</span> <span class="pre">--device</span></code> accept any of:</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Codename</p></th>
-<th class="head"><p>Entry point</p></th>
-<th class="head"><p>Compile</p></th>
-<th class="head"><p>Host</p></th>
-<th class="head text-center"><p>jvp / jacobian</p></th>
-<th class="head text-center"><p>Sub-batch</p></th>
-<th class="head"><p>Primarily for</p></th>
+<tr class="row-odd"><th class="head"><p>Family</p></th>
+<th class="head"><p>Meaning</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">py-eager</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">neml2.load_model</span></code></p></td>
-<td><p>none</p></td>
-<td><p>Python</p></td>
-<td class="text-center"><p>✓</p></td>
-<td class="text-center"><p>✓</p></td>
-<td><p>dev, testing, autograd training</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cpu</span></code></p></td>
+<td><p>Host CPU (always available)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">py-jit</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">neml2.compile</span></code></p></td>
-<td><p>in-process JIT</p></td>
-<td><p>Python</p></td>
-<td class="text-center"><p>✓ (native)</p></td>
-<td class="text-center"><p>✓</p></td>
-<td><p>pyzag training loops</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cuda</span></code></p></td>
+<td><p>NVIDIA GPU via CUDA</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">neml2.aoti.Model</span></code></p></td>
-<td><p>offline</p></td>
-<td><p>Python (pybind)</p></td>
-<td class="text-center"><p>✓</p></td>
-<td class="text-center"><p>✓</p></td>
-<td><p>compiled model from Python</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xpu</span></code></p></td>
+<td><p>Intel GPU via <code class="docutils literal notranslate"><span class="pre">torch.xpu</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code></p></td>
-<td><p>offline</p></td>
-<td><p>C++</p></td>
-<td class="text-center"><p>✓</p></td>
-<td class="text-center"><p>✓</p></td>
-<td><p>production C++ deployment</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">hip</span></code></p></td>
+<td><p>AMD GPU via native <code class="docutils literal notranslate"><span class="pre">torch.hip</span></code> (see note below)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">neml2::aoti::DispatchedModel</span></code></p></td>
-<td><p>offline</p></td>
-<td><p>C++</p></td>
-<td class="text-center"><p>✓</p></td>
-<td class="text-center"><p>✓</p></td>
-<td><p>multi-device throughput</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">neml2::eager::Model</span></code></p></td>
-<td><p>none</p></td>
-<td><p>C++ + embedded Python</p></td>
-<td class="text-center"><p>✓</p></td>
-<td class="text-center"><p>✗</p></td>
-<td><p>compile-free C++ tests</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mps</span></code></p></td>
+<td><p>Apple Silicon via <code class="docutils literal notranslate"><span class="pre">torch.backends.mps</span></code></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p><strong>Parameter derivatives.</strong> All six routes additionally expose the same
-<code class="docutils literal notranslate"><span class="pre">param_jacobian(inputs)</span> <span class="pre">-&gt;</span> <span class="pre">(outputs,</span> <span class="pre">{out:</span> <span class="pre">{param:</span> <span class="pre">block}})</span></code> and
-<code class="docutils literal notranslate"><span class="pre">param_vjp(inputs,</span> <span class="pre">cotangents)</span> <span class="pre">-&gt;</span> <span class="pre">{param:</span> <span class="pre">grad}</span></code> surface for <code class="docutils literal notranslate"><span class="pre">d(output)/d(parameter)</span></code>,
-computed by reverse-mode autograd — a separate path from the forward-mode input
-chain rule that backs <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code>. The eager routes (<code class="docutils literal notranslate"><span class="pre">py-eager</span></code>,
-<code class="docutils literal notranslate"><span class="pre">py-jit</span></code>, <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>) differentiate w.r.t. every parameter at call time
-(<code class="docutils literal notranslate"><span class="pre">params=</span></code> selects a subset); the AOTI routes (<code class="docutils literal notranslate"><span class="pre">py-aoti</span></code>, <code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code>,
-<code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code>) return only the <code class="docutils literal notranslate"><span class="pre">(output,</span> <span class="pre">parameter)</span></code> pairs whose graphs were
-compiled in — promote the parameter with <code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">NAME</span></code> and request the pair with
-<code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:NAME</span></code> at <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> time (see <a class="reference internal" href="../references/aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>).</p>
-<p><strong>Parameter values at runtime.</strong> All six routes also share a parameter
-read/write surface: <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> returns the current values, and
-<code class="docutils literal notranslate"><span class="pre">set_parameter(name,</span> <span class="pre">value)</span></code> updates one in place (a <code class="docutils literal notranslate"><span class="pre">torch.no_grad</span></code> copy on the
-eager routes; a slot replacement on the AOTI routes, broadcast across devices for
-<code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code>). The new value is used on the next call.</p>
-<p><strong>Batched (per-batch-element) parameters.</strong> <code class="docutils literal notranslate"><span class="pre">set_parameter</span></code> also accepts a value
-that carries a leading batch dimension — e.g. a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> parameter set to shape
-<code class="docutils literal notranslate"><span class="pre">(B,)</span></code>, a spatially varying material property and the common MOOSE
-inverse-optimization case. The call batch is then
-<code class="docutils literal notranslate"><span class="pre">broadcast(input</span> <span class="pre">batches,</span> <span class="pre">parameter</span> <span class="pre">batches)</span></code>, and all of <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> /
-<code class="docutils literal notranslate"><span class="pre">jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code> return per-batch-element results on
-every route (<code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> slices each batched parameter to each chunk’s rows).
-Both parameter-derivative surfaces follow the parameter’s shape, matching the
-eager semantics: <code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> returns a <code class="docutils literal notranslate"><span class="pre">d(output)/d(parameter)</span></code> block whose
-trailing axes are <code class="docutils literal notranslate"><span class="pre">(*param_base)</span></code> (per batch element when the parameter is
-batched), and <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code> returns the adjoint <code class="docutils literal notranslate"><span class="pre">dL/d(param)</span></code> <strong>summed over the
-batch for a global (unbatched) parameter</strong> but <strong>per-element <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">*param_base)</span></code>
-for a batched one</strong> — the latter being what reverse-mode autograd accumulates when
-each batch element depends only on its own copy of the parameter. (<code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code>
-concatenates each batched parameter’s per-chunk adjoint and sums each global one.)</p>
+<p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device</span></code> takes bare family names (one artifact per family);
+pass more than one to build side-by-side artifacts (<code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span> <span class="pre">xpu</span></code>).
+<code class="docutils literal notranslate"><span class="pre">neml2-run</span> <span class="pre">--device</span></code> additionally accepts indexed forms (<code class="docutils literal notranslate"><span class="pre">cuda:1</span></code>, <code class="docutils literal notranslate"><span class="pre">xpu:0</span></code>)
+because it sets <code class="docutils literal notranslate"><span class="pre">torch.set_default_device</span></code> and a specific index is meaningful.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>ROCm-built PyTorch aliases <code class="docutils literal notranslate"><span class="pre">torch.cuda</span></code> to HIP.</strong> If you installed
+PyTorch from the ROCm wheel index, your AMD GPU is addressed as <code class="docutils literal notranslate"><span class="pre">&quot;cuda&quot;</span></code> (not
+<code class="docutils literal notranslate"><span class="pre">&quot;hip&quot;</span></code>) and works under the existing CUDA path with no changes. <code class="docutils literal notranslate"><span class="pre">&quot;hip&quot;</span></code> in
+the accepted list is for the newer, distinct <code class="docutils literal notranslate"><span class="pre">torch.hip</span></code> / <code class="docutils literal notranslate"><span class="pre">at::kHIP</span></code>
+surface.</p>
+</div>
 </section>
-<section id="the-routes">
-<h2>The routes<a class="headerlink" href="#the-routes" title="Link to this heading">#</a></h2>
-<p>Each route has its own reference page with the loading-and-calling API; the
-deployment guides cover the setup (install / build / artifacts) that comes first.</p>
-<p><strong>Python</strong> — set up with <a class="reference internal" href="python.html#python-integration"><span class="std std-ref">Python integration</span></a>:</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="../references/py_eager.html#py-eager"><span class="std std-ref">py-eager — eager Python</span></a> — load and call the model directly; the default for development,
-interactive work, and autograd training.</p></li>
-<li><p><a class="reference internal" href="../references/py_jit.html#py-jit"><span class="std std-ref">py-jit — in-process torch.compile</span></a> — <code class="docutils literal notranslate"><span class="pre">neml2.compile</span></code> accelerates the in-process graph, mainly for pyzag.</p></li>
-<li><p><a class="reference internal" href="../references/py_aoti.html#py-aoti"><span class="std std-ref">py-aoti — compiled model from Python</span></a> — load and run a compiled <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> package from Python.</p></li>
-</ul>
-<p><strong>C++</strong> — set up with <a class="reference internal" href="cpp.html#external-project-integration"><span class="std std-ref">C++ integration</span></a>:</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="../references/cpp_aoti.html#cpp-aoti"><span class="std std-ref">cpp-aoti — compiled model from C++</span></a> — load a compiled <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> package via <code class="docutils literal notranslate"><span class="pre">libneml2.so</span></code>.</p></li>
-<li><p><a class="reference internal" href="../references/cpp_dispatch.html#model-dispatch"><span class="std std-ref">cpp-dispatch — dispatching across devices</span></a> — the same artifact, chunked across CPU + GPU(s).</p></li>
-<li><p><a class="reference internal" href="../references/cpp_eager.html#model-eager-cpp"><span class="std std-ref">cpp-eager — eager evaluation from C++</span></a> — run a model from its <code class="docutils literal notranslate"><span class="pre">.i</span></code> with no compile (for C++ tests).</p></li>
-</ul>
-<p>The three compiled routes (<code class="docutils literal notranslate"><span class="pre">py-aoti</span></code>, <code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code>, <code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code>) share one
-artifact — see <a class="reference internal" href="../references/aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a> for its format and
-<a class="reference internal" href="../references/pipeline.html#model-compilation-pipeline"><span class="std std-ref">Compilation pipeline</span></a> for how <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> produces it. The command
-line is a fourth way to drive a model with no code at all: <a class="reference internal" href="cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a>.</p>
+<section id="per-family-requirements">
+<h2>Per-family requirements<a class="headerlink" href="#per-family-requirements" title="Link to this heading">#</a></h2>
+<p>Each family needs the matching torch build. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> runs a per-family
+preflight (<code class="xref py py-mod docutils literal notranslate"><span class="pre">neml2._accelerator</span></code>’s <code class="docutils literal notranslate"><span class="pre">check_toolchain</span></code>) as soon as example
+inputs on that device reach the compile step; if the toolchain is missing you
+get a recipe rather than a cryptic Inductor error deep in the graph.</p>
+<p><strong>CUDA.</strong> Inductor’s CUDA backend needs <code class="docutils literal notranslate"><span class="pre">nvcc</span></code> at compile time (the default
+torch wheel ships the CUDA runtime but not the compiler). Install
+<code class="docutils literal notranslate"><span class="pre">nvidia-cuda-nvcc</span></code> (pip) or the system CUDA toolkit; the error message includes
+the exact recipe.</p>
+<p><strong>XPU.</strong> Install the XPU-enabled torch build:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="go">pip install torch --index-url https://download.pytorch.org/whl/xpu</span>
+</span></pre></div>
+</div>
+<p>Verify with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-c</span> <span class="pre">'import</span> <span class="pre">torch;</span> <span class="pre">print(torch.xpu.is_available())'</span></code>. NEML2’s
+current XPU toolchain check only confirms runtime availability; if you hit a
+compiler error inside Inductor’s XPU codegen, please open an issue with the
+message so we can tighten the preflight.</p>
+<p><strong>HIP.</strong> Requires a torch build with native <code class="docutils literal notranslate"><span class="pre">torch.hip</span></code>. If you have ROCm
+PyTorch (which routes <code class="docutils literal notranslate"><span class="pre">torch.cuda</span></code> to HIP), just use <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cuda</span></code>.</p>
+<p><strong>MPS.</strong> Available on Apple Silicon with a stock torch build. No separate
+compiler is needed.</p>
 </section>
-<section id="choosing-a-runtime">
-<h2>Choosing a runtime<a class="headerlink" href="#choosing-a-runtime" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p><strong>Iterating, debugging, or training in Python</strong> → <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>. Reach for
-<code class="docutils literal notranslate"><span class="pre">py-jit</span></code> (<code class="docutils literal notranslate"><span class="pre">neml2.compile</span></code>) only inside a pyzag loop where the residual is the
-hot path.</p></li>
-<li><p><strong>Deploying into a C++ application</strong> → <code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code>. Switch to <code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code>
-when you need to saturate multiple GPUs (or CPU + GPU) with one batched call.</p></li>
-<li><p><strong>Calling a compiled model from Python</strong>, or reproducing C++ numerics without a
-NEML2 source dependency → <code class="docutils literal notranslate"><span class="pre">py-aoti</span></code>.</p></li>
-<li><p><strong>C++ tests that can’t pay the compile cost</strong> → <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>.</p></li>
-<li><p><strong>Sub-batch models</strong> (crystal plasticity and friends) run on every runtime
-<em>except</em> <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>. If you need a compiled sub-batch model in C++, use
-<code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code>.</p></li>
-</ul>
+<section id="on-disk-layout">
+<h2>On-disk layout<a class="headerlink" href="#on-disk-layout" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> writes one subfolder per targeted family under the artifact
+root, named by the lowercase family string:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;output-dir&gt;/&lt;name&gt;/
+</span><span data-line="2">  metadata.json
+</span><span data-line="3">  cpu/float64/  *.pt2
+</span><span data-line="4">  cuda/float64/ *.pt2
+</span><span data-line="5">  xpu/float64/  *.pt2
+</span></pre></div>
+</div>
+<p>The C++ loader (<code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code>, <code class="docutils literal notranslate"><span class="pre">neml2::aoti::DispatchedModel</span></code>) picks the
+folder from <code class="docutils literal notranslate"><span class="pre">at::Device(dev).type()</span></code> at load time, so the Python writer and the
+C++ reader always agree on the spelling.</p>
 </section>
-<section id="runtimes-vs-consumers">
-<span id="id1"></span><h2>Runtimes vs. consumers<a class="headerlink" href="#runtimes-vs-consumers" title="Link to this heading">#</a></h2>
-<p>Several entry points are not runtimes themselves — they are <em>consumers</em> layered
-on one of the runtimes above:</p>
+<section id="dispatcher-mixing-families">
+<h2>Dispatcher: mixing families<a class="headerlink" href="#dispatcher-mixing-families" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">neml2::aoti::DispatchedModel</span></code> accepts any mix of families in its <code class="docutils literal notranslate"><span class="pre">WorkScheduler</span></code>
+configuration — the scheduler chunks a batched call across the pool. The
+per-family rules (from <code class="docutils literal notranslate"><span class="pre">MPISimpleScheduler</span></code> and <code class="docutils literal notranslate"><span class="pre">StaticHybridScheduler</span></code>):</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">neml2-run</span> <span class="pre">&lt;input.i&gt;</span> <span class="pre">&lt;driver&gt;</span></code> and the <code class="docutils literal notranslate"><span class="pre">Driver</span></code> classes (<code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>,
-<code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code>, <code class="docutils literal notranslate"><span class="pre">TransientRegression</span></code>, <code class="docutils literal notranslate"><span class="pre">Verification</span></code>) step a model through a
-load history on <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>. If the input file names an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>, the same
-driver runs on <code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> instead.</p></li>
-<li><p>The <strong>pyzag</strong> adapter (<code class="docutils literal notranslate"><span class="pre">NEML2PyzagModel</span></code>) drives calibration on <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>,
-optionally accelerated to <code class="docutils literal notranslate"><span class="pre">py-jit</span></code> via <code class="docutils literal notranslate"><span class="pre">neml2.compile(model)</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">neml2-inspect</span> <span class="pre">&lt;input.i&gt;</span> <span class="pre">&lt;model&gt;</span></code> resolves and prints a model’s input/output
-graph but does <strong>not</strong> evaluate it.</p></li>
+<li><p>At most one CPU worker (concurrent CPU workers would oversubscribe the
+intra-op thread pool).</p></li>
+<li><p>Within each accelerator family, indices must be unique; a bare family entry
+(e.g. <code class="docutils literal notranslate"><span class="pre">cuda</span></code>) cannot mix with pinned ones (<code class="docutils literal notranslate"><span class="pre">cuda:0</span></code>, <code class="docutils literal notranslate"><span class="pre">cuda:1</span></code>) from the same
+family, because bare could alias one of the pinned devices.</p></li>
+<li><p>Different families are independent — <code class="docutils literal notranslate"><span class="pre">{&quot;cpu&quot;,</span> <span class="pre">&quot;cuda:0&quot;,</span> <span class="pre">&quot;xpu:0&quot;}</span></code> is legal.</p></li>
 </ul>
-<p>The full tool reference is in <a class="reference internal" href="cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a>.</p>
+<p>See <a class="reference internal" href="cpp_dispatch.html#model-dispatch"><span class="std std-ref">cpp-dispatch — dispatching across devices</span></a> for the full scheduler surface.</p>
 </section>
-<section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="python.html#python-integration"><span class="std std-ref">Python integration</span></a> / <a class="reference internal" href="cpp.html#external-project-integration"><span class="std std-ref">C++ integration</span></a> / <a class="reference internal" href="cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a> —
-set up neml2 in a Python app, a C++ build, or from the shell.</p></li>
-<li><p><a class="reference internal" href="../references/aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a> — the compiled-package format shared by the AOTI routes.</p></li>
-<li><p><a class="reference internal" href="../references/pipeline.html#model-compilation-pipeline"><span class="std std-ref">Compilation pipeline</span></a> — what <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> does, stage by stage.</p></li>
-<li><p><a class="reference internal" href="../tutorials/index.html#tutorials"><span class="std std-ref">Tutorials</span></a> — end-to-end walkthroughs.</p></li>
-<li><p><a class="reference internal" href="../migration/index.html#migration-guides"><span class="std std-ref">Migration guides</span></a> — what changed across NEML2 versions.</p></li>
-</ul>
+<section id="adding-a-new-accelerator-family">
+<h2>Adding a new accelerator family<a class="headerlink" href="#adding-a-new-accelerator-family" title="Link to this heading">#</a></h2>
+<p>Every new torch accelerator (MTIA, PrivateUse1-backed hardware, etc.) is a
+one-line extension at two places:</p>
+<ol class="arabic simple">
+<li><p>Python: append the family name to <code class="docutils literal notranslate"><span class="pre">KNOWN_FAMILIES</span></code> in
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">neml2._accelerator</span></code> and add a <code class="docutils literal notranslate"><span class="pre">TOOLCHAIN_CHECKS</span></code> entry (a
+<code class="docutils literal notranslate"><span class="pre">torch.&lt;x&gt;.is_available()</span></code> probe is enough to start).</p></li>
+<li><p>C++: add the enum to <code class="docutils literal notranslate"><span class="pre">is_accelerator()</span></code> in
+<code class="docutils literal notranslate"><span class="pre">neml2/csrc/aoti/DeviceLayout.h</span></code>. <code class="docutils literal notranslate"><span class="pre">c10::DeviceTypeName(...,</span> <span class="pre">true)</span></code> already
+knows how to spell every torch-known device type, so the folder-name
+mapping needs no change.</p></li>
+</ol>
+<p>No changes are needed in the loader, ops, solve, jacobian, or dispatcher code —
+they route <code class="docutils literal notranslate"><span class="pre">at::Device</span></code> opaquely.</p>
 </section>
 </section>
 
@@ -637,16 +557,16 @@ set up neml2 in a Python app, a C++ build, or from the shell.</p></li>
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="../migration/200_210.html">
+    <a href="aoti_packages.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">Migrating from v2.0.0 to v2.1.0</div></div>
+        <span>Previous</span><div class="title">AOTI packages</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="python.html">
+    <a href="pipeline.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">Python integration</div>
+        <div class="title">Compilation pipeline</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>

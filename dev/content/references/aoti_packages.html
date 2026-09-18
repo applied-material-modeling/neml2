@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AOTI packages - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Compilation pipeline" href="pipeline.html" /><link rel="prev" title="Sub-batch axes" href="sub_batch.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AOTI packages - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Accelerators (device families)" href="accelerators.html" /><link rel="prev" title="Sub-batch axes" href="sub_batch.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -165,6 +165,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
@@ -445,7 +446,7 @@ load the result, take Jacobian-vector products — lives in
 <p>The CLI synopsis:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">neml2</span><span class="o">-</span><span class="nb">compile</span> <span class="o">&lt;</span><span class="nb">input</span><span class="o">.</span><span class="n">i</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">model</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span>
 </span><span data-line="2">                        <span class="p">[</span><span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="o">&lt;</span><span class="nb">dir</span><span class="o">&gt;</span><span class="p">]</span>
-</span><span data-line="3">                        <span class="p">[</span><span class="o">--</span><span class="n">device</span> <span class="n">cpu</span><span class="o">|</span><span class="n">cuda</span> <span class="p">[</span><span class="n">cpu</span><span class="o">|</span><span class="n">cuda</span> <span class="o">...</span><span class="p">]]</span> <span class="p">[</span><span class="o">--</span><span class="n">dtype</span> <span class="n">float64</span><span class="o">|</span><span class="n">float32</span><span class="p">]</span>
+</span><span data-line="3">                        <span class="p">[</span><span class="o">--</span><span class="n">device</span> <span class="n">cpu</span><span class="o">|</span><span class="n">cuda</span><span class="o">|</span><span class="n">xpu</span><span class="o">|</span><span class="n">hip</span><span class="o">|</span><span class="n">mps</span> <span class="p">[</span><span class="o">...</span><span class="p">]]</span> <span class="p">[</span><span class="o">--</span><span class="n">dtype</span> <span class="n">float64</span><span class="o">|</span><span class="n">float32</span><span class="p">]</span>
 </span><span data-line="4">                        <span class="p">[</span><span class="o">-</span><span class="n">p</span><span class="o">|--</span><span class="n">parameter</span> <span class="n">NAME</span> <span class="o">...</span><span class="p">]</span>
 </span><span data-line="5">                        <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="o">|--</span><span class="n">derivative</span> <span class="n">OUT</span><span class="p">:</span><span class="n">IN</span> <span class="o">...</span><span class="p">]</span>
 </span></pre></div>
@@ -503,11 +504,15 @@ HIT stub that sits next to it:</p>
 </span><span data-line="4">    metadata.json              # shared: structural info, promoted-param values, solver config
 </span><span data-line="5">    cpu/float64/  *.pt2
 </span><span data-line="6">    cuda/float64/ *.pt2
+</span><span data-line="7">    xpu/float64/  *.pt2        # opt-in per --device (any torch accelerator family)
 </span></pre></div>
 </div>
-<p>A compile targeting a single device (the default <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code>) emits
-just one <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> subfolder; <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code>
-emits both, each with its own <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> binaries. The shared <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>
+<p>The <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;</span></code> segment is the lowercase <code class="docutils literal notranslate"><span class="pre">torch.device(...).type</span></code> string
+(<code class="docutils literal notranslate"><span class="pre">cpu</span></code>, <code class="docutils literal notranslate"><span class="pre">cuda</span></code>, <code class="docutils literal notranslate"><span class="pre">xpu</span></code>, <code class="docutils literal notranslate"><span class="pre">hip</span></code>, <code class="docutils literal notranslate"><span class="pre">mps</span></code>) — the same spelling on both sides of
+the read/write boundary. A compile targeting a single device (the default
+<code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code>) emits just one <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> subfolder;
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span> <span class="pre">xpu</span></code> emits three, each with its own
+<code class="docutils literal notranslate"><span class="pre">.pt2</span></code> binaries. The shared <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>
 at the artifact root is device/dtype-independent: the loader derives the
 device and dtype from the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> folder path, not from the
 metadata. The stub points at the <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;/</span></code> folder via an absolute
@@ -934,10 +939,10 @@ wheel.</p></li>
         <span>Previous</span><div class="title">Sub-batch axes</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="pipeline.html">
+    <a href="accelerators.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">Compilation pipeline</div>
+        <div class="title">Accelerators (device families)</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
