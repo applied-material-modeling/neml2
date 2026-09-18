@@ -1,0 +1,34 @@
+(models-SwellingAndPhaseChangeDeformationJacobian)=
+# SwellingAndPhaseChangeDeformationJacobian
+
+**Source:** `models/solid_mechanics/kinematics/SwellingAndPhaseChangeDeformationJacobian.py`
+
+Define the linear isotropic phase change deformation Jacobian for a freezing liquid or a
+melting solid, i.e. $J = \left( 1 + \alpha c \phi^f + (1-c) \phi^f \Delta \Omega \right)$, where
+$\alpha$ is the coefficient of swelling, $\Delta \Omega$ is relative
+difference of the reference volume between the two phases, $\phi^f$ is the fluid
+fraction associated with swelling, and $c$ is the phase fraction.
+
+## Inputs
+
+`fluid_fraction` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Volume fraction of the fluid phase.
+
+
+## Outputs
+
+`jacobian` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Phase change deformation Jacobian
+
+
+## Parameters
+
+`phase_fraction` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Phase fraction during the phase change. 0 means all solid, 1 means all liquid.
+
+`swelling_coefficient` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Coefficient of phase expansion
+
+`reference_volume_difference` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Relative difference between the reference volumes of the two phases.
+

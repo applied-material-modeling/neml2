@@ -1,0 +1,29 @@
+(models-LinearSingleSlipHardeningRule)=
+# LinearSingleSlipHardeningRule
+
+**Source:** `models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.py`
+
+Simple linear slip system hardening defined by
+$\dot{\tau} = \theta \sum_{i=1}^{n_{slip}} \left| \dot{\gamma}_i \right|$
+where $\theta$ is the hardening slope.
+
+## Inputs
+
+`slip_hardening` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Name of current values of slip hardening
+
+`sum_slip_rates` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Name of tensor containing the sum of the slip rates
+
+
+## Outputs
+
+`slip_hardening_rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Name of the slip hardening rate
+
+
+## Parameters
+
+`hardening_slope` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Hardening rate
+
