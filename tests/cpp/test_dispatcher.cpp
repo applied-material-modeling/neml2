@@ -504,5 +504,27 @@ main(int argc, char ** argv)
     }
   }
 
+  // XPU parallel to the CUDA cross-device block above: same minimum-wire load +
+  // forward check on Intel GPU when a torch XPU build is present and an XPU
+  // artifact was compiled (the fixture opts in via `TARGET torch::xpu` in the
+  // parent CMakeLists). Deeper coverage (hybrid + write-through + batched
+  // params) is intentionally left CUDA-only for now -- the code paths are
+  // opaque to device family, so parity is expected; someone with XPU hardware
+  // can lift the extra assertions once validated. Skipped on machines without.
+  const std::string xpu_leaf = artifact_root + "/xpu/float64";
+  if (at::hasXPU() && std::filesystem::exists(xpu_leaf))
+  {
+    auto scheduler = std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"xpu", 4});
+    DispatchedModel disp(artifact_root, scheduler);
+    NEML2_CHECK(disp.device().type() == at::kXPU);
+
+    auto out = disp.forward(inputs); // inputs live on cpu
+    for (const auto & name : ref.output_names())
+    {
+      NEML2_CHECK(out.at(name).device().is_cpu()); // returned on the input device
+      NEML2_CHECK(at::allclose(out.at(name), ref_out.at(name), /*rtol=*/1e-6, /*atol=*/1e-8));
+    }
+  }
+
   return 0;
 }

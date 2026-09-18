@@ -286,11 +286,13 @@ def _ask_field(field: str, input_file: str, state: dict, cache: dict) -> bool:
         return True
 
     if field == "devices":
+        from .._accelerator import KNOWN_FAMILIES  # noqa: PLC0415
+
         v = questionary.checkbox(
             "Devices:",
             choices=[
-                questionary.Choice("cpu", "cpu", checked="cpu" in state["devices"]),
-                questionary.Choice("cuda", "cuda", checked="cuda" in state["devices"]),
+                questionary.Choice(fam, fam, checked=fam in state["devices"])
+                for fam in KNOWN_FAMILIES
             ],
         ).ask()
         if v is None:

@@ -160,6 +160,14 @@ class AOTIModel(nn.Module):
             device = "cpu"
         if dtype is None:
             dtype = "float64"
+        # Reject unknown device families up-front (with the neml2-known-families
+        # message) rather than have the C++ ctor fail with "no compiled artifact
+        # for device 'foo'" after the fact. Indexed forms like "cuda:1" pass
+        # through unchanged -- the binding uses the full string for device
+        # selection while the folder-name path derives the family from it.
+        from .._accelerator import parse_device_spec  # noqa: PLC0415
+
+        parse_device_spec(device)
         meta_path = artifact_root / "metadata.json"
         if not meta_path.is_file():
             raise FileNotFoundError(

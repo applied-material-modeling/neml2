@@ -150,59 +150,6 @@ def _patch_pt2_noexecstack(path: Path) -> None:
     path.write_bytes(out.getvalue())
 
 
-def _wants_cuda(example_inputs: tuple[Any, ...]) -> bool:
-    """True iff any tensor leaf inside *example_inputs* is on a CUDA device.
-
-    Mirrors :func:`_walk_tensors`'s recursion so dataclass-wrapped typed
-    tensors and ``(tuple|list)`` packs are inspected too.
-    """
-    return any(t.is_cuda for arg in example_inputs for t in _walk_tensors(arg))
-
-
-def _check_cuda_toolchain_available() -> None:
-    """Raise a recipe-bearing ``RuntimeError`` when ``nvcc`` is missing.
-
-    Inductor's CUDA backend needs ``nvcc`` to compile the generated
-    kernels. The default ``torch`` wheel bundles the CUDA *runtime* but
-    not the compiler -- without ``nvcc`` you hit a cryptic
-    ``OSError: CUDA_HOME environment variable is not set`` deep inside
-    ``torch._inductor`` partway through the AOT compile. Surface the
-    install recipe early instead.
-    """
-    import shutil
-
-    from torch.utils.cpp_extension import CUDA_HOME
-
-    nvcc = shutil.which("nvcc")
-    if not nvcc and CUDA_HOME:
-        candidate = Path(CUDA_HOME) / "bin" / "nvcc"
-        if candidate.exists():
-            nvcc = str(candidate)
-    if nvcc:
-        return
-    raise RuntimeError(
-        "compile_model: CUDA AOTI export requires `nvcc` but none was found "
-        "(neither on PATH nor under CUDA_HOME).\n"
-        "\n"
-        "The default torch wheel bundles the CUDA *runtime* (libcudart etc.) "
-        "but not the compiler. The lightest-weight fix:\n"
-        "\n"
-        "    pip install nvidia-cuda-nvcc\n"
-        "    export CUDA_HOME=\"$(python -c '\\\n"
-        "        import pathlib, site\\n"
-        "        print(next(p for sp in site.getsitepackages()\\n"
-        '                   for p in pathlib.Path(sp, "nvidia").glob("cu*")\\n'
-        '                   if (p / "bin/nvcc").exists()))\')"\n'
-        '    export PATH="$CUDA_HOME/bin:$PATH"\n'
-        "\n"
-        "Or use a system install (`apt install nvidia-cuda-toolkit`, conda's "
-        "`cudatoolkit-dev`, NVIDIA's network installer) and point CUDA_HOME at "
-        "its root. See doc/content/installation/deps.md for details. "
-        "CPU AOTI export needs none of this -- only inputs on a CUDA device "
-        "trigger this check."
-    )
-
-
 def _walk_tensors(arg: Any):
     """Yield every ``torch.Tensor`` leaf inside a (possibly nested) export arg.
 
@@ -280,14 +227,15 @@ def compile_model(
     """
     import dataclasses
 
-    # Preflight: if any example input lives on a CUDA device, the Inductor
-    # backend will JIT/AOT-compile CUDA kernels and that requires ``nvcc``
-    # on the host -- torch's default wheel bundles the CUDA *runtime* but
-    # not the compiler. Detect early and emit a recipe instead of letting
-    # the user hit the cryptic ``OSError: CUDA_HOME environment variable
-    # is not set`` deep inside Inductor.
-    if _wants_cuda(example_inputs):
-        _check_cuda_toolchain_available()
+    from .._accelerator import check_toolchain, target_accelerator_family
+
+    # Preflight: if any example input lives on an accelerator, the Inductor
+    # backend will JIT/AOT-compile device kernels and may need a per-family
+    # toolchain (e.g. `nvcc` for CUDA). Detect early and emit a recipe
+    # instead of letting the user hit a cryptic error deep inside Inductor.
+    _target_family = target_accelerator_family(t for a in example_inputs for t in _walk_tensors(a))
+    if _target_family is not None:
+        check_toolchain(_target_family)
 
     # Mirror the model's forward signature in the dynamic_shapes structure.
     # `torch.export` collapses a ``*args`` (VAR_POSITIONAL) pack into a single

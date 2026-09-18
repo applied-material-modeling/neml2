@@ -29,8 +29,20 @@ from __future__ import annotations
 import argparse
 import sys
 
+from .._accelerator import KNOWN_FAMILIES, parse_device_spec
 from ..factory import load_input
 from ._extensions import add_load_argument, load_user_extensions
+
+
+def _device_arg(s: str) -> str:
+    """argparse type: validate and normalize a --device spec to its canonical str.
+
+    Accepts bare family names (``cpu``, ``cuda``, ``xpu``, ``hip``, ``mps``) and
+    indexed forms (``cuda:1``, ``xpu:0``). Returns the canonical torch spelling
+    (``str(torch.device(...))``) so ``torch.set_default_device`` and downstream
+    consumers work with a string.
+    """
+    return str(parse_device_spec(s))
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -46,10 +58,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--device",
         default="cpu",
-        choices=["cpu", "cuda"],
+        type=_device_arg,
+        metavar="DEVICE",
         help=(
             "Set torch's default device before loading. Tensors built by "
-            "[Tensors] Python expressions inherit this. Default: cpu."
+            f"[Tensors] Python expressions inherit this. Any of {list(KNOWN_FAMILIES)}, "
+            "optionally with a device index (e.g. cuda:1, xpu:0). Default: cpu."
         ),
     )
     parser.add_argument(
@@ -72,7 +86,21 @@ def main(argv: list[str] | None = None) -> int:
     # ``parse_known_args`` separates the two declared positionals from any
     # trailing HIT-override tokens. Using REMAINDER would greedily capture
     # subsequent flags too.
-    args, additional_args = _build_parser().parse_known_args(argv)
+    parser = _build_parser()
+    args, additional_args = parser.parse_known_args(argv)
+
+    # Refuse a (device, dtype) combination torch itself does not support
+    # (e.g. mps + float64: Apple's MPS backend has no fp64 path). Fail fast
+    # here rather than crashing inside torch further down. Only the family
+    # matters -- an indexed spec like "mps:0" narrows to the same family.
+    from neml2._accelerator import is_compatible, parse_device_spec  # noqa: PLC0415
+
+    _fam = parse_device_spec(args.device).type
+    if not is_compatible(_fam, args.dtype):
+        parser.error(
+            f"unsupported (device, dtype) combination: {args.device} + "
+            f"{args.dtype}. This accelerator does not support this dtype."
+        )
 
     # Set process-wide torch defaults BEFORE load_input so [Tensors] Python
     # expressions (``torch.tensor([...])``, ``torch.linspace(...)``, ...) build

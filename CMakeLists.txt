@@ -181,7 +181,7 @@ endif()
 # ----------------------------------------------------------------------------
 # Torch
 # ----------------------------------------------------------------------------
-find_package(torch MODULE OPTIONAL_COMPONENTS cuda python)
+find_package(torch MODULE OPTIONAL_COMPONENTS cuda xpu python)
 
 if(NOT torch_FOUND)
       message(FATAL_ERROR

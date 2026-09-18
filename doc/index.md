@@ -52,6 +52,7 @@ content/references/cpp_eager
 content/references/solvers
 content/references/sub_batch
 content/references/aoti_packages
+content/references/accelerators
 content/references/pipeline
 generated/syntax/index
 content/python_api/index

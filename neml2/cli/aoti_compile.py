@@ -117,18 +117,22 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "stub next to it unless --no-stub."
         ),
     )
+    from neml2._accelerator import KNOWN_FAMILIES  # noqa: PLC0415
+
     parser.add_argument(
         "--device",
         nargs="+",
         default=["cpu"],
-        choices=["cpu", "cuda"],
+        choices=list(KNOWN_FAMILIES),
         metavar="DEVICE",
         help=(
-            "Target device(s) for the artifact, baked at export time. Accepts "
-            "more than one (e.g. --device cpu cuda): one complete artifact is "
-            "emitted per device into a subfolder named by the device "
-            "(<output-dir>/cpu/, <output-dir>/cuda/), ready for a multi-device "
-            "dispatcher to load."
+            "Target device family(ies) for the artifact, baked at export time. "
+            "Accepts more than one (e.g. --device cpu cuda xpu): one complete "
+            "artifact is emitted per family into a subfolder named by the family "
+            "(<output-dir>/cpu/, <output-dir>/cuda/, <output-dir>/xpu/), ready for "
+            "a multi-device dispatcher to load. XPU/HIP/MPS require a torch build "
+            "with that accelerator (see doc/content/references/accelerators.md); "
+            "the runtime toolchain preflight raises with an install recipe if not."
         ),
     )
     parser.add_argument(
@@ -638,6 +642,30 @@ def _parse_example_batch_shape_cli(entries: list[str]) -> dict[str, str] | str |
     return uniform[0] if uniform else per_var
 
 
+def _accelerator_jobs_warning(jobs: int, devices: list[str]) -> str | None:
+    """Return a warning message when parallel compile jobs target accelerator
+    families, else ``None``.
+
+    Extracted from ``main`` to keep the branch unit-testable without spinning up
+    a real compile: each accelerator worker process starts its own device
+    context and shells out to the per-family codegen compiler (nvcc for CUDA,
+    the analogous binary for XPU/HIP), which can blow the host or GPU memory
+    budget if the pool is large.
+    """
+    if jobs <= 1:
+        return None
+    accel_targets = sorted(d for d in devices if d != "cpu")
+    if not accel_targets:
+        return None
+    fams = ", ".join(accel_targets)
+    return (
+        f"neml2-compile: warning: -j{jobs} with --device {fams} spawns "
+        f"{jobs} worker processes, each initializing its own accelerator "
+        "context and invoking the per-family codegen compiler; watch GPU/host "
+        "memory (consider -j1 for accelerator targets)."
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
     # Trailing tokens are forwarded to the HIT parser as overrides
@@ -728,6 +756,27 @@ def main(argv: list[str] | None = None) -> int:
     # `--device cpu cpu` doesn't compile twice.
     devices = list(dict.fromkeys(args.device))
 
+    # Drop (device, --dtype) combinations that torch itself does not support
+    # (e.g. mps + float64: Apple's MPS backend has no fp64 path). Warn on each
+    # dropped combination and error if nothing valid remains -- letting a
+    # `--device mps --dtype float64` run silently would either crash inside
+    # Inductor or produce an artifact that faults at load time.
+    from neml2._accelerator import partition_compatible_devices  # noqa: PLC0415
+
+    devices, dropped = partition_compatible_devices(devices, args.dtype)
+    for d in dropped:
+        print(
+            f"neml2-compile: warning: ignoring {d} + {args.dtype} "
+            f"(this accelerator does not support this dtype); skipping.",
+            file=sys.stderr,
+        )
+    if not devices:
+        parser.error(
+            f"no supported (device, dtype) combinations from --device "
+            f"{args.device} --dtype {args.dtype}. Every requested combination "
+            f"was dropped as unsupported."
+        )
+
     # Enumerate every file the compile will generate so progress can report
     # [k/N]. The artifact set is device-independent, so a single plan (on cpu, to
     # avoid initializing CUDA in the parent) sizes the whole multi-device run;
@@ -761,13 +810,9 @@ def main(argv: list[str] | None = None) -> int:
         if not args.quiet:
             print(f"[{_progress['k']}/{total_files}] {name}", file=sys.stderr)
 
-    if args.jobs > 1 and "cuda" in devices:
-        print(
-            f"neml2-compile: warning: -j{args.jobs} with --device cuda spawns "
-            f"{args.jobs} worker processes, each initializing its own CUDA context "
-            "and invoking nvcc; watch GPU/host memory (consider -j1 for cuda).",
-            file=sys.stderr,
-        )
+    _warn_msg = _accelerator_jobs_warning(args.jobs, devices)
+    if _warn_msg is not None:
+        print(_warn_msg, file=sys.stderr)
 
     # Compile every device, parallelizing across the full (device x segment) grid
     # (jobs bounds the workers across ALL cells, so multiple devices compile

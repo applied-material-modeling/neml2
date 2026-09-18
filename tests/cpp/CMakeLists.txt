@@ -85,12 +85,16 @@ set(_fixture_input ${NEML2_SOURCE_DIR}/tests/aoti/forward_promoted/model.i)
 set(_artifact_dir ${_fixture_dir}/model)        # <dir>/<model>/<device>/...
 set(_stub ${_fixture_dir}/model_aoti.i)         # standalone stub next to it
 
-# Compile cpu always; add cuda when libtorch has CUDA so the tests can exercise
-# the cross-device + hybrid paths. The tests runtime-gate on at::hasCUDA() + the
-# cuda artifact existing, so this is a no-op on cpu-only machines.
+# Compile cpu always; add each accelerator family whose torch build is present
+# so the tests can exercise the cross-device + hybrid paths. The tests
+# runtime-gate on at::has<Family>() + the artifact existing, so this is a no-op
+# on machines missing those backends.
 set(_fixture_devices cpu)
 if(TARGET torch::cuda)
       list(APPEND _fixture_devices cuda)
+endif()
+if(TARGET torch::xpu)
+      list(APPEND _fixture_devices xpu)
 endif()
 
 add_test(
