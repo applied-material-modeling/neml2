@@ -72,7 +72,7 @@ dependencies = [
   # so we let the user opt in rather than block the install. See
   # doc/content/installation/compatibility.md for the regression-tested set.
   # dependencies: torch.version_min
-  "torch>=2.10.0",
+  "torch>=2.10.0a0",
   # dependencies: pyzag.version
   "pyzag==2.0.0",
   # dependencies: nmhit.version_min
