@@ -1,0 +1,45 @@
+(models-RationalDegradationFunction)=
+# RationalDegradationFunction
+
+**Source:** `models/phase_field_fracture/RationalDegradationFunction.py`
+
+Rational degradation function used to degrade the elastic strain energy
+density,
+$g = \frac{(1-d)^p}{(1-d)^p + Q(d)} (1 - \eta) + \eta$,
+where $Q(d) = b_1 d (1 + b_2 d + b_2 b_3 d^2)$, $d$ is the
+phase-field variable, $p$ the power, $\eta$ a residual
+degradation when $d = 1$, and $b_1, b_2, b_3$ material fitting
+parameters.
+
+## Inputs
+
+`phase` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Phase-field variable
+
+
+## Outputs
+
+`degradation` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Value of the degradation function
+
+
+## Parameters
+
+`power` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Power of the degradation function
+
+`b1` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Degradation parameter b_1
+
+`b2` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Degradation parameter b_2
+
+`b3` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Degradation parameter b_3
+
+
+## Other options
+
+`eta` &mdash; `float` &middot; default `0.0`
+: Residual degradation when d = 1
+

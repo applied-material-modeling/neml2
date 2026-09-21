@@ -1,0 +1,18 @@
+(data-CubicCrystal)=
+# CubicCrystal
+
+**Source:** `data/CubicCrystal.py`
+
+A specialization of the general CrystalGeometry class defining a cubic crystal system.
+
+## Parameters
+
+`lattice_parameter` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The lattice parameter
+
+`slip_directions` &mdash; `parameter` &middot; `MillerIndex` &middot; **required**
+: A list of Miller indices defining the slip directions
+
+`slip_planes` &mdash; `parameter` &middot; `MillerIndex` &middot; **required**
+: A list of Miller indices defining the slip planes
+

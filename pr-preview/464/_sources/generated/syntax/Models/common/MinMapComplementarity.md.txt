@@ -1,0 +1,44 @@
+(models-MinMapComplementarity)=
+# MinMapComplementarity
+
+**Source:** `models/common/MinMapComplementarity.py`
+
+KKT complementarity condition enforced with the *minimum map*.
+
+The complementarity conditions $a \ge 0, b \ge 0, ab = 0$ are equivalent to
+the single scalar equation
+$$r = \min(a, b) = 0.$$
+The residual is piecewise-linear: it equals whichever of the two arguments
+is currently smaller, a hard switch that gives semismooth-Newton /
+active-set behavior and converges robustly in return mapping. The switch is
+selected per batch entry with ``where`` (no Python branching), so the model
+lowers through AOTI and runs on GPU; the trade-off is a piecewise-constant
+Jacobian that is non-smooth at the switch $a = b$.
+
+The sign of each argument follows its declared inequality: ``LE`` enforces
+$\le 0$ (coefficient $-1$) and ``GE`` enforces $\ge 0$ (coefficient $+1$),
+so the enforced residual is $r = \min(s_a\, a,\; s_b\, b)$.
+
+## Inputs
+
+`a` &mdash; `input` &middot; `Scalar` &middot; **required**
+: First condition
+
+`b` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Second condition
+
+
+## Outputs
+
+`complementarity` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The minimum-map complementarity condition
+
+
+## Other options
+
+`a_inequality` &mdash; `str` &middot; default `LE`
+: Type of the inequality for the first variable a.
+
+`b_inequality` &mdash; `str` &middot; default `GE`
+: Type of inequality for the second variable b.
+
