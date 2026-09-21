@@ -1,6 +1,7 @@
 {
-  "stable": "v3.0",
+  "stable": "v3.1",
   "versions": [
+    "v3.1",
     "v3.0"
   ]
 }

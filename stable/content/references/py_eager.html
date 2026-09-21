@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>py-eager — eager Python - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="py-jit — in-process torch.compile" href="py_jit.html" /><link rel="prev" title="Benchmarking" href="../development/benchmarking.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>py-eager — eager Python - NEML2 3.1.0</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="py-jit — in-process torch.compile" href="py_jit.html" /><link rel="prev" title="Benchmarking" href="../development/benchmarking.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -162,7 +163,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
@@ -178,6 +181,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
@@ -203,12 +207,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -427,7 +433,7 @@ any device, and sub-batch models (e.g. crystal plasticity).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">stress</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
 </span></pre></div>
 </div>
@@ -441,15 +447,15 @@ all behave the way they do for any torch module.</p>
 <p><code class="docutils literal notranslate"><span class="pre">model.jvp</span></code> and <code class="docutils literal notranslate"><span class="pre">model.jacobian</span></code> are the typed forward-mode derivative surface —
 the same <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> API the compiled and embedded routes
 expose, so derivative code reads identically on every route:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"elasticity"</span><span class="p">)</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Jacobian-vector product: one cheap directional derivative.</span>
-</span><span data-line="4"><span class="n">outputs</span><span class="p">,</span> <span class="n">jvp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">eps</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">deps</span><span class="p">})</span>
-</span><span data-line="5"><span class="c1">#   jvp[&quot;stress&quot;] is an SR2 — the directional derivative of stress along deps.</span>
+</span><span data-line="4"><span class="n">outputs</span><span class="p">,</span> <span class="n">jvp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">eps</span><span class="p">},</span> <span class="p">{</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">deps</span><span class="p">})</span>
+</span><span data-line="5"><span class="c1">#   jvp["stress"] is an SR2 — the directional derivative of stress along deps.</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="c1"># Full Jacobian: every (output, input) block.</span>
-</span><span data-line="8"><span class="n">outputs</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">eps</span><span class="p">})</span>
-</span><span data-line="9"><span class="c1">#   J[&quot;stress&quot;][&quot;strain&quot;] is a typed block d(stress)/d(strain).</span>
+</span><span data-line="8"><span class="n">outputs</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">"strain"</span><span class="p">:</span> <span class="n">eps</span><span class="p">})</span>
+</span><span data-line="9"><span class="c1">#   J["stress"]["strain"] is a typed block d(stress)/d(strain).</span>
 </span></pre></div>
 </div>
 <p>Inputs and tangents are keyed by variable name and accept typed wrappers or raw
@@ -532,7 +538,7 @@ separate runtimes: <code class="docutils literal notranslate"><span class="pre">
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=674edf38"></script>
+      <script src="../../_static/documentation_options.js?v=dd1205ac"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

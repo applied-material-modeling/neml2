@@ -23,3 +23,9 @@ Matches the C++ ``ConstantExtrapolationPredictor`` HIT signature.
 `unknowns_R2` &mdash; `list`
 : The unknowns to extrapolate of type R2
 
+`cold` &mdash; `list`
+: Optional `unknown:variable` pairs naming a COLD value per unknown. On the step where there is no history -- the first -- that unknown is seeded from the named variable instead of from `u~1`, which lets a physics-based predictor supply the cold start while this model keeps every later step. Name only the unknowns you want seeded; the rest fall back to `u~1` exactly as before. The type comes from whichever `unknowns_*` list the name appears in, so there is no second list to keep in step.
+
+`time` &mdash; `str` &middot; default `t`
+: Time. Only consumed when a cold mapping is given -- the no-history test needs the time history.
+

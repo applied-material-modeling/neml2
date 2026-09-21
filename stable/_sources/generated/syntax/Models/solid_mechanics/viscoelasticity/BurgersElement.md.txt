@@ -27,6 +27,12 @@ $\dot{\boldsymbol{\varepsilon}}_K = (\boldsymbol{\sigma} - E_K \boldsymbol{\vare
 `stress` &mdash; `output` &middot; `SR2` &middot; **required**
 : Total stress (shared between Maxwell and Kelvin-Voigt elements)
 
+`maxwell_viscous_strain_rate` &mdash; `output` &middot; `SR2` &middot; default `maxwell_viscous_strain_rate`
+: Optional name for the derived output (defaults to 'maxwell_viscous_strain_rate', i.e. the 'maxwell_viscous_strain' variable name with the '_rate' suffix).
+
+`kelvin_voigt_strain_rate` &mdash; `output` &middot; `SR2` &middot; default `kelvin_voigt_strain_rate`
+: Optional name for the derived output (defaults to 'kelvin_voigt_strain_rate', i.e. the 'kelvin_voigt_strain' variable name with the '_rate' suffix).
+
 
 ## Parameters
 

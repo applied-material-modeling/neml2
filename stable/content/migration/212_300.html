@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Migrating from v2.x to v3.0 - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Migrating from v2.1.1 to v2.1.2" href="211_212.html" /><link rel="prev" title="Migration guides" href="index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Migrating from v2.x to v3.0 - NEML2 3.1.0</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Migrating from v2.1.1 to v2.1.2" href="211_212.html" /><link rel="prev" title="Migration guides" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -162,7 +163,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
@@ -178,6 +181,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
@@ -203,12 +207,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -610,7 +616,7 @@ sub-batch axis — the same source of truth <code class="docutils literal notran
 </span><span data-line="8"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[strain_template]</span>
 </span><span data-line="10"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FillSR2</span>
-</span><span data-line="11"><span class="w">    </span><span class="na">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;0.01 0 0 0 0 0&#39;</span>
+</span><span data-line="11"><span class="w">    </span><span class="na">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'0.01 0 0 0 0 0'</span>
 </span><span data-line="12"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="13"><span class="k">[]</span>
 </span></pre></div>
@@ -619,11 +625,11 @@ sub-batch axis — the same source of truth <code class="docutils literal notran
 </span><span data-line="2"><span class="k">[Tensors]</span>
 </span><span data-line="3"><span class="w">  </span><span class="k">[times]</span>
 </span><span data-line="4"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(0).dynamic_batch, Scalar(1).dynamic_batch, 5)&#39;</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'linspace(Scalar(0).dynamic_batch, Scalar(1).dynamic_batch, 5)'</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[strain_template]</span>
 </span><span data-line="8"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="9"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;SR2.fill(0.01, 0, 0, 0, 0, 0)&#39;</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'SR2.fill(0.01, 0, 0, 0, 0, 0)'</span>
 </span><span data-line="10"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="11"><span class="k">[]</span>
 </span></pre></div>
@@ -692,7 +698,7 @@ on <code class="docutils literal notranslate"><span class="pre">neml2.texture</s
 <h2>Documentation pipeline<a class="headerlink" href="#documentation-pipeline" title="Link to this heading">#</a></h2>
 <p>The documentation pipeline moved from Doxygen + custom Python scripts
 to Sphinx with the shibuya theme and MyST-NB. The Python contract:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>-v
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span><span class="s2">".[dev]"</span><span class="w"> </span>-v
 </span><span data-line="2">doc/scripts/build.sh
 </span></pre></div>
 </div>
@@ -745,7 +751,7 @@ wrapper) and <a class="reference internal" href="../development/building.html#bu
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=674edf38"></script>
+      <script src="../../_static/documentation_options.js?v=dd1205ac"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

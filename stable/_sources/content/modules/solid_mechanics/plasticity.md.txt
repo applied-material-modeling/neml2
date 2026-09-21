@@ -220,6 +220,10 @@ compositions for the most common dialects:
 - `rate_independent_plasticity/gurson/` — porous metal plasticity using
   [](models-GTNYieldFunction) and [](models-GursonCavitation).
 - `viscoplasticity/perfect/` — Perzyna viscoplastic counterpart.
+- `viscoplasticity/*_cd_predictor/` — the same scenarios warm-started by
+  [](models-CoordinateDescentPredictor), with the coupling differentiated
+  out of the return path by [](models-RateCondensation). Each shares its
+  parent's gold: a predictor moves the initial guess, never the answer.
 - `recovery/` — adds isotropic/kinematic static recovery using
   [](models-PowerLawIsotropicHardeningStaticRecovery) and
   [](models-PowerLawKinematicHardeningStaticRecovery).

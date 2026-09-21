@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Connecting to input files - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="The forward operator" href="../the_forward_operator/main.html" /><link rel="prev" title="Declaring inputs, outputs, and parameters" href="../argument_declaration/main.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Connecting to input files - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="The forward operator" href="../the_forward_operator/main.html" /><link rel="prev" title="Declaring inputs, outputs, and parameters" href="../argument_declaration/main.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tensor_types/index.html">Tensor types</a><ul>
@@ -162,7 +163,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Models/index.html">Models</a><ul>
@@ -178,6 +181,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
@@ -203,12 +207,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -422,7 +428,7 @@ data-aria-dark="Switch to auto color mode">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="connecting-to-input-files">
 <span id="tutorials-extension-input-files"></span><h1>Connecting to input files<a class="headerlink" href="#connecting-to-input-files" title="Link to this heading">#</a></h1>
-<a class="colab-badge" href="https://colab.research.google.com/github/applied-material-modeling/neml2/blob/v3.0.7/doc/content/tutorials/extension/connection_to_input_files/main.ipynb" target="_blank" rel="noopener" title="Run this tutorial in Google Colab"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a><p>In this tutorial, we’ll take a <code class="docutils literal notranslate"><span class="pre">Model</span></code> subclass we wrote ourselves and make it
+<a class="colab-badge" href="https://colab.research.google.com/github/applied-material-modeling/neml2/blob/v3.1.0/doc/content/tutorials/extension/connection_to_input_files/main.ipynb" target="_blank" rel="noopener" title="Run this tutorial in Google Colab"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a><p>In this tutorial, we’ll take a <code class="docutils literal notranslate"><span class="pre">Model</span></code> subclass we wrote ourselves and make it
 loadable from an HIT input file, the same way the built-in models in
 <a class="reference internal" href="../../models/running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a> are. Two ingredients do
 the work: a decorator that registers the class under a type name, and
@@ -460,19 +466,19 @@ buffer. Write it out as <code class="docutils literal notranslate"><span class="
 </span><span data-line="16"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">Vec</span>
 </span><span data-line="17">
 </span><span data-line="18">
-</span><span data-line="19"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;ProjectileAcceleration&quot;</span><span class="p">)</span>
+</span><span data-line="19"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">"ProjectileAcceleration"</span><span class="p">)</span>
 </span><span data-line="20"><span class="k">class</span><span class="w"> </span><span class="nc">ProjectileAcceleration</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-</span><span data-line="21"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Projectile acceleration under gravity and linear drag: a = g - mu * v.&quot;&quot;&quot;</span>
+</span><span data-line="21"><span class="w">    </span><span class="sd">"""Projectile acceleration under gravity and linear drag: a = g - mu * v."""</span>
 </span><span data-line="22">
 </span><span data-line="23">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
-</span><span data-line="24">        <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">&quot;Projectile velocity&quot;</span><span class="p">),</span>
-</span><span data-line="25">        <span class="n">output</span><span class="p">(</span><span class="s2">&quot;acceleration&quot;</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">&quot;Projectile acceleration&quot;</span><span class="p">),</span>
-</span><span data-line="26">        <span class="n">parameter</span><span class="p">(</span><span class="s2">&quot;dynamic_viscosity&quot;</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="s2">&quot;Drag coefficient mu&quot;</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;mu&quot;</span><span class="p">),</span>
+</span><span data-line="24">        <span class="nb">input</span><span class="p">(</span><span class="s2">"velocity"</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">"Projectile velocity"</span><span class="p">),</span>
+</span><span data-line="25">        <span class="n">output</span><span class="p">(</span><span class="s2">"acceleration"</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">"Projectile acceleration"</span><span class="p">),</span>
+</span><span data-line="26">        <span class="n">parameter</span><span class="p">(</span><span class="s2">"dynamic_viscosity"</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="s2">"Drag coefficient mu"</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="s2">"mu"</span><span class="p">),</span>
 </span><span data-line="27">        <span class="n">buffer</span><span class="p">(</span>
-</span><span data-line="28">            <span class="s2">&quot;gravity&quot;</span><span class="p">,</span>
+</span><span data-line="28">            <span class="s2">"gravity"</span><span class="p">,</span>
 </span><span data-line="29">            <span class="n">Vec</span><span class="p">,</span>
-</span><span data-line="30">            <span class="s2">&quot;Gravitational acceleration vector&quot;</span><span class="p">,</span>
-</span><span data-line="31">            <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span>
+</span><span data-line="30">            <span class="s2">"Gravitational acceleration vector"</span><span class="p">,</span>
+</span><span data-line="31">            <span class="n">attr</span><span class="o">=</span><span class="s2">"g"</span><span class="p">,</span>
 </span><span data-line="32">            <span class="n">default</span><span class="o">=</span><span class="n">Vec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.81</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 </span><span data-line="33">        <span class="p">),</span>
 </span><span data-line="34">    <span class="p">)</span>
@@ -510,8 +516,8 @@ helpers and what they accept.</p></li>
 </span><span data-line="2"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
 </span><span data-line="3">  <span class="p">[</span><span class="n">accel</span><span class="p">]</span>
 </span><span data-line="4">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ProjectileAcceleration</span>
-</span><span data-line="5">    <span class="n">velocity</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span>
-</span><span data-line="6">    <span class="n">acceleration</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span>
+</span><span data-line="5">    <span class="n">velocity</span> <span class="o">=</span> <span class="s1">'v'</span>
+</span><span data-line="6">    <span class="n">acceleration</span> <span class="o">=</span> <span class="s1">'a'</span>
 </span><span data-line="7">    <span class="n">dynamic_viscosity</span> <span class="o">=</span> <span class="mf">0.05</span>
 </span><span data-line="8">  <span class="p">[]</span>
 </span><span data-line="9"><span class="p">[]</span>
@@ -546,12 +552,12 @@ it first. In a normal script that’s just an <code class="docutils literal notr
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"."</span><span class="p">)</span>
 </span><span data-line="4"><span class="kn">import</span><span class="w"> </span><span class="nn">projectile</span>  <span class="c1"># the @register_neml2_object runs at import time</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="7">
-</span><span data-line="8"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;accel&quot;</span><span class="p">)</span>
+</span><span data-line="8"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"input.i"</span><span class="p">,</span> <span class="s2">"accel"</span><span class="p">)</span>
 </span><span data-line="9"><span class="n">model</span>
 </span></pre></div>
 </div>
@@ -571,7 +577,7 @@ it first. In a normal script that’s just an <code class="docutils literal notr
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">({&#39;v&#39;: neml2.types.vec.Vec}, {&#39;a&#39;: neml2.types.vec.Vec})
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">({'v': neml2.types.vec.Vec}, {'a': neml2.types.vec.Vec})
 </span></pre></div>
 </div>
 </div>
@@ -679,7 +685,7 @@ others inside a single <code class="docutils literal notranslate"><span class="p
     </div>
   </div>
 </footer>
-      <script src="../../../../_static/documentation_options.js?v=674edf38"></script>
+      <script src="../../../../_static/documentation_options.js?v=dd1205ac"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>

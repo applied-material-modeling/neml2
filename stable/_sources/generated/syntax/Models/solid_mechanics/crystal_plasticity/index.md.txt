@@ -5,6 +5,7 @@
 ```{toctree}
 :maxdepth: 1
 
+CrystalPlasticityDeformationGradientPredictor
 CrystalPlasticityStrainPredictor
 DislocationObstacleStrengthMap
 ElasticStrainRate
@@ -18,6 +19,7 @@ PlasticVorticity
 PowerLawSlipRule
 ResolvedShear
 SingleSlipStrengthMap
+SlipSystemElasticInteraction
 SumSlipRates
 VoceSingleSlipHardeningRule
 ```

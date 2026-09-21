@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.es - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="neml2.drivers" href="neml2.drivers.html" /><link rel="prev" title="neml2.solvers" href="neml2.solvers.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.es - NEML2 3.1.0</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="neml2.drivers" href="neml2.drivers.html" /><link rel="prev" title="neml2.solvers" href="neml2.solvers.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -162,7 +163,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
@@ -178,6 +181,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
@@ -203,12 +207,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -381,24 +387,33 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.batch"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.batch</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.col_layout"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.col_layout</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.disassemble"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.disassemble()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.group"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.group()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.per_instance_matvec"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.per_instance_matvec()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.row_layout"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.row_layout</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.select_blocks"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.select_blocks()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.tensors"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.tensors</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.transpose"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.transpose()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector"><code class="docutils literal notranslate"><span class="pre">AssembledVector</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.batch"><code class="docutils literal notranslate"><span class="pre">AssembledVector.batch</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.disassemble"><code class="docutils literal notranslate"><span class="pre">AssembledVector.disassemble()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.from_dict"><code class="docutils literal notranslate"><span class="pre">AssembledVector.from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.from_flat"><code class="docutils literal notranslate"><span class="pre">AssembledVector.from_flat()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.group"><code class="docutils literal notranslate"><span class="pre">AssembledVector.group()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.layout"><code class="docutils literal notranslate"><span class="pre">AssembledVector.layout</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.tensors"><code class="docutils literal notranslate"><span class="pre">AssembledVector.tensors</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.to_flat"><code class="docutils literal notranslate"><span class="pre">AssembledVector.to_flat()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout"><code class="docutils literal notranslate"><span class="pre">AxisLayout</span></code></a><ul>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.block_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.block_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.flat_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.flat_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.group_flat_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_flat_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.group_intmd_ndim"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_intmd_ndim()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.group_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_size()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.group_sub_batch_shape"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_sub_batch_shape()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.groups"><code class="docutils literal notranslate"><span class="pre">AxisLayout.groups</span></code></a></li>
@@ -467,6 +482,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem</span></code></a><ul>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.assemble"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.assemble()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.declared_sub_batch_shapes</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.from_hit"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.from_hit()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.g"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.g()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.hit"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.hit</span></code></a></li>
@@ -562,7 +578,7 @@ path: operator graphs (<a class="reference internal" href="#neml2.es.RHS" title=
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.es.AssembledMatrix">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">AssembledMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row_layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensors=&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledMatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledMatrix" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>2D grid of per-(row_group, col_group) tensor blocks.</p>
 <p>Per-block storage decision:</p>
 <ul class="simple">
@@ -586,10 +602,19 @@ group k) runs after the per-block mm. This is the v2-parity
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>row_layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
 <li><p><strong>col_layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
-<li><p><strong>tensors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><em>Tensor</em></a><em>]</em><em>]</em>)</p></li>
+<li><p><strong>tensors</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><em>Tensor</em></a><em>]</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="neml2.es.AssembledMatrix.batch">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_BatchIndexAM</span></em><a class="headerlink" href="#neml2.es.AssembledMatrix.batch" title="Link to this definition">#</a></dt>
+<dd><p>Index/slice the leading dynamic (batch) axis of every block.</p>
+<p><code class="docutils literal notranslate"><span class="pre">am.batch[key]</span></code> returns a new <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.AssembledMatrix"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledMatrix</span></code></a> with each block
+sliced along its batch region (<code class="docutils literal notranslate"><span class="pre">t.batch[key]</span></code>) – the dynamic (e.g.
+time) axis the pyzag adapter and solvers walk.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AssembledMatrix.col_layout">
 <span class="sig-name descname"><span class="pre">col_layout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><span class="pre">AxisLayout</span></a></em><a class="headerlink" href="#neml2.es.AssembledMatrix.col_layout" title="Link to this definition">#</a></dt>
@@ -619,12 +644,42 @@ at their own framework boundary.</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>i</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
-<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>i</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AssembledMatrix.per_instance_matvec">
+<span class="sig-name descname"><span class="pre">per_instance_matvec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transpose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledMatrix.per_instance_matvec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledMatrix.per_instance_matvec" title="Link to this definition">#</a></dt>
+<dd><p>Grain-diagonal matrix-vector product <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">&#64;</span> <span class="pre">x</span></code> (or <code class="docutils literal notranslate"><span class="pre">Aᵀ</span> <span class="pre">&#64;</span> <span class="pre">x</span></code>).</p>
+<p>Deliberately distinct from <code class="xref py py-meth docutils literal notranslate"><span class="pre">__matmul__()</span></code>: a BLOCK output group is
+kept <strong>per-site</strong> (the grain-diagonal <code class="docutils literal notranslate"><span class="pre">B</span> <span class="pre">&#64;</span> <span class="pre">v</span></code> a block Thomas sweep or
+adjoint coupling needs) instead of being summed over its site axis. The
+per-site sum fires only when a DENSE output group consumes a BLOCK input
+– the <code class="docutils literal notranslate"><span class="pre">A_sp</span> <span class="pre">&#64;</span> <span class="pre">x_p</span></code> Schur cross-term (DENSE row × BLOCK col) that
+aggregates per-grain contributions into the global residual. This makes
+it the mutual inverse of the <a class="reference internal" href="neml2.solvers.html#neml2.solvers.SchurComplement" title="neml2.solvers.SchurComplement"><code class="xref py py-class docutils literal notranslate"><span class="pre">SchurComplement</span></code></a>
+solve, whereas <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> aggregates on every contracted BLOCK group (correct
+only for the Schur cross-terms).</p>
+<p><code class="docutils literal notranslate"><span class="pre">x</span></code>’s groups correspond positionally to the input layout (the column
+layout, or the row layout when <code class="docutils literal notranslate"><span class="pre">transpose</span></code>). <code class="docutils literal notranslate"><span class="pre">transpose</span></code> applies
+<code class="docutils literal notranslate"><span class="pre">Aᵀ</span></code> (swap row/col layouts and transpose each block’s base axes).
+Returns an <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.AssembledVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledVector</span></code></a> over the output layout.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>)</p></li>
+<li><p><strong>transpose</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -654,7 +709,7 @@ silently get the wrong shape.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>row_layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
 <li><p><strong>col_layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
-<li><p><strong>blocks</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><em>Tensor</em></a><em>]</em><em>]</em>)</p></li>
+<li><p><strong>blocks</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><em>Tensor</em></a><em>]</em><em>]</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -665,15 +720,31 @@ silently get the wrong shape.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AssembledMatrix.tensors">
-<span class="sig-name descname"><span class="pre">tensors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AssembledMatrix.tensors" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">tensors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AssembledMatrix.tensors" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AssembledMatrix.transpose">
+<span class="sig-name descname"><span class="pre">transpose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledMatrix.transpose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledMatrix.transpose" title="Link to this definition">#</a></dt>
+<dd><p>Block transpose: swap row/col layouts and transpose each block’s base axes.</p>
+<p>Correct for blocks with at most one intermediate (sub-batch) axis – the
+envelope the assembled ops support. A block carrying two distinct
+intermediate axes (separate row and col sites) can’t be transposed by a
+base-axis swap alone (the intmd axes would need reordering too), so it is
+rejected rather than silently mishandled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.es.AssembledVector">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">AssembledVector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledVector" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Per-group dense vector blocks.</p>
 <p>Each group’s tensor follows the <code class="xref py py-data docutils literal notranslate"><span class="pre">SubBatchStructure</span></code> of the owning
 <a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.AxisLayout"><code class="xref py py-class docutils literal notranslate"><span class="pre">AxisLayout</span></code></a>:</p>
@@ -688,10 +759,19 @@ silently get the wrong shape.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
-<li><p><strong>tensors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><em>Tensor</em></a><em>]</em>)</p></li>
+<li><p><strong>tensors</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><em>Tensor</em></a><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="neml2.es.AssembledVector.batch">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_BatchIndexAV</span></em><a class="headerlink" href="#neml2.es.AssembledVector.batch" title="Link to this definition">#</a></dt>
+<dd><p>Index/slice the leading dynamic (batch) axis of every group tensor.</p>
+<p><code class="docutils literal notranslate"><span class="pre">av.batch[key]</span></code> returns a new <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.AssembledVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledVector</span></code></a> with each group
+tensor sliced along its batch region (<code class="docutils literal notranslate"><span class="pre">t.batch[key]</span></code>) – the dynamic
+(e.g. time) axis indexing the pyzag adapter and solvers walk.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.es.AssembledVector.disassemble">
 <span class="sig-name descname"><span class="pre">disassemble</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledVector.disassemble"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledVector.disassemble" title="Link to this definition">#</a></dt>
@@ -727,7 +807,27 @@ appropriate <code class="docutils literal notranslate"><span class="pre">TensorW
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
-<li><p><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
+<li><p><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AssembledVector.from_flat">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_flat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledVector.from_flat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledVector.from_flat" title="Link to this definition">#</a></dt>
+<dd><p>Split a flat <code class="docutils literal notranslate"><span class="pre">(*dyn,</span> <span class="pre">layout.flat_size())</span></code> tensor into a per-group
+<a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.AssembledVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledVector</span></code></a>. Inverse of <a class="reference internal" href="#neml2.es.AssembledVector.to_flat" title="neml2.es.AssembledVector.to_flat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_flat()</span></code></a>.</p>
+<p>BLOCK groups recover their preserved sub-batch (site) axes; DENSE groups
+stay flat (their sub-batch was folded into base at assembly).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
+<li><p><strong>flat</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -741,7 +841,7 @@ appropriate <code class="docutils literal notranslate"><span class="pre">TensorW
 <span class="sig-name descname"><span class="pre">group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledVector.group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledVector.group" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a></p>
@@ -756,24 +856,39 @@ appropriate <code class="docutils literal notranslate"><span class="pre">TensorW
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AssembledVector.tensors">
-<span class="sig-name descname"><span class="pre">tensors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AssembledVector.tensors" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">tensors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AssembledVector.tensors" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AssembledVector.to_flat">
+<span class="sig-name descname"><span class="pre">to_flat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledVector.to_flat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledVector.to_flat" title="Link to this definition">#</a></dt>
+<dd><p>Pack all groups into one flat <code class="docutils literal notranslate"><span class="pre">(*dyn,</span> <span class="pre">layout.flat_size())</span></code> tensor.</p>
+<p>Each group tensor is flattened past its dynamic-batch axes (folding
+sub-batch + base) and concatenated along the feature axis – the raw
+form the pyzag adapter and time-integration solvers consume. Inverse of
+<a class="reference internal" href="#neml2.es.AssembledVector.from_flat" title="neml2.es.AssembledVector.from_flat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_flat()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">AxisLayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Ordered variable groups, their tensor types, per-variable
 sub-batch shapes, and per-group <code class="xref py py-data docutils literal notranslate"><span class="pre">SubBatchStructure</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>groups</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em><em>, </em><em>...</em><em>]</em>)</p></li>
-<li><p><strong>specs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><em>type</em></a><em>[</em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em><em>]</em>)</p></li>
-<li><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a><em>]</em>)</p></li>
-<li><p><strong>structure</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><em>Literal</em></a><em>[</em><em>'block'</em><em>, </em><em>'dense'</em><em>]</em><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>groups</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>specs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)"><em>type</em></a><em>[</em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em><em>]</em>)</p></li>
+<li><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>]</em>)</p></li>
+<li><p><strong>structure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><em>Literal</em></a><em>[</em><em>'block'</em><em>, </em><em>'dense'</em><em>]</em><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -783,7 +898,54 @@ sub-batch shapes, and per-group <code class="xref py py-data docutils literal no
 <dd><p>Per-(dynamic-batch, sub-batch-site) storage size.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AxisLayout.flat_size">
+<span class="sig-name descname"><span class="pre">flat_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.flat_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.flat_size" title="Link to this definition">#</a></dt>
+<dd><p>Total flattened DOF count summed across all groups (base times sub-batch).</p>
+<p>The size of the single flat tensor an <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.AssembledVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledVector</span></code></a>
+over this layout packs to (see <a class="reference internal" href="#neml2.es.AssembledVector.to_flat" title="neml2.es.AssembledVector.to_flat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AssembledVector.to_flat()</span></code></a>); contrast
+<a class="reference internal" href="#neml2.es.AxisLayout.storage_size" title="neml2.es.AxisLayout.storage_size"><code class="xref py py-meth docutils literal notranslate"><span class="pre">storage_size()</span></code></a>, which folds nothing and counts base storage only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AxisLayout.group_flat_size">
+<span class="sig-name descname"><span class="pre">group_flat_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.group_flat_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.group_flat_size" title="Link to this definition">#</a></dt>
+<dd><p>Flattened DOF count of group <code class="docutils literal notranslate"><span class="pre">index</span></code> – base storage times sub-batch
+extent (BLOCK: the shared per-group site count; DENSE: per-variable,
+folded into base). Contrast <a class="reference internal" href="#neml2.es.AxisLayout.group_size" title="neml2.es.AxisLayout.group_size"><code class="xref py py-meth docutils literal notranslate"><span class="pre">group_size()</span></code></a>, which is base-only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AxisLayout.group_intmd_ndim">
+<span class="sig-name descname"><span class="pre">group_intmd_ndim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.group_intmd_ndim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.group_intmd_ndim" title="Link to this definition">#</a></dt>
+<dd><p>Number of intermediate (sub-batch) axes the assembled tensor carries for
+group <code class="docutils literal notranslate"><span class="pre">index</span></code> – <code class="docutils literal notranslate"><span class="pre">len(group_sub_batch_shape)</span></code> for a BLOCK group, 0 for
+a DENSE group (sub-batch folded into base). Counts axes, not DOFs (see
+<a class="reference internal" href="#neml2.es.AxisLayout.group_flat_size" title="neml2.es.AxisLayout.group_flat_size"><code class="xref py py-meth docutils literal notranslate"><span class="pre">group_flat_size()</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -793,10 +955,10 @@ sub-batch shapes, and per-group <code class="xref py py-data docutils literal no
 <span class="sig-name descname"><span class="pre">group_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.group_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.group_size" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -812,32 +974,32 @@ may differ — they get folded into base on assembly — and this
 method returns the FIRST variable’s shape for shape inference only.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout.groups">
-<span class="sig-name descname"><span class="pre">groups</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.groups" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">groups</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.groups" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout.ngroup">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ngroup</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#neml2.es.AxisLayout.ngroup" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ngroup</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#neml2.es.AxisLayout.ngroup" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout.nvar">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nvar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#neml2.es.AxisLayout.nvar" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nvar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#neml2.es.AxisLayout.nvar" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout.specs">
-<span class="sig-name descname"><span class="pre">specs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><span class="pre">TensorWrapper</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.specs" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">specs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><span class="pre">TensorWrapper</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.specs" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -845,14 +1007,14 @@ method returns the FIRST variable’s shape for shape inference only.</p>
 <span class="sig-name descname"><span class="pre">storage_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.storage_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.storage_size" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout.structure">
-<span class="sig-name descname"><span class="pre">structure</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'block'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'dense'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.structure" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">structure</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'block'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'dense'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.structure" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -861,17 +1023,17 @@ method returns the FIRST variable’s shape for shape inference only.</p>
 <dd><p>Per-variable sub-batch shape (empty when the var is sub-batch-trivial).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout.sub_batch_shapes">
-<span class="sig-name descname"><span class="pre">sub_batch_shapes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><span class="pre">Size</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.sub_batch_shapes" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">sub_batch_shapes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><span class="pre">Size</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.sub_batch_shapes" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -880,7 +1042,7 @@ method returns the FIRST variable’s shape for shape inference only.</p>
 <dd><p>Single-group sub-layout containing only <code class="docutils literal notranslate"><span class="pre">self.groups[index]</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -893,10 +1055,10 @@ method returns the FIRST variable’s shape for shape inference only.</p>
 <span class="sig-name descname"><span class="pre">type_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.type_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.type_of" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)">type</a>[<a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a>]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)">type</a>[<a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -906,10 +1068,10 @@ method returns the FIRST variable’s shape for shape inference only.</p>
 <span class="sig-name descname"><span class="pre">var_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.var_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.var_size" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -919,7 +1081,7 @@ method returns the FIRST variable’s shape for shape inference only.</p>
 <span class="sig-name descname"><span class="pre">vars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.vars" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, …]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -930,7 +1092,7 @@ method returns the FIRST variable’s shape for shape inference only.</p>
 <dd><p>Return a new layout with updated sub-batch shapes (frozen replacement).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a><em>]</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -958,8 +1120,8 @@ is a single dense block).</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<a class="reference internal" href="#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p></li>
-<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
-<li><p><strong>selected_pairs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)"><em>set</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>selected_pairs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#set" title="(in Python v3.14)"><em>set</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -977,10 +1139,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1004,7 +1166,7 @@ line-search residual. The promoted-parameter tail is empty in the common case.</
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<a class="reference internal" href="#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p></li>
-<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1022,10 +1184,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1049,7 +1211,7 @@ the stored scalar (constant across the input Jacobian).</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<a class="reference internal" href="#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p></li>
-<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1067,10 +1229,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1096,7 +1258,7 @@ algebra over the assembled operators) but is accepted for a uniform signature.</
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<a class="reference internal" href="#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p></li>
-<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1114,10 +1276,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1142,8 +1304,8 @@ convention (<code class="xref py py-func docutils literal notranslate"><span cla
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<a class="reference internal" href="#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p></li>
-<li><p><strong>selected_pairs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)"><em>set</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
-<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>selected_pairs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#set" title="(in Python v3.14)"><em>set</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1153,7 +1315,7 @@ convention (<code class="xref py py-func docutils literal notranslate"><span cla
 <dd><p>The (unknown, given) pairs this graph emits, in emission order.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>]]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1172,10 +1334,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1196,8 +1358,8 @@ linear algebra (plain compile).</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<a class="reference internal" href="#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p></li>
-<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
-<li><p><strong>selected_pairs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)"><em>set</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>selected_pairs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#set" title="(in Python v3.14)"><em>set</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1216,12 +1378,12 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>A</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p></li>
-<li><p><strong>Bp</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p></li>
+<li><p><strong>A</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p></li>
+<li><p><strong>Bp</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1231,7 +1393,7 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.es.LinearSystem">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">LinearSystem</span></span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Base class for systems with assembled operators.</p>
 <dl class="field-list simple">
 </dl>
@@ -1250,7 +1412,7 @@ registered hooks while the latter silently ignores them.</p>
 <span class="sig-name descname"><span class="pre">A_and_B</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem.A_and_B"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem.A_and_B" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>, <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>, <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1260,7 +1422,7 @@ registered hooks while the latter silently ignores them.</p>
 <span class="sig-name descname"><span class="pre">A_and_B_and_b</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem.A_and_B_and_b"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem.A_and_B_and_b" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>, <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>, <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>, <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>, <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1270,7 +1432,7 @@ registered hooks while the latter silently ignores them.</p>
 <span class="sig-name descname"><span class="pre">A_and_b</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem.A_and_b"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem.A_and_b" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>, <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a>, <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1289,13 +1451,13 @@ registered subclass (<code class="docutils literal notranslate"><span class="pre
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>need_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
-<li><p><strong>need_B</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
-<li><p><strong>need_b</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>need_A</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>need_B</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>need_b</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a> | None]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a> | None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1361,7 +1523,7 @@ registered subclass (<code class="docutils literal notranslate"><span class="pre
 <span class="sig-name descname"><span class="pre">setup_blayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem.setup_blayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem.setup_blayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1374,7 +1536,7 @@ registered subclass (<code class="docutils literal notranslate"><span class="pre
 <span class="sig-name descname"><span class="pre">setup_glayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem.setup_glayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem.setup_glayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1387,7 +1549,7 @@ registered subclass (<code class="docutils literal notranslate"><span class="pre
 <span class="sig-name descname"><span class="pre">setup_ulayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem.setup_ulayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem.setup_ulayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1431,7 +1593,7 @@ both feed the shared <code class="docutils literal notranslate"><span class="pre
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<a class="reference internal" href="#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p></li>
-<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1449,10 +1611,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1461,16 +1623,17 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.es.ModelNonlinearSystem">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">ModelNonlinearSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unknowns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residuals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">ModelNonlinearSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unknowns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residuals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">declared_sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#neml2.es.NonlinearSystem" title="neml2.es.system.NonlinearSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">NonlinearSystem</span></code></a></p>
 <p>A nonlinear system defined by a Model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> (<a class="reference internal" href="neml2.aoti.html#neml2.aoti.Model" title="neml2.aoti.Model"><em>Model</em></a>)</p></li>
-<li><p><strong>unknowns</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>)</p></li>
-<li><p><strong>residuals</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
-<li><p><strong>structure</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>unknowns</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>)</p></li>
+<li><p><strong>residuals</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>structure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>declared_sub_batch_shapes</strong> (<em>Mapping</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>torch.Size</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1480,15 +1643,26 @@ registered hooks while the latter silently ignores them.</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>need_A</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
-<li><p><strong>need_B</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
-<li><p><strong>need_b</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>need_A</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>need_B</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>need_b</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a> | None]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a> | None]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes">
+<span class="sig-name descname"><span class="pre">declared_sub_batch_shapes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><span class="pre">Size</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes" title="Link to this definition">#</a></dt>
+<dd><p>Per-variable sub-batch extents declared in the input file’s
+<code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code>, keyed by variable name. Empty
+when the system is constructed directly in Python. This is what lets
+a sub-batched unknown have a known shape before any tensor for it
+exists; <code class="xref py py-class docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> and the pyzag
+adapter both read it from here rather than re-deriving it.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1544,7 +1718,7 @@ should funnel through <a class="reference internal" href="#neml2.es.ModelNonline
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>u</strong> (<a class="reference internal" href="#neml2.es.SparseVector" title="neml2.es.sparse.SparseVector"><em>SparseVector</em></a>)</p></li>
 <li><p><strong>g</strong> (<a class="reference internal" href="#neml2.es.SparseVector" title="neml2.es.sparse.SparseVector"><em>SparseVector</em></a>)</p></li>
-<li><p><strong>dyn_shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>dyn_shape</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -1590,7 +1764,7 @@ by the C++-backed Newton solver to write the converged iterate back
 into the system state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>u_raws</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a><em>]</em>)</p>
+<dd class="field-odd"><p><strong>u_raws</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -1603,7 +1777,7 @@ into the system state.</p>
 <span class="sig-name descname"><span class="pre">setup_blayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem.setup_blayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.setup_blayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1616,7 +1790,7 @@ into the system state.</p>
 <span class="sig-name descname"><span class="pre">setup_glayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem.setup_glayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.setup_glayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1629,7 +1803,7 @@ into the system state.</p>
 <span class="sig-name descname"><span class="pre">setup_ulayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem.setup_ulayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.setup_ulayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1682,13 +1856,13 @@ directly instead – no helper needed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
-<li><p><strong>g</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
-<li><p><strong>sub_batch_ndim</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
+<li><p><strong>g</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
+<li><p><strong>sub_batch_ndim</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.SparseVector" title="neml2.es.sparse.SparseVector"><em>SparseVector</em></a>, <a class="reference internal" href="#neml2.es.SparseVector" title="neml2.es.sparse.SparseVector"><em>SparseVector</em></a>]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.SparseVector" title="neml2.es.sparse.SparseVector"><em>SparseVector</em></a>, <a class="reference internal" href="#neml2.es.SparseVector" title="neml2.es.sparse.SparseVector"><em>SparseVector</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1729,7 +1903,7 @@ tail (scalar; constant across the solve) is empty in the common case.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<a class="reference internal" href="#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p></li>
-<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1747,10 +1921,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1760,7 +1934,7 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.es.SparseMatrix">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">SparseMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row_layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cells</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/sparse.html#SparseMatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.SparseMatrix" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Per-(row_var, col_var) cell map; the typed dual of <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.AssembledMatrix"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledMatrix</span></code></a>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">cells[row_var][col_var]</span></code> is the assembled per-cell
 <a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a> block that
@@ -1776,7 +1950,7 @@ is normal in chain-rule derivatives).</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>row_layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
 <li><p><strong>col_layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
-<li><p><strong>cells</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><em>Tensor</em></a><em>]</em><em>]</em>)</p></li>
+<li><p><strong>cells</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><em>Tensor</em></a><em>]</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1795,7 +1969,7 @@ per-block sparsity (missing entries -&gt; zero blocks).</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.SparseMatrix.cells">
-<span class="sig-name descname"><span class="pre">cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.SparseMatrix.cells" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.SparseMatrix.cells" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1824,7 +1998,7 @@ per-block sparsity (missing entries -&gt; zero blocks).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.es.SparseVector">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">SparseVector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/sparse.html#SparseVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.SparseVector" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Per-variable typed-wrapper vector; the typed dual of <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.AssembledVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledVector</span></code></a>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">values</span></code> maps each variable name listed in <code class="docutils literal notranslate"><span class="pre">layout.vars()</span></code> to its
 typed value (a <a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">TensorWrapper</span></code></a> subclass instance).
@@ -1839,7 +2013,7 @@ an internal neml2 helper.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
-<li><p><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
+<li><p><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1859,7 +2033,7 @@ an internal neml2 helper.</p>
 <span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/sparse.html#SparseVector.items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.SparseVector.items" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ItemsView[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper">TensorWrapper</a>]</p>
+<dd class="field-odd"><p>ItemsView[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper">TensorWrapper</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1887,7 +2061,7 @@ an internal neml2 helper.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.SparseVector.values">
-<span class="sig-name descname"><span class="pre">values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><span class="pre">TensorWrapper</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.SparseVector.values" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><span class="pre">TensorWrapper</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.SparseVector.values" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1901,7 +2075,7 @@ an internal neml2 helper.</p>
 <dd class="field-odd"><p><strong>v</strong> (<a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1915,7 +2089,7 @@ an internal neml2 helper.</p>
 <dd class="field-odd"><p><strong>v</strong> (<a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1965,7 +2139,7 @@ an internal neml2 helper.</p>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=674edf38"></script>
+      <script src="../../_static/documentation_options.js?v=dd1205ac"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

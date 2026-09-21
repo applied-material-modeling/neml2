@@ -1,0 +1,48 @@
+(models-KocksMeckingFlowViscosity)=
+# KocksMeckingFlowViscosity
+
+**Source:** `models/solid_mechanics/plasticity/KocksMeckingFlowViscosity.py`
+
+Calculates the temperature-dependent flow viscosity for a Perzyna-type
+model using the Kocks-Mecking model.  The value is
+$\eta = \exp{B} \mu \dot{\varepsilon}_0^\frac{-k T A}{\mu b^3}$ with
+$\mu$ the shear modulus, $\dot{\varepsilon}_0$ a reference
+strain rate,  $b$ the Burgers vector, $k$ the Boltzmann
+constant, $T$ absolute temperature, $A$ the Kocks-Mecking slope
+parameter, and $B$ the Kocks-Mecking intercept parameter.
+
+## Inputs
+
+`temperature` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Absolute temperature
+
+
+## Outputs
+
+`viscosity` &mdash; `output` &middot; `Scalar`
+: Output name of the flow viscosity
+
+
+## Parameters
+
+`A` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The Kocks-Mecking slope parameter
+
+`B` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The Kocks-Mecking intercept parameter
+
+`shear_modulus` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The shear modulus
+
+
+## Other options
+
+`eps0` &mdash; `float` &middot; **required**
+: The reference strain rate
+
+`k` &mdash; `float` &middot; **required**
+: Boltzmann constant
+
+`b` &mdash; `float` &middot; **required**
+: The Burgers vector
+

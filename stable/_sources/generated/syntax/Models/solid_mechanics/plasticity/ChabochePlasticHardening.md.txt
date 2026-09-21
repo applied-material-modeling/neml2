@@ -26,6 +26,12 @@ material parameters.
 : Back stress
 
 
+## Outputs
+
+`back_stress_rate` &mdash; `output` &middot; `SR2` &middot; default `back_stress_rate`
+: Optional name for the derived output (defaults to 'back_stress_rate', i.e. the 'back_stress' variable name with the '_rate' suffix).
+
+
 ## Parameters
 
 `C` &mdash; `parameter` &middot; `Scalar` &middot; **required**

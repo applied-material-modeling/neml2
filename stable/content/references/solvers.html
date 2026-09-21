@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Solvers - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="AOTI packages" href="aoti_packages.html" /><link rel="prev" title="cpp-eager — eager evaluation from C++" href="cpp_eager.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Solvers - NEML2 3.1.0</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Sub-batch axes" href="sub_batch.html" /><link rel="prev" title="cpp-eager — eager evaluation from C++" href="cpp_eager.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -162,7 +163,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
@@ -178,6 +181,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
@@ -203,12 +207,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -506,12 +512,12 @@ solvers):</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Solvers]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[newton]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gmres&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'gmres'</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[gmres]</span>
 </span><span data-line="7"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">GMRES</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">preconditioner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;bjac&#39;</span>
-</span><span data-line="9"><span class="w">    </span><span class="na">cache_strategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;chord&#39;</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">preconditioner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'bjac'</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">cache_strategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'chord'</span>
 </span><span data-line="10"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="11"><span class="w">  </span><span class="k">[bjac]</span>
 </span><span data-line="12"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">BlockJacobiPreconditioner</span>
@@ -521,8 +527,8 @@ solvers):</p>
 </span><span data-line="16"><span class="k">[Models]</span>
 </span><span data-line="17"><span class="w">  </span><span class="k">[model]</span>
 </span><span data-line="18"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="19"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
-</span><span data-line="20"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="19"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'eq_sys'</span>
+</span><span data-line="20"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'newton'</span>
 </span><span data-line="21"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="22"><span class="k">[]</span>
 </span></pre></div>
@@ -553,10 +559,10 @@ lowered when a model is compiled with <code class="docutils literal notranslate"
         <span>Previous</span><div class="title"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="aoti_packages.html">
+    <a href="sub_batch.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">AOTI packages</div>
+        <div class="title">Sub-batch axes</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -584,7 +590,7 @@ lowered when a model is compiled with <code class="docutils literal notranslate"
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=674edf38"></script>
+      <script src="../../_static/documentation_options.js?v=dd1205ac"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

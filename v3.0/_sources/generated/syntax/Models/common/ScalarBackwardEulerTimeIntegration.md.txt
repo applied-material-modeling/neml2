@@ -1,0 +1,24 @@
+(models-ScalarBackwardEulerTimeIntegration)=
+# ScalarBackwardEulerTimeIntegration
+
+**Source:** `models/common/BackwardEulerTimeIntegration.py`
+
+Define the backward Euler time integration residual
+$r = s - s_n - (t - t_n) \dot{s}$, where $s$ is the variable being
+integrated, $\dot{s}$ is the variable rate, and $t$ is time.
+Subscripts $n$ denote quantities from the previous time step.
+
+## Inputs
+
+`variable` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Variable being integrated
+
+`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
+: Time
+
+
+## Other options
+
+`rate` &mdash; `str`
+: Override name for the variable rate.
+

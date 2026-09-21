@@ -129,6 +129,11 @@ resolved shape, *without* running the Newton solver, so each
 system's per-variable `sub_batch_shape` is committed before the
 tracer runs.
 
+The same declaration is read by the eager routes, through the same
+resolver, so a sub-batched variable has one shape across all six —
+see [](sub-batch-declaration) for the spec grammar and the other
+consumers.
+
 ## Stage 6 — Partition into segments
 
 Every `ImplicitUpdate` becomes its own segment so the Newton loop

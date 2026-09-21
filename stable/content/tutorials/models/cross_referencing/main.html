@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cross-referencing - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Model composition" href="../model_composition/main.html" /><link rel="prev" title="Vectorization" href="../vectorization/main.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cross-referencing - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Model composition" href="../model_composition/main.html" /><link rel="prev" title="Vectorization" href="../vectorization/main.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tensor_types/index.html">Tensor types</a><ul>
@@ -162,7 +163,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Models/index.html">Models</a><ul>
@@ -178,6 +181,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/CoordinateDescentPredictor.html">CoordinateDescentPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
@@ -203,12 +207,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -430,19 +436,19 @@ name of another section in the file.</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Tensors]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[E]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar(200e3)&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'Scalar(200e3)'</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[nu]</span>
 </span><span data-line="7"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar(0.3)&#39;</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'Scalar(0.3)'</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="10"><span class="k">[]</span>
 </span><span data-line="11">
 </span><span data-line="12"><span class="k">[Models]</span>
 </span><span data-line="13"><span class="w">  </span><span class="k">[elasticity]</span>
 </span><span data-line="14"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="15"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;E              nu&#39;</span><span class="w">                </span><span class="c1"># ← refers to [Tensors] entries</span>
-</span><span data-line="16"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="15"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">'E              nu'</span><span class="w">                </span><span class="c1"># ← refers to [Tensors] entries</span>
+</span><span data-line="16"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="17"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="18"><span class="k">[]</span>
 </span></pre></div>
@@ -453,8 +459,8 @@ tensor inputs still need a <code class="docutils literal notranslate"><span clas
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Models]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[elasticity]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;200e3          0.3&#39;</span><span class="w">               </span><span class="c1"># inline literals</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">'200e3          0.3'</span><span class="w">               </span><span class="c1"># inline literals</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'YOUNGS_MODULUS POISSONS_RATIO'</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="7"><span class="k">[]</span>
 </span></pre></div>
@@ -467,7 +473,7 @@ or a CSV file rather than a bare number.</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Tensors]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[T_controls]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)'</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="6"><span class="k">[]</span>
 </span></pre></div>
@@ -485,16 +491,16 @@ to produce the associated flow direction
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Models]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[vonmises]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SR2Invariant</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">invariant_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;VONMISES&#39;</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">tensor</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;mandel_stress&#39;</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">invariant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;effective_stress&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">invariant_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'VONMISES'</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">tensor</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">'mandel_stress'</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">invariant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'effective_stress'</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="8"><span class="w">  </span><span class="k">[normality]</span>
 </span><span data-line="9"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Normality</span>
-</span><span data-line="10"><span class="w">    </span><span class="na">model</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vonmises&#39;</span><span class="w">          </span><span class="c1"># ← name of the [Models] entry above</span>
-</span><span data-line="11"><span class="w">    </span><span class="na">function</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;effective_stress&#39;</span><span class="w">  </span><span class="c1"># the scalar output of `vonmises` to differentiate</span>
-</span><span data-line="12"><span class="w">    </span><span class="na">from</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;mandel_stress&#39;</span>
-</span><span data-line="13"><span class="w">    </span><span class="na">to</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;flow_direction&#39;</span>
+</span><span data-line="10"><span class="w">    </span><span class="na">model</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">'vonmises'</span><span class="w">          </span><span class="c1"># ← name of the [Models] entry above</span>
+</span><span data-line="11"><span class="w">    </span><span class="na">function</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'effective_stress'</span><span class="w">  </span><span class="c1"># the scalar output of `vonmises` to differentiate</span>
+</span><span data-line="12"><span class="w">    </span><span class="na">from</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s">'mandel_stress'</span>
+</span><span data-line="13"><span class="w">    </span><span class="na">to</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s">'flow_direction'</span>
 </span><span data-line="14"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="15"><span class="k">[]</span>
 </span></pre></div>
@@ -556,7 +562,7 @@ its children together — see <a class="reference internal" href="../model_compo
     </div>
   </div>
 </footer>
-      <script src="../../../../_static/documentation_options.js?v=674edf38"></script>
+      <script src="../../../../_static/documentation_options.js?v=dd1205ac"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>

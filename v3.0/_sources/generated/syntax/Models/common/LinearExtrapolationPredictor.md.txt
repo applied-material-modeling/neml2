@@ -1,0 +1,27 @@
+(models-LinearExtrapolationPredictor)=
+# LinearExtrapolationPredictor
+
+**Source:** `models/common/LinearExtrapolationPredictor.py`
+
+Use temporal extrapolation assuming constant rate of change as the initial guess for the
+unknowns at the current time step. The linear extrapolation can be written as
+$u = u_n + (u_n - u_{n-1}) \frac{t - t_n}{t_n - t_{n-1}}$, where $u$ is the unknown
+and $n$ is the time step counter, respectively.
+
+## Other options
+
+`time` &mdash; `str` &middot; default `t`
+: Time
+
+`unknowns_SR2` &mdash; `list`
+: The unknowns to extrapolate of type SR2
+
+`unknowns_Scalar` &mdash; `list`
+: The unknowns to extrapolate of type Scalar
+
+`unknowns_MRP` &mdash; `list`
+: The unknowns to extrapolate of type MRP
+
+`unknowns_R2` &mdash; `list`
+: The unknowns to extrapolate of type R2
+
