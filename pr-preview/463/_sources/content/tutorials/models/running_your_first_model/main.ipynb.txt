@@ -1,0 +1,179 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "74ad7ff5",
+   "metadata": {},
+   "source": [
+    "(tutorials-models-running-your-first-model)=\n",
+    "# Running your first model\n",
+    "\n",
+    "In this tutorial, we'll write a tiny input file, load it from Python, give it a strain,\n",
+    "and read back a stress. The model is intentionally trivial — linear\n",
+    "isotropic elasticity:\n",
+    "\n",
+    "$$\n",
+    "  \\boldsymbol{\\sigma}\n",
+    "  = 3K\\,\\operatorname{vol}\\boldsymbol{\\varepsilon}\n",
+    "  + 2G\\,\\operatorname{dev}\\boldsymbol{\\varepsilon},\n",
+    "$$\n",
+    "\n",
+    "where $K$ is the bulk modulus and $G$ is the shear modulus. The focus\n",
+    "of this tutorial is the workflow, not the material — the same\n",
+    "`load_model` + call pattern carries over to every NEML2 model, even\n",
+    "though the inputs and outputs will differ."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "3dc42d2d",
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
+   "outputs": [],
+   "source": [
+    "# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard\n",
+    "# makes the cell a no-op everywhere else (the docs build and local Jupyter\n",
+    "# already have NEML2 installed), and the cell is hidden from the rendered docs.\n",
+    "import sys\n",
+    "\n",
+    "if \"google.colab\" in sys.modules:\n",
+    "    !pip install -q neml2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "660fbf24",
+   "metadata": {},
+   "source": [
+    "## The input file\n",
+    "\n",
+    "NEML2 models are defined in a text input file. Run the cell below to write\n",
+    "this tutorial's input file to disk:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "feba1b32",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%writefile input.i\n",
+    "# Minimal hello-world NEML2 input file.\n",
+    "# A single linear isotropic elastic model named \"elasticity\":\n",
+    "#   E  = 200 GPa\n",
+    "#   nu = 0.3\n",
+    "# Maps a symmetric strain tensor (SR2) to a symmetric stress tensor (SR2).\n",
+    "[Models]\n",
+    "  [elasticity]\n",
+    "    type = LinearIsotropicElasticity\n",
+    "    coefficients      = '200e3          0.3'\n",
+    "    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'\n",
+    "  []\n",
+    "[]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "10695692",
+   "metadata": {},
+   "source": [
+    "The `type` line picks a model from NEML2's catalog (see\n",
+    "[](models-LinearIsotropicElasticity) for everything\n",
+    "`LinearIsotropicElasticity` accepts). The `coefficients` pair sets the\n",
+    "elastic moduli as Young's modulus and Poisson's ratio.\n",
+    "\n",
+    "## Loading the model\n",
+    "\n",
+    "`neml2.load_model(path, name)` parses the input file and returns the\n",
+    "named model as a Python object we can call like a function:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ce87bc63",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import neml2\n",
+    "\n",
+    "model = neml2.load_model(\"input.i\", \"elasticity\")\n",
+    "model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bd73c4b1",
+   "metadata": {},
+   "source": [
+    "## Evaluating the model\n",
+    "\n",
+    "The strain is a symmetric 3×3 tensor (`SR2`). Build one for 1% uniaxial\n",
+    "strain along the x-axis and evaluate:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a0f79e25",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import torch\n",
+    "from neml2.types import SR2\n",
+    "\n",
+    "# Uniaxial strain along the x-axis: epsilon_xx = 1%\n",
+    "strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)\n",
+    "strain"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "2302c189",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "stress = model(strain)\n",
+    "stress"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "04dd8234",
+   "metadata": {},
+   "source": [
+    "That's it — the model returned the Cauchy stress. The first three\n",
+    "components are the diagonal entries; the last three are the\n",
+    "off-diagonals (stored in Mandel form, so they each carry a $\\sqrt{2}$\n",
+    "factor).\n",
+    "\n",
+    "## Where to go next\n",
+    "\n",
+    "- The next tutorial, [](tutorials-models-parameters), walks through\n",
+    "  how to read and mutate the moduli we hard-coded in the input file.\n",
+    "- The model takes a single scalar-shaped input here, but the same call\n",
+    "  works just as well on batched inputs — see\n",
+    "  [](tutorials-models-vectorization).\n",
+    "- Real material models compose multiple ingredients (elasticity,\n",
+    "  hardening, flow rule, …). The mechanism for binding them together is\n",
+    "  the subject of [](tutorials-models-cross-referencing) and\n",
+    "  [](tutorials-models-composition)."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

@@ -1,0 +1,35 @@
+(models-ExponentialLawPermeability)=
+# ExponentialLawPermeability
+
+**Source:** `models/porous_flow/ExponentialLawPermeability.py`
+
+Define the relationship between non-dimensionalized porosity and permeability.
+
+The exponential porosity-permeability relation takes the form of
+$K_0 \exp \left[ a(\varphi_o-\varphi) \right]$ where $a$ is the
+scaling parameter; $\varphi_0$ and $K_0$ are the reference
+porosity and permeability respectively.
+
+## Inputs
+
+`porosity` &mdash; `input` &middot; `Scalar` &middot; **required**
+: The porosity
+
+
+## Outputs
+
+`permeability` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The porosity-dependent permeability
+
+
+## Parameters
+
+`reference_permeability` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The reference permeability
+
+`reference_porosity` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The reference porosity
+
+`scale` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Scaling constant in the exponential law
+
