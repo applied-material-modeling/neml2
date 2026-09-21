@@ -53,7 +53,13 @@ jobs:
             *) echo "NEML2_DOC_GIT_REF=main" >> "$GITHUB_ENV" ;;
           esac
       - name: Build documentation (strict — warnings are errors)
-        run: sphinx-build -j auto -W --keep-going -b html doc doc/_build/html
+        # MyST-NB's execution cache is not safe for parallel Sphinx workers:
+        # concurrent cache access can leave a cache record pointing at a missing
+        # notebook. Start clean and serialize the build to avoid stale/incomplete
+        # cache records causing nondeterministic CI failures.
+        run: |
+          rm -rf doc/_build
+          sphinx-build -j 1 -W --keep-going -b html doc doc/_build/html
       - name: Install Chromium for the math validator
         # playwright itself is in [dev] extras (needed for pyright on
         # doc/scripts/check_doc_render.py). The Chromium binary is ~150 MB
