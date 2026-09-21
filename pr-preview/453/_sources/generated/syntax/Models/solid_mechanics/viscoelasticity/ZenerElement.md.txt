@@ -1,0 +1,40 @@
+(models-ZenerElement)=
+# ZenerElement
+
+**Source:** `models/solid_mechanics/viscoelasticity/ZenerElement.py`
+
+Zener (Standard Linear Solid) viscoelastic model: an equilibrium spring in
+parallel with a Maxwell branch. The total stress is
+$\boldsymbol{\sigma} = (E_\infty + E_M) \boldsymbol{\varepsilon} - E_M \boldsymbol{\varepsilon}_v$,
+and the Maxwell-branch viscous strain evolves as
+$\dot{\boldsymbol{\varepsilon}}_v = E_M (\boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v) / \eta_M$.
+
+## Inputs
+
+`strain` &mdash; `input` &middot; `SR2` &middot; **required**
+: Total strain
+
+`viscous_strain` &mdash; `input` &middot; `SR2` &middot; **required**
+: Viscous strain in the Maxwell branch
+
+
+## Outputs
+
+`stress` &mdash; `output` &middot; `SR2` &middot; **required**
+: Total stress
+
+`viscous_strain_rate` &mdash; `output` &middot; `SR2` &middot; default `viscous_strain_rate`
+: Optional name for the derived output (defaults to 'viscous_strain_rate', i.e. the 'viscous_strain' variable name with the '_rate' suffix).
+
+
+## Parameters
+
+`equilibrium_modulus` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Equilibrium spring modulus
+
+`maxwell_modulus` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Maxwell branch spring modulus
+
+`maxwell_viscosity` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Maxwell branch dashpot viscosity
+

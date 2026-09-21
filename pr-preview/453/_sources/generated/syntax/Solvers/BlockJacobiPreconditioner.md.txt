@@ -1,0 +1,8 @@
+(solvers-BlockJacobiPreconditioner)=
+# BlockJacobiPreconditioner
+
+**Source:** `solvers/preconditioners.py`
+
+Block-Jacobi: ``M = blockdiag(A)`` over the per-variable on-diagonal blocks.
+
+*This type has no documented options.*
