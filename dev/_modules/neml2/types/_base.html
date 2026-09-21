@@ -663,7 +663,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="242">
 </span><span data-line="243">
 <div class="viewcode-block" id="TensorWrapper">
-<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.models.chain_rule.TensorWrapper">[docs]</a>
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.TensorWrapper">[docs]</a>
 </span><span data-line="244"><span class="k">class</span><span class="w"> </span><span class="nc">TensorWrapper</span><span class="p">:</span>
 </span><span data-line="245"><span class="w">    </span><span class="sd">"""Shared shape decomposition + region views + ``_rewrap`` machinery</span>
 </span><span data-line="246"><span class="sd">    for the typed tensor wrappers.</span>
@@ -890,7 +890,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="467">    <span class="c1"># ---- internal: clone-with-new-tensor-and-metadata ----</span>
 </span><span data-line="468">
 <div class="viewcode-block" id="TensorWrapper.with_sub_batch_ndim">
-<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.models.chain_rule.TensorWrapper.with_sub_batch_ndim">[docs]</a>
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.TensorWrapper.with_sub_batch_ndim">[docs]</a>
 </span><span data-line="469">    <span class="k">def</span><span class="w"> </span><span class="nf">with_sub_batch_ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 </span><span data-line="470"><span class="w">        </span><span class="sd">"""Return a structurally-identical wrapper with the declared</span>
 </span><span data-line="471"><span class="sd">        ``sub_batch_ndim`` overridden.</span>
@@ -969,7 +969,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="543">        <span class="k">return</span> <span class="n">new</span>
 </span><span data-line="544">
 <div class="viewcode-block" id="TensorWrapper.materialize">
-<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.models.chain_rule.TensorWrapper.materialize">[docs]</a>
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.TensorWrapper.materialize">[docs]</a>
 </span><span data-line="545">    <span class="k">def</span><span class="w"> </span><span class="nf">materialize</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 </span><span data-line="546"><span class="w">        </span><span class="sd">"""Force every ``"broadcast"`` sub-batch axis into ``"full"`` storage.</span>
 </span><span data-line="547">
@@ -997,7 +997,7 @@ data-aria-dark="Switch to auto color mode">
 
 </span><span data-line="569">
 <div class="viewcode-block" id="TensorWrapper.to">
-<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.models.chain_rule.TensorWrapper.to">[docs]</a>
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.TensorWrapper.to">[docs]</a>
 </span><span data-line="570">    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 </span><span data-line="571">        <span class="n">moved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </span><span data-line="572">        <span class="k">if</span> <span class="n">moved</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
@@ -1479,7 +1479,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1046"><span class="nd">@overload</span>
 </span><span data-line="1047"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
 <div class="viewcode-block" id="align_sub_batch">
-<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.models.chain_rule.align_sub_batch">[docs]</a>
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.align_sub_batch">[docs]</a>
 </span><span data-line="1048"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
 </span><span data-line="1049"><span class="w">    </span><span class="sd">"""Pad each wrapper's ``sub_batch_ndim`` up to the common max.</span>
 </span><span data-line="1050">
