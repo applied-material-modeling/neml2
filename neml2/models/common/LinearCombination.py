@@ -29,6 +29,7 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import HitSchema, output, parameter, parameters, var_inputs
 from ...types import (
+    R2,
     SR2,
     Scalar,
     TensorWrapper,
@@ -172,4 +173,21 @@ class SR2LinearCombination(_LinearCombination):
     )
 
 
-__all__ = ["ScalarLinearCombination", "SR2LinearCombination"]
+@register_neml2_object("R2LinearCombination")
+class R2LinearCombination(_LinearCombination):
+    r"""Calculate linear combination of multiple R2 tensors as
+    $u = w_i v_i + b$ (Einstein summation assumed), where $w_i$ are
+    the weights, and $v_i$ are the variables to be summed. $b$ is a
+    constant offset.
+    """
+
+    _value_type = R2
+
+    hit = HitSchema(
+        var_inputs("from", R2, "R2 tensors to be summed", attr="_from_vars"),
+        output("to", R2, "The sum", attr="_to"),
+        *_LinearCombination._COMMON_PARAMETERS,
+    )
+
+
+__all__ = ["ScalarLinearCombination", "SR2LinearCombination", "R2LinearCombination"]
