@@ -392,6 +392,32 @@ class TensorWrapper:
         ``k_ndim + dynamic_batch_ndim + sub_batch_ndim + BASE_NDIM``."""
         return self.data.ndim
 
+    def item(self) -> float:
+        """Read this wrapper's single value as a Python ``float``.
+
+        The typed API exists to keep tensor values on device; this is the one
+        deliberate escape to the host, for **construction-time** validation of
+        a quantity that is fixed for the life of the model -- a coefficient
+        that must be non-negative, a length that must be one, a sign that
+        selects a branch. Calling it inside a ``forward`` would force a device
+        synchronization on every step, so it is not a runtime quantity
+        accessor; :meth:`TensorWrapper.to` plus a caller-side read is.
+
+        Raises
+        ------
+        ValueError
+            If the value does not hold exactly one element. A batched wrapper
+            has no single value, and silently reducing one would pick an
+            arbitrary cell.
+        """
+        if self.data.numel() != 1:
+            raise ValueError(
+                f"{type(self).__name__}.item(): expected a single value, got shape "
+                f"{tuple(self.shape)}. A batched or sub-batched wrapper has no one "
+                "value to read; use the tensor-level API for those."
+            )
+        return float(self.data.item())
+
     # ---- shape decomposition ----
 
     @property

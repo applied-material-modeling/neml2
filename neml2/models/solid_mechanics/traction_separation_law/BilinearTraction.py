@@ -31,6 +31,7 @@ from ....schema import HitSchema, derived_input, input, output, parameter
 from ....types import Scalar, Vec, gt, lt, vec_from_scalars, where
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...model import Model
+from ._viscous_damage import check_viscosity, viscous_damage
 
 
 @register_neml2_object("BilinearTraction")
@@ -74,6 +75,8 @@ class BilinearTraction(Model):
         # suffix to the resolved ``damage`` output name (matches the C++
         # ``history_name(_d.name(), /*nstep=*/1)`` plumbing). No HIT knob.
         derived_input("damage", Scalar, attr="_d_old_name", suffix="~1"),
+        input("time", Scalar, "Time", default="t", attr="_t_name"),
+        derived_input("time", Scalar, attr="_t_old_name", suffix="~1"),
         parameter(
             "penalty_stiffness",
             Scalar,
@@ -97,9 +100,18 @@ class BilinearTraction(Model):
             attr="delta_f",
             allow_promotion=True,
         ),
+        parameter(
+            "viscosity",
+            Scalar,
+            "Damage viscosity, which must be non-negative. Zero recovers the "
+            "rate-independent law exactly; positive values apply the "
+            "backward-Euler regularization and delay damage growth.",
+            attr="eta",
+            default="0",
+        ),
     )
 
-    # ``from_hit`` auto-declares the three Scalar parameters via
+    # ``from_hit`` auto-declares the Scalar parameters via
     # ``declare_typed_parameter``. The optional ``normal_penetration`` input
     # resolves to a HIT name (string) when the user supplies it, ``None``
     # otherwise; the ``derived_input("damage", ..., suffix="~1")`` resolves
@@ -107,8 +119,17 @@ class BilinearTraction(Model):
     K: Scalar
     delta_c: Scalar
     delta_f: Scalar
+    eta: Scalar
     _dn_pen_name: str | None
     _d_old_name: str
+    _t_name: str
+    _t_old_name: str
+
+    def __post_init__(self) -> None:
+        # A negative viscosity would read as rate independent and quietly
+        # disable the regularization the user asked for, so reject it here
+        # rather than letting the tensor branch absorb it.
+        check_viscosity(self.eta, owner=type(self).__name__)
 
     def forward(  # type: ignore[override]
         self,
@@ -142,6 +163,8 @@ class BilinearTraction(Model):
         ds1 = bound[_resolved("tangential_separation_1")]
         ds2 = bound[_resolved("tangential_separation_2")]
         d_old = bound[self._d_old_name]
+        t = bound[self._t_name]
+        t_old = bound[self._t_old_name]
         dn_pen_name = self._dn_pen_name
         dn_pen = bound[dn_pen_name] if dn_pen_name is not None and dn_pen_name in bound else None
 
@@ -154,6 +177,7 @@ class BilinearTraction(Model):
         K = self._get_param("K", promoted_params, Scalar)
         delta_c = self._get_param("delta_c", promoted_params, Scalar)
         delta_f = self._get_param("delta_f", promoted_params, Scalar)
+        eta = self._get_param("eta", promoted_params, Scalar)
 
         # -------- Bilinear damage trial value from (delta_m, delta_c, delta_f).
         # Detached masks for ``where()`` (matches C++ ``.detach()``).
@@ -174,9 +198,9 @@ class BilinearTraction(Model):
         interior = Scalar(interior_data, sub_batch_ndim=delta_m.sub_batch_ndim)
         d_trial = where(dm_lt_init, zero, where(dm_lt_final, bilinear_d, one))
 
-        # -------- Irreversibility cap: damage = max(d_trial, d_old).
-        advance = gt(d_trial, d_old)
-        d = where(advance, d_trial, d_old)
+        # -------- Irreversibility cap and backward-Euler viscous regularization.
+        visc = viscous_damage(d_trial, d_old, t, t_old, eta)
+        d = visc.d
 
         # -------- Assemble traction.
         active_scale = K * (1.0 - d)
@@ -206,9 +230,11 @@ class BilinearTraction(Model):
 
         dt_ddm_int = delta_f * delta_c * inv_dm * inv_dm * inv_diff
         dt_ddm = where(interior, dt_ddm_int, zero)
-        # After max(d_t, d_old): partial collapses to 0 on the frozen branch.
-        dd_ddm = where(advance, dt_ddm, zero)
-        dd_dd_old = where(advance, zero, one)
+        # After the cap and the viscous blend: partials collapse to 0 on the
+        # frozen branch and are scaled by alpha on the advancing one.
+        dd_ddm = visc.alpha * where(visc.advance, dt_ddm, zero)
+        dd_dd_old = visc.dd_dd_old
+        dd_dt = visc.dd_dt
 
         # ``-K`` prefactor of d(T)/d(damage); the per-component Vec coefficient
         # is ``(-K * dn_sep, -K * ds1, -K * ds2)`` (zero in the penetration
@@ -218,11 +244,21 @@ class BilinearTraction(Model):
         dT_dd_s1 = neg_K * ds1
         dT_dd_s2 = neg_K * ds2
 
+        # Chain-rule actions are keyed by the *resolved* input names, matching
+        # the names used for the value calculation above (the ``input_spec`` may
+        # have renamed the canonical HIT names via ``_var_renames``).
+        delta_m_name = _resolved("effective_separation")
+        dn_sep_name = _resolved("normal_separation")
+        ds1_name = _resolved("tangential_separation_1")
+        ds2_name = _resolved("tangential_separation_2")
+
         # ----- Actions for the damage output. Inputs not listed (dn_sep,
         # dn_pen, ds1, ds2) push forward to structural zero.
         damage_actions: dict[str, ChainRuleAction] = {
-            "effective_separation": lambda V, c=dd_ddm: c * V,
+            delta_m_name: lambda V, c=dd_ddm: c * V,
             self._d_old_name: lambda V, c=dd_dd_old: c * V,
+            self._t_name: lambda V, c=dd_dt: c * V,
+            self._t_old_name: lambda V, c=dd_dt: -(c * V),
         }
 
         # ----- Actions for the traction output. Each direct-jump partial is a
@@ -258,11 +294,13 @@ class BilinearTraction(Model):
             return vec_from_scalars(K * Vs, zero * Vs, zero * Vs)
 
         traction_actions: dict[str, ChainRuleAction] = {
-            "effective_separation": _traction_via_damage(dd_ddm),
+            delta_m_name: _traction_via_damage(dd_ddm),
             self._d_old_name: _traction_via_damage(dd_dd_old),
-            "normal_separation": _dn_sep_action,
-            "tangential_separation_1": _ds1_action,
-            "tangential_separation_2": _ds2_action,
+            self._t_name: _traction_via_damage(dd_dt),
+            self._t_old_name: _traction_via_damage(-dd_dt),
+            dn_sep_name: _dn_sep_action,
+            ds1_name: _ds1_action,
+            ds2_name: _ds2_action,
         }
         if dn_pen_name is not None:
             traction_actions[dn_pen_name] = _dn_pen_action
@@ -276,7 +314,7 @@ class BilinearTraction(Model):
         if delta_c_nlp is not None:
             dt_dinit_int = delta_f * (delta_m - delta_f) * inv_dm * inv_diff_sq
             dt_dinit = where(interior, dt_dinit_int, zero)
-            dd_dinit = where(advance, dt_dinit, zero)
+            dd_dinit = visc.alpha * where(visc.advance, dt_dinit, zero)
             damage_actions[delta_c_nlp.input_name] = lambda V, c=dd_dinit: c * V
             traction_actions[delta_c_nlp.input_name] = _traction_via_damage(dd_dinit)
 
@@ -284,7 +322,7 @@ class BilinearTraction(Model):
         if delta_f_nlp is not None:
             dt_dfinal_int = -delta_c * (delta_m - delta_c) * inv_dm * inv_diff_sq
             dt_dfinal = where(interior, dt_dfinal_int, zero)
-            dd_dfinal = where(advance, dt_dfinal, zero)
+            dd_dfinal = visc.alpha * where(visc.advance, dt_dfinal, zero)
             damage_actions[delta_f_nlp.input_name] = lambda V, c=dd_dfinal: c * V
             traction_actions[delta_f_nlp.input_name] = _traction_via_damage(dd_dfinal)
 

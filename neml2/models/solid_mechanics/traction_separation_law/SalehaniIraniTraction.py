@@ -30,9 +30,10 @@ import math
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, derived_input, input, output, parameter
-from ....types import Scalar, Vec, exp, gt, vec_from_scalars, where
+from ....types import Scalar, Vec, exp, vec_from_scalars, where
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...model import Model
+from ._viscous_damage import check_viscosity, viscous_damage
 
 
 @register_neml2_object("SalehaniIraniTraction")
@@ -75,6 +76,8 @@ class SalehaniIraniTraction(Model):
         # suffix to the resolved ``damage`` output name (matches the C++
         # ``history_name(_d.name(), /*nstep=*/1)`` plumbing). No HIT knob.
         derived_input("damage", Scalar, attr="_d_old_name", suffix="~1"),
+        input("time", Scalar, "Time", default="t", attr="_t_name"),
+        derived_input("time", Scalar, attr="_t_old_name", suffix="~1"),
         parameter(
             "normal_characteristic_length",
             Scalar,
@@ -112,9 +115,18 @@ class SalehaniIraniTraction(Model):
             attr="Kpen",
             default="0",
         ),
+        parameter(
+            "viscosity",
+            Scalar,
+            "Damage viscosity, which must be non-negative. Zero recovers the "
+            "rate-independent law exactly; positive values apply the "
+            "backward-Euler regularization and delay damage growth.",
+            attr="eta",
+            default="0",
+        ),
     )
 
-    # ``from_hit`` auto-declares the five Scalar parameters via
+    # ``from_hit`` auto-declares the Scalar parameters via
     # ``declare_typed_parameter``. The optional ``normal_penetration`` input
     # resolves to a HIT name (string) when the user supplies it, ``None``
     # otherwise; the ``derived_input("damage", ..., suffix="~1")`` resolves
@@ -124,8 +136,17 @@ class SalehaniIraniTraction(Model):
     Tmax_n: Scalar
     Tmax_t: Scalar
     Kpen: Scalar
+    eta: Scalar
     _dn_pen_name: str | None
     _d_old_name: str
+    _t_name: str
+    _t_old_name: str
+
+    def __post_init__(self) -> None:
+        # A negative viscosity would read as rate independent and quietly
+        # disable the regularization the user asked for, so reject it here
+        # rather than letting the tensor branch absorb it.
+        check_viscosity(self.eta, owner=type(self).__name__)
 
     def forward(  # type: ignore[override]
         self,
@@ -158,6 +179,8 @@ class SalehaniIraniTraction(Model):
         ds1 = bound[_resolved("tangential_separation_1")]
         ds2 = bound[_resolved("tangential_separation_2")]
         d_old = bound[self._d_old_name]
+        t = bound[self._t_name]
+        t_old = bound[self._t_old_name]
         dn_pen_name = self._dn_pen_name
         dn_pen = bound[dn_pen_name] if dn_pen_name is not None and dn_pen_name in bound else None
 
@@ -167,6 +190,7 @@ class SalehaniIraniTraction(Model):
         Tmax_n = self._get_param("Tmax_n", promoted_params, Scalar)
         Tmax_t = self._get_param("Tmax_t", promoted_params, Scalar)
         Kpen = self._get_param("Kpen", promoted_params, Scalar)
+        eta = self._get_param("eta", promoted_params, Scalar)
 
         # -------- Internal characteristic-length vector: tangential is sqrt(2) * raw.
         sqrt2 = math.sqrt(2.0)
@@ -185,12 +209,12 @@ class SalehaniIraniTraction(Model):
         x = b_n + b_s1 * b_s1 + b_s2 * b_s2
         exp_x = exp(-x)
 
-        # -------- Trial damage and irreversibility cap.
+        # -------- Trial damage, irreversibility cap, and viscous regularization.
         one = Scalar.from_value(1.0, like=dn_sep)
         zero = Scalar.from_value(0.0, like=dn_sep)
         d_trial = one - exp_x
-        advance = gt(d_trial, d_old)
-        d = where(advance, d_trial, d_old)
+        visc = viscous_damage(d_trial, d_old, t, t_old, eta)
+        d = visc.d
         factor = one - d
 
         # -------- Assemble traction.
@@ -210,19 +234,23 @@ class SalehaniIraniTraction(Model):
         #   d(d_trial)/d(dn_sep) = exp_x * (1/delta_u0_n)
         #   d(d_trial)/d(ds1)    = exp_x * (2 * ds1 / delta_u0_t_int^2)
         #   d(d_trial)/d(ds2)    = exp_x * (2 * ds2 / delta_u0_t_int^2)
-        # The irreversibility cap freezes d when d_trial does not advance:
-        #   d(damage)/d(input) = where(advance, d(d_trial)/d(input), 0)
-        #   d(damage)/d(d_old) = where(advance, 0, 1)
+        # The irreversibility cap freezes d when d_trial does not advance, and
+        # the viscous blend scales whatever survives:
+        #   d(damage)/d(input) = alpha * where(advance, d(d_trial)/d(input), 0)
+        #   d(damage)/d(d_old) = 1 - alpha + alpha * where(advance, 0, 1)
+        # (the d_old and t partials come back from the helper, which is where
+        # the cap and the regularization live)
         inv_dun = one / delta_u0_n
         inv_dut2 = one / (delta_u0_t_int * delta_u0_t_int)
         dx_dn = inv_dun
         dx_ds1 = (one + one) * ds1 * inv_dut2
         dx_ds2 = (one + one) * ds2 * inv_dut2
 
-        dd_ddn = where(advance, exp_x * dx_dn, zero)
-        dd_dds1 = where(advance, exp_x * dx_ds1, zero)
-        dd_dds2 = where(advance, exp_x * dx_ds2, zero)
-        dd_dd_old = where(advance, zero, one)
+        dd_ddn = visc.alpha * where(visc.advance, exp_x * dx_dn, zero)
+        dd_dds1 = visc.alpha * where(visc.advance, exp_x * dx_ds1, zero)
+        dd_dds2 = visc.alpha * where(visc.advance, exp_x * dx_ds2, zero)
+        dd_dd_old = visc.dd_dd_old
+        dd_dt = visc.dd_dt
 
         # T_i = a_i * b_i * factor where factor = (1 - damage). For input dj:
         #   dT_i/dj = a_i * (db_i/dj) * factor - a_i * b_i * d(damage)/dj
@@ -271,17 +299,25 @@ class SalehaniIraniTraction(Model):
             return vec_from_scalars(Kpen * Vs, zero_Vs, zero_Vs)
 
         damage_actions: dict[str, ChainRuleAction] = {
-            "normal_separation": lambda V, c=dd_ddn: c * V,
-            "tangential_separation_1": lambda V, c=dd_dds1: c * V,
-            "tangential_separation_2": lambda V, c=dd_dds2: c * V,
+            _resolved("normal_separation"): lambda V, c=dd_ddn: c * V,
+            _resolved("tangential_separation_1"): lambda V, c=dd_dds1: c * V,
+            _resolved("tangential_separation_2"): lambda V, c=dd_dds2: c * V,
             self._d_old_name: lambda V, c=dd_dd_old: c * V,
+            self._t_name: lambda V, c=dd_dt: c * V,
+            self._t_old_name: lambda V, c=dd_dt: -(c * V),
         }
 
         traction_actions: dict[str, ChainRuleAction] = {
-            "normal_separation": _dn_sep_action,
-            "tangential_separation_1": _ds1_action,
-            "tangential_separation_2": _ds2_action,
+            _resolved("normal_separation"): _dn_sep_action,
+            _resolved("tangential_separation_1"): _ds1_action,
+            _resolved("tangential_separation_2"): _ds2_action,
             self._d_old_name: _d_old_action,
+            self._t_name: lambda V, c=dd_dt: vec_from_scalars(
+                -a_n_b_n * c * V, -a_t_b_s1 * c * V, -a_t_b_s2 * c * V
+            ),
+            self._t_old_name: lambda V, c=dd_dt: vec_from_scalars(
+                a_n_b_n * c * V, a_t_b_s1 * c * V, a_t_b_s2 * c * V
+            ),
         }
         if dn_pen_name is not None:
             traction_actions[dn_pen_name] = _dn_pen_action

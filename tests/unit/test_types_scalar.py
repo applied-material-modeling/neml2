@@ -24,6 +24,7 @@
 
 import math
 
+import pytest
 import torch
 from torch import nn
 from torch.utils import _pytree as pytree
@@ -38,6 +39,20 @@ def test_construction_and_metadata():
     assert s.BASE_NDIM == 0
     assert s.BASE_SHAPE == ()
     assert s.batch_shape == torch.Size([])
+
+
+def test_item_reads_a_single_value():
+    """``item()`` is the sanctioned host-side read for construction-time checks."""
+    assert Scalar(torch.tensor(1.5)).item() == 1.5
+    # A size-1 batched wrapper still holds exactly one value.
+    assert Scalar(torch.tensor([[2.5]])).item() == 2.5
+
+
+def test_item_rejects_a_value_that_is_not_scalar():
+    """Reducing a batch silently would pick an arbitrary cell, so it raises."""
+    for batched in (torch.arange(4.0), torch.zeros(2, 3)):
+        with pytest.raises(ValueError, match="expected a single value"):
+            Scalar(batched).item()
 
 
 def test_batched_scalar():
