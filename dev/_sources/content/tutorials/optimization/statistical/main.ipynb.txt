@@ -327,7 +327,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Create the input tendors\n",
+    "## Create the input tensors\n",
     "\n",
     "Actually setup the full input tensors based on the parameters above"
    ]
