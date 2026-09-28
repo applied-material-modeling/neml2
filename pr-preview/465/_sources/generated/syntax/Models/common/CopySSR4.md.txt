@@ -1,0 +1,18 @@
+(models-CopySSR4)=
+# CopySSR4
+
+**Source:** `models/common/CopyVariable.py`
+
+SSR4-valued variable copy. Mirrors ``CopyVariable<SSR4>``.
+
+## Inputs
+
+`from` &mdash; `input` &middot; `SSR4` &middot; **required**
+: Variable to copy value from
+
+
+## Outputs
+
+`to` &mdash; `output` &middot; `SSR4` &middot; **required**
+: Variable to copy value to
+

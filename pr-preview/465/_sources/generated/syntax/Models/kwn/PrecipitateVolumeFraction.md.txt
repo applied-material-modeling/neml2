@@ -1,0 +1,33 @@
+(models-PrecipitateVolumeFraction)=
+# PrecipitateVolumeFraction
+
+**Source:** `models/kwn/PrecipitateVolumeFraction.py`
+
+Compute the precipitate volume fraction from a discrete size distribution.
+
+For a discrete distribution with per-bin radius $R_i$ and per-bin
+number density $n_i$, the precipitate volume fraction is
+
+$$
+f = \sum_i \tfrac{4}{3} \pi R_i^3 \, n_i
+$$
+
+where the sum runs over all precipitate size bins.
+
+## Inputs
+
+`number_density` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Number density per size bin
+
+
+## Outputs
+
+`volume_fraction` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Precipitate volume fraction
+
+
+## Parameters
+
+`radius` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Precipitate radius per size bin
+
