@@ -1,0 +1,32 @@
+(models-SR2IntermediateMean)=
+# SR2IntermediateMean
+
+**Source:** `models/common/IntermediateMean.py`
+
+``to = mean(from, dim=trailing_sub_batch_axis)``; reduces sub_batch_ndim by 1.
+
+Mirrors C++ ``IntermediateMean<SR2>``. Used in CP to average per-crystal
+cauchy stress into a mean over crystals (taylor-style homogenisation).
+
+The ``reduces`` HIT parameter names the sub-batch label this
+reducer collapses (e.g. ``reduces = 'grain'`` for the CP
+polycrystal mean). The composed-model propagator uses it to track
+per-label structural state through the chain.
+
+## Inputs
+
+`from` &mdash; `input` &middot; `SR2` &middot; **required**
+: Input tensor to average
+
+
+## Outputs
+
+`to` &mdash; `output` &middot; `SR2` &middot; **required**
+: Averaged tensor
+
+
+## Other options
+
+`reduces` &mdash; `str` &middot; **required**
+: Sub-batch label this reducer collapses.
+
