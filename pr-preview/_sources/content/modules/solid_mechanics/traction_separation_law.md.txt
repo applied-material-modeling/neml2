@@ -68,6 +68,29 @@ The catalog is organized by role:
   Salehani & Irani; internally damaged with a previous-step cap, so
   load–unload–reload freezes the softness at its historical peak.
 
+Both laws take the previous-step damage `damage~1` and the `time` /
+`time~1` pair (named `t` and `t~1` by default) as inputs. They
+accept an optional `viscosity` $\eta_v$ (default zero, and required
+to be non-negative). For inviscid damage $d^*$ after the
+irreversibility cap, they apply the backward-Euler regularization
+
+$$
+d_n = \frac{d^* + (\eta_v / \Delta t)d_{n-1}}
+           {1 + \eta_v / \Delta t}
+    = d_{n-1} + \frac{\Delta t}{\eta_v + \Delta t}
+      (d^* - d_{n-1}).
+$$
+
+Positive viscosity therefore delays damage growth, and
+`viscosity = 0` recovers the rate-independent update exactly. A
+negative viscosity is rejected when the model is built: it would make
+the dashpot run backwards, and the only reading it has in the
+regularization above is the inviscid one — so a mistyped sign would
+silently drop the regularization rather than fail. This option does
+not apply to the stateless kinematic, critical-separation,
+full-separation, or linear-traction primitives because those models do
+not evolve a damage variable.
+
 ## Math
 
 A bilinear cohesive law in the spirit of Camanho & Dávila uses an

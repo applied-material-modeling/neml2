@@ -13,10 +13,13 @@ hot loop runs without Python. The Python authoring path (`neml2.load_model`,
 your own per-device loop.
 
 :::{note}
-Only CPU and CUDA devices are supported. Two scheduling modes are available:
-**synchronous** single-device (`SimpleScheduler`, `MPISimpleScheduler`) and
-**asynchronous** multi-device (`StaticHybridScheduler`, which runs CPU + GPU(s)
-concurrently via a thread-per-device pool).
+CPU and any torch-supported accelerator family (CUDA, XPU, HIP, MPS) are
+supported; the runtime routes an `at::Device` opaquely, so the same dispatcher
+code paths pin CPU workers or accelerator workers of any family. Two scheduling
+modes are available: **synchronous** single-device (`SimpleScheduler`,
+`MPISimpleScheduler`) and **asynchronous** multi-device
+(`StaticHybridScheduler`, which runs CPU + accelerator(s) concurrently via a
+thread-per-device pool). See [](accelerators) for the per-family requirements.
 :::
 
 ## Compile one artifact per device
@@ -33,6 +36,10 @@ several devices needs one artifact per device. `neml2-compile` takes multiple
 ```console
 $ neml2-compile tests/aoti/forward_single/model.i --model model --device cpu cuda -d :
 ```
+
+`--device` accepts any family in `{cpu, cuda, xpu, hip, mps}`; each named
+family gets its own artifact leaf (`<out>/<model>/xpu/float64/…`) that the
+dispatcher can pin to.
 
 (`-d :` compiles every Jacobian/JVP pair so the dispatched `jacobian` /
 `jvp` work; drop it for a forward-only artifact, or name specific pairs.)
@@ -119,8 +126,10 @@ one device, a new chunk dispatched as in-flight ones finish and free capacity.
 ### `MPISimpleScheduler`
 
 For MPI jobs that drive several devices from many ranks. `Config{devices,
-batch_sizes, comm}` lists the devices to choose from (CPU or CUDA — e.g.
-`{"cuda:0", "cuda:1"}`, or `{"cpu"}` for a pure-CPU run); each rank is assigned
+batch_sizes, comm}` lists the devices to choose from (CPU or any accelerator
+family — e.g. `{"cuda:0", "cuda:1"}`, `{"xpu:0", "xpu:1"}`, or `{"cpu"}` for a
+pure-CPU run; families may be mixed, e.g. `{"cpu", "cuda:0", "xpu:0"}`); each
+rank is assigned
 one based on its rank *within its node* (ranks are grouped by hostname, then
 `local_rank % devices.size()` indexes into the list), after which it chunks
 exactly like `SimpleScheduler`. With `m` ranks on a node and `n` devices:

@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.schema - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.schema - NEML2 3.1.0</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -165,6 +165,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../content/references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../content/references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../content/references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/references/accelerators.html">Accelerators (device families)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../content/references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
@@ -476,7 +477,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="56">
 </span><span data-line="57">
 <div class="viewcode-block" id="HitField">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.HitField">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.HitField">[docs]</a>
 </span><span data-line="58"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span data-line="59"><span class="k">class</span><span class="w"> </span><span class="nc">HitField</span><span class="p">:</span>
 </span><span data-line="60">    <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span>
@@ -552,7 +553,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="129">
 </span><span data-line="130">
 <div class="viewcode-block" id="HitSchema">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.HitSchema">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.HitSchema">[docs]</a>
 </span><span data-line="131"><span class="k">class</span><span class="w"> </span><span class="nc">HitSchema</span><span class="p">:</span>
 </span><span data-line="132"><span class="w">    </span><span class="sd">"""Ordered declaration of a native object's HIT surface."""</span>
 </span><span data-line="133">
@@ -584,7 +585,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="159">        <span class="p">}</span>
 </span><span data-line="160">
 <div class="viewcode-block" id="HitSchema.kwargs_from_hit">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.HitSchema.kwargs_from_hit">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.HitSchema.kwargs_from_hit">[docs]</a>
 </span><span data-line="161">    <span class="k">def</span><span class="w"> </span><span class="nf">kwargs_from_hit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 </span><span data-line="162"><span class="w">        </span><span class="sd">"""Parse constructor kwargs for every schema field.</span>
 </span><span data-line="163">
@@ -645,7 +646,7 @@ data-aria-dark="Switch to auto color mode">
 
 </span><span data-line="218">
 <div class="viewcode-block" id="HitSchema.reject_unknown_fields">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.HitSchema.reject_unknown_fields">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.HitSchema.reject_unknown_fields">[docs]</a>
 </span><span data-line="219">    <span class="k">def</span><span class="w"> </span><span class="nf">reject_unknown_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="220"><span class="w">        </span><span class="sd">"""Raise if *node* carries any HIT field not declared in the schema.</span>
 </span><span data-line="221">
@@ -694,7 +695,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="262">
 </span><span data-line="263">
 <div class="viewcode-block" id="input">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.input">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.input">[docs]</a>
 </span><span data-line="264"><span class="k">def</span><span class="w"> </span><span class="nf">input</span><span class="p">(</span>  <span class="c1"># noqa: A001</span>
 </span><span data-line="265">    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="266">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
@@ -724,7 +725,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="289">
 </span><span data-line="290">
 <div class="viewcode-block" id="output">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.output">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.output">[docs]</a>
 </span><span data-line="291"><span class="k">def</span><span class="w"> </span><span class="nf">output</span><span class="p">(</span>
 </span><span data-line="292">    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="293">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
@@ -767,7 +768,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="329">
 </span><span data-line="330">
 <div class="viewcode-block" id="derived_input">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.derived_input">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.derived_input">[docs]</a>
 </span><span data-line="331"><span class="k">def</span><span class="w"> </span><span class="nf">derived_input</span><span class="p">(</span>
 </span><span data-line="332">    <span class="n">referenced</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="333">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
@@ -801,7 +802,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="360">
 </span><span data-line="361">
 <div class="viewcode-block" id="derived_output">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.derived_output">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.derived_output">[docs]</a>
 </span><span data-line="362"><span class="k">def</span><span class="w"> </span><span class="nf">derived_output</span><span class="p">(</span>
 </span><span data-line="363">    <span class="n">referenced</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="364">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
@@ -837,7 +838,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="393">
 </span><span data-line="394">
 <div class="viewcode-block" id="var_inputs">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.var_inputs">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.var_inputs">[docs]</a>
 </span><span data-line="395"><span class="k">def</span><span class="w"> </span><span class="nf">var_inputs</span><span class="p">(</span>
 </span><span data-line="396">    <span class="n">option_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="397">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
@@ -863,7 +864,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="416">
 </span><span data-line="417">
 <div class="viewcode-block" id="parameter">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.parameter">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.parameter">[docs]</a>
 </span><span data-line="418"><span class="k">def</span><span class="w"> </span><span class="nf">parameter</span><span class="p">(</span>
 </span><span data-line="419">    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="420">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
@@ -886,7 +887,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="436">
 </span><span data-line="437">
 <div class="viewcode-block" id="parameters">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.parameters">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.parameters">[docs]</a>
 </span><span data-line="438"><span class="k">def</span><span class="w"> </span><span class="nf">parameters</span><span class="p">(</span>
 </span><span data-line="439">    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="440">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
@@ -978,7 +979,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="525">
 </span><span data-line="526">
 <div class="viewcode-block" id="option">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.option">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.option">[docs]</a>
 </span><span data-line="527"><span class="k">def</span><span class="w"> </span><span class="nf">option</span><span class="p">(</span>
 </span><span data-line="528">    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="529">    <span class="n">value_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
@@ -1010,7 +1011,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="554">
 </span><span data-line="555">
 <div class="viewcode-block" id="dependency">
-<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.aoti.dependency">[docs]</a>
+<a class="viewcode-back" href="../../content/python_api/neml2.schema.html#neml2.schema.dependency">[docs]</a>
 </span><span data-line="556"><span class="k">def</span><span class="w"> </span><span class="nf">dependency</span><span class="p">(</span>
 </span><span data-line="557">    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span data-line="558">    <span class="n">factory_getter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1235,7 +1236,7 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=674edf38"></script>
+      <script src="../../_static/documentation_options.js?v=dd1205ac"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

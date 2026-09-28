@@ -27,6 +27,9 @@ is added to $T_n$ (`penalty_stiffness` becomes required).
 `tangential_separation_2` &mdash; `input` &middot; `Scalar` &middot; **required**
 : Second tangential separation
 
+`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
+: Time
+
 
 ## Outputs
 
@@ -53,4 +56,7 @@ is added to $T_n$ (`penalty_stiffness` becomes required).
 
 `penalty_stiffness` &mdash; `parameter` &middot; `Scalar` &middot; default `0`
 : Penalty stiffness used to resist interpenetration. Required when `normal_penetration` is supplied; ignored otherwise.
+
+`viscosity` &mdash; `parameter` &middot; `Scalar` &middot; default `0`
+: Damage viscosity, which must be non-negative. Zero recovers the rate-independent law exactly; positive values apply the backward-Euler regularization and delay damage growth.
 

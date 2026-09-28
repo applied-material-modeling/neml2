@@ -18,7 +18,7 @@ The CLI synopsis:
 ```
 neml2-compile <input.i> --model <name>
                         [--output-dir <dir>]
-                        [--device cpu|cuda [cpu|cuda ...]] [--dtype float64|float32]
+                        [--device cpu|cuda|xpu|hip|mps [...]] [--dtype float64|float32]
                         [-p|--parameter NAME ...]
                         [-d|--derivative OUT:IN ...]
 ```
@@ -81,11 +81,15 @@ HIT stub that sits next to it:
     metadata.json              # shared: structural info, promoted-param values, solver config
     cpu/float64/  *.pt2
     cuda/float64/ *.pt2
+    xpu/float64/  *.pt2        # opt-in per --device (any torch accelerator family)
 ```
 
-A compile targeting a single device (the default `--device cpu`) emits
-just one `<device>/<dtype>/` subfolder; `neml2-compile --device cpu cuda`
-emits both, each with its own `.pt2` binaries. The shared `metadata.json`
+The `<device>` segment is the lowercase `torch.device(...).type` string
+(`cpu`, `cuda`, `xpu`, `hip`, `mps`) — the same spelling on both sides of
+the read/write boundary. A compile targeting a single device (the default
+`--device cpu`) emits just one `<device>/<dtype>/` subfolder;
+`neml2-compile --device cpu cuda xpu` emits three, each with its own
+`.pt2` binaries. The shared `metadata.json`
 at the artifact root is device/dtype-independent: the loader derives the
 device and dtype from the `<device>/<dtype>/` folder path, not from the
 metadata. The stub points at the `<name>/` folder via an absolute

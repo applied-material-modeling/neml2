@@ -86,5 +86,7 @@ steps:
 2. Run `pip install neml2`.
 
 NEML2 picks up whichever torch is already on the import path, so any
-accelerator torch supports works too. For moving a model onto a device
-and allocating inputs there, see [](tutorials-models-evaluation-device).
+accelerator torch supports works too — CUDA, XPU, HIP, MPS. See
+[](accelerators) for the accepted `--device` values and the per-family
+runtime requirements. For moving a model onto a device and allocating
+inputs there, see [](tutorials-models-evaluation-device).
