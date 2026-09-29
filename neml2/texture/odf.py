@@ -186,6 +186,13 @@ class KDEODF(ODF):
     def optimize_kernel(self, miter=50, verbose=False, lr=1.0e-2):
         """Optimize the kernel half width by cross-validation
 
+        The half width is only meaningful on the open interval ``(0,
+        kernel.hmax)``.  Optimizing it directly lets the optimizer walk it
+        through zero -- the kernel concentration then diverges and the
+        reconstructed ODF is garbage or NaN.  So the unconstrained variable is
+        ``s``, with ``h = hmax * sigmoid(s)``, which cannot leave the interval.
+        Note that ``lr`` is therefore a step size in ``s``, not in ``h``.
+
         Keyword Args:
             miter (int): optimization iterations
             verbose (bool): if true print convergence progress
@@ -193,14 +200,22 @@ class KDEODF(ODF):
         """
         it = range(miter)
 
-        # Make the half width a parameter
-        self.kernel.h = torch.nn.Parameter(self.kernel.h)
+        hmax = self.kernel.hmax
+        h0 = torch.as_tensor(self.kernel.h).detach()
+        if not bool(((h0 > 0.0) & (h0 < hmax)).all()):
+            raise ValueError(
+                f"the initial kernel half width must lie in (0, {hmax}), got {h0.tolist()}"
+            )
+
+        # Optimize the unconstrained variable behind the half width
+        s = torch.nn.Parameter(torch.logit(h0 / hmax))
 
         # Setup optimizer
-        optim = torch.optim.Adam(self.parameters(), lr=lr)
+        optim = torch.optim.Adam([s], lr=lr)
 
         for i in it:
             optim.zero_grad()
+            self.kernel.h = hmax * torch.sigmoid(s)
             loss = (
                 self.texture_index() - 2.0 * sum(self.leave_out(j) for j in range(self.n)) / self.n
             )
@@ -208,6 +223,8 @@ class KDEODF(ODF):
                 print(f"iter {i:4d}  loss: {loss.detach().cpu():6.5e}")
             loss.backward()
             optim.step()
+
+        self.kernel.h = (hmax * torch.sigmoid(s)).detach()
 
     def leave_out(self, i):
         """Calculate the second term of the cross-validation loss, leaving out the ith point
@@ -249,9 +266,15 @@ class KDEODF(ODF):
 class Kernel(torch.nn.Module):
     """Parent class for kernels for KDE reconstruction
 
+    The half width is an orientation-space angle, so it must be positive and
+    below :attr:`hmax`, the largest half width for which the kernel is still
+    defined.  Subclasses override :attr:`hmax` if their domain is narrower.
+
     Args:
         h (torch.tensor): half-width
     """
+
+    hmax = math.pi
 
     def __init__(self, h):
         super().__init__()

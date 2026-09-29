@@ -26,6 +26,7 @@
 
 import math
 
+import pytest
 import torch
 
 import neml2.texture as tex
@@ -201,6 +202,31 @@ def test_optimize_kernel_runs():
     odf.optimize_kernel(miter=3)
     h = odf.kernel.h.detach()
     assert torch.isfinite(h) and float(h) > 0
+
+
+def test_optimize_kernel_half_width_stays_in_domain():
+    """The optimizer never drives the half width out of (0, hmax).
+
+    Regression test for #334: with an unconstrained half width these settings
+    step h straight through zero on the first few iterations, which yields a
+    negative h (seed 0) or NaN (seeds 2-5).
+    """
+    torch.set_default_dtype(torch.float64)
+    for seed in range(6):
+        torch.manual_seed(seed)
+        odf = tex.KDEODF(MRP.rand(30), tex.DeLaValleePoussinKernel(torch.tensor(0.05)))
+        odf.optimize_kernel(miter=60, lr=0.05)
+        h = float(odf.kernel.h.detach())
+        assert math.isfinite(h), f"seed {seed}: half width is not finite"
+        assert 0.0 < h < odf.kernel.hmax, f"seed {seed}: half width {h} left (0, pi)"
+
+
+def test_optimize_kernel_rejects_out_of_domain_start():
+    """A half width outside (0, hmax) cannot be optimized and is rejected."""
+    torch.set_default_dtype(torch.float64)
+    odf = tex.KDEODF(MRP.rand(10), tex.DeLaValleePoussinKernel(torch.tensor(-0.1)))
+    with pytest.raises(ValueError):
+        odf.optimize_kernel(miter=1)
 
 
 def test_texture_index_positive_finite():
