@@ -1,0 +1,22 @@
+(models-GursonCavitation)=
+# GursonCavitation
+
+**Source:** `models/solid_mechanics/plasticity/GursonCavitation.py`
+
+Local mass balance used in conjunction with the GTNYieldFunction,
+$\dot{\phi} = (1-\phi) \dot{\varepsilon}_p$.
+
+## Inputs
+
+`plastic_strain_rate` &mdash; `input` &middot; `SR2` &middot; **required**
+: Plastic strain rate
+
+`void_fraction` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Void fraction (porosity)
+
+
+## Outputs
+
+`void_fraction_rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Rate of void evolution
+

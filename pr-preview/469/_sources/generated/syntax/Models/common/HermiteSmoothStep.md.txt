@@ -1,0 +1,39 @@
+(models-HermiteSmoothStep)=
+# HermiteSmoothStep
+
+**Source:** `models/common/HermiteSmoothStep.py`
+
+The smooth step function defined by Hermite polynomials.
+
+For $x$ mapped onto the unit interval via $u = (x - x0) / (x1 - x0)$
+and clamped to ``[eps, 1 - eps]``, the forward is the cubic Hermite step
+$y = 3 u^2 - 2 u^3$ (or its complement ``1 - y`` when ``complement = true``).
+The derivative $dy/dx = 6 u (1 - u) / (x1 - x0)$ vanishes naturally at
+the clamp boundaries, mirroring the C++ ``set_value`` implementation.
+
+## Inputs
+
+`argument` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Argument of the smooth step function
+
+
+## Outputs
+
+`value` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Value of the smooth step function
+
+
+## Parameters
+
+`lower_bound` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Lower bound of the argument
+
+`upper_bound` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Upper bound of the argument
+
+
+## Other options
+
+`complement` &mdash; `bool` &middot; default `False`
+: Whether to take the complement of the smooth step function, i.e. 1 - smooth_step
+

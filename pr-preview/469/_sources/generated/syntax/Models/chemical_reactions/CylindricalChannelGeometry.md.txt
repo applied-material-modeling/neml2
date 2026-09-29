@@ -1,0 +1,37 @@
+(models-CylindricalChannelGeometry)=
+# CylindricalChannelGeometry
+
+**Source:** `models/chemical_reactions/CylindricalChannelGeometry.py`
+
+Dimensionless inner/outer radii of a cylindrical reaction product.
+
+Given the volume fractions $\phi_s$ (solid) and $\phi_p$
+(product), define $\mathrm{cap} = 1 - \phi_s - \phi_p$. Then
+
+$$
+r_i = \sqrt{\operatorname{clamp}(\mathrm{cap}, \varepsilon, 1 - \varepsilon)},
+\qquad
+r_o = \sqrt{1 - \phi_s}.
+$$
+
+The clamp guards `sqrt` against negative arguments and the flat
+saturation tails kill the derivative of $r_i$ exactly as in the
+C++ source.
+
+## Inputs
+
+`solid_fraction` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Volume fraction of the solid phase
+
+`product_fraction` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Volume fraction of the product phase
+
+
+## Outputs
+
+`inner_radius` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Dimensionless inner radius of the product phase
+
+`outer_radius` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Dimensionless outer radius of the product phase
+
