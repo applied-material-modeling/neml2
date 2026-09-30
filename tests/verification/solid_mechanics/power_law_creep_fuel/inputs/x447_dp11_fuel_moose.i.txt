@@ -1,0 +1,366 @@
+################################################################################
+## Standalone metallic fuel slug — GENERIC MOOSE version                       ##
+## (combined module: heat_transfer + solid_mechanics)                          ##
+##                                                                             ##
+## Simplified from the BISON standalone fuel model (fuel_only/x447_dp11_fuel.i)##
+## using only generic MOOSE objects:                                           ##
+##   * Mesh: pre-generated with `bison-opt --mesh-only` -> fuel_mesh.e, read    ##
+##     here with FileMeshGenerator (no BISON mesh generator / no mesh metadata).##
+##   * Heat source / power: generic HeatSource kernel driven by PiecewiseLinear ##
+##     time history x PiecewiseLinear(axis=y) axial peaking.                    ##
+##   * Surface temperature: generic PiecewiseMultilinear T(y,t) grid function.  ##
+##   * Materials: generic elasticity, power-law creep, thermal-expansion        ##
+##     eigenstrain, and a burnup-driven volumetric swelling eigenstrain         ##
+##     (replacing the BISON U-Pu-Zr fission-gas / solid-swelling / hot-pressing ##
+##     models — qualitatively/semi-quantitatively similar).                     ##
+## All BISON-specific FIPD CSVs were converted to generic data files in data/.  ##
+################################################################################
+
+# ---- Geometry / model constants (mesh y-range: 0.00255 .. 0.34545 m) ----
+fuel_radius   = 2.1971e-03            # m
+fuel_area     = ${fparse pi * fuel_radius^2}   # m^2 (RZ cross-section)
+energy_in_fuel = 0.95                 # fraction of fission energy deposited in fuel
+clad_to_fuel_htc = 6.104e4            # W/m^2-K surface film coeff -> ~40 K fuel-surface
+                                      # rise above clad-OD temperature at peak power
+
+run_time      = 56465640              # s (~1.79 yr)
+max_time_step = 7200                  # s
+
+[GlobalParams]
+  displacements = 'disp_x disp_y'
+[]
+
+[Mesh]
+  [fmg]
+    type = FileMeshGenerator
+    file = fuel_mesh.e
+  []
+  coord_type = RZ
+[]
+
+[Variables]
+  [temp]
+    initial_condition = 298
+  []
+  [disp_x]
+  []
+  [disp_y]
+  []
+[]
+
+[AuxVariables]
+  [burnup] # local burnup [at% FIMA] for visualization
+    order = FIRST
+    family = LAGRANGE
+  []
+  [coolant_temp] # clad-OD (far-field) temperature, for wall-superheat diagnostic
+    order = FIRST
+    family = LAGRANGE
+  []
+  [wall_superheat] # T - T_cladOD
+    order = FIRST
+    family = LAGRANGE
+  []
+[]
+
+[Functions]
+  # --- power / heat source ---
+  [power_history]                 # rod linear power [W/m] vs time
+    type = PiecewiseLinear
+    data_file = 'data/power_history.csv'
+    format = rows
+  []
+  [peaking_power]                 # axial power peaking factor vs absolute y
+    type = PiecewiseLinear
+    data_file = 'data/peaking_power_axial.csv'
+    format = rows
+    axis = y
+  []
+  [heat_source_func]             # volumetric heat generation [W/m^3]
+    type = ParsedFunction
+    symbol_names  = 'p pk'
+    symbol_values = 'power_history peaking_power'
+    expression = '${fparse energy_in_fuel / fuel_area} * p * pk'
+  []
+
+  # --- surface temperature BC: T(y,t) grid from FIPD clad-OD history ---
+  [clad_od_temp]
+    type = PiecewiseMultilinear
+    data_file = 'data/clad_od_temp_grid.txt'
+  []
+
+  # --- burnup-driven swelling ---
+  [burnup_fima]                  # pin-average burnup [FIMA fraction] vs time
+    type = PiecewiseLinear
+    data_file = 'data/burnup_history.csv'
+    format = rows
+  []
+  [burnup_field]                 # LOCAL burnup [at%] = pin-average FIMA * axial peaking
+    type = ParsedFunction
+    symbol_names  = 'b pk'
+    symbol_values = 'burnup_fima peaking_power'
+    expression = '100.0 * b * pk'
+  []
+[]
+
+[Physics/SolidMechanics/QuasiStatic]
+  [fuel]
+    block = fuel
+    strain = FINITE
+    add_variables = false
+    use_automatic_differentiation = true
+    volumetric_locking_correction = true
+    eigenstrain_names = 'thermal_eigenstrain swelling_eigenstrain'
+    generate_output = 'stress_xx stress_yy stress_zz vonmises_stress hydrostatic_stress '
+                      'strain_xx strain_yy strain_zz'
+  []
+[]
+
+[Kernels]
+  [heat]
+    type = ADHeatConduction
+    variable = temp
+  []
+  [heat_ie]
+    type = ADHeatConductionTimeDerivative
+    variable = temp
+  []
+  [heat_source]
+    type = HeatSource
+    variable = temp
+    function = heat_source_func
+  []
+[]
+
+[AuxKernels]
+  [burnup_aux] # local burnup field; updated at timestep_begin so swelling sees current value
+    type = FunctionAux
+    variable = burnup
+    function = burnup_field
+    execute_on = 'initial timestep_begin timestep_end'
+  []
+  [coolant_temp_aux]
+    type = FunctionAux
+    variable = coolant_temp
+    function = clad_od_temp
+    execute_on = 'initial timestep_end'
+  []
+  [wall_superheat_aux]
+    type = ParsedAux
+    variable = wall_superheat
+    coupled_variables = 'temp coolant_temp'
+    expression = 'temp - coolant_temp'
+    execute_on = 'initial timestep_end'
+  []
+[]
+
+[BCs]
+  [no_x] # axisymmetry on the centerline
+    type = ADDirichletBC
+    variable = disp_x
+    boundary = 'centerline'
+    value = 0.0
+  []
+  [no_y] # axial anchor at the fuel bottom
+    type = ADDirichletBC
+    variable = disp_y
+    boundary = 'fuel_bottom'
+    value = 0.0
+  []
+  [surf_conv] # convective (Robin) BC: q'' = h*(T_surface - T_cladOD)
+    type = ConvectiveFluxFunction
+    variable = temp
+    boundary = 'fuel_outer_radial_surface fuel_top fuel_bottom'
+    T_infinity = clad_od_temp        # far-field = FIPD clad-OD temperature T(y,t)
+    coefficient = ${clad_to_fuel_htc}
+  []
+[]
+
+[Materials]
+  # --- thermal properties (U-10Zr-like, semi-quantitative) ---
+  [thermal_conductivity]
+    type = ADParsedMaterial
+    property_name = thermal_conductivity
+    coupled_variables = 'temp'
+    expression = '16.0 + 0.0151 * temp'   # W/m-K, increases with temperature
+  []
+  [thermal_other]
+    type = ADGenericConstantMaterial
+    prop_names  = 'specific_heat density'
+    prop_values = '200.0      15800.0'    # J/kg-K , kg/m^3
+  []
+
+  # --- mechanical properties ---
+  [elasticity]
+    type = ADComputeIsotropicElasticityTensor
+    youngs_modulus = 80.0e9              # Pa  (U-10Zr ~ 80 GPa)
+    poissons_ratio = 0.33
+  []
+  [thermal_expansion]
+    type = ADComputeThermalExpansionEigenstrain
+    temperature = temp
+    stress_free_temperature = 298.0
+    thermal_expansion_coeff = 1.7e-5     # 1/K  (U-10Zr ~ 1.7e-5)
+    eigenstrain_name = thermal_eigenstrain
+  []
+  # burnup-driven volumetric swelling (replaces gas + solid swelling + hot pressing).
+  # Driven by the LOCAL burnup field [at%], so every point reaches 36% dV/V exactly
+  # when its own local burnup reaches 1.5 at%:
+  #   BU <= 1.5 at% : dV/V = 0.24*BU            -> 36% at 1.5 at% (24%/at%)
+  #   BU >  1.5 at% : dV/V = 0.36 + 0.015*(BU-1.5)   (1.5%/at%)
+  [swelling_volumetric]
+    type = ADParsedMaterial
+    property_name = swelling_volumetric
+    coupled_variables = 'burnup'
+    expression = 'if(burnup <= 1.5, 0.24*burnup, 0.36 + 0.015*(burnup - 1.5))'
+  []
+  [swelling_eigenstrain]
+    type = ADComputeVolumetricEigenstrain
+    volumetric_materials = 'swelling_volumetric'
+    eigenstrain_name = swelling_eigenstrain
+  []
+  # elastic + power-law creep
+  [stress]
+    type = ADComputeMultipleInelasticStress
+    inelastic_models = 'creep'
+  []
+  [creep]
+    type = ADPowerLawCreepStressUpdate
+    temperature = temp
+    coefficient = 1.0e-30                # mild, qualitative thermal creep
+    n_exponent = 4.0
+    activation_energy = 0.0
+  []
+[]
+
+[Preconditioning]
+  [smp]
+    type = SMP
+    full = true
+  []
+[]
+
+[Executioner]
+  type = Transient
+  solve_type = 'NEWTON'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_type'
+  petsc_options_value = 'lu       superlu_dist'
+  line_search = 'none'
+
+  l_max_its = 50
+  nl_max_its = 15
+  nl_rel_tol = 1e-6
+  nl_abs_tol = 1e-8
+
+  end_time = ${run_time}
+  dtmin = 1
+  dtmax = ${max_time_step}
+
+  automatic_scaling = true
+  compute_scaling_once = false
+
+  [TimeStepper]
+    type = IterationAdaptiveDT
+    dt = 1e2
+    optimal_iterations = 10
+    iteration_window = 4
+    timestep_limiting_function = power_history
+    force_step_every_function_point = true
+    max_function_change = 300
+  []
+[]
+
+[Postprocessors]
+  [temp_fuel_avg]
+    type = ElementAverageValue
+    variable = temp
+    block = 'fuel'
+  []
+  [temp_fuel_max]
+    type = ElementExtremeValue
+    variable = temp
+    block = 'fuel'
+  []
+  [temp_centerline_max]
+    type = NodalExtremeValue
+    variable = temp
+    boundary = 'centerline'
+  []
+  [temp_surface_avg]
+    type = SideAverageValue
+    variable = temp
+    boundary = 'fuel_outer_radial_surface'
+  []
+  [wall_superheat_max] # peak fuel-surface temperature rise above clad-OD temperature
+    type = NodalExtremeValue
+    variable = wall_superheat
+    boundary = 'fuel_outer_radial_surface'
+  []
+  [burnup_avg]
+    type = ElementAverageValue
+    variable = burnup
+    block = 'fuel'
+  []
+  [stress_vonmises_avg]
+    type = ElementAverageValue
+    variable = vonmises_stress
+    block = 'fuel'
+  []
+  [volume_fuel_ref]
+    type = VolumePostprocessor
+    block = 'fuel'
+    execute_on = 'initial timestep_end'
+  []
+  [volume_fuel] # deformed volume (reflects swelling + thermal expansion)
+    type = VolumePostprocessor
+    block = 'fuel'
+    use_displaced_mesh = true
+    execute_on = 'initial timestep_end'
+  []
+  [swelling_vol_avg] # applied volumetric swelling strain dV/V (material)
+    type = ADElementAverageMaterialProperty
+    mat_prop = swelling_volumetric
+    block = 'fuel'
+  []
+  [strain_yy_avg]
+    type = ElementAverageValue
+    variable = strain_yy
+    block = 'fuel'
+  []
+  [disp_y_top_max]
+    type = NodalExtremeValue
+    variable = disp_y
+    boundary = 'fuel_top'
+  []
+  [disp_x_surf_max]
+    type = NodalExtremeValue
+    variable = disp_x
+    boundary = 'fuel_outer_radial_surface'
+  []
+  [linear_heat_rate]
+    type = FunctionValuePostprocessor
+    function = power_history
+    scale_factor = 0.01            # W/m -> W/cm
+  []
+  [dt]
+    type = TimestepSize
+  []
+[]
+
+[Outputs]
+  color = true
+  perf_graph = true
+  [exodus]
+    type = Exodus
+    time_step_interval = 50
+    file_base = 'x447_DP11_fuel_moose'
+  []
+  [csv]
+    type = CSV
+    file_base = 'x447_DP11_fuel_moose'
+  []
+  [console]
+    type = Console
+    show = 'dt temp_fuel_max temp_fuel_avg burnup_avg linear_heat_rate'
+  []
+[]
