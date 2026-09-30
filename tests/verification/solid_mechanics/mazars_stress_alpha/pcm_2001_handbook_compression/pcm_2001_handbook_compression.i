@@ -1,0 +1,105 @@
+# Verification scenario: MazarsDamageStressAlpha vs Pijaudier-Cabot/Mazars
+# 2001 handbook Figure 1 -- uniaxial-stress compression branch.
+#
+# Drives the Mazars composed pipeline through 63 digitized strain points
+# (loaded from the user-prepared digitization at modified_ds.csv and
+# re-packaged into pcm_2001_handbook_compression.csv by make_pcm_reference_csvs.py)
+# and compares the per-step nominal stress to the digitized reference.
+#
+# Loading is monotonic uniaxial-stress (Poisson laterals ON strain) from
+# virgin state to the most-compressive digitized point. The strain shears
+# are zero and the elastic Poisson ratio matches between the elasticity
+# block (0.2) and the lateral-strain factor used by the generator, so
+# the off-diagonal stress components are exactly zero throughout.
+#
+# Tolerance: rtol=5e-2, atol=5e-1 MPa. Reflects digitization-limited
+# match -- compression RMSE measured at 0.5% of peak in Phase G, so 5%
+# rtol is generous; atol=0.5 MPa covers small-stress regions near
+# loading onset.
+
+[Tensors]
+  [times]
+    type = CSVScalar
+    csv_file = 'pcm_2001_handbook_compression.csv'
+    variable = 'time'
+  []
+  [strains]
+    type = CSVSR2
+    csv_file = 'pcm_2001_handbook_compression.csv'
+    variable = 'strain'
+  []
+  [stresses]
+    type = CSVSR2
+    csv_file = 'pcm_2001_handbook_compression.csv'
+    variable = 'stress'
+  []
+[]
+
+[Drivers]
+  [driver]
+    type = TransientDriver
+    model = 'model'
+    prescribed_time = 'times'
+    prescribed_SR2_names = 'E'
+    prescribed_SR2_values = 'strains'
+    save_as = 'result.pt'
+  []
+  [verification]
+    type = Verification
+    driver = 'driver'
+    SR2_names = 'output.stress'
+    SR2_values = 'stresses'
+    rtol = 5e-2
+    atol = 5e-1
+  []
+[]
+
+[Models]
+  [effective_stress]
+    type              = LinearIsotropicElasticity
+    coefficients      = '30000.0 0.2'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain            = 'E'
+    stress            = 'effective_stress'
+  []
+  [eq_strain]
+    type              = MazarsEquivalentStrain
+    strain            = 'E'
+    equivalent_strain = 'eps_tilde'
+  []
+  [eps_max_history]
+    type = IrreversibleScalar
+    from = 'eps_tilde'
+    to   = 'eps_tilde_max'
+  []
+  [damage]
+    type              = MazarsDamageStressAlpha
+    equivalent_strain = 'eps_tilde_max'
+    strain            = 'E'
+    effective_stress  = 'effective_stress'
+    damage            = 'D'
+    eps_d0            = 1.0e-4
+    A_t               = 1.0
+    B_t               = 15000.0
+    A_c               = 1.2
+    B_c               = 1500.0
+    E                 = 30000.0
+    nu                = 0.2
+  []
+  [damage_monotone]
+    type = IrreversibleScalar
+    from = 'D'
+    to   = 'D_mono'
+  []
+  [damaged_stress]
+    type              = DamagedStress
+    damage            = 'D_mono'
+    effective_stress  = 'effective_stress'
+    stress            = 'stress'
+  []
+  [model]
+    type               = ComposedModel
+    models             = 'effective_stress eq_strain eps_max_history damage damage_monotone damaged_stress'
+    additional_outputs = 'D D_mono eps_tilde eps_tilde_max'
+  []
+[]
