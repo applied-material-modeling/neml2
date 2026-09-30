@@ -30,7 +30,9 @@ package re-imports each so the ``@register_neml2_object`` side effects fire on
 package import.
 """
 
+from .BackwardEulerViscousDamage import BackwardEulerViscousDamage
 from .BenzeggaghKenaneFullSeparation import BenzeggaghKenaneFullSeparation
+from .BilinearDamage import BilinearDamage
 from .BilinearTraction import BilinearTraction
 from .CamanhoDavilaCriticalSeparation import CamanhoDavilaCriticalSeparation
 from .CavityGrowthDamageRate import CavityGrowthDamageRate
@@ -39,16 +41,21 @@ from .CavityNucleationRate import CavityNucleationRate
 from .CavityVolumeOpening import CavityVolumeOpening
 from .DiffusiveCavityGrowthRate import DiffusiveCavityGrowthRate
 from .EffectiveCavityFraction import EffectiveCavityFraction
+from .ExponentialViscousDamage import ExponentialViscousDamage
 from .GrainBoundarySlidingRate import GrainBoundarySlidingRate
 from .ModeMixity import ModeMixity
 from .OrthotropicLinearTraction import OrthotropicLinearTraction
 from .PowerLawFullSeparation import PowerLawFullSeparation
+from .SalehaniIraniDamage import SalehaniIraniDamage
 from .SalehaniIraniTraction import SalehaniIraniTraction
 from .ShamNeedlemanTraction import ShamNeedlemanTraction
 from .SlidingDrivenStrainRate import SlidingDrivenStrainRate
+from .ViscousDamageUpdate import ViscousDamageUpdate
 
 __all__ = [
+    "BackwardEulerViscousDamage",
     "BenzeggaghKenaneFullSeparation",
+    "BilinearDamage",
     "BilinearTraction",
     "CamanhoDavilaCriticalSeparation",
     "CavityGrowthDamageRate",
@@ -57,11 +64,14 @@ __all__ = [
     "CavityVolumeOpening",
     "DiffusiveCavityGrowthRate",
     "EffectiveCavityFraction",
+    "ExponentialViscousDamage",
     "GrainBoundarySlidingRate",
     "ModeMixity",
     "OrthotropicLinearTraction",
     "PowerLawFullSeparation",
+    "SalehaniIraniDamage",
     "SalehaniIraniTraction",
     "ShamNeedlemanTraction",
     "SlidingDrivenStrainRate",
+    "ViscousDamageUpdate",
 ]

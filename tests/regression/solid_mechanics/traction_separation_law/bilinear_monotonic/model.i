@@ -73,16 +73,23 @@
     to = 'effective_separation'
     exponent = 2.0
   []
-  [traction]
-    type = BilinearTraction
+  [damage_envelope]
+    type = BilinearDamage
     critical_separation = 'critical_separation'
     full_separation = 'full_separation'
+  []
+  [damage_update]
+    type = BackwardEulerViscousDamage
+  []
+  [traction]
+    type = BilinearTraction
     normal_penetration = 'normal_penetration'
     penalty_stiffness = 1000.0
   []
   [model]
     type = ComposedModel
-    models = 'decompose tangential_separation macaulay_n effective_separation traction'
+    models = 'decompose tangential_separation macaulay_n effective_separation
+              damage_envelope damage_update traction'
     additional_outputs = 'damage'
   []
 []

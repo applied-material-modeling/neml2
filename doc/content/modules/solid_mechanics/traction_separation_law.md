@@ -54,42 +54,49 @@ The catalog is organized by role:
 - [](models-PowerLawFullSeparation) — mixed-mode full (failure)
   separation under the Alfano–Crisfield power-law criterion.
 
-**Traction-assembly primitives** (each emits the public `traction`
-`Vec`):
-- [](models-OrthotropicLinearTraction) — orthotropic linear elasticity
-  with no internal state. Optionally accepts a `normal_penetration`
-  channel and a separate `penalty_stiffness` to elastically resist
-  interpenetration.
-- [](models-BilinearTraction) — Camanho/Davila-style cohesive-zone
-  assembly. Computes the bilinear damage internally, caps it for
-  irreversibility against the previous-step value, and exposes the
-  damage as a secondary output for inspection.
-- [](models-SalehaniIraniTraction) — 3D coupled exponential law of
-  Salehani & Irani; internally damaged with a previous-step cap, so
-  load–unload–reload freezes the softness at its historical peak.
+**Damage-envelope primitives** (each emits `trial_damage`):
+- [](models-BilinearDamage) evaluates the bilinear envelope from the
+  effective, critical, and full separations.
+- [](models-SalehaniIraniDamage) evaluates the coupled exponential
+  envelope from the three separation components.
 
-Both laws take the previous-step damage `damage~1` and the `time` /
-`time~1` pair (named `t` and `t~1` by default) as inputs. They
-accept an optional `viscosity` $\eta_v$ (default zero, and required
-to be non-negative). For inviscid damage $d^*$ after the
-irreversibility cap, they apply the backward-Euler regularization
+**Damage-update primitives** consume `trial_damage`, previous-step
+`damage~1`, and the `time` / `time~1` pair (named `t` and `t~1` by
+default), then emit irreversible `damage`. Both accept a non-negative
+`viscosity` $\eta_v$, defaulting to zero:
+- [](models-BackwardEulerViscousDamage) uses
+  $\alpha = \Delta t / (\eta_v + \Delta t)$.
+- [](models-ExponentialViscousDamage) uses
+  $\alpha = 1 - \exp(-\Delta t / \eta_v)$.
+
+Both updates have the form
 
 $$
-d_n = \frac{d^* + (\eta_v / \Delta t)d_{n-1}}
-           {1 + \eta_v / \Delta t}
-    = d_{n-1} + \frac{\Delta t}{\eta_v + \Delta t}
-      (d^* - d_{n-1}).
+d_n = d_{n-1} + \alpha(d^* - d_{n-1}), \qquad
+ d^* = \max(d_{\mathrm{trial}}, d_{n-1}).
 $$
 
-Positive viscosity therefore delays damage growth, and
-`viscosity = 0` recovers the rate-independent update exactly. A
-negative viscosity is rejected when the model is built: it would make
-the dashpot run backwards, and the only reading it has in the
-regularization above is the inviscid one — so a mistyped sign would
-silently drop the regularization rather than fail. This option does
-not apply to the stateless kinematic, critical-separation,
-full-separation, or linear-traction primitives because those models do
-not evolve a damage variable.
+The backward-Euler model matches the MOOSE update. The exponential
+model analytically integrates the same evolution equation
+$\dot d=(d^*-d)/\eta_v$ while holding $d^*$ constant over the step.
+Positive viscosity delays damage growth, while `viscosity = 0`
+recovers the irreversible rate-independent update exactly. A negative
+viscosity is rejected when the updater is built.
+
+**Traction-assembly primitives** consume the updated `damage` and emit
+the public `traction` `Vec`:
+- [](models-OrthotropicLinearTraction) provides orthotropic linear
+  elasticity with no damage state.
+- [](models-BilinearTraction) assembles the Camanho/Davila-style
+  bilinear traction.
+- [](models-SalehaniIraniTraction) assembles the 3D coupled
+  Salehani-Irani traction.
+
+The three responsibilities are separate `Model` leaves, so an envelope,
+damage integration method, or traction assembly can be replaced without
+changing the other two. The traction leaves optionally accept a
+`normal_penetration` channel and penalty stiffness to resist
+interpenetration.
 
 ## Math
 
@@ -145,11 +152,11 @@ $$
 $$
 
 while [](models-PowerLawFullSeparation) implements the Alfano–Crisfield
-power-law form. The exponential law of Salehani & Irani replaces the
-bilinear envelope with a coupled exponential — the normal direction
-enters linearly and the two tangential directions enter quadratically
-in a single coupling exponent — and is assembled as a single
-[](models-SalehaniIraniTraction) primitive.
+power-law form. The [](models-SalehaniIraniDamage) envelope replaces
+the bilinear expression with a coupled exponential: the normal
+direction enters linearly and the two tangential directions enter
+quadratically in a single coupling exponent. Its updated damage is
+then consumed by [](models-SalehaniIraniTraction).
 
 ## Example model composition
 
@@ -196,22 +203,24 @@ Reading the `[Models]` block top to bottom:
 6. **`effective_separation`** assembles
    $\delta_m = \sqrt{(\delta_n^+)^2 + \delta_s^2}$ with another
    [](models-ScalarPNorm).
-7. **`traction`** ([](models-BilinearTraction)) consumes
-   $\delta_m$, $\delta_c$, $\delta_f$, the per-component jumps, and
-   the elastic penetration channel; computes the bilinear damage $d$;
-   caps it for irreversibility against the previous-step value; and
-   assembles the traction vector. Damage is exposed as a secondary
-   output (via `additional_outputs = 'damage'` on the composed model)
-   for inspection but is internal state of this primitive.
+7. **`damage_envelope`** ([](models-BilinearDamage)) consumes
+   $\delta_m$, $\delta_c$, and $\delta_f$ and emits the bilinear
+   `trial_damage`.
+8. **`damage_update`** ([](models-BackwardEulerViscousDamage)) caps the
+   trial value against `damage~1`, applies the selected viscous update,
+   and emits `damage`. The composed model exposes it through
+   `additional_outputs = 'damage'` for inspection.
+9. **`traction`** ([](models-BilinearTraction)) consumes the updated
+   damage, per-component jumps, and elastic penetration channel and
+   assembles the traction vector.
 
 The `[Drivers]` block prescribes the time grid and the displacement
 jump history through a `TransientDriver`, and a `TransientRegression`
 pins the run against `gold/result.pt`.
 
 :::{note}
-The bilinear TSLs ([](models-BilinearTraction), with `damage` capped
-internally) and [](models-SalehaniIraniTraction) both carry
-irreversible internal state. Under load–unload–reload schedules the
+The bilinear and Salehani-Irani graphs carry irreversible state through
+their damage-update leaf. Under load–unload–reload schedules the
 unloading limb returns elastically along the secant of the current
 damaged stiffness, and reloading resumes the softening branch only
 after the historical peak separation is exceeded. The `bilinear_unload`

@@ -1,5 +1,5 @@
 # neml2
-# The rate-independent branch of BilinearTraction (viscosity = 0), on a
+# The rate-independent bilinear damage update (viscosity omitted), on a
 # *regressing* trial damage: d_trial = 0.5555555556 sits below damage~1 = 0.6, so
 # the irreversibility cap freezes and d must come back as exactly 0.6.
 # This is the backward-compatibility guarantee -- eta = 0 has to reproduce the
@@ -42,12 +42,22 @@
 []
 
 [Models]
-  [model]
-    type = BilinearTraction
+  [envelope]
+    type = BilinearDamage
     critical_separation = 'critical_separation'
     full_separation = 'full_separation'
+  []
+  [update]
+    type = BackwardEulerViscousDamage
+  []
+  [traction]
+    type = BilinearTraction
     normal_penetration = 'normal_penetration'
     penalty_stiffness = 1000.0
-    viscosity = 0.0
+  []
+  [model]
+    type = ComposedModel
+    models = 'envelope update traction'
+    additional_outputs = 'damage'
   []
 []
