@@ -9,12 +9,12 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'normal_separation tangential_separation_1 tangential_separation_2 damage~1 t t~1'
+    input_Scalar_names = 'normal_separation normal_penetration tangential_separation_1 tangential_separation_2 damage~1 t t~1'
     # x = 0.5 + 0.5^2/2 + 0.5^2/2 = 0.75
     # d_trial = 1 - exp(-0.75) = 0.5276334473
     # eta = 1, t - t~1 = 1  ->  alpha = 1 - exp(-1) = 0.6321205588
     # d = 0.2 + alpha * (0.5276334473 - 0.2) = 0.4071038378
-    input_Scalar_values = '0.5 0.5 0.5 0.2 1.0 0.0'
+    input_Scalar_values = '0.5 0.0 0.5 0.5 0.2 1.0 0.0'
     output_Vec_names = 'traction'
     output_Vec_values = 'T_expected'
     output_Scalar_names = 'damage'
@@ -49,6 +49,8 @@
     tangential_characteristic_length = 1.0
     normal_strength = 1.0
     shear_strength = 1.0
+    normal_penetration = 'normal_penetration'
+    penalty_stiffness = 1000.0
   []
   [model]
     type = ComposedModel
