@@ -33,6 +33,14 @@
     from = 'separation'
     to = 'normal_separation tangential_separation_1 tangential_separation_2'
   []
+  [damage_envelope]
+    type = SalehaniIraniDamage
+    normal_characteristic_length = 1.0
+    tangential_characteristic_length = 1.0
+  []
+  [damage_update]
+    type = BackwardEulerViscousDamage
+  []
   [traction]
     type = SalehaniIraniTraction
     normal_characteristic_length = 1.0
@@ -42,6 +50,7 @@
   []
   [model]
     type = ComposedModel
-    models = 'decompose traction'
+    models = 'decompose damage_envelope damage_update traction'
+    additional_outputs = 'damage'
   []
 []

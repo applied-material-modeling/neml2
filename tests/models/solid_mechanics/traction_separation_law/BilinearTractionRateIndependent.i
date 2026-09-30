@@ -1,5 +1,5 @@
 # neml2
-# The rate-independent branch of BilinearTraction (viscosity = 0), on a
+# The rate-independent bilinear damage update (viscosity omitted), on a
 # *regressing* trial damage: d_trial = 0.5555555556 sits below damage~1 = 0.6, so
 # the irreversibility cap freezes and d must come back as exactly 0.6.
 # This is the backward-compatibility guarantee -- eta = 0 has to reproduce the
@@ -14,14 +14,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'effective_separation critical_separation full_separation
-                          normal_separation normal_penetration
+    input_Scalar_names = 'effective_separation normal_separation
                           tangential_separation_1 tangential_separation_2 damage~1 t t~1'
     # delta_m = 0.2, delta_c = 0.1, delta_f = 1.0, damage~1 = 0.6, viscosity = 0
     # d_trial = 1.0 * (0.2 - 0.1) / (0.2 * 0.9) = 0.5555555556  <  0.6  -> frozen
     # alpha = 1 (inviscid branch), so d = max(d_trial, damage~1) = 0.6
     # t / t~1 are present but must not be read on this branch.
-    input_Scalar_values = '0.2 0.1 1.0 0.02 0.0 0.01 -0.01 0.6 1.0 0.0'
+    input_Scalar_values = '0.2 0.02 0.01 -0.01 0.6 1.0 0.0'
     output_Vec_names = 'traction'
     output_Vec_values = 'T_expected'
     output_Scalar_names = 'damage'
@@ -42,12 +41,21 @@
 []
 
 [Models]
-  [model]
+  [envelope]
+    type = BilinearDamage
+    critical_separation = 0.1
+    full_separation = 1.0
+  []
+  [update]
+    type = BackwardEulerViscousDamage
+  []
+  [traction]
     type = BilinearTraction
-    critical_separation = 'critical_separation'
-    full_separation = 'full_separation'
-    normal_penetration = 'normal_penetration'
     penalty_stiffness = 1000.0
-    viscosity = 0.0
+  []
+  [model]
+    type = ComposedModel
+    models = 'envelope update traction'
+    additional_outputs = 'damage'
   []
 []

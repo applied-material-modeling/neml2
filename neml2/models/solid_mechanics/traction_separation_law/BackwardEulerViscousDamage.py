@@ -22,38 +22,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Native solid-mechanics traction-separation-law models.
+"""Backward-Euler viscous damage update."""
 
-One file per C++ header under
-``include/neml2/models/solid_mechanics/traction_separation_law/``; this
-package re-imports each so the ``@register_neml2_object`` side effects fire on
-package import.
-"""
-
-from .BackwardEulerViscousDamage import BackwardEulerViscousDamage
-from .BenzeggaghKenaneFullSeparation import BenzeggaghKenaneFullSeparation
-from .BilinearDamage import BilinearDamage
-from .BilinearTraction import BilinearTraction
-from .CamanhoDavilaCriticalSeparation import CamanhoDavilaCriticalSeparation
-from .ExponentialViscousDamage import ExponentialViscousDamage
-from .ModeMixity import ModeMixity
-from .OrthotropicLinearTraction import OrthotropicLinearTraction
-from .PowerLawFullSeparation import PowerLawFullSeparation
-from .SalehaniIraniDamage import SalehaniIraniDamage
-from .SalehaniIraniTraction import SalehaniIraniTraction
+from ....factory import register_neml2_object
+from ....types import Scalar, where
 from .ViscousDamageUpdate import ViscousDamageUpdate
 
-__all__ = [
-    "BackwardEulerViscousDamage",
-    "BenzeggaghKenaneFullSeparation",
-    "BilinearDamage",
-    "BilinearTraction",
-    "CamanhoDavilaCriticalSeparation",
-    "ExponentialViscousDamage",
-    "ModeMixity",
-    "OrthotropicLinearTraction",
-    "PowerLawFullSeparation",
-    "SalehaniIraniDamage",
-    "SalehaniIraniTraction",
-    "ViscousDamageUpdate",
-]
+
+@register_neml2_object("BackwardEulerViscousDamage")
+class BackwardEulerViscousDamage(ViscousDamageUpdate):
+    r"""Irreversible update with $\alpha=\Delta t/(\eta+\Delta t)$."""
+
+    def _coefficient(
+        self, dt: Scalar, eta: Scalar, positive: Scalar, one: Scalar, zero: Scalar
+    ) -> tuple[Scalar, Scalar]:
+        denominator = where(positive, eta + dt, one)
+        alpha = where(positive, dt / denominator, one)
+        derivative = where(positive, eta / (denominator * denominator), zero)
+        return alpha, derivative
+
+
+__all__ = ["BackwardEulerViscousDamage"]
