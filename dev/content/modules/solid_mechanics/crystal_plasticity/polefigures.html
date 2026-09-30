@@ -490,10 +490,6 @@ time-integration chunk size.</p>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">Using device: cpu
 </span></pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/tranh/miniconda3/envs/neml2_pyzag_ci/lib/python3.12/site-packages/torch/cuda/__init__.py:187: UserWarning: CUDA initialization: The NVIDIA driver on your system is too old (found version 12040). Please update your GPU driver by downloading and installing a new version from the URL: http://www.nvidia.com/Download/index.aspx Alternatively, go to: https://pytorch.org to install a PyTorch version that has been compiled with your version of the CUDA driver. (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
-</span><span data-line="2">  return torch._C._cuda_getDeviceCount() &gt; 0
-</span></pre></div>
-</div>
 </div>
 </div>
 <p>The rolling history is the same isochoric stretch used in the formulations
@@ -570,7 +566,7 @@ with the chunked adjoint solver, and slices the final orientation back out.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/tranh/.claude_tmp/ipykernel_1761551/668052336.py:5: UserWarning: pyzag lowered torch._functorch.config.donated_buffer's default to False process-wide. AOTAutograd 'donated buffers' (torch&gt;=2.12) are incompatible with pyzag's retain_graph=True adjoint over torch.compile'd models, which otherwise raises 'compiled with non-empty donated buffers'. To keep donated buffers enabled, restore torch._functorch.config._config['donated_buffer'].default = True -- compiled models differentiated through the adjoint will then error.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/var/folders/9p/j85ydv4n2370tksq_dprk81h0000gn/T/ipykernel_52981/668052336.py:5: UserWarning: pyzag lowered torch._functorch.config.donated_buffer's default to False process-wide. AOTAutograd 'donated buffers' (torch&gt;=2.12) are incompatible with pyzag's retain_graph=True adjoint over torch.compile'd models, which otherwise raises 'compiled with non-empty donated buffers'. To keep donated buffers enabled, restore torch._functorch.config._config['donated_buffer'].default = True -- compiled models differentiated through the adjoint will then error.
 </span><span data-line="2">  solver = nonlinear.RecursiveNonlinearEquationSolver(
 </span></pre></div>
 </div>
@@ -596,7 +592,7 @@ crystal symmetry (<code class="docutils literal notranslate"><span class="pre">&
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../../../_images/a371e25bafd1d22487d379c4b39c43c6c6127cb215b18bb06556e8f0d74d1d13.png" src="../../../../_images/a371e25bafd1d22487d379c4b39c43c6c6127cb215b18bb06556e8f0d74d1d13.png" />
+<img alt="../../../../_images/9648513020591206ddb2132765acf351092dd4184dbd70bb6396bff8694f430d.png" src="../../../../_images/9648513020591206ddb2132765acf351092dd4184dbd70bb6396bff8694f430d.png" />
 </div>
 </div>
 </section>
@@ -615,7 +611,7 @@ direction — here the transverse direction <span class="math notranslate nohigh
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../../../_images/dc75211f4b3b16334f85a4e1a5d86547287a3bb5a0e107afaa8703478f3d1ae7.png" src="../../../../_images/dc75211f4b3b16334f85a4e1a5d86547287a3bb5a0e107afaa8703478f3d1ae7.png" />
+<img alt="../../../../_images/934f2319a73692d84ff4a1731b81b84650285aa9a9362feda10a8c96df2060a5.png" src="../../../../_images/934f2319a73692d84ff4a1731b81b84650285aa9a9362feda10a8c96df2060a5.png" />
 </div>
 </div>
 </section>
@@ -635,7 +631,7 @@ cross-validation; we print the optimized value.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">optimized kernel half-width: 0.2442
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">optimized kernel half-width: 0.1469
 </span></pre></div>
 </div>
 </div>
@@ -660,7 +656,7 @@ contour values are in multiples of a random distribution (MRD).</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../../../_images/89fd45973a0e0c73394dfeb89176ad8ecf31cd44bae32801f9e13680d0d23dc1.png" src="../../../../_images/89fd45973a0e0c73394dfeb89176ad8ecf31cd44bae32801f9e13680d0d23dc1.png" />
+<img alt="../../../../_images/e09f18191b33fac0cee7dc31bb849a0a68cc60862aa8684261080e6db96f55b2.png" src="../../../../_images/e09f18191b33fac0cee7dc31bb849a0a68cc60862aa8684261080e6db96f55b2.png" />
 </div>
 </div>
 </section>
