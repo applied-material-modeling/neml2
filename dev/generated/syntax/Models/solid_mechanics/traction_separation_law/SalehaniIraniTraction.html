@@ -458,6 +458,8 @@ is added to <span class="math notranslate nohighlight">\(T_n\)</span> (<code cla
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">tangential_separation_2</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Second tangential separation</p>
 </dd>
+<dt><code class="docutils literal notranslate"><span class="pre">time</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">t</span></code></dt><dd><p>Time</p>
+</dd>
 </dl>
 </section>
 <section id="outputs">
@@ -481,6 +483,8 @@ is added to <span class="math notranslate nohighlight">\(T_n\)</span> (<code cla
 <dt><code class="docutils literal notranslate"><span class="pre">shear_strength</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Shear strength (peak shear traction)</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">penalty_stiffness</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">0</span></code></dt><dd><p>Penalty stiffness used to resist interpenetration. Required when <code class="docutils literal notranslate"><span class="pre">normal_penetration</span></code> is supplied; ignored otherwise.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">viscosity</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">0</span></code></dt><dd><p>Damage viscosity, which must be non-negative. Zero recovers the rate-independent law exactly; positive values apply the backward-Euler regularization and delay damage growth.</p>
 </dd>
 </dl>
 </section>

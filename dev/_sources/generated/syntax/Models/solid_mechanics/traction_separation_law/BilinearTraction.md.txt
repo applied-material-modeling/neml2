@@ -30,6 +30,9 @@ internal to this model and does not require an external
 `tangential_separation_2` &mdash; `input` &middot; `Scalar` &middot; **required**
 : Second tangential separation
 
+`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
+: Time
+
 
 ## Outputs
 
@@ -50,4 +53,7 @@ internal to this model and does not require an external
 
 `full_separation` &mdash; `parameter` &middot; `Scalar` &middot; **required**
 : Full (failure) separation. May be wired to an upstream `BenzeggaghKenaneFullSeparation` or `PowerLawFullSeparation` (promotion-capable).
+
+`viscosity` &mdash; `parameter` &middot; `Scalar` &middot; default `0`
+: Damage viscosity, which must be non-negative. Zero recovers the rate-independent law exactly; positive values apply the backward-Euler regularization and delay damage growth.
 

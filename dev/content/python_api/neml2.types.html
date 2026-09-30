@@ -548,6 +548,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.TensorWrapper.dtype"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.dtype</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.TensorWrapper.dynamic_batch"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.dynamic_batch</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.TensorWrapper.dynamic_batch_shape"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.dynamic_batch_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.item"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.item()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.TensorWrapper.k"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.k</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.TensorWrapper.k_ndim"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.k_ndim</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.TensorWrapper.k_pairing"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.k_pairing</span></code></a></li>
@@ -2167,6 +2168,29 @@ Mandel packing where applicable).</p>
 <dt class="sig sig-object py" id="neml2.types.TensorWrapper.dynamic_batch_shape">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dynamic_batch_shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><span class="pre">Size</span></a></em><a class="headerlink" href="#neml2.types.TensorWrapper.dynamic_batch_shape" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.types.TensorWrapper.item">
+<span class="sig-name descname"><span class="pre">item</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/_base.html#TensorWrapper.item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.TensorWrapper.item" title="Link to this definition">#</a></dt>
+<dd><p>Read this wrapper’s single value as a Python <code class="docutils literal notranslate"><span class="pre">float</span></code>.</p>
+<p>The typed API exists to keep tensor values on device; this is the one
+deliberate escape to the host, for <strong>construction-time</strong> validation of
+a quantity that is fixed for the life of the model – a coefficient
+that must be non-negative, a length that must be one, a sign that
+selects a branch. Calling it inside a <code class="docutils literal notranslate"><span class="pre">forward</span></code> would force a device
+synchronization on every step, so it is not a runtime quantity
+accessor; <a class="reference internal" href="#neml2.types.TensorWrapper.to" title="neml2.types.TensorWrapper.to"><code class="xref py py-meth docutils literal notranslate"><span class="pre">TensorWrapper.to()</span></code></a> plus a caller-side read is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the value does not hold exactly one element. A batched wrapper
+    has no single value, and silently reducing one would pick an
+    arbitrary cell.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.types.TensorWrapper.k">

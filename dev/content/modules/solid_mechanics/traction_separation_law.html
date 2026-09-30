@@ -499,6 +499,29 @@ damage as a secondary output for inspection.</p></li>
 Salehani &amp; Irani; internally damaged with a previous-step cap, so
 load–unload–reload freezes the softness at its historical peak.</p></li>
 </ul>
+<p>Both laws take the previous-step damage <code class="docutils literal notranslate"><span class="pre">damage~1</span></code> and the <code class="docutils literal notranslate"><span class="pre">time</span></code> /
+<code class="docutils literal notranslate"><span class="pre">time~1</span></code> pair (named <code class="docutils literal notranslate"><span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">t~1</span></code> by default) as inputs. They
+accept an optional <code class="docutils literal notranslate"><span class="pre">viscosity</span></code> <span class="math notranslate nohighlight">\(\eta_v\)</span> (default zero, and required
+to be non-negative). For inviscid damage <span class="math notranslate nohighlight">\(d^*\)</span> after the
+irreversibility cap, they apply the backward-Euler regularization</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+d_n = \frac{d^* + (\eta_v / \Delta t)d_{n-1}}
+           {1 + \eta_v / \Delta t}
+    = d_{n-1} + \frac{\Delta t}{\eta_v + \Delta t}
+      (d^* - d_{n-1}).
+\]</div>
+</div>
+<p>Positive viscosity therefore delays damage growth, and
+<code class="docutils literal notranslate"><span class="pre">viscosity</span> <span class="pre">=</span> <span class="pre">0</span></code> recovers the rate-independent update exactly. A
+negative viscosity is rejected when the model is built: it would make
+the dashpot run backwards, and the only reading it has in the
+regularization above is the inviscid one — so a mistyped sign would
+silently drop the regularization rather than fail. This option does
+not apply to the stateless kinematic, critical-separation,
+full-separation, or linear-traction primitives because those models do
+not evolve a damage variable.</p>
 </section>
 <section id="math">
 <h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
@@ -522,9 +545,9 @@ effective scalar separation</p>
 a mixed-mode failure separation <span class="math notranslate nohighlight">\(\delta_f(\beta, \delta_c)\)</span>. Damage is
 then defined piecewise from the historical maximum effective
 separation <span class="math notranslate nohighlight">\(\bar{\delta}_m = \max_{t' \le t} \delta_m(t')\)</span>,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-aa81a72a-e10f-4a5f-bda9-40d5f285b4f2">
-<div class="amsmath math notranslate nohighlight" id="equation-aa81a72a-e10f-4a5f-bda9-40d5f285b4f2">
-<span class="eqno">(19)<a class="headerlink" href="#equation-aa81a72a-e10f-4a5f-bda9-40d5f285b4f2" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-91cc8805-6a99-4603-875f-361823a7e1d1">
+<div class="amsmath math notranslate nohighlight" id="equation-91cc8805-6a99-4603-875f-361823a7e1d1">
+<span class="eqno">(19)<a class="headerlink" href="#equation-91cc8805-6a99-4603-875f-361823a7e1d1" title="Permalink to this equation">#</a></span>\[\begin{align}
 d(\bar{\delta}_m) &amp;= 0,
   &amp; \bar{\delta}_m &amp;\le \delta_c, \\
 d(\bar{\delta}_m) &amp;=
@@ -536,9 +559,9 @@ d(\bar{\delta}_m) &amp;= 1,
 \end{align}\]</div>
 </div>
 <p>so that the traction is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-503c0cbe-b6ca-4218-bbb3-59ed07fde481">
-<div class="amsmath math notranslate nohighlight" id="equation-503c0cbe-b6ca-4218-bbb3-59ed07fde481">
-<span class="eqno">(20)<a class="headerlink" href="#equation-503c0cbe-b6ca-4218-bbb3-59ed07fde481" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-e6338f31-691b-41c5-8286-65c7de71e737">
+<div class="amsmath math notranslate nohighlight" id="equation-e6338f31-691b-41c5-8286-65c7de71e737">
+<span class="eqno">(20)<a class="headerlink" href="#equation-e6338f31-691b-41c5-8286-65c7de71e737" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n   &amp;= K\,(1-d)\,\langle \delta_n \rangle_+ \;+\; K\,\langle \delta_n \rangle_-, \notag \\
 T_{si} &amp;= K\,(1-d)\,\delta_{si}, \quad i \in \{1, 2\},
 \end{align}\]</div>

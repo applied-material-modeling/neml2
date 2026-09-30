@@ -460,6 +460,8 @@ internal to this model and does not require an external
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">tangential_separation_2</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Second tangential separation</p>
 </dd>
+<dt><code class="docutils literal notranslate"><span class="pre">time</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">t</span></code></dt><dd><p>Time</p>
+</dd>
 </dl>
 </section>
 <section id="outputs">
@@ -479,6 +481,8 @@ internal to this model and does not require an external
 <dt><code class="docutils literal notranslate"><span class="pre">critical_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Critical (damage-onset) separation. May be wired to an upstream <code class="docutils literal notranslate"><span class="pre">CamanhoDavilaCriticalSeparation</span></code> (promotion-capable).</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">full_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Full (failure) separation. May be wired to an upstream <code class="docutils literal notranslate"><span class="pre">BenzeggaghKenaneFullSeparation</span></code> or <code class="docutils literal notranslate"><span class="pre">PowerLawFullSeparation</span></code> (promotion-capable).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">viscosity</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">0</span></code></dt><dd><p>Damage viscosity, which must be non-negative. Zero recovers the rate-independent law exactly; positive values apply the backward-Euler regularization and delay damage growth.</p>
 </dd>
 </dl>
 </section>
