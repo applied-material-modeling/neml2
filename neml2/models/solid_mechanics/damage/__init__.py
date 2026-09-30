@@ -22,28 +22,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Solid-mechanics damage models.
 
-"""Native solid-mechanics model packages."""
+One file per registered type; this package re-imports each so the
+``@register_neml2_object`` side effects fire on package import.
 
-from . import (
-    crystal_plasticity,
-    damage,
-    elasticity,
-    kinematics,
-    plasticity,
-    traction_separation_law,
-    viscoelasticity,
-)
-from .TwoStageThermalAnnealing import ScalarTwoStageThermalAnnealing, SR2TwoStageThermalAnnealing
+Registered:
+
+* Shared: ``DamagedStress`` -- applies sigma = (1 - D) sigma_tilde, the final
+  stage of any scalar-damage composition.
+* Mazars CDM family: ``MazarsEquivalentStrain``, ``MazarsDamageStressAlpha``.
+  ``MazarsDamage`` with the simplified strain-magnitude α weighting is
+  intentionally not ported -- the stress-based α of Mazars (1986) §3.5.1 is
+  the variant in use here.
+* Simo-Ju CDM family: ``WeibullDamage`` (three-parameter Brandyberry form)
+  and ``ViscousDamageRelaxation`` (rate regularization of any damage target).
+"""
+
+from .DamagedStress import DamagedStress
+from .MazarsDamageStressAlpha import MazarsDamageStressAlpha
+from .MazarsEquivalentStrain import MazarsEquivalentStrain
+from .ViscousDamageRelaxation import ViscousDamageRelaxation
+from .WeibullDamage import WeibullDamage
 
 __all__ = [
-    "crystal_plasticity",
-    "damage",
-    "elasticity",
-    "kinematics",
-    "plasticity",
-    "traction_separation_law",
-    "viscoelasticity",
-    "ScalarTwoStageThermalAnnealing",
-    "SR2TwoStageThermalAnnealing",
+    "DamagedStress",
+    "MazarsEquivalentStrain",
+    "MazarsDamageStressAlpha",
+    "WeibullDamage",
+    "ViscousDamageRelaxation",
 ]
