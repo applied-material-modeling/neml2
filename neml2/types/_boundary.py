@@ -216,7 +216,10 @@ def contract_jacobian_block(
         v_flat = vd.reshape(vd.shape[0], *v_batch, n_in)
         # (1, *Bblk, n_out, n_in) @ (K, *Bv, n_in, 1) -> (K, *B, n_out, 1) -> (K, *B, n_out)
         res = (block_flat.unsqueeze(0) @ v_flat.unsqueeze(-1)).squeeze(-1)
-        res = res.reshape(*res.shape[:-1], *out_base)
+        # NB: single list, not unpacked positional args -- ``reshape()`` with
+        # zero arguments raises, which is what a 0-D Scalar->Scalar leaf gives
+        # here (both the leading shape slice and ``out_base`` are empty).
+        res = res.reshape([*res.shape[:-1], *out_base])
         return out_type(res, k_ndim=1, k_state=v.k_state, k_pairing=v.k_pairing)
     # Single-direction: vd is (*Bv, *in_base), no K axis. matmul broadcasts the
     # block's batch against the tangent's; the result carries no K axis either.
@@ -224,7 +227,7 @@ def contract_jacobian_block(
     v_flat = vd.reshape(*v_batch, n_in)
     # (*Bblk, n_out, n_in) @ (*Bv, n_in, 1) -> (*B, n_out, 1) -> (*B, n_out)
     res = (block_flat @ v_flat.unsqueeze(-1)).squeeze(-1)
-    res = res.reshape(*res.shape[:-1], *out_base)
+    res = res.reshape([*res.shape[:-1], *out_base])  # single list; see above
     return out_type(res)
 
 
