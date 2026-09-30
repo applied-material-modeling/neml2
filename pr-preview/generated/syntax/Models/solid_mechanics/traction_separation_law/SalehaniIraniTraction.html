@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SalehaniIraniTraction - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="viscoelasticity" href="../viscoelasticity/index.html" /><link rel="prev" title="PowerLawFullSeparation" href="PowerLawFullSeparation.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SalehaniIraniTraction - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="viscoelasticity" href="../viscoelasticity/index.html" /><link rel="prev" title="SalehaniIraniDamage" href="SalehaniIraniDamage.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -438,53 +438,41 @@ data-aria-dark="Switch to auto color mode">
           <section class="tex2jax_ignore mathjax_ignore" id="salehaniiranitraction">
 <span id="models-salehaniiranitraction"></span><h1>SalehaniIraniTraction<a class="headerlink" href="#salehaniiranitraction" title="Link to this heading">#</a></h1>
 <p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/traction_separation_law/SalehaniIraniTraction.py</span></code></p>
-<p>3D coupled exponential cohesive law of Salehani &amp; Irani with internal damage state.
-Computes <span class="math notranslate nohighlight">\(d_\text{trial} = 1 - \exp(-x)\)</span> where <span class="math notranslate nohighlight">\(x = b_n + b_{s1}^2 + b_{s2}^2\)</span>, caps it for
-irreversibility against the previous-step value
-(auto-declared via <code class="docutils literal notranslate"><span class="pre">history_name</span></code>), and assembles <span class="math notranslate nohighlight">\(T_i = a_i b_i (1 - d)\)</span>.
-For monotonic loading this is exactly equivalent to the original <span class="math notranslate nohighlight">\(T_i = a_i b_i \exp(-x)\)</span>; under
-unloading the damage cap freezes the softness at its historical
-peak. The internal tangential characteristic length is <span class="math notranslate nohighlight">\(\sqrt{2}\,\delta_{u0,t}\)</span>. If
-<code class="docutils literal notranslate"><span class="pre">normal_penetration</span></code> is supplied, <span class="math notranslate nohighlight">\(K_\text{pen}\,\delta_n^\text{pen}\)</span>
-is added to <span class="math notranslate nohighlight">\(T_n\)</span> (<code class="docutils literal notranslate"><span class="pre">penalty_stiffness</span></code> becomes required).</p>
+<p>Assemble Salehani-Irani traction from an externally updated damage.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">normal_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Normal separation (typically the Macaulay-positive part of the normal jump)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">damage</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Current damage</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">normal_penetration</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code></dt><dd><p>Optional normal penetration. When supplied, the penalty stiffness times this is added to the normal traction as a penalty term resisting interpenetration. Requires <code class="docutils literal notranslate"><span class="pre">penalty_stiffness</span></code> to be supplied as well.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">normal_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Normal opening separation</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">normal_penetration</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code></dt><dd><p>Optional normal penetration included through the penalty term</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">tangential_separation_1</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>First tangential separation</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">tangential_separation_2</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Second tangential separation</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">time</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">t</span></code></dt><dd><p>Time</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">traction</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Vec</span></code> · <strong>required</strong></dt><dd><p>Traction Vec</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">damage</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Damage scalar (current step, irreversibility-capped)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">traction</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Vec</span></code> · <strong>required</strong></dt><dd><p>Traction vector</p>
 </dd>
 </dl>
 </section>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">normal_characteristic_length</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Normal characteristic length (raw user input)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">normal_characteristic_length</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Normal characteristic length</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">tangential_characteristic_length</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Tangential characteristic length (raw user input; the internal value is sqrt(2) times this)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">tangential_characteristic_length</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Tangential characteristic length</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">normal_strength</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Normal strength (peak normal traction)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">normal_strength</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Normal strength</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">shear_strength</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Shear strength (peak shear traction)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">shear_strength</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Shear strength</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">penalty_stiffness</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">0</span></code></dt><dd><p>Penalty stiffness used to resist interpenetration. Required when <code class="docutils literal notranslate"><span class="pre">normal_penetration</span></code> is supplied; ignored otherwise.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">viscosity</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">0</span></code></dt><dd><p>Damage viscosity, which must be non-negative. Zero recovers the rate-independent law exactly; positive values apply the backward-Euler regularization and delay damage growth.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">penalty_stiffness</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">0</span></code></dt><dd><p>Penalty stiffness</p>
 </dd>
 </dl>
 </section>
@@ -496,10 +484,10 @@ is added to <span class="math notranslate nohighlight">\(T_n\)</span> (<code cla
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="PowerLawFullSeparation.html">
+    <a href="SalehaniIraniDamage.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">PowerLawFullSeparation</div></div>
+        <span>Previous</span><div class="title">SalehaniIraniDamage</div></div>
     </a>
   </div><div class="navigation-next">
     <a href="../viscoelasticity/index.html">
@@ -539,8 +527,6 @@ is added to <span class="math notranslate nohighlight">\(T_n\)</span> (<code cla
       <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../../_static/copybutton.js?v=7abfc884"></script>
       <script src="../../../../../_static/shibuya.js?v=50760d75"></script>
-      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../../../../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
       <script src="../../../../../_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>

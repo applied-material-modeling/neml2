@@ -1,0 +1,27 @@
+(models-BilinearDamage)=
+# BilinearDamage
+
+**Source:** `models/solid_mechanics/traction_separation_law/BilinearDamage.py`
+
+Bilinear trial damage as a function of effective separation.
+
+## Inputs
+
+`effective_separation` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Effective separation
+
+
+## Outputs
+
+`trial_damage` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Rate-independent trial damage
+
+
+## Parameters
+
+`critical_separation` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Critical damage-onset separation
+
+`full_separation` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Full failure separation
+

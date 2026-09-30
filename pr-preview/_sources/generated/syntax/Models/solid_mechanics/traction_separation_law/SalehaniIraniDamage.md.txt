@@ -1,0 +1,33 @@
+(models-SalehaniIraniDamage)=
+# SalehaniIraniDamage
+
+**Source:** `models/solid_mechanics/traction_separation_law/SalehaniIraniDamage.py`
+
+Trial damage $1-\exp[-(b_n+b_{s1}^2+b_{s2}^2)]$.
+
+## Inputs
+
+`normal_separation` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Normal separation
+
+`tangential_separation_1` &mdash; `input` &middot; `Scalar` &middot; **required**
+: First tangential separation
+
+`tangential_separation_2` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Second tangential separation
+
+
+## Outputs
+
+`trial_damage` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Rate-independent trial damage
+
+
+## Parameters
+
+`normal_characteristic_length` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Normal characteristic length
+
+`tangential_characteristic_length` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Tangential characteristic length
+

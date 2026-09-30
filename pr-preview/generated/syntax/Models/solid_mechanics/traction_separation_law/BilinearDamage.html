@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>PowerLawFullSeparation - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="SalehaniIraniDamage" href="SalehaniIraniDamage.html" /><link rel="prev" title="OrthotropicLinearTraction" href="OrthotropicLinearTraction.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>BilinearDamage - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="BilinearTraction" href="BilinearTraction.html" /><link rel="prev" title="BenzeggaghKenaneFullSeparation" href="BenzeggaghKenaneFullSeparation.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="PowerLawFullSeparation"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="BilinearDamage"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -422,7 +422,7 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="5" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">PowerLawFullSeparation</strong>
+        <strong itemprop="name">BilinearDamage</strong>
         <meta itemprop="position" content="6" />
       </li></ol>
     <div class="xl:hidden ml-1">
@@ -435,45 +435,30 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="powerlawfullseparation">
-<span id="models-powerlawfullseparation"></span><h1>PowerLawFullSeparation<a class="headerlink" href="#powerlawfullseparation" title="Link to this heading">#</a></h1>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/traction_separation_law/PowerLawFullSeparation.py</span></code></p>
-<p>Mixed-mode full (failure) separation under the Alfano-Crisfield power-law criterion.
-Opening:
-<span class="math notranslate nohighlight">\(\delta_f = (2(1+\beta^2)/(K \delta_c)) [(1/G_{Ic})^\eta + (\beta^2/G_{IIc})^\eta]^{-1/\eta}\)</span>,
-where <span class="math notranslate nohighlight">\(\delta_c\)</span> is the critical
-separation supplied by an upstream <code class="docutils literal notranslate"><span class="pre">CamanhoDavilaCriticalSeparation</span></code>. Compression:
-<span class="math notranslate nohighlight">\(\delta_f = 2 G_{IIc}/S\)</span>.</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="bilineardamage">
+<span id="models-bilineardamage"></span><h1>BilinearDamage<a class="headerlink" href="#bilineardamage" title="Link to this heading">#</a></h1>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/traction_separation_law/BilinearDamage.py</span></code></p>
+<p>Bilinear trial damage as a function of effective separation.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">normal_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Normal separation (typically the Macaulay-positive part of the normal jump; used only to determine the opening / compression branch)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">effective_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Effective separation</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">full_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Full (failure) separation</p>
+<dt><code class="docutils literal notranslate"><span class="pre">trial_damage</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Rate-independent trial damage</p>
 </dd>
 </dl>
 </section>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">mode_mixity</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Mode-mixity ratio. May be wired to an upstream <code class="docutils literal notranslate"><span class="pre">ModeMixity</span></code> (promotion-capable).</p>
+<dt><code class="docutils literal notranslate"><span class="pre">critical_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Critical damage-onset separation</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">critical_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Critical (damage-onset) separation. May be wired to an upstream <code class="docutils literal notranslate"><span class="pre">CamanhoDavilaCriticalSeparation</span></code> (promotion-capable).</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">penalty_stiffness</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Penalty stiffness</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">mode_I_fracture_toughness</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Mode I critical energy release rate</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">mode_II_fracture_toughness</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Mode II critical energy release rate</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">shear_strength</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Shear strength (used in compression branch)</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">eta</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Power-law exponent</p>
+<dt><code class="docutils literal notranslate"><span class="pre">full_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Full failure separation</p>
 </dd>
 </dl>
 </section>
@@ -485,16 +470,16 @@ separation supplied by an upstream <code class="docutils literal notranslate"><s
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="OrthotropicLinearTraction.html">
+    <a href="BenzeggaghKenaneFullSeparation.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">OrthotropicLinearTraction</div></div>
+        <span>Previous</span><div class="title">BenzeggaghKenaneFullSeparation</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="SalehaniIraniDamage.html">
+    <a href="BilinearTraction.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">SalehaniIraniDamage</div>
+        <div class="title">BilinearTraction</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -528,8 +513,6 @@ separation supplied by an upstream <code class="docutils literal notranslate"><s
       <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../../_static/copybutton.js?v=7abfc884"></script>
       <script src="../../../../../_static/shibuya.js?v=50760d75"></script>
-      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../../../../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
       <script src="../../../../../_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>

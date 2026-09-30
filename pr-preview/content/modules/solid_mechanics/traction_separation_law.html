@@ -484,44 +484,52 @@ mixed-mode critical (damage-onset) separation <span class="math notranslate nohi
 <li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/PowerLawFullSeparation.html#models-powerlawfullseparation"><span class="std std-ref">PowerLawFullSeparation</span></a> — mixed-mode full (failure)
 separation under the Alfano–Crisfield power-law criterion.</p></li>
 </ul>
-<p><strong>Traction-assembly primitives</strong> (each emits the public <code class="docutils literal notranslate"><span class="pre">traction</span></code>
-<code class="docutils literal notranslate"><span class="pre">Vec</span></code>):</p>
+<p><strong>Damage-envelope primitives</strong> (each emits <code class="docutils literal notranslate"><span class="pre">trial_damage</span></code>):</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/OrthotropicLinearTraction.html#models-orthotropiclineartraction"><span class="std std-ref">OrthotropicLinearTraction</span></a> — orthotropic linear elasticity
-with no internal state. Optionally accepts a <code class="docutils literal notranslate"><span class="pre">normal_penetration</span></code>
-channel and a separate <code class="docutils literal notranslate"><span class="pre">penalty_stiffness</span></code> to elastically resist
-interpenetration.</p></li>
-<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/BilinearTraction.html#models-bilineartraction"><span class="std std-ref">BilinearTraction</span></a> — Camanho/Davila-style cohesive-zone
-assembly. Computes the bilinear damage internally, caps it for
-irreversibility against the previous-step value, and exposes the
-damage as a secondary output for inspection.</p></li>
-<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/SalehaniIraniTraction.html#models-salehaniiranitraction"><span class="std std-ref">SalehaniIraniTraction</span></a> — 3D coupled exponential law of
-Salehani &amp; Irani; internally damaged with a previous-step cap, so
-load–unload–reload freezes the softness at its historical peak.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/BilinearDamage.html#models-bilineardamage"><span class="std std-ref">BilinearDamage</span></a> evaluates the bilinear envelope from the
+effective, critical, and full separations.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/SalehaniIraniDamage.html#models-salehaniiranidamage"><span class="std std-ref">SalehaniIraniDamage</span></a> evaluates the coupled exponential
+envelope from the three separation components.</p></li>
 </ul>
-<p>Both laws take the previous-step damage <code class="docutils literal notranslate"><span class="pre">damage~1</span></code> and the <code class="docutils literal notranslate"><span class="pre">time</span></code> /
-<code class="docutils literal notranslate"><span class="pre">time~1</span></code> pair (named <code class="docutils literal notranslate"><span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">t~1</span></code> by default) as inputs. They
-accept an optional <code class="docutils literal notranslate"><span class="pre">viscosity</span></code> <span class="math notranslate nohighlight">\(\eta_v\)</span> (default zero, and required
-to be non-negative). For inviscid damage <span class="math notranslate nohighlight">\(d^*\)</span> after the
-irreversibility cap, they apply the backward-Euler regularization</p>
+<p><strong>Damage-update primitives</strong> consume <code class="docutils literal notranslate"><span class="pre">trial_damage</span></code>, previous-step
+<code class="docutils literal notranslate"><span class="pre">damage~1</span></code>, and the <code class="docutils literal notranslate"><span class="pre">time</span></code> / <code class="docutils literal notranslate"><span class="pre">time~1</span></code> pair (named <code class="docutils literal notranslate"><span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">t~1</span></code> by
+default), then emit irreversible <code class="docutils literal notranslate"><span class="pre">damage</span></code>. Both accept a non-negative
+<code class="docutils literal notranslate"><span class="pre">viscosity</span></code> <span class="math notranslate nohighlight">\(\eta_v\)</span>, defaulting to zero:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/BackwardEulerViscousDamage.html#models-backwardeulerviscousdamage"><span class="std std-ref">BackwardEulerViscousDamage</span></a> uses
+<span class="math notranslate nohighlight">\(\alpha = \Delta t / (\eta_v + \Delta t)\)</span>.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/ExponentialViscousDamage.html#models-exponentialviscousdamage"><span class="std std-ref">ExponentialViscousDamage</span></a> uses
+<span class="math notranslate nohighlight">\(\alpha = 1 - \exp(-\Delta t / \eta_v)\)</span>.</p></li>
+</ul>
+<p>Both updates have the form</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-d_n = \frac{d^* + (\eta_v / \Delta t)d_{n-1}}
-           {1 + \eta_v / \Delta t}
-    = d_{n-1} + \frac{\Delta t}{\eta_v + \Delta t}
-      (d^* - d_{n-1}).
+d_n = d_{n-1} + \alpha(d^* - d_{n-1}), \qquad
+ d^* = \max(d_{\mathrm{trial}}, d_{n-1}).
 \]</div>
 </div>
-<p>Positive viscosity therefore delays damage growth, and
-<code class="docutils literal notranslate"><span class="pre">viscosity</span> <span class="pre">=</span> <span class="pre">0</span></code> recovers the rate-independent update exactly. A
-negative viscosity is rejected when the model is built: it would make
-the dashpot run backwards, and the only reading it has in the
-regularization above is the inviscid one — so a mistyped sign would
-silently drop the regularization rather than fail. This option does
-not apply to the stateless kinematic, critical-separation,
-full-separation, or linear-traction primitives because those models do
-not evolve a damage variable.</p>
+<p>The backward-Euler model matches the MOOSE update. The exponential
+model analytically integrates the same evolution equation
+<span class="math notranslate nohighlight">\(\dot d=(d^*-d)/\eta_v\)</span> while holding <span class="math notranslate nohighlight">\(d^*\)</span> constant over the step.
+Positive viscosity delays damage growth, while <code class="docutils literal notranslate"><span class="pre">viscosity</span> <span class="pre">=</span> <span class="pre">0</span></code>
+recovers the irreversible rate-independent update exactly. A negative
+viscosity is rejected when the updater is built.</p>
+<p><strong>Traction-assembly primitives</strong> consume the updated <code class="docutils literal notranslate"><span class="pre">damage</span></code> and emit
+the public <code class="docutils literal notranslate"><span class="pre">traction</span></code> <code class="docutils literal notranslate"><span class="pre">Vec</span></code>:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/OrthotropicLinearTraction.html#models-orthotropiclineartraction"><span class="std std-ref">OrthotropicLinearTraction</span></a> provides orthotropic linear
+elasticity with no damage state.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/BilinearTraction.html#models-bilineartraction"><span class="std std-ref">BilinearTraction</span></a> assembles the Camanho/Davila-style
+bilinear traction.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/SalehaniIraniTraction.html#models-salehaniiranitraction"><span class="std std-ref">SalehaniIraniTraction</span></a> assembles the 3D coupled
+Salehani-Irani traction.</p></li>
+</ul>
+<p>The three responsibilities are separate <code class="docutils literal notranslate"><span class="pre">Model</span></code> leaves, so an envelope,
+damage integration method, or traction assembly can be replaced without
+changing the other two. The traction leaves optionally accept a
+<code class="docutils literal notranslate"><span class="pre">normal_penetration</span></code> channel and penalty stiffness to resist
+interpenetration.</p>
 </section>
 <section id="math">
 <h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
@@ -545,9 +553,9 @@ effective scalar separation</p>
 a mixed-mode failure separation <span class="math notranslate nohighlight">\(\delta_f(\beta, \delta_c)\)</span>. Damage is
 then defined piecewise from the historical maximum effective
 separation <span class="math notranslate nohighlight">\(\bar{\delta}_m = \max_{t' \le t} \delta_m(t')\)</span>,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-a01ca753-4b99-44ce-b5fd-5e36fe716de4">
-<div class="amsmath math notranslate nohighlight" id="equation-a01ca753-4b99-44ce-b5fd-5e36fe716de4">
-<span class="eqno">(19)<a class="headerlink" href="#equation-a01ca753-4b99-44ce-b5fd-5e36fe716de4" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-26a9b221-7ddb-4f75-b216-a8b2c77c5e13">
+<div class="amsmath math notranslate nohighlight" id="equation-26a9b221-7ddb-4f75-b216-a8b2c77c5e13">
+<span class="eqno">(19)<a class="headerlink" href="#equation-26a9b221-7ddb-4f75-b216-a8b2c77c5e13" title="Permalink to this equation">#</a></span>\[\begin{align}
 d(\bar{\delta}_m) &amp;= 0,
   &amp; \bar{\delta}_m &amp;\le \delta_c, \\
 d(\bar{\delta}_m) &amp;=
@@ -559,9 +567,9 @@ d(\bar{\delta}_m) &amp;= 1,
 \end{align}\]</div>
 </div>
 <p>so that the traction is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-1000a5c6-1530-4e0a-a934-ef5f7a8f33c5">
-<div class="amsmath math notranslate nohighlight" id="equation-1000a5c6-1530-4e0a-a934-ef5f7a8f33c5">
-<span class="eqno">(20)<a class="headerlink" href="#equation-1000a5c6-1530-4e0a-a934-ef5f7a8f33c5" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-7d0f5429-ac58-480d-bc13-4cf4192c545c">
+<div class="amsmath math notranslate nohighlight" id="equation-7d0f5429-ac58-480d-bc13-4cf4192c545c">
+<span class="eqno">(20)<a class="headerlink" href="#equation-7d0f5429-ac58-480d-bc13-4cf4192c545c" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n   &amp;= K\,(1-d)\,\langle \delta_n \rangle_+ \;+\; K\,\langle \delta_n \rangle_-, \notag \\
 T_{si} &amp;= K\,(1-d)\,\delta_{si}, \quad i \in \{1, 2\},
 \end{align}\]</div>
@@ -582,11 +590,11 @@ enters through <span class="math notranslate nohighlight">\(\delta_f\)</span>: u
 \]</div>
 </div>
 <p>while <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/PowerLawFullSeparation.html#models-powerlawfullseparation"><span class="std std-ref">PowerLawFullSeparation</span></a> implements the Alfano–Crisfield
-power-law form. The exponential law of Salehani &amp; Irani replaces the
-bilinear envelope with a coupled exponential — the normal direction
-enters linearly and the two tangential directions enter quadratically
-in a single coupling exponent — and is assembled as a single
-<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/SalehaniIraniTraction.html#models-salehaniiranitraction"><span class="std std-ref">SalehaniIraniTraction</span></a> primitive.</p>
+power-law form. The <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/SalehaniIraniDamage.html#models-salehaniiranidamage"><span class="std std-ref">SalehaniIraniDamage</span></a> envelope replaces
+the bilinear expression with a coupled exponential: the normal
+direction enters linearly and the two tangential directions enter
+quadratically in a single coupling exponent. Its updated damage is
+then consumed by <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/SalehaniIraniTraction.html#models-salehaniiranitraction"><span class="std std-ref">SalehaniIraniTraction</span></a>.</p>
 </section>
 <section id="example-model-composition">
 <h2>Example model composition<a class="headerlink" href="#example-model-composition" title="Link to this heading">#</a></h2>
@@ -668,19 +676,26 @@ mixed-mode opening ramp, and pins the result against a reference:</p>
 </span><span data-line="73"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'effective_separation'</span>
 </span><span data-line="74"><span class="w">    </span><span class="na">exponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
 </span><span data-line="75"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="76"><span class="w">  </span><span class="k">[traction]</span>
-</span><span data-line="77"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">BilinearTraction</span>
+</span><span data-line="76"><span class="w">  </span><span class="k">[damage_envelope]</span>
+</span><span data-line="77"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">BilinearDamage</span>
 </span><span data-line="78"><span class="w">    </span><span class="na">critical_separation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'critical_separation'</span>
 </span><span data-line="79"><span class="w">    </span><span class="na">full_separation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'full_separation'</span>
-</span><span data-line="80"><span class="w">    </span><span class="na">normal_penetration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'normal_penetration'</span>
-</span><span data-line="81"><span class="w">    </span><span class="na">penalty_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000.0</span>
-</span><span data-line="82"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="83"><span class="w">  </span><span class="k">[model]</span>
-</span><span data-line="84"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="85"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'decompose tangential_separation macaulay_n effective_separation traction'</span>
-</span><span data-line="86"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'damage'</span>
-</span><span data-line="87"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="88"><span class="k">[]</span>
+</span><span data-line="80"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="81"><span class="w">  </span><span class="k">[damage_update]</span>
+</span><span data-line="82"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">BackwardEulerViscousDamage</span>
+</span><span data-line="83"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="84"><span class="w">  </span><span class="k">[traction]</span>
+</span><span data-line="85"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">BilinearTraction</span>
+</span><span data-line="86"><span class="w">    </span><span class="na">normal_penetration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'normal_penetration'</span>
+</span><span data-line="87"><span class="w">    </span><span class="na">penalty_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000.0</span>
+</span><span data-line="88"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="89"><span class="w">  </span><span class="k">[model]</span>
+</span><span data-line="90"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="91"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'</span><span class="err">decompose tangential_separation macaulay_n effective_separation</span>
+</span><span data-line="92"><span class="w">              </span><span class="na">damage_envelope damage_update traction'</span>
+</span><span data-line="93"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'damage'</span>
+</span><span data-line="94"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="95"><span class="k">[]</span>
 </span></pre></div>
 </div>
 </section>
@@ -719,22 +734,24 @@ the same.</p></li>
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">effective_separation</span></code></strong> assembles
 <span class="math notranslate nohighlight">\(\delta_m = \sqrt{(\delta_n^+)^2 + \delta_s^2}\)</span> with another
 <a class="reference internal" href="../../../generated/syntax/Models/common/ScalarPNorm.html#models-scalarpnorm"><span class="std std-ref">ScalarPNorm</span></a>.</p></li>
-<li><p><strong><code class="docutils literal notranslate"><span class="pre">traction</span></code></strong> (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/BilinearTraction.html#models-bilineartraction"><span class="std std-ref">BilinearTraction</span></a>) consumes
-<span class="math notranslate nohighlight">\(\delta_m\)</span>, <span class="math notranslate nohighlight">\(\delta_c\)</span>, <span class="math notranslate nohighlight">\(\delta_f\)</span>, the per-component jumps, and
-the elastic penetration channel; computes the bilinear damage <span class="math notranslate nohighlight">\(d\)</span>;
-caps it for irreversibility against the previous-step value; and
-assembles the traction vector. Damage is exposed as a secondary
-output (via <code class="docutils literal notranslate"><span class="pre">additional_outputs</span> <span class="pre">=</span> <span class="pre">'damage'</span></code> on the composed model)
-for inspection but is internal state of this primitive.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">damage_envelope</span></code></strong> (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/BilinearDamage.html#models-bilineardamage"><span class="std std-ref">BilinearDamage</span></a>) consumes
+<span class="math notranslate nohighlight">\(\delta_m\)</span>, <span class="math notranslate nohighlight">\(\delta_c\)</span>, and <span class="math notranslate nohighlight">\(\delta_f\)</span> and emits the bilinear
+<code class="docutils literal notranslate"><span class="pre">trial_damage</span></code>.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">damage_update</span></code></strong> (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/BackwardEulerViscousDamage.html#models-backwardeulerviscousdamage"><span class="std std-ref">BackwardEulerViscousDamage</span></a>) caps the
+trial value against <code class="docutils literal notranslate"><span class="pre">damage~1</span></code>, applies the selected viscous update,
+and emits <code class="docutils literal notranslate"><span class="pre">damage</span></code>. The composed model exposes it through
+<code class="docutils literal notranslate"><span class="pre">additional_outputs</span> <span class="pre">=</span> <span class="pre">'damage'</span></code> for inspection.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">traction</span></code></strong> (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/BilinearTraction.html#models-bilineartraction"><span class="std std-ref">BilinearTraction</span></a>) consumes the updated
+damage, per-component jumps, and elastic penetration channel and
+assembles the traction vector.</p></li>
 </ol>
 <p>The <code class="docutils literal notranslate"><span class="pre">[Drivers]</span></code> block prescribes the time grid and the displacement
 jump history through a <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>, and a <code class="docutils literal notranslate"><span class="pre">TransientRegression</span></code>
 pins the run against <code class="docutils literal notranslate"><span class="pre">gold/result.pt</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The bilinear TSLs (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/BilinearTraction.html#models-bilineartraction"><span class="std std-ref">BilinearTraction</span></a>, with <code class="docutils literal notranslate"><span class="pre">damage</span></code> capped
-internally) and <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/SalehaniIraniTraction.html#models-salehaniiranitraction"><span class="std std-ref">SalehaniIraniTraction</span></a> both carry
-irreversible internal state. Under load–unload–reload schedules the
+<p>The bilinear and Salehani-Irani graphs carry irreversible state through
+their damage-update leaf. Under load–unload–reload schedules the
 unloading limb returns elastically along the secant of the current
 damaged stiffness, and reloading resumes the softening branch only
 after the historical peak separation is exceeded. The <code class="docutils literal notranslate"><span class="pre">bilinear_unload</span></code>
