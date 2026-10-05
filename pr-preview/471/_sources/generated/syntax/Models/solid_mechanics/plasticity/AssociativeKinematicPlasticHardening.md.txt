@@ -1,0 +1,27 @@
+(models-AssociativeKinematicPlasticHardening)=
+# AssociativeKinematicPlasticHardening
+
+**Source:** `models/solid_mechanics/plasticity/AssociativeKinematicPlasticHardening.py`
+
+Map the flow rate (i.e., the consistency parameter in the KKT conditions)
+to the rate of internal variables. This object calculates the rate of
+kinematic plastic strain following associative flow rule, i.e.
+$\dot{\boldsymbol{K}}_p = - \dot{\gamma} \frac{\partial f}{\partial \boldsymbol{X}}$, where
+$\dot{\boldsymbol{K}}_p$ is the kinematic
+plastic strain, $\dot{\gamma}$ is the flow rate, $f$ is the
+yield function, and $\boldsymbol{X}$ is the kinematic hardening.
+
+## Inputs
+
+`flow_rate` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Flow rate
+
+`kinematic_hardening_direction` &mdash; `input` &middot; `SR2` &middot; **required**
+: Direction of associative kinematic hardening which can be calculated using Normality.
+
+
+## Outputs
+
+`kinematic_plastic_strain_rate` &mdash; `output` &middot; `SR2` &middot; **required**
+: Rate of kinematic plastic strain
+

@@ -1,0 +1,67 @@
+(models-RateCondensation)=
+# RateCondensation
+
+**Source:** `models/common/RateCondensation.py`
+
+Linearize $f(\dot\gamma)$ at $\dot\gamma = 0$, emitting $b$ and $A$.
+
+`CoordinateDescentPredictor` solves
+$\varphi(\dot\gamma) + A\dot\gamma = b$, which is the condensed system
+$\dot\gamma = \varphi^{-1}(f(\dot\gamma))$ with $f$ linearized:
+
+$$f(\dot\gamma) \approx f(0) - A\dot\gamma, \qquad
+  b = f(0), \qquad A = -\left.\frac{\partial f}{\partial \dot\gamma}\right|_0.$$
+
+`model` supplies $f$ -- the **return path**: rate in, driving force out,
+with the flow direction frozen at the trial state. Both $b$ and $A$ come
+from a single `jvp` of it, which is one
+forward pass with a tangent riding the existing ``forward(v=)`` chain rule
+(see `jvp`). So this is neither a finite
+difference -- no truncation error, no step size to pick -- nor reverse-mode
+autograd.
+
+**Why this rather than a closed form.** Writing $A$ out by hand means one
+term per hardening mechanism: $\Delta t\,N:\mathbb{C}:N$ for the elastic
+relaxation, $\Delta t\,h'$ for isotropic hardening, $\Delta t\,N:\partial
+\dot X_i/\partial\dot\gamma$ for each back stress. Every new hardening law
+is then a code change, and the terms are easy to get subtly wrong (the
+kinematic one is $C_i$, not $\tfrac{2}{3}C_i$, because $N:N = \tfrac32$).
+Differentiating the authored path costs nothing per physics: the hardening
+model is a block in `model`, and this leaf never learns any of it. All it
+needs is a first-order chain rule on each leaf in the path, which is the
+framework's own invariant.
+
+**Dropping the hardening instead does not work.** Freezing it leaves
+$A = \Delta t\,N:\mathbb{C}:N$, whose relative error in $\Delta\gamma$ is
+$h'/(N:\mathbb{C}:N)$ -- under a percent for the usual metal
+parameterizations. But the returned stress is a near-cancellation of the
+trial stress against the plastic relaxation, and it amplifies that error by
+$\sigma^{\rm trial}/\sigma$, which grows with the step. Measured on the
+viscoplasticity scenarios, lagging halves the first-step Newton count below
+$\Delta t \approx 1$ and buys nothing above it; the exact coupling
+converges *at the predictor* at every step size.
+
+Only the trial-point tangent is taken, so a path that is strongly nonlinear
+over a step is linearized, not solved. That is a warm start, not an
+integrator: a predictor moves the initial guess and never the answer.
+
+## Outputs
+
+`coupling` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The coupling $A = -\partial f/\partial\dot\gamma$ at zero rate
+
+`trial_driving_force` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The right-hand side $b = f(0)$: the driving force with the rate at zero
+
+
+## Other options
+
+`model` &mdash; `str` &middot; **required**
+: The return path: the rate in, the driving force out, with the flow direction frozen at the trial state. Its rate input is named by `rate` and its driving-force output by `driving_force`; every other input is forwarded unchanged.
+
+`rate` &mdash; `str` &middot; **required**
+: Which of `model`'s inputs is the rate.
+
+`driving_force` &mdash; `str` &middot; **required**
+: Which of `model`'s outputs is the driving force.
+

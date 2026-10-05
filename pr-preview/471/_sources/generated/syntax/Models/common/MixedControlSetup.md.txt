@@ -1,0 +1,37 @@
+(models-MixedControlSetup)=
+# MixedControlSetup
+
+**Source:** `models/common/MixedControlSetup.py`
+
+Per-component selection between strain- and stress-controlled inputs.
+
+For each Mandel component $i$: ``y_i = x_above_i`` when ``control_i >
+threshold``, else ``x_below_i``; $z_i$ is the complementary pick.
+Mirrors C++ ``MixedControlSetup`` in ``src/neml2/models/common/MixedControlSetup.cxx``.
+
+## Inputs
+
+`control` &mdash; `input` &middot; `SR2` &middot; **required**
+: The control signal.
+
+`x_above` &mdash; `input` &middot; `SR2` &middot; **required**
+: The variable whose values are selected when the control signal is greater than the threshold.
+
+`x_below` &mdash; `input` &middot; `SR2` &middot; **required**
+: The variable whose values are selected when the control signal is less than or equal to the threshold.
+
+
+## Outputs
+
+`y` &mdash; `output` &middot; `SR2` &middot; **required**
+: The output variable holding the selected values based on the control signal.
+
+`z` &mdash; `output` &middot; `SR2` &middot; **required**
+: The output variable holding the non-selected values based on the control signal.
+
+
+## Other options
+
+`threshold` &mdash; `float` &middot; default `0.5`
+: The threshold to switch between the two controls
+
