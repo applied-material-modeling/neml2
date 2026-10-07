@@ -5,15 +5,11 @@
 ```{toctree}
 :maxdepth: 1
 
-BackwardEulerViscousDamage
 BenzeggaghKenaneFullSeparation
-BilinearDamage
 BilinearTraction
 CamanhoDavilaCriticalSeparation
-ExponentialViscousDamage
 ModeMixity
 OrthotropicLinearTraction
 PowerLawFullSeparation
-SalehaniIraniDamage
 SalehaniIraniTraction
 ```

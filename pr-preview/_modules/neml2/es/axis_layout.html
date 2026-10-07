@@ -601,97 +601,139 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="158">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(()))</span></div>
 
 </span><span data-line="159">
+<div class="viewcode-block" id="AxisLayout.group_common_sub_batch">
+<a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AxisLayout.group_common_sub_batch">[docs]</a>
+</span><span data-line="160">    <span class="k">def</span><span class="w"> </span><span class="nf">group_common_sub_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">:</span>
+</span><span data-line="161"><span class="w">        </span><span class="sd">"""The sub-batch axes PRESERVED as intermediate for BLOCK group ``index``.</span>
+</span><span data-line="162">
+</span><span data-line="163"><span class="sd">        BLOCK-group variables must share a common LEADING sub-batch prefix. That</span>
+</span><span data-line="164"><span class="sd">        shared prefix is preserved as the block's intermediate axis; any EXTRA</span>
+</span><span data-line="165"><span class="sd">        trailing sub-batch axes a variable carries are folded into that variable's</span>
+</span><span data-line="166"><span class="sd">        per-site base on assembly. The common prefix is the shortest</span>
+</span><span data-line="167"><span class="sd">        variable sub-batch shape in the group; every other variable must begin</span>
+</span><span data-line="168"><span class="sd">        with it (else the block can't share one intermediate axis). Returns the</span>
+</span><span data-line="169"><span class="sd">        empty shape for a DENSE group.</span>
+</span><span data-line="170"><span class="sd">        """</span>
+</span><span data-line="171">        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+</span><span data-line="172">        <span class="k">if</span> <span class="ow">not</span> <span class="n">group</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"block"</span><span class="p">:</span>
+</span><span data-line="173">            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(())</span>
+</span><span data-line="174">        <span class="n">shapes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(()))</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
+</span><span data-line="175">        <span class="n">common</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">shapes</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
+</span><span data-line="176">        <span class="n">nc</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">common</span><span class="p">)</span>
+</span><span data-line="177">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">sh</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">shapes</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span data-line="178">            <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sh</span><span class="p">[:</span><span class="n">nc</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">common</span><span class="p">):</span>
+</span><span data-line="179">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="180">                    <span class="sa">f</span><span class="s2">"AxisLayout: BLOCK group </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> variables must share a common "</span>
+</span><span data-line="181">                    <span class="sa">f</span><span class="s2">"leading sub_batch prefix; </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span><span class="si">}</span><span class="s2"> does not begin "</span>
+</span><span data-line="182">                    <span class="sa">f</span><span class="s2">"with </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">common</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+</span><span data-line="183">                <span class="p">)</span>
+</span><span data-line="184">        <span class="k">if</span> <span class="n">nc</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">sh</span> <span class="ow">in</span> <span class="n">shapes</span><span class="p">):</span>
+</span><span data-line="185">            <span class="c1"># Trivial () mixed with sub-batched vars -&gt; no shared intermediate to block over.</span>
+</span><span data-line="186">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="187">                <span class="sa">f</span><span class="s2">"AxisLayout: BLOCK group </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> mixes a sub-batch-trivial variable with "</span>
+</span><span data-line="188">                <span class="sa">f</span><span class="s2">"sub-batched ones (shapes </span><span class="si">{</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">shapes</span><span class="p">]</span><span class="si">}</span><span class="s2">); a block group needs "</span>
+</span><span data-line="189">                <span class="sa">f</span><span class="s2">"a shared non-empty leading sub_batch prefix. Declare the trivial variable "</span>
+</span><span data-line="190">                <span class="sa">f</span><span class="s2">"in a DENSE group."</span>
+</span><span data-line="191">            <span class="p">)</span>
+</span><span data-line="192">        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="n">common</span><span class="p">)</span></div>
+
+</span><span data-line="193">
+<div class="viewcode-block" id="AxisLayout.var_extra_sub_batch">
+<a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AxisLayout.var_extra_sub_batch">[docs]</a>
+</span><span data-line="194">    <span class="k">def</span><span class="w"> </span><span class="nf">var_extra_sub_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">:</span>
+</span><span data-line="195"><span class="w">        </span><span class="sd">"""A BLOCK-group variable's trailing sub-batch axes beyond the group's</span>
+</span><span data-line="196"><span class="sd">        common prefix (the axes that get folded into base). Empty for the</span>
+</span><span data-line="197"><span class="sd">        common-only variables and for DENSE groups."""</span>
+</span><span data-line="198">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"block"</span><span class="p">:</span>
+</span><span data-line="199">            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(())</span>
+</span><span data-line="200">        <span class="n">nc</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group_common_sub_batch</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+</span><span data-line="201">        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">name</span><span class="p">)[</span><span class="n">nc</span><span class="p">:])</span></div>
+
+</span><span data-line="202">
 <div class="viewcode-block" id="AxisLayout.group_sub_batch_shape">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AxisLayout.group_sub_batch_shape">[docs]</a>
-</span><span data-line="160">    <span class="k">def</span><span class="w"> </span><span class="nf">group_sub_batch_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">:</span>
-</span><span data-line="161"><span class="w">        </span><span class="sd">"""Common sub-batch shape across every variable in group ``index``.</span>
-</span><span data-line="162">
-</span><span data-line="163"><span class="sd">        For a BLOCK group every variable must share the same sub_batch_shape</span>
-</span><span data-line="164"><span class="sd">        (otherwise the block tensor can't be a single rectangular tensor).</span>
-</span><span data-line="165"><span class="sd">        Raises on disagreement. For a DENSE group the per-variable shapes</span>
-</span><span data-line="166"><span class="sd">        may differ — they get folded into base on assembly — and this</span>
-</span><span data-line="167"><span class="sd">        method returns the FIRST variable's shape for shape inference only.</span>
-</span><span data-line="168"><span class="sd">        """</span>
-</span><span data-line="169">        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-</span><span data-line="170">        <span class="k">if</span> <span class="ow">not</span> <span class="n">group</span><span class="p">:</span>
-</span><span data-line="171">            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(())</span>
-</span><span data-line="172">        <span class="n">first</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(()))</span>
-</span><span data-line="173">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
-</span><span data-line="174">            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-</span><span data-line="175">                <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(()))</span>
-</span><span data-line="176">                <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">first</span><span class="p">):</span>
-</span><span data-line="177">                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="178">                        <span class="sa">f</span><span class="s2">"AxisLayout: BLOCK group </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> variables disagree on "</span>
-</span><span data-line="179">                        <span class="sa">f</span><span class="s2">"sub_batch_shape -- </span><span class="si">{</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!r}</span><span class="s2">=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">first</span><span class="p">)</span><span class="si">}</span><span class="s2"> vs "</span>
-</span><span data-line="180">                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">}</span><span class="s2">. BLOCK groups must share one "</span>
-</span><span data-line="181">                        <span class="s2">"sub_batch_shape across all variables."</span>
-</span><span data-line="182">                    <span class="p">)</span>
-</span><span data-line="183">        <span class="k">return</span> <span class="n">first</span></div>
+</span><span data-line="203">    <span class="k">def</span><span class="w"> </span><span class="nf">group_sub_batch_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">:</span>
+</span><span data-line="204"><span class="w">        </span><span class="sd">"""Intermediate sub-batch shape of the assembled tensor for group ``index``.</span>
+</span><span data-line="205">
+</span><span data-line="206"><span class="sd">        For a BLOCK group this is the common leading prefix preserved as the</span>
+</span><span data-line="207"><span class="sd">        block's intermediate axis (:meth:`group_common_sub_batch`); any extra</span>
+</span><span data-line="208"><span class="sd">        trailing per-variable axes are folded into base. For a DENSE group the</span>
+</span><span data-line="209"><span class="sd">        per-variable shapes may differ — all folded into base — and this returns</span>
+</span><span data-line="210"><span class="sd">        the FIRST variable's shape for shape inference only.</span>
+</span><span data-line="211"><span class="sd">        """</span>
+</span><span data-line="212">        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+</span><span data-line="213">        <span class="k">if</span> <span class="ow">not</span> <span class="n">group</span><span class="p">:</span>
+</span><span data-line="214">            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(())</span>
+</span><span data-line="215">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
+</span><span data-line="216">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_common_sub_batch</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+</span><span data-line="217">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(()))</span></div>
 
-</span><span data-line="184">
+</span><span data-line="218">
 <div class="viewcode-block" id="AxisLayout.block_size">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AxisLayout.block_size">[docs]</a>
-</span><span data-line="185">    <span class="k">def</span><span class="w"> </span><span class="nf">block_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="186"><span class="w">        </span><span class="sd">"""Per-(dynamic-batch, sub-batch-site) storage size."""</span>
-</span><span data-line="187">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_size</span><span class="p">()</span></div>
+</span><span data-line="219">    <span class="k">def</span><span class="w"> </span><span class="nf">block_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span data-line="220"><span class="w">        </span><span class="sd">"""Per-(dynamic-batch, sub-batch-site) storage size."""</span>
+</span><span data-line="221">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_size</span><span class="p">()</span></div>
 
-</span><span data-line="188">
+</span><span data-line="222">
 <div class="viewcode-block" id="AxisLayout.group_intmd_ndim">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AxisLayout.group_intmd_ndim">[docs]</a>
-</span><span data-line="189">    <span class="k">def</span><span class="w"> </span><span class="nf">group_intmd_ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="190"><span class="w">        </span><span class="sd">"""Number of intermediate (sub-batch) axes the assembled tensor carries for</span>
-</span><span data-line="191"><span class="sd">        group ``index`` -- ``len(group_sub_batch_shape)`` for a BLOCK group, 0 for</span>
-</span><span data-line="192"><span class="sd">        a DENSE group (sub-batch folded into base). Counts axes, not DOFs (see</span>
-</span><span data-line="193"><span class="sd">        :meth:`group_flat_size`).</span>
-</span><span data-line="194"><span class="sd">        """</span>
-</span><span data-line="195">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"block"</span><span class="p">:</span>
-</span><span data-line="196">            <span class="k">return</span> <span class="mi">0</span>
-</span><span data-line="197">        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">index</span><span class="p">))</span></div>
+</span><span data-line="223">    <span class="k">def</span><span class="w"> </span><span class="nf">group_intmd_ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span data-line="224"><span class="w">        </span><span class="sd">"""Number of intermediate (sub-batch) axes the assembled tensor carries for</span>
+</span><span data-line="225"><span class="sd">        group ``index`` -- ``len(group_sub_batch_shape)`` for a BLOCK group, 0 for</span>
+</span><span data-line="226"><span class="sd">        a DENSE group (sub-batch folded into base). Counts axes, not DOFs (see</span>
+</span><span data-line="227"><span class="sd">        :meth:`group_flat_size`).</span>
+</span><span data-line="228"><span class="sd">        """</span>
+</span><span data-line="229">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"block"</span><span class="p">:</span>
+</span><span data-line="230">            <span class="k">return</span> <span class="mi">0</span>
+</span><span data-line="231">        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">index</span><span class="p">))</span></div>
 
-</span><span data-line="198">
+</span><span data-line="232">
 <div class="viewcode-block" id="AxisLayout.group_flat_size">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AxisLayout.group_flat_size">[docs]</a>
-</span><span data-line="199">    <span class="k">def</span><span class="w"> </span><span class="nf">group_flat_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="200"><span class="w">        </span><span class="sd">"""Flattened DOF count of group ``index`` -- base storage times sub-batch</span>
-</span><span data-line="201"><span class="sd">        extent (BLOCK: the shared per-group site count; DENSE: per-variable,</span>
-</span><span data-line="202"><span class="sd">        folded into base). Contrast :meth:`group_size`, which is base-only.</span>
-</span><span data-line="203"><span class="sd">        """</span>
-</span><span data-line="204">        <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-</span><span data-line="205">        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="206">        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">index</span><span class="p">]:</span>
-</span><span data-line="207">            <span class="n">base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_size</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="208">            <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
-</span><span data-line="209">                <span class="n">total</span> <span class="o">+=</span> <span class="n">base</span>
-</span><span data-line="210">            <span class="k">else</span><span class="p">:</span>
-</span><span data-line="211">                <span class="n">sub</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="ow">or</span> <span class="mi">1</span>
-</span><span data-line="212">                <span class="n">total</span> <span class="o">+=</span> <span class="n">base</span> <span class="o">*</span> <span class="n">sub</span>
-</span><span data-line="213">        <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
-</span><span data-line="214">            <span class="n">sub_g</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">index</span><span class="p">))</span> <span class="ow">or</span> <span class="mi">1</span>
-</span><span data-line="215">            <span class="n">total</span> <span class="o">*=</span> <span class="n">sub_g</span>
-</span><span data-line="216">        <span class="k">return</span> <span class="n">total</span></div>
+</span><span data-line="233">    <span class="k">def</span><span class="w"> </span><span class="nf">group_flat_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span data-line="234"><span class="w">        </span><span class="sd">"""Flattened DOF count of group ``index`` -- base storage times sub-batch</span>
+</span><span data-line="235"><span class="sd">        extent (BLOCK: the shared per-group site count; DENSE: per-variable,</span>
+</span><span data-line="236"><span class="sd">        folded into base). Contrast :meth:`group_size`, which is base-only.</span>
+</span><span data-line="237"><span class="sd">        """</span>
+</span><span data-line="238">        <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+</span><span data-line="239">        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span data-line="240">        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">index</span><span class="p">]:</span>
+</span><span data-line="241">            <span class="n">base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_size</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="242">            <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
+</span><span data-line="243">                <span class="c1"># per-site base includes any extra (folded) sub-batch axes</span>
+</span><span data-line="244">                <span class="n">extra</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_extra_sub_batch</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span> <span class="ow">or</span> <span class="mi">1</span>
+</span><span data-line="245">                <span class="n">total</span> <span class="o">+=</span> <span class="n">base</span> <span class="o">*</span> <span class="n">extra</span>
+</span><span data-line="246">            <span class="k">else</span><span class="p">:</span>
+</span><span data-line="247">                <span class="n">sub</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="ow">or</span> <span class="mi">1</span>
+</span><span data-line="248">                <span class="n">total</span> <span class="o">+=</span> <span class="n">base</span> <span class="o">*</span> <span class="n">sub</span>
+</span><span data-line="249">        <span class="k">if</span> <span class="n">structure</span> <span class="o">==</span> <span class="s2">"block"</span><span class="p">:</span>
+</span><span data-line="250">            <span class="n">sub_g</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">index</span><span class="p">))</span> <span class="ow">or</span> <span class="mi">1</span>
+</span><span data-line="251">            <span class="n">total</span> <span class="o">*=</span> <span class="n">sub_g</span>
+</span><span data-line="252">        <span class="k">return</span> <span class="n">total</span></div>
 
-</span><span data-line="217">
+</span><span data-line="253">
 <div class="viewcode-block" id="AxisLayout.flat_size">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AxisLayout.flat_size">[docs]</a>
-</span><span data-line="218">    <span class="k">def</span><span class="w"> </span><span class="nf">flat_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="219"><span class="w">        </span><span class="sd">"""Total flattened DOF count summed across all groups (base times sub-batch).</span>
-</span><span data-line="220">
-</span><span data-line="221"><span class="sd">        The size of the single flat tensor an :class:`~neml2.es.AssembledVector`</span>
-</span><span data-line="222"><span class="sd">        over this layout packs to (see :meth:`AssembledVector.to_flat`); contrast</span>
-</span><span data-line="223"><span class="sd">        :meth:`storage_size`, which folds nothing and counts base storage only.</span>
-</span><span data-line="224"><span class="sd">        """</span>
-</span><span data-line="225">        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group_flat_size</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ngroup</span><span class="p">))</span></div>
+</span><span data-line="254">    <span class="k">def</span><span class="w"> </span><span class="nf">flat_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span data-line="255"><span class="w">        </span><span class="sd">"""Total flattened DOF count summed across all groups (base times sub-batch).</span>
+</span><span data-line="256">
+</span><span data-line="257"><span class="sd">        The size of the single flat tensor an :class:`~neml2.es.AssembledVector`</span>
+</span><span data-line="258"><span class="sd">        over this layout packs to (see :meth:`AssembledVector.to_flat`); contrast</span>
+</span><span data-line="259"><span class="sd">        :meth:`storage_size`, which folds nothing and counts base storage only.</span>
+</span><span data-line="260"><span class="sd">        """</span>
+</span><span data-line="261">        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group_flat_size</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ngroup</span><span class="p">))</span></div>
 
-</span><span data-line="226">
+</span><span data-line="262">
 <div class="viewcode-block" id="AxisLayout.type_of">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.AxisLayout.type_of">[docs]</a>
-</span><span data-line="227">    <span class="k">def</span><span class="w"> </span><span class="nf">type_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]:</span>
-</span><span data-line="228">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
+</span><span data-line="263">    <span class="k">def</span><span class="w"> </span><span class="nf">type_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]:</span>
+</span><span data-line="264">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
 </div>
 
-</span><span data-line="229">
-</span><span data-line="230">
-</span><span data-line="231"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AxisLayout"</span><span class="p">,</span> <span class="s2">"SubBatchStructure"</span><span class="p">]</span>
+</span><span data-line="265">
+</span><span data-line="266">
+</span><span data-line="267"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AxisLayout"</span><span class="p">,</span> <span class="s2">"SubBatchStructure"</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
