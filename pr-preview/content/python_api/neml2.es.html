@@ -412,6 +412,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.es.AxisLayout"><code class="docutils literal notranslate"><span class="pre">AxisLayout</span></code></a><ul>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.block_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.block_size()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.flat_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.flat_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.group_common"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_common</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.group_common_sub_batch"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_common_sub_batch()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.group_flat_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_flat_size()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.group_intmd_ndim"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_intmd_ndim()</span></code></a></li>
@@ -880,7 +881,7 @@ form the pyzag adapter and time-integration solvers consume. Inverse of
 
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">AxisLayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">AxisLayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_common</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Ordered variable groups, their tensor types, per-variable
 sub-batch shapes, and per-group <code class="xref py py-data docutils literal notranslate"><span class="pre">SubBatchStructure</span></code>.</p>
@@ -891,6 +892,7 @@ sub-batch shapes, and per-group <code class="xref py py-data docutils literal no
 <li><p><strong>specs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)"><em>type</em></a><em>[</em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em><em>]</em>)</p></li>
 <li><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>]</em>)</p></li>
 <li><p><strong>structure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><em>Literal</em></a><em>[</em><em>'block'</em><em>, </em><em>'dense'</em><em>]</em><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>group_common</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em> | </em><em>None</em><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -919,6 +921,14 @@ over this layout packs to (see <a class="reference internal" href="#neml2.es.Ass
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.es.AxisLayout.group_common">
+<span class="sig-name descname"><span class="pre">group_common</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><span class="pre">Size</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.group_common" title="Link to this definition">#</a></dt>
+<dd><p>Optional per-group explicit common sub-batch prefix (one entry per group;
+<code class="docutils literal notranslate"><span class="pre">None</span></code> = infer from members). Used by generated layouts that must retain a
+matched prefix rather than re-infer a longer one from a lone member.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout.group_common_sub_batch">
 <span class="sig-name descname"><span class="pre">group_common_sub_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.group_common_sub_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.group_common_sub_batch" title="Link to this definition">#</a></dt>
@@ -926,10 +936,10 @@ over this layout packs to (see <a class="reference internal" href="#neml2.es.Ass
 <p>BLOCK-group variables must share a common LEADING sub-batch prefix. That
 shared prefix is preserved as the block’s intermediate axis; any EXTRA
 trailing sub-batch axes a variable carries are folded into that variable’s
-per-site base on assembly. The common prefix is the shortest
-variable sub-batch shape in the group; every other variable must begin
-with it (else the block can’t share one intermediate axis). Returns the
-empty shape for a DENSE group.</p>
+per-site base on assembly. The common prefix is <a class="reference internal" href="#neml2.es.AxisLayout.group_common" title="neml2.es.AxisLayout.group_common"><code class="xref py py-attr docutils literal notranslate"><span class="pre">group_common</span></code></a> when set
+explicitly, else the shortest variable sub-batch shape in the group; every
+other variable must begin with it (else the block can’t share one
+intermediate axis). Returns the empty shape for a DENSE group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
