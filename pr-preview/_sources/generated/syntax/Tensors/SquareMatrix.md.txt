@@ -1,0 +1,22 @@
+(tensors-SquareMatrix)=
+# SquareMatrix
+
+**Source:** `user_tensors/SquareMatrix.py`
+
+Assemble an ``n x n`` matrix (as a sub-batched `Scalar`)
+from structured coefficients.
+
+## Other options
+
+`m` &mdash; `int` &middot; default `0`
+: Matrix dimension n (e.g. the number of slip systems). Optional when 'blocks' is given -- then n is their sum.
+
+`fill` &mdash; `str` &middot; default `dense`
+: Fill pattern: 'identity', 'zero', 'diagonal', 'diagonal_blocks', 'block', or 'dense'.
+
+`data` &mdash; `list`
+: Coefficients; required length depends on 'type' (n for diagonal, len(blocks) for diagonal_blocks, len(blocks)**2 for block, n**2 for dense).
+
+`blocks` &mdash; `list`
+: Block sizes (slip-family partition) summing to n; used by 'diagonal_blocks' and 'block'.
+

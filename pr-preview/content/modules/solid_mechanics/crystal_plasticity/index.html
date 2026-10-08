@@ -93,6 +93,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tensor_types/index.html">Tensor types</a><ul>
@@ -120,6 +121,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="polefigures.html">Plotting pole figures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../traction_separation_law.html">Traction–separation laws</a></li>
@@ -324,6 +326,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Tensors/Python.html">Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -390,6 +393,13 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#math">Math</a></li>
 <li><a class="reference internal" href="#example-model-composition">Example model composition</a></li>
 <li><a class="reference internal" href="#explanation">Explanation</a></li>
+<li><a class="reference internal" href="#latent-slip-system-interaction-hardening">Latent (slip-system interaction) hardening</a><ul>
+<li><a class="reference internal" href="#building-the-interaction-matrix">Building the interaction matrix</a></li>
+<li><a class="reference internal" href="#linear-interaction-forms">Linear interaction forms</a></li>
+<li><a class="reference internal" href="#in-a-taylor-polycrystal">In a Taylor polycrystal</a></li>
+<li><a class="reference internal" href="#see-these-in-action">See these in action</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#worked-examples">Worked examples</a></li>
 <li><a class="reference internal" href="#see-also">See also</a></li>
 </ul>
@@ -434,7 +444,7 @@ data-aria-dark="Switch to auto color mode">
 <span id="modules-solid-mechanics-crystal-plasticity"></span><h1>Crystal plasticity<a class="headerlink" href="#crystal-plasticity" title="Link to this heading">#</a></h1>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
-<p>Crystal plasticity in NEML2 is built around an incremental, rate-form view of single-crystal kinematics: a forward operator that, given the current spatial velocity gradient, integrates the elastic stretch, the lattice orientation, and any internal hardening variables forward in time. The crystal-plasticity catalog carves this physics into reusable primitives — kinematic operators (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ElasticStrainRate.html#models-elasticstrainrate"><span class="std std-ref">ElasticStrainRate</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/OrientationRate.html#models-orientationrate"><span class="std std-ref">OrientationRate</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticDeformationRate.html#models-plasticdeformationrate"><span class="std std-ref">PlasticDeformationRate</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticVorticity.html#models-plasticvorticity"><span class="std std-ref">PlasticVorticity</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticSpatialVelocityGradient.html#models-plasticspatialvelocitygradient"><span class="std std-ref">PlasticSpatialVelocityGradient</span></a>), constitutive maps from stress to resolved shear (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ResolvedShear.html#models-resolvedshear"><span class="std std-ref">ResolvedShear</span></a>) and from internal state to slip strength (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.html#models-singleslipstrengthmap"><span class="std std-ref">SingleSlipStrengthMap</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a>), slip kinetics (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.html#models-powerlawsliprule"><span class="std std-ref">PowerLawSlipRule</span></a>), and hardening laws (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.html#models-linearsinglesliphardeningrule"><span class="std std-ref">LinearSingleSlipHardeningRule</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.html#models-vocesinglesliphardeningrule"><span class="std std-ref">VoceSingleSlipHardeningRule</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PerSlipForestDislocationEvolution.html#models-perslipforestdislocationevolution"><span class="std std-ref">PerSlipForestDislocationEvolution</span></a>). The crystal geometry itself (slip systems, twin systems) is generated by an ancillary <a class="reference internal" href="../../../../generated/syntax/Data/CubicCrystal.html#data-cubiccrystal"><span class="std std-ref">CubicCrystal</span></a> data object, so users specify Miller indices, not enumerated slip systems.</p>
+<p>Crystal plasticity in NEML2 is built around an incremental, rate-form view of single-crystal kinematics: a forward operator that, given the current spatial velocity gradient, integrates the elastic stretch, the lattice orientation, and any internal hardening variables forward in time. The crystal-plasticity catalog carves this physics into reusable primitives — kinematic operators (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ElasticStrainRate.html#models-elasticstrainrate"><span class="std std-ref">ElasticStrainRate</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/OrientationRate.html#models-orientationrate"><span class="std std-ref">OrientationRate</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticDeformationRate.html#models-plasticdeformationrate"><span class="std std-ref">PlasticDeformationRate</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticVorticity.html#models-plasticvorticity"><span class="std std-ref">PlasticVorticity</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticSpatialVelocityGradient.html#models-plasticspatialvelocitygradient"><span class="std std-ref">PlasticSpatialVelocityGradient</span></a>), constitutive maps from stress to resolved shear (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ResolvedShear.html#models-resolvedshear"><span class="std std-ref">ResolvedShear</span></a>) and from internal state to slip strength (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.html#models-singleslipstrengthmap"><span class="std std-ref">SingleSlipStrengthMap</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationInteractionStrengthMap.html#models-dislocationinteractionstrengthmap"><span class="std std-ref">DislocationInteractionStrengthMap</span></a>), slip kinetics (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.html#models-powerlawsliprule"><span class="std std-ref">PowerLawSlipRule</span></a>), and hardening laws (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.html#models-linearsinglesliphardeningrule"><span class="std std-ref">LinearSingleSlipHardeningRule</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.html#models-vocesinglesliphardeningrule"><span class="std std-ref">VoceSingleSlipHardeningRule</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PerSlipForestDislocationEvolution.html#models-perslipforestdislocationevolution"><span class="std std-ref">PerSlipForestDislocationEvolution</span></a>). The crystal geometry itself (slip systems, twin systems) is generated by an ancillary <a class="reference internal" href="../../../../generated/syntax/Data/CubicCrystal.html#data-cubiccrystal"><span class="std std-ref">CubicCrystal</span></a> data object, so users specify Miller indices, not enumerated slip systems.</p>
 </section>
 <section id="math">
 <h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
@@ -466,9 +476,9 @@ l = \dot{\varepsilon} + \Omega^e - \Omega^e \varepsilon + \varepsilon \Omega^e +
 </ol>
 <p>The first holds well for metal plasticity; the second can break down at very high strain rates.</p>
 <p>Defining the current orientation as the composition of the initial lattice rotation <span class="math notranslate nohighlight">\(Q_0\)</span> with the elastic rotation, <span class="math notranslate nohighlight">\(Q = R^e Q_0\)</span>, the elastic spin reduces to <span class="math notranslate nohighlight">\(\Omega^e = \dot{Q} Q^T\)</span>. Splitting the spatial velocity gradient into symmetric and skew parts (<span class="math notranslate nohighlight">\(l = d + w\)</span>, <span class="math notranslate nohighlight">\(l^p = d^p + w^p\)</span>) and rearranging yields the two governing rate equations integrated by this module:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-0d927ffb-9f86-4a6d-9af9-af3fffde0d2d">
-<div class="amsmath math notranslate nohighlight" id="equation-0d927ffb-9f86-4a6d-9af9-af3fffde0d2d">
-<span class="eqno">(18)<a class="headerlink" href="#equation-0d927ffb-9f86-4a6d-9af9-af3fffde0d2d" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-4847d74e-8374-496b-8b43-9afdd35493e7">
+<div class="amsmath math notranslate nohighlight" id="equation-4847d74e-8374-496b-8b43-9afdd35493e7">
+<span class="eqno">(18)<a class="headerlink" href="#equation-4847d74e-8374-496b-8b43-9afdd35493e7" title="Permalink to this equation">#</a></span>\[\begin{align}
   \dot{\varepsilon} &amp;= d - d^p - \varepsilon w + w \varepsilon \\
   \dot{Q} &amp;= \left(w - w^p - \varepsilon d^p + d^p \varepsilon\right) Q.
 \end{align}\]</div>
@@ -726,7 +736,7 @@ l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\rig
 <li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.html#models-singleslipstrengthmap"><span class="std std-ref">SingleSlipStrengthMap</span></a> supplies the slip strength on every system — here a single constant <code class="docutils literal notranslate"><span class="pre">50.0</span></code> shared across systems, exposed as the variable <code class="docutils literal notranslate"><span class="pre">slip_strength</span></code>.</p></li>
 <li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.html#models-powerlawsliprule"><span class="std std-ref">PowerLawSlipRule</span></a> computes the slip rate on each system from the resolved shear and the slip strength, <span class="math notranslate nohighlight">\(\dot{\gamma}_i = \dot{\gamma}_0 \,|\tau_i/\bar{\tau}|^{n} \operatorname{sgn}(\tau_i)\)</span>, with <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">=</span> <span class="pre">8.0</span></code> and reference rate <code class="docutils literal notranslate"><span class="pre">gamma0</span> <span class="pre">=</span> <span class="pre">2e-1</span></code>.</p></li>
 <li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SumSlipRates.html#models-sumsliprates"><span class="std std-ref">SumSlipRates</span></a> reduces the per-system rates to a scalar accumulated slip used as the hardening driver.</p></li>
-<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.html#models-vocesinglesliphardeningrule"><span class="std std-ref">VoceSingleSlipHardeningRule</span></a> evolves a single <code class="docutils literal notranslate"><span class="pre">slip_hardening</span></code> scalar Voce-style toward a saturation value (initial slope <code class="docutils literal notranslate"><span class="pre">500</span></code>, saturated hardening <code class="docutils literal notranslate"><span class="pre">50</span></code>). For density-based forms swap in <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PerSlipForestDislocationEvolution.html#models-perslipforestdislocationevolution"><span class="std std-ref">PerSlipForestDislocationEvolution</span></a> and <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a>; for linear hardening swap in <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.html#models-linearsinglesliphardeningrule"><span class="std std-ref">LinearSingleSlipHardeningRule</span></a>.</p></li>
+<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.html#models-vocesinglesliphardeningrule"><span class="std std-ref">VoceSingleSlipHardeningRule</span></a> evolves a single <code class="docutils literal notranslate"><span class="pre">slip_hardening</span></code> scalar Voce-style toward a saturation value (initial slope <code class="docutils literal notranslate"><span class="pre">500</span></code>, saturated hardening <code class="docutils literal notranslate"><span class="pre">50</span></code>). For density-based forms swap in <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PerSlipForestDislocationEvolution.html#models-perslipforestdislocationevolution"><span class="std std-ref">PerSlipForestDislocationEvolution</span></a> and <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a>; for <strong>latent (slip-system interaction) hardening</strong>, use <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationInteractionStrengthMap.html#models-dislocationinteractionstrengthmap"><span class="std std-ref">DislocationInteractionStrengthMap</span></a>, which takes an <span class="math notranslate nohighlight">\(n_\text{slip}\times n_\text{slip}\)</span> interaction matrix <span class="math notranslate nohighlight">\(h\)</span> so the forest density seen by system <span class="math notranslate nohighlight">\(i\)</span> is <span class="math notranslate nohighlight">\(\sum_r h_{ir}\rho_r\)</span> (with <span class="math notranslate nohighlight">\(h=I\)</span> it reduces to <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a>); for linear hardening swap in <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.html#models-linearsinglesliphardeningrule"><span class="std std-ref">LinearSingleSlipHardeningRule</span></a>.</p></li>
 </ul>
 <p><strong>Integration and solve.</strong> Three backward-Euler-flavored integrators turn the rate equations into algebraic residuals:</p>
 <ul class="simple">
@@ -742,6 +752,235 @@ l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\rig
 <p>If you need to <em>post-process</em> an orientation (e.g. wrap the modified-Rodrigues parameters back into the fundamental zone before writing output), append a <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/FixOrientation.html#models-fixorientation"><span class="std std-ref">FixOrientation</span></a> model to the chain.</p>
 </div>
 </section>
+<section id="latent-slip-system-interaction-hardening">
+<h2>Latent (slip-system interaction) hardening<a class="headerlink" href="#latent-slip-system-interaction-hardening" title="Link to this heading">#</a></h2>
+<p>On an isolated slip system, the dislocations a system produces harden that
+same system — <em>self</em> hardening. In a real crystal, a dislocation gliding on
+system <span class="math notranslate nohighlight">\(i\)</span> must also cut through the <em>forest</em> of dislocations that thread it
+from every other active system <span class="math notranslate nohighlight">\(r\)</span>; the junctions formed at those
+intersections raise the strength of system <span class="math notranslate nohighlight">\(i\)</span> even though <span class="math notranslate nohighlight">\(i\)</span> did not create
+them. This cross-system coupling is <strong>latent hardening</strong>, and
+<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationInteractionStrengthMap.html#models-dislocationinteractionstrengthmap"><span class="std std-ref">DislocationInteractionStrengthMap</span></a> captures it by letting the forest
+density that hardens system <span class="math notranslate nohighlight">\(i\)</span> be a weighted sum over all systems.</p>
+<p>Start from the self-hardening map <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a>,
+in which each system is strengthened only by its own dislocation density
+<span class="math notranslate nohighlight">\(\rho_i\)</span> through a Taylor-type square-root law,</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\tau_i = \tau_0 + \alpha \mu b \sqrt{\rho_i},
+\]</div>
+</div>
+<p>with <span class="math notranslate nohighlight">\(\tau_0\)</span> a lattice-friction offset, <span class="math notranslate nohighlight">\(\mu\)</span> the shear modulus, <span class="math notranslate nohighlight">\(b\)</span> the
+Burgers-vector magnitude, and <span class="math notranslate nohighlight">\(\alpha\)</span> a dimensionless interaction
+coefficient. <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationInteractionStrengthMap.html#models-dislocationinteractionstrengthmap"><span class="std std-ref">DislocationInteractionStrengthMap</span></a> generalizes this by
+introducing an <span class="math notranslate nohighlight">\(n_\text{slip}\times n_\text{slip}\)</span> <strong>interaction matrix</strong> <span class="math notranslate nohighlight">\(h\)</span>
+and replacing the per-system density with a linear combination of every
+system’s density,</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\tau_i = \tau_0 + \alpha \mu b \sqrt{\underbrace{\sum_{r=1}^{n_\text{slip}} h_{ir}\,\rho_r}_{F_i,\ \text{forest seen by system }i}}.
+\]</div>
+</div>
+<p>Row <span class="math notranslate nohighlight">\(i\)</span> of <span class="math notranslate nohighlight">\(h\)</span> is thus a recipe for system <span class="math notranslate nohighlight">\(i\)</span>’s forest: the entry <span class="math notranslate nohighlight">\(h_{ir}\)</span> sets
+how strongly a dislocation on system <span class="math notranslate nohighlight">\(r\)</span> obstructs slip on system <span class="math notranslate nohighlight">\(i\)</span>. The
+diagonal <span class="math notranslate nohighlight">\(h_{ii}\)</span> is self-hardening and the off-diagonals <span class="math notranslate nohighlight">\(h_{ir}\)</span> (<span class="math notranslate nohighlight">\(r\neq i\)</span>)
+are latent hardening. Keeping only the diagonal, <span class="math notranslate nohighlight">\(h = I\)</span>, recovers
+<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a> exactly (<span class="math notranslate nohighlight">\(F_i = \rho_i\)</span>).</p>
+<p>Because the strength involves <span class="math notranslate nohighlight">\(\sqrt{F_i}\)</span>, the forest sum must stay
+non-negative for every system (the square root and its derivative <span class="math notranslate nohighlight">\(\propto
+1/\sqrt{F_i}\)</span> are real only then). This holds automatically for physical
+densities <span class="math notranslate nohighlight">\(\rho_r \ge 0\)</span> and a non-negative matrix — for example the
+one-parameter family <span class="math notranslate nohighlight">\(h = I + q\,(\mathbf{1} - I)\)</span> with latent ratio <span class="math notranslate nohighlight">\(q \ge 0\)</span>
+— so a calibrated <span class="math notranslate nohighlight">\(h\)</span> must be constrained to keep it non-negative.</p>
+<section id="building-the-interaction-matrix">
+<h3>Building the interaction matrix<a class="headerlink" href="#building-the-interaction-matrix" title="Link to this heading">#</a></h3>
+<p><span class="math notranslate nohighlight">\(h\)</span> is an ordinary <span class="math notranslate nohighlight">\(n_\text{slip}\times n_\text{slip}\)</span> material parameter. For
+a cubic FCC lattice <span class="math notranslate nohighlight">\(n_\text{slip} = 12\)</span>, so a fully general <span class="math notranslate nohighlight">\(h\)</span> carries <span class="math notranslate nohighlight">\(144\)</span>
+entries — far more than any experiment can resolve. The entries are not
+independent, though: by lattice symmetry the strength of an interaction
+depends only on the <em>geometric relationship</em> between the two systems (same
+system, coplanar, collinear, or forming a glissile junction, a Hirth lock, or
+a Lomer–Cottrell sessile lock), not on their individual identities. Collapsing
+<span class="math notranslate nohighlight">\(h\)</span> to a handful of physical coefficients indexed by that relationship — rather
+than <span class="math notranslate nohighlight">\(n_\text{slip}^2\)</span> free numbers — is the <strong>Franciosi picture</strong>, and the
+<a class="reference internal" href="../../../../generated/syntax/Tensors/SquareMatrix.html#tensors-squarematrix"><span class="std std-ref">SquareMatrix</span></a> <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> object builds <span class="math notranslate nohighlight">\(h\)</span> from exactly such a
+reduced description.</p>
+<p><a class="reference internal" href="../../../../generated/syntax/Tensors/SquareMatrix.html#tensors-squarematrix"><span class="std std-ref">SquareMatrix</span></a> offers several <code class="docutils literal notranslate"><span class="pre">fill</span></code> patterns (<code class="docutils literal notranslate"><span class="pre">identity</span></code>, <code class="docutils literal notranslate"><span class="pre">zero</span></code>,
+<code class="docutils literal notranslate"><span class="pre">diagonal</span></code>, <code class="docutils literal notranslate"><span class="pre">diagonal_blocks</span></code>, <code class="docutils literal notranslate"><span class="pre">block</span></code>, <code class="docutils literal notranslate"><span class="pre">dense</span></code>). The one that realizes the
+Franciosi reduction is <code class="docutils literal notranslate"><span class="pre">fill</span> <span class="pre">=</span> <span class="pre">block</span></code>: the slip systems are partitioned into
+<em>families</em> by a <code class="docutils literal notranslate"><span class="pre">blocks</span></code> list (summing to <span class="math notranslate nohighlight">\(n_\text{slip}\)</span>), and <code class="docutils literal notranslate"><span class="pre">data</span></code> supplies
+one coefficient per family pair, row-major over the block grid —
+<code class="docutils literal notranslate"><span class="pre">data[bi*nb</span> <span class="pre">+</span> <span class="pre">bj]</span></code> fills the entire (family <span class="math notranslate nohighlight">\(bi\)</span> rows) <span class="math notranslate nohighlight">\(\times\)</span> (family <span class="math notranslate nohighlight">\(bj\)</span>
+columns) submatrix. A two-family lattice with self-coefficient <span class="math notranslate nohighlight">\(c_\text{self}\)</span>
+on the diagonal blocks and latent-coefficient <span class="math notranslate nohighlight">\(c_\text{lat}\)</span> on the
+off-diagonal blocks is then just</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Tensors]</span>
+</span><span data-line="2"><span class="w">  </span><span class="k">[h]</span>
+</span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SquareMatrix</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">block</span><span class="w">        </span><span class="c1"># one coefficient per (family, family) pair</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">blocks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'12 12'</span><span class="w">    </span><span class="c1"># the slip-family partition (m = sum(blocks) = 24)</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'1.0 0.4 0.4 1.0'</span>
+</span><span data-line="7"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="8"><span class="k">[]</span>
+</span></pre></div>
+</div>
+<p>Reading <code class="docutils literal notranslate"><span class="pre">data</span> <span class="pre">=</span> <span class="pre">'c_self</span> <span class="pre">c_lat</span> <span class="pre">c_lat</span> <span class="pre">c_self'</span></code> onto a <span class="math notranslate nohighlight">\(2\times 2\)</span> block grid (here
+shrunk to two families of <strong>two</strong> systems, so the full <span class="math notranslate nohighlight">\(4\times 4\)</span> result fits
+on the page) gives</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}
+h \;=\;
+\left(\begin{array}{cc|cc}
+c_\text{self} &amp; c_\text{self} &amp; c_\text{lat} &amp; c_\text{lat}\\
+c_\text{self} &amp; c_\text{self} &amp; c_\text{lat} &amp; c_\text{lat}\\ \hline
+c_\text{lat} &amp; c_\text{lat} &amp; c_\text{self} &amp; c_\text{self}\\
+c_\text{lat} &amp; c_\text{lat} &amp; c_\text{self} &amp; c_\text{self}
+\end{array}\right)
+\;=\;
+\begin{pmatrix}
+c_\text{self}\,\mathbf{1} &amp; c_\text{lat}\,\mathbf{1}\\[3pt]
+c_\text{lat}\,\mathbf{1} &amp; c_\text{self}\,\mathbf{1}
+\end{pmatrix},
+\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{1}\)</span> is the all-ones block of a family’s size. The two <strong>diagonal
+blocks</strong> are set entirely by <code class="docutils literal notranslate"><span class="pre">data[0]</span></code> and <code class="docutils literal notranslate"><span class="pre">data[3]</span></code> (the self coefficient
+<span class="math notranslate nohighlight">\(c_\text{self}\)</span>); the two <strong>off-diagonal blocks</strong> by <code class="docutils literal notranslate"><span class="pre">data[1]</span></code> and <code class="docutils literal notranslate"><span class="pre">data[2]</span></code>
+(the latent coefficient <span class="math notranslate nohighlight">\(c_\text{lat}\)</span>). Reading along any row <span class="math notranslate nohighlight">\(i\)</span> in the first
+family, the forest sum collects <span class="math notranslate nohighlight">\(c_\text{self}\)</span> from every column of family 1
+and <span class="math notranslate nohighlight">\(c_\text{lat}\)</span> from every column of family 2,</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+F_i \;=\; c_\text{self}\!\!\sum_{r\in\text{family }1}\!\!\rho_r \;+\; c_\text{lat}\!\!\sum_{r\in\text{family }2}\!\!\rho_r,
+\]</div>
+</div>
+<p>so the single pair <span class="math notranslate nohighlight">\((c_\text{self}, c_\text{lat})\)</span> sets how much a system is
+hardened by its own family versus the other — latent hardening in one picture.</p>
+<p>A few related fills are worth knowing:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fill</span> <span class="pre">=</span> <span class="pre">diagonal_blocks</span></code> keeps only the diagonal <em>entries</em> of the diagonal
+blocks (one scalar per family: <code class="docutils literal notranslate"><span class="pre">data</span> <span class="pre">=</span> <span class="pre">'1.0</span> <span class="pre">0.8'</span></code>, <code class="docutils literal notranslate"><span class="pre">blocks</span> <span class="pre">=</span> <span class="pre">'12</span> <span class="pre">12'</span></code>) —
+distinct self-hardening per family with <strong>no</strong> latent coupling.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fill</span> <span class="pre">=</span> <span class="pre">diagonal</span></code> sets each of the <span class="math notranslate nohighlight">\(n_\text{slip}\)</span> diagonal entries
+individually (<code class="docutils literal notranslate"><span class="pre">data</span></code> of length <span class="math notranslate nohighlight">\(n_\text{slip}\)</span>); <code class="docutils literal notranslate"><span class="pre">fill</span> <span class="pre">=</span> <span class="pre">identity</span></code> is the
+self-hardening special case <span class="math notranslate nohighlight">\(h = I\)</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fill</span> <span class="pre">=</span> <span class="pre">dense</span></code> gives all <span class="math notranslate nohighlight">\(n_\text{slip}^2\)</span> entries explicitly (row-major,
+<span class="math notranslate nohighlight">\(h_{ij} =\)</span> <code class="docutils literal notranslate"><span class="pre">data[i*n</span> <span class="pre">+</span> <span class="pre">j]</span></code>) — use it when the family picture is too coarse,
+e.g. to separate the true self-term <span class="math notranslate nohighlight">\(h_{ii}\)</span> from the within-family
+(coplanar) interactions that a single <code class="docutils literal notranslate"><span class="pre">block</span></code> coefficient lumps together.</p></li>
+</ul>
+<p><a class="reference internal" href="../../../../generated/syntax/Tensors/SquareMatrix.html#tensors-squarematrix"><span class="std std-ref">SquareMatrix</span></a> is <strong>geometry-agnostic</strong> — it never reads the lattice.
+The <code class="docutils literal notranslate"><span class="pre">blocks</span></code> partition and the slip-system ordering (which physical system is
+index <span class="math notranslate nohighlight">\(i\)</span>, and hence which entry of <span class="math notranslate nohighlight">\(h\)</span> couples which pair) are the user’s
+responsibility and must follow the ordering of the <a class="reference internal" href="../../../../generated/syntax/Data/CubicCrystal.html#data-cubiccrystal"><span class="std std-ref">CubicCrystal</span></a> the
+matrix is paired with. For a symmetric <span class="math notranslate nohighlight">\(h\)</span> (the usual case) the ordering within
+a block is immaterial.</p>
+</section>
+<section id="linear-interaction-forms">
+<h3>Linear interaction forms<a class="headerlink" href="#linear-interaction-forms" title="Link to this heading">#</a></h3>
+<p>The same interaction matrix drives two <strong>linear</strong> interaction-hardening models,
+for when the square-root forest nonlinearity is not wanted:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearInteractionStrengthMap.html#models-linearinteractionstrengthmap"><span class="std std-ref">LinearInteractionStrengthMap</span></a> — a strength map <span class="math notranslate nohighlight">\(\tau_i = \tau_{0,i} + \sum_j h_{ij}\,\phi_j\)</span> from a per-slip hardening state <span class="math notranslate nohighlight">\(\phi\)</span> (commonly the accumulated slip <span class="math notranslate nohighlight">\(|\gamma_j|\)</span>). The coupling is linear, so the Jacobian <span class="math notranslate nohighlight">\(\partial\tau_i/\partial\phi_j = h_{ij}\)</span> is constant; with <span class="math notranslate nohighlight">\(h = I\)</span> the systems decouple into independent linear hardening.</p></li>
+<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearInteractionHardeningRule.html#models-linearinteractionhardeningrule"><span class="std std-ref">LinearInteractionHardeningRule</span></a> — an evolution rule <span class="math notranslate nohighlight">\(\dot{h}_i = \sum_j M_{ij}\,\lvert\dot{\gamma}_j\rvert\)</span> that puts the interaction in the hardening <em>rate</em>, with the strength then the trivial per-slip sum <span class="math notranslate nohighlight">\(\tau_i = \tau_{0,i} + h_i\)</span>, composed from existing primitives. The <span class="math notranslate nohighlight">\(\lvert\cdot\rvert\)</span> accumulates hardening regardless of slip direction.</p></li>
+</ul>
+<p>All three forms (√-forest, linear-map, linear-rate) take the interaction matrix as an ordinary promotable parameter carried on two <code class="docutils literal notranslate"><span class="pre">(n_slip,</span> <span class="pre">n_slip)</span></code> sub-batch axes, so <a class="reference internal" href="../../../../generated/syntax/Tensors/SquareMatrix.html#tensors-squarematrix"><span class="std std-ref">SquareMatrix</span></a> builds it identically for any of them.</p>
+<p>Because <span class="math notranslate nohighlight">\(h\)</span> is a <em>promotable</em> parameter it need not be constant: rather than a <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> value it can be promoted and supplied by another <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> output, so a <strong>coupled, state-evolving</strong> interaction matrix — one that itself evolves with the dislocation/junction structure during deformation — fits the same interface (the models re-read <span class="math notranslate nohighlight">\(h\)</span> each step and the chain rule carries derivatives through it).</p>
+<p><strong>Wiring it in.</strong> The strength map replaces the diagonal <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a> in the slip-kinetics chain — it reads the per-slip state and the matrix <code class="docutils literal notranslate"><span class="pre">h</span></code> and emits the per-system <code class="docutils literal notranslate"><span class="pre">slip_strengths</span></code> that <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.html#models-powerlawsliprule"><span class="std std-ref">PowerLawSlipRule</span></a> consumes:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Models]</span>
+</span><span data-line="2"><span class="w">  </span><span class="k">[slip_strength]</span>
+</span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DislocationInteractionStrengthMap</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">dislocation_density</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'dislocation_density'</span><span class="w">   </span><span class="c1"># per-slip state (n_slip)</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">interaction_matrix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'h'</span><span class="w">                      </span><span class="c1"># the SquareMatrix above</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">constant_strength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span>
+</span><span data-line="7"><span class="w">    </span><span class="na">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.3</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0e5</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.54e-4</span>
+</span><span data-line="10"><span class="w">    </span><span class="na">slip_strengths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'slip_strengths'</span>
+</span><span data-line="11"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="12"><span class="k">[]</span>
+</span></pre></div>
+</div>
+<p>For the linear strength-map form, swap <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">LinearInteractionStrengthMap</span></code> and read the per-slip hardening state (<code class="docutils literal notranslate"><span class="pre">slip_hardening</span> <span class="pre">=</span> <span class="pre">'...'</span></code>, <code class="docutils literal notranslate"><span class="pre">interaction_matrix</span> <span class="pre">=</span> <span class="pre">'h'</span></code>, <code class="docutils literal notranslate"><span class="pre">constant_strength</span> <span class="pre">=</span> <span class="pre">...</span></code>); for the rate form, use <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearInteractionHardeningRule.html#models-linearinteractionhardeningrule"><span class="std std-ref">LinearInteractionHardeningRule</span></a> in the evolution (<code class="docutils literal notranslate"><span class="pre">slip_rates</span> <span class="pre">=</span> <span class="pre">'...'</span></code>, <code class="docutils literal notranslate"><span class="pre">interaction_matrix</span> <span class="pre">=</span> <span class="pre">'h'</span></code>) and integrate its <code class="docutils literal notranslate"><span class="pre">slip_hardening_rate</span></code>. Every per-slip strength/rate here carries the slip-system axis as a sub-batch, so the solve folds <code class="docutils literal notranslate"><span class="pre">grain</span> <span class="pre">×</span> <span class="pre">slip</span></code> automatically.</p>
+</section>
+<section id="in-a-taylor-polycrystal">
+<h3>In a Taylor polycrystal<a class="headerlink" href="#in-a-taylor-polycrystal" title="Link to this heading">#</a></h3>
+<p>A single crystal is rarely the end goal; engineering response comes from a
+polycrystal aggregate of many grains. The simplest closure is the <strong>Taylor
+(iso-strain) assumption</strong>: every grain is subjected to the <em>same</em> macroscopic
+deformation, each grain integrates its own elastic strain, lattice orientation,
+and per-slip state from its own initial orientation, and the macroscopic stress
+is the volume average over grains,</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\bar{\sigma} = \frac{1}{N_\text{grain}}\sum_{g=1}^{N_\text{grain}} \sigma^{(g)}.
+\]</div>
+</div>
+<p>Each grain’s intra-grain update is exactly the single-crystal nonlinear system
+built above; the grains are coupled only weakly, through the shared macroscopic
+driving deformation and — under mixed stress/strain control — through the
+averaging constraint that ties the unknown macroscopic components to
+<span class="math notranslate nohighlight">\(\bar{\sigma}\)</span>. NEML2 assembles this as a two-group <code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code> with
+<code class="docutils literal notranslate"><span class="pre">structure</span> <span class="pre">=</span> <span class="pre">'block</span> <span class="pre">dense'</span></code>:</p>
+<ul class="simple">
+<li><p>a <strong>BLOCK</strong> group of the per-grain unknowns — elastic strain, orientation,
+and per-slip hardening for each grain. When the per-slip state carries the
+extra slip sub-batch, these are folded <code class="docutils literal notranslate"><span class="pre">grain</span> <span class="pre">×</span> <span class="pre">slip</span></code> into one block axis.</p></li>
+<li><p>a <strong>DENSE</strong> group of the global mixed-control unknowns shared by all grains.</p></li>
+</ul>
+<p>This block-diagonal structure — each grain’s residual depends on its own
+unknowns plus the few global ones — is exactly what a
+<a class="reference internal" href="../../../../generated/syntax/Solvers/SchurComplement.html#solvers-schurcomplement"><span class="std std-ref">SchurComplement</span></a> solver exploits: eliminate the global DENSE
+unknowns against the per-grain BLOCK diagonal, solve the small dense Schur
+system, then back-substitute per grain. Within a grain, the interaction matrix
+is what makes the intra-grain Jacobian block <em>dense</em> over the slip axis — with
+<span class="math notranslate nohighlight">\(h = I\)</span> each system’s strength depends only on its own density and the block is
+diagonal, whereas a full <span class="math notranslate nohighlight">\(h\)</span> couples every system’s residual to every other
+system’s <span class="math notranslate nohighlight">\(\rho_r\)</span>. The <code class="docutils literal notranslate"><span class="pre">grain</span> <span class="pre">×</span> <span class="pre">slip</span></code> fold assembles that dense intra-grain
+block directly.</p>
+<p><strong>Identifiability.</strong> Calibrating <span class="math notranslate nohighlight">\(h\)</span> from a polycrystal test is subtler than it
+looks. Under a standard monotonic (proportional) load the slip systems activate
+together and the dislocation densities stay nearly uniform, <span class="math notranslate nohighlight">\(\rho_r \approx
+\bar{\rho}\)</span>. The forest sum then collapses to a scaled <strong>row-sum</strong> of <span class="math notranslate nohighlight">\(h\)</span>,</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+F_i = \sum_r h_{ir}\,\rho_r \;\approx\; \bar{\rho}\sum_r h_{ir}.
+\]</div>
+</div>
+<p>For a symmetric block matrix with crystallographically equivalent families,
+every row-sum is the <em>same</em> combination of the block coefficients. Taking the
+FCC case of four families of three systems, with self-coefficient
+<span class="math notranslate nohighlight">\(c_\text{self}\)</span> on the diagonal blocks and a single latent coefficient
+<span class="math notranslate nohighlight">\(c_\text{lat}\)</span> on all cross blocks, each row sums to</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\sum_r h_{ir} = 3\,c_\text{self} + 9\,c_\text{lat}
+\]</div>
+</div>
+<p>(three same-family columns, nine cross-family columns) — identical for every
+row <span class="math notranslate nohighlight">\(i\)</span>. The macroscopic stress and texture therefore constrain only this one
+scalar combination, so a monotonic test identifies a <strong>single</strong> number, not the
+individual block coefficients. Calibration accordingly normalizes the self-block
+to <span class="math notranslate nohighlight">\(1\)</span> and fits one <strong>latent-hardening ratio</strong> <span class="math notranslate nohighlight">\(q\)</span> (so <span class="math notranslate nohighlight">\(c_\text{self} = 1\)</span>,
+<span class="math notranslate nohighlight">\(c_\text{lat} = q\)</span>) — a reduction confirmed empirically. Separating multiple
+block coefficients needs a dedicated cross-/latent-hardening protocol, e.g. a
+load-path change that activates the families in sequence.</p>
+</section>
+<section id="see-these-in-action">
+<h3>See these in action<a class="headerlink" href="#see-these-in-action" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="slip_anisotropy.html#modules-solid-mechanics-crystal-plasticity-slip-anisotropy"><span class="std std-ref">Slip anisotropy: specifying the interaction matrix three ways</span></a> — run the three ways of specifying <span class="math notranslate nohighlight">\(h\)</span> (diagonal, <code class="docutils literal notranslate"><span class="pre">block</span></code>, <code class="docutils literal notranslate"><span class="pre">dense</span></code>) and overlay the stress–strain response and final texture.</p></li>
+<li><p><a class="reference internal" href="../../../tutorials/optimization/taylor_polycrystal/main.html#tutorials-optimization-taylor-polycrystal"><span class="std std-ref">Slip-anisotropy calibration</span></a> — a Taylor polycrystal with reorientation that recovers the latent-hardening ratio <span class="math notranslate nohighlight">\(q\)</span> from synthetic stress + per-step texture through the pyzag chunked adjoint.</p></li>
+</ul>
+</section>
+</section>
 <section id="worked-examples">
 <h2>Worked examples<a class="headerlink" href="#worked-examples" title="Link to this heading">#</a></h2>
 <p>End-to-end notebooks that drive a single-crystal model through a rolling
@@ -751,6 +990,7 @@ reconstruct the deformed texture:</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="polefigures.html">Plotting pole figures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </div>
 </section>

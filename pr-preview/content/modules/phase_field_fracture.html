@@ -93,6 +93,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -120,6 +121,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -324,6 +326,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/Python.html">Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -468,9 +471,9 @@ energy density per unit volume reads</p>
 </div>
 <p>The Karush–Kuhn–Tucker (KKT) conditions for irreversible phase-field
 evolution read</p>
-<div class="math-wrapper amsmath docutils container" id="equation-8f9e1737-2a4d-4425-8d9b-569e9b846e31">
-<div class="amsmath math notranslate nohighlight" id="equation-8f9e1737-2a4d-4425-8d9b-569e9b846e31">
-<span class="eqno">(9)<a class="headerlink" href="#equation-8f9e1737-2a4d-4425-8d9b-569e9b846e31" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-ffd6b6a2-789f-42e3-b46d-f8c44025b1c8">
+<div class="amsmath math notranslate nohighlight" id="equation-ffd6b6a2-789f-42e3-b46d-f8c44025b1c8">
+<span class="eqno">(9)<a class="headerlink" href="#equation-ffd6b6a2-789f-42e3-b46d-f8c44025b1c8" title="Permalink to this equation">#</a></span>\[\begin{align}
   f &amp;= \eta\, \dot{d} + \frac{\partial \psi}{\partial d} \ge 0, \\
   \dot{d} &amp;\ge 0, \\
   f\, \dot{d} &amp;= 0,

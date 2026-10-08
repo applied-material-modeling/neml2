@@ -1,0 +1,42 @@
+(models-LinearInteractionHardeningRule)=
+# LinearInteractionHardeningRule
+
+**Source:** `models/solid_mechanics/crystal_plasticity/LinearInteractionHardeningRule.py`
+
+Per-slip hardening rate from a linear slip-system interaction matrix,
+
+$\dot{h}_i = \sum_j M_{ij}\, \lvert \dot{\gamma}_j \rvert,$
+
+putting the slip-system interaction in the hardening *rate* (evolution); the strength is
+then the trivial per-slip sum $\tau_i = \tau_{0,i} + h_i$, composed from existing
+primitives. The interaction matrix $M$ couples the per-system slip rates into each
+system's hardening rate -- latent hardening with a constant Jacobian $\partial \dot{h}_i /
+\partial \lvert\dot{\gamma}_j\rvert = M_{ij}$. With $M = I$ the systems decouple into
+independent linear hardening.
+
+The absolute value $\lvert\dot{\gamma}\rvert$ makes hardening accumulate regardless of
+slip direction. ``interaction_matrix`` is an $n_\text{slip}\times n_\text{slip}$
+`Scalar` carried on two sub-batch axes (build it with the
+``SquareMatrix`` ``[Tensors]`` type); it is promotable and carries a chain-rule action
+only when promoted.
+
+## Inputs
+
+`slip_hardening` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Per-slip hardening state. Unused in the rate (which depends only on the slip rates), present so the time integrator wires the state being evolved.
+
+`slip_rates` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Per-slip system slip rates
+
+
+## Outputs
+
+`slip_hardening_rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Per-slip hardening rate
+
+
+## Parameters
+
+`interaction_matrix` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Slip-system interaction matrix, sub-batched over (n_slip, n_slip)
+
