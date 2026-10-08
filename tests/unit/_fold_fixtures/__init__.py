@@ -22,24 +22,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Test-only Python-native NEML2 models.
+"""Test-only Python-native models that trigger the dense sub-batch fold.
 
-These are test-only Python-native models backing regression-test inputs:
-``TabulatedPolynomialModel`` and ``SurrogateFlowRate`` (the latter a
-machine-learning-surrogate flow rate demonstrating ``request_AD``, replacing the
-v2-era ``TorchScriptFlowRate``). They live here rather than in ``neml2.models``
-because they only exist for the tests — they have no place in the production
-native package.
+``DenseSubBatchMixing`` (``y_i = sum_r M_ir x_r``, a dense within-sub-batch Jacobian),
+``CommonToExtraOffset`` (a per-(common, extra) field coupled to a common-only unknown),
+and ``AddScalarToExtra`` (a per-(common, extra) field coupled to a global scalar unknown
+that lands in a dense column group) are physics-free fixtures whose sole purpose is to
+exercise the equation-system assembler's dense / row-extra / block-row-against-dense-column
+tangent-fold branches. They back ``tests/unit/test_dense_subbatch_fold.py``.
 
-Importing this package side-effect-registers every fixture with the native
-factory registry via ``@register_neml2_object``. The native ``regression/conftest.py``
-imports it so the registrations fire before pytest collects the input files.
-
-The dense sub-batch-fold fixtures (``DenseSubBatchMixing`` / ``CommonToExtraOffset``)
-live with their test under ``tests/unit/_fold_fixtures`` instead: that test is a
-closed-form assembler-mechanism check (not a gold regression), so it belongs in the
-unit suite the coverage job runs.
+Importing this package side-effect-registers both models with the native factory registry
+via ``@register_neml2_object``. The package is named ``_fold_fixtures`` rather than
+``_fixtures`` so it never shadows the regression suite's top-level ``_fixtures`` package
+when both test trees are collected in one run.
 """
 
-from . import SurrogateFlowRate as _surrogate_flow_rate  # noqa: F401
-from . import TabulatedPolynomialModel as _tabulated_polynomial  # noqa: F401
+from . import AddScalarToExtra as _add_scalar_to_extra  # noqa: F401
+from . import CommonToExtraOffset as _common_to_extra_offset  # noqa: F401
+from . import DenseSubBatchMixing as _dense_sub_batch_mixing  # noqa: F401

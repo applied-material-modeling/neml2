@@ -74,9 +74,13 @@ def _capture_solve_failure() -> bool:
 
 
 def _var_offset(layout: AxisLayout, group_index: int, name: str) -> tuple[int, int]:
+    # Per-variable storage width in the assembled block: base folded with any extra
+    # (DENSE: full sub-batch; BLOCK: trailing axes beyond the group common prefix),
+    # matching AssembledMatrix's own slicing convention.
+    structure = layout.structure[group_index]
     offset = 0
     for candidate in layout.groups[group_index]:
-        size = layout.var_size(candidate)
+        size = AssembledMatrix._var_storage(layout, group_index, candidate, structure)
         if candidate == name:
             return offset, offset + size
         offset += size
@@ -628,6 +632,15 @@ class ImplicitUpdate(Model):
                 if not given_sens:
                     continue
                 block = _matrix_variable_block(du_dg, unknown_name, given_name)
+                if block.sub_batch_ndim > 0:
+                    # BLOCK pairs the common sub-batch as an intermediate axis; the
+                    # eager pushforward can't fold that back, so reject it (the
+                    # compiled route rejects sub-batched implicit derivative pairs too).
+                    raise NotImplementedError(
+                        f"ImplicitUpdate: eager input sensitivity through a BLOCK-structured "
+                        f"(per-site) equation system is unsupported ({unknown_name!r} w.r.t. "
+                        f"{given_name!r}); use a DENSE structure or the compiled route."
+                    )
                 for leaf_name, V in given_sens.items():
                     contribution = _matrix_pushforward(
                         block,

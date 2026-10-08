@@ -112,25 +112,32 @@ def equalize_tangent_K(contributions: list[TensorWrapper]) -> list[TensorWrapper
     # subsequent ``expand`` (for OTHER axes) can treat uniformly.
     from ..types.functions import fullify  # noqa: PLC0415
 
-    needs_fullify: list[bool] = []
+    # Collect, per contribution, the PAIRED SUB axes whose K needs eye-expansion
+    # to reach the common max (broadcast, size 1, and a parallel contribution has
+    # this K full). Fullify ONLY those axes (via ``sub_axis``): an un-scoped
+    # ``fullify(c)`` would also eye-expand a paired-broadcast axis that is NOT
+    # mismatched (an outer block axis with max 1), inflating it to the sub extent
+    # and colliding with ``max_k`` in the expand loop below.
+    fullify_sub_axes: list[list[int]] = []
     for c, cur in zip(contributions, k_sizes, strict=True):
-        if c.k_ndim == 0:
-            needs_fullify.append(False)
-            continue
-        nf = False
-        for i in range(c.k_ndim):
-            if (
-                cur[i] != max_k[i]
-                and cur[i] == 1
-                and c.k_state[i] == "broadcast"
-                and c.k_pairing[i] is not None
-            ):
-                nf = True
-                break
-        needs_fullify.append(nf)
-    contributions = [
-        fullify(c) if nf else c for c, nf in zip(contributions, needs_fullify, strict=True)
-    ]
+        axes: list[int] = []
+        if c.k_ndim > 0:
+            for i in range(c.k_ndim):
+                pair = c.k_pairing[i]
+                if (
+                    cur[i] != max_k[i]
+                    and cur[i] == 1
+                    and c.k_state[i] == "broadcast"
+                    and pair is not None
+                ):
+                    axes.append(int(pair))
+        fullify_sub_axes.append(axes)
+    new_contributions: list[TensorWrapper] = []
+    for c, axes in zip(contributions, fullify_sub_axes, strict=True):
+        for sa in axes:
+            c = fullify(c, sub_axis=sa)
+        new_contributions.append(c)
+    contributions = new_contributions
 
     out: list[TensorWrapper] = []
     for c in contributions:

@@ -481,14 +481,28 @@ class NEML2PyzagModel(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFactor
         out: list[list[Tensor | None]] = [
             [None for _ in range(pcol.ngroup)] for _ in range(prow.ngroup)
         ]
+
+        def _folded_base(layout, gi: int, n: str) -> int:
+            # Per-site storage of a variable as it appears in the assembled group,
+            # mirroring AssembledMatrix._var_storage:
+            #   DENSE  -> the variable's FULL sub-batch folds into base;
+            #   BLOCK  -> only the extra sub-batch beyond the group common prefix
+            #             folds in (the common stays an intermediate axis).
+            base = _storage_size(layout.type_of(n))
+            if layout.structure[gi] != "block":
+                sb = layout.sub_batch_shape(n)
+                return base * (math.prod([int(s) for s in sb]) or 1)
+            extra = layout.var_extra_sub_batch(gi, n)
+            return base * (math.prod([int(s) for s in extra]) or 1)
+
         for i in range(prow.ngroup):
             rnames = prow.groups[i]
-            row_bases = [_storage_size(prow.type_of(n)) for n in rnames]
+            row_bases = [_folded_base(prow, i, n) for n in rnames]
             row_off = [sum(row_bases[:k]) for k in range(len(row_bases))]
             row_is_block = prow.structure[i] == "block"
             for j in range(pcol.ngroup):
                 cnames = pcol.groups[j]
-                col_bases = [_storage_size(pcol.type_of(n)) for n in cnames]
+                col_bases = [_folded_base(pcol, j, n) for n in cnames]
                 col_off = [sum(col_bases[:k]) for k in range(len(col_bases))]
                 col_is_block = pcol.structure[j] == "block"
 

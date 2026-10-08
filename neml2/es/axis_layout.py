@@ -81,6 +81,10 @@ class AxisLayout:
     specs: dict[str, type[TensorWrapper]]
     sub_batch_shapes: dict[str, torch.Size]
     structure: tuple[SubBatchStructure, ...]
+    #: Optional per-group explicit common sub-batch prefix (one entry per group;
+    #: ``None`` = infer from members). Used by generated layouts that must retain a
+    #: matched prefix rather than re-infer a longer one from a lone member.
+    group_common: tuple[torch.Size | None, ...]
 
     def __init__(
         self,
@@ -88,6 +92,7 @@ class AxisLayout:
         specs: dict[str, type[TensorWrapper]],
         sub_batch_shapes: dict[str, torch.Size] | None = None,
         structure: tuple[SubBatchStructure, ...] | list[SubBatchStructure] | None = None,
+        group_common: list[torch.Size | None] | tuple[torch.Size | None, ...] | None = None,
     ) -> None:
         normalized = tuple(tuple(group) for group in groups)
         missing = [name for group in normalized for name in group if name not in specs]
@@ -114,24 +119,42 @@ class AxisLayout:
                     raise ValueError(
                         f"AxisLayout: structure entries must be 'block' or 'dense', got {k!r}."
                     )
+        if group_common is None:
+            common_tuple: tuple[torch.Size | None, ...] = (None,) * len(normalized)
+        else:
+            common_tuple = tuple(None if c is None else torch.Size(c) for c in group_common)
+            if len(common_tuple) != len(normalized):
+                raise ValueError(
+                    f"AxisLayout: group_common has {len(common_tuple)} entries, expected "
+                    f"{len(normalized)} (one per group)."
+                )
         object.__setattr__(self, "groups", normalized)
         object.__setattr__(self, "specs", dict(specs))
         object.__setattr__(self, "sub_batch_shapes", sub)
         object.__setattr__(self, "structure", structure_tuple)
+        object.__setattr__(self, "group_common", common_tuple)
 
     def with_sub_batch_shapes(
         self,
         sub_batch_shapes: dict[str, torch.Size],
     ) -> AxisLayout:
         """Return a new layout with updated sub-batch shapes (frozen replacement)."""
-        return AxisLayout(self.groups, self.specs, sub_batch_shapes, self.structure)
+        return AxisLayout(
+            self.groups, self.specs, sub_batch_shapes, self.structure, self.group_common
+        )
 
     def sub_layout(self, index: int) -> AxisLayout:
         """Single-group sub-layout containing only ``self.groups[index]``."""
         group = self.groups[index]
         specs = {name: self.specs[name] for name in group}
         sub_batch = {name: self.sub_batch_shapes[name] for name in group}
-        return AxisLayout([list(group)], specs, sub_batch, (self.structure[index],))
+        return AxisLayout(
+            [list(group)],
+            specs,
+            sub_batch,
+            (self.structure[index],),
+            (self.group_common[index],),
+        )
 
     @property
     def ngroup(self) -> int:
@@ -157,30 +180,74 @@ class AxisLayout:
         """Per-variable sub-batch shape (empty when the var is sub-batch-trivial)."""
         return self.sub_batch_shapes.get(name, torch.Size(()))
 
-    def group_sub_batch_shape(self, index: int) -> torch.Size:
-        """Common sub-batch shape across every variable in group ``index``.
+    def group_common_sub_batch(self, index: int) -> torch.Size:
+        """The sub-batch axes PRESERVED as intermediate for BLOCK group ``index``.
 
-        For a BLOCK group every variable must share the same sub_batch_shape
-        (otherwise the block tensor can't be a single rectangular tensor).
-        Raises on disagreement. For a DENSE group the per-variable shapes
-        may differ — they get folded into base on assembly — and this
-        method returns the FIRST variable's shape for shape inference only.
+        BLOCK-group variables must share a common LEADING sub-batch prefix. That
+        shared prefix is preserved as the block's intermediate axis; any EXTRA
+        trailing sub-batch axes a variable carries are folded into that variable's
+        per-site base on assembly. The common prefix is :attr:`group_common` when set
+        explicitly, else the shortest variable sub-batch shape in the group; every
+        other variable must begin with it (else the block can't share one
+        intermediate axis). Returns the empty shape for a DENSE group.
+        """
+        group = self.groups[index]
+        if not group or self.structure[index] != "block":
+            return torch.Size(())
+        shapes = [self.sub_batch_shapes.get(n, torch.Size(())) for n in group]
+        override = self.group_common[index]
+        if override is not None:
+            nc = len(override)
+            for name, sh in zip(group, shapes, strict=True):
+                if tuple(sh[:nc]) != tuple(override):
+                    raise ValueError(
+                        f"AxisLayout: BLOCK group {index} variables must begin with the "
+                        f"explicit common prefix {tuple(override)}; {name!r}={tuple(sh)} does not."
+                    )
+            return torch.Size(override)
+        common = min(shapes, key=len)
+        nc = len(common)
+        for name, sh in zip(group, shapes, strict=True):
+            if tuple(sh[:nc]) != tuple(common):
+                raise ValueError(
+                    f"AxisLayout: BLOCK group {index} variables must share a common "
+                    f"leading sub_batch prefix; {name!r}={tuple(sh)} does not begin "
+                    f"with {tuple(common)}."
+                )
+        if nc == 0 and any(len(sh) > 0 for sh in shapes):
+            # Trivial () mixed with sub-batched vars -> no shared intermediate to block over.
+            raise ValueError(
+                f"AxisLayout: BLOCK group {index} mixes a sub-batch-trivial variable with "
+                f"sub-batched ones (shapes {[tuple(s) for s in shapes]}); a block group needs "
+                f"a shared non-empty leading sub_batch prefix. Declare the trivial variable "
+                f"in a DENSE group."
+            )
+        return torch.Size(common)
+
+    def var_extra_sub_batch(self, index: int, name: str) -> torch.Size:
+        """A BLOCK-group variable's trailing sub-batch axes beyond the group's
+        common prefix (the axes that get folded into base). Empty for the
+        common-only variables and for DENSE groups."""
+        if self.structure[index] != "block":
+            return torch.Size(())
+        nc = len(self.group_common_sub_batch(index))
+        return torch.Size(self.sub_batch_shape(name)[nc:])
+
+    def group_sub_batch_shape(self, index: int) -> torch.Size:
+        """Intermediate sub-batch shape of the assembled tensor for group ``index``.
+
+        For a BLOCK group this is the common leading prefix preserved as the
+        block's intermediate axis (:meth:`group_common_sub_batch`); any extra
+        trailing per-variable axes are folded into base. For a DENSE group the
+        per-variable shapes may differ — all folded into base — and this returns
+        the FIRST variable's shape for shape inference only.
         """
         group = self.groups[index]
         if not group:
             return torch.Size(())
-        first = self.sub_batch_shapes.get(group[0], torch.Size(()))
         if self.structure[index] == "block":
-            for name in group[1:]:
-                other = self.sub_batch_shapes.get(name, torch.Size(()))
-                if tuple(other) != tuple(first):
-                    raise ValueError(
-                        f"AxisLayout: BLOCK group {index} variables disagree on "
-                        f"sub_batch_shape -- {group[0]!r}={tuple(first)} vs "
-                        f"{name!r}={tuple(other)}. BLOCK groups must share one "
-                        "sub_batch_shape across all variables."
-                    )
-        return first
+            return self.group_common_sub_batch(index)
+        return self.sub_batch_shapes.get(group[0], torch.Size(()))
 
     def block_size(self) -> int:
         """Per-(dynamic-batch, sub-batch-site) storage size."""
@@ -206,7 +273,9 @@ class AxisLayout:
         for name in self.groups[index]:
             base = self.var_size(name)
             if structure == "block":
-                total += base
+                # per-site base includes any extra (folded) sub-batch axes
+                extra = prod(int(s) for s in self.var_extra_sub_batch(index, name)) or 1
+                total += base * extra
             else:
                 sub = prod(int(s) for s in self.sub_batch_shape(name)) or 1
                 total += base * sub
