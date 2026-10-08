@@ -309,33 +309,68 @@ class ModelNonlinearSystem(NonlinearSystem):
         block_groups: list[list[str]] = []
         block_structures: list[SubBatchStructure] = []
         used: set[str] = set()
-        for ugroup, ustructure in zip(self.unknown_groups, self._structure, strict=True):
+
+        # A given lands in a block col group if its sub_batch starts with that group's
+        # common (shortest-member) prefix; the extra trailing axes fold into base,
+        # keeping the per-site IFT cross-block O(N) rather than O(N^2) dense.
+        block_specs: list[tuple[int, torch.Size, int]] = []  # (orig_order, common, nc)
+        for orig, (ugroup, ustructure) in enumerate(
+            zip(self.unknown_groups, self._structure, strict=True)
+        ):
             if ustructure != "block":
                 continue
-            u_sb = next(
-                (sb[u] for u in ugroup if u in sb),
-                None,
-            )
-            if u_sb is None:
+            u_sbs = [sb[u] for u in ugroup if u in sb]
+            if not u_sbs:
                 continue
-            matched = [g for g in self.given_names if g not in used and given_sb.get(g) == u_sb]
+            u_common = min(u_sbs, key=len)
+            block_specs.append((orig, u_common, len(u_common)))
+
+        # Most-specific (longest common prefix) first, so a nested shorter-prefix group
+        # can't greedily capture a longer-prefix given; ties keep unknown-group order.
+        matched_by_order: dict[int, list[str]] = {}
+        for orig, u_common, nc in sorted(block_specs, key=lambda s: s[2], reverse=True):
+
+            def _starts_with_common(name: str, _nc: int = nc, _uc: torch.Size = u_common) -> bool:
+                gs = given_sb.get(name)
+                if gs is None:
+                    return False
+                # An empty common has no shared site axis: only sub-batch-trivial
+                # givens belong (otherwise every given matches the empty prefix).
+                if _nc == 0:
+                    return len(gs) == 0
+                return len(gs) >= _nc and tuple(gs[:_nc]) == tuple(_uc)
+
+            matched = [g for g in self.given_names if g not in used and _starts_with_common(g)]
             if matched:
-                block_groups.append(matched)
-                block_structures.append("block")
+                matched_by_order[orig] = matched
                 used.update(matched)
+
+        # Emit the matched block column groups in the original unknown-group order,
+        # retaining each group's matched unknown common so the given layout does not
+        # re-infer a longer prefix from a lone (common, extra) member (which would
+        # fold extra into base at assembly but drop it at disassembly).
+        block_commons: list[torch.Size | None] = []
+        for orig, u_common, _nc in block_specs:
+            if orig in matched_by_order:
+                block_groups.append(matched_by_order[orig])
+                block_structures.append("block")
+                block_commons.append(u_common)
         dense_remainder = [g for g in self.given_names if g not in used]
         all_groups = block_groups + ([dense_remainder] if dense_remainder else [])
         dense_tail: list[SubBatchStructure] = ["dense"] if dense_remainder else []
         all_structures: tuple[SubBatchStructure, ...] = tuple(block_structures + dense_tail)
+        group_common: list[torch.Size | None] = block_commons + ([None] if dense_remainder else [])
         if not all_groups:
             # No givens at all -- single empty DENSE group keeps invariants.
             all_groups = [[]]
             all_structures = ("dense",)
+            group_common = [None]
         return AxisLayout(
             all_groups,
             self.model.input_spec,
             sub_batch_shapes=given_sb,
             structure=all_structures,
+            group_common=group_common,
         )
 
     def setup_blayout(self, sub_batch_shapes: Mapping[str, torch.Size] | None = None) -> AxisLayout:

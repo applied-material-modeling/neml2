@@ -572,8 +572,8 @@ def _base_ndim_of(w: TensorWrapper) -> int:
     return int(cast(int, getattr(w, "base_ndim")))  # noqa: B009
 
 
-def fullify(w: _TW) -> _TW:
-    """Materialize every K-paired broadcast axis to its enumerated form.
+def fullify(w: _TW, sub_axis: int | None = None) -> _TW:
+    """Materialize K-paired broadcast axes to their enumerated form.
 
     For each K axis ``i`` where ``k_state[i] == "broadcast"`` and
     ``k_pairing[i] is not None``:
@@ -588,6 +588,14 @@ def fullify(w: _TW) -> _TW:
 
     No-op when no K axis is paired-broadcast — returns ``w`` unchanged.
 
+    ``sub_axis`` restricts the materialization to the K axis paired with that
+    single sub-batch axis (negative indices count from the end of the sub-batch
+    region); the default ``None`` materializes every paired-broadcast K. This
+    matters for a leaf that contracts ONE sub axis (a trailing extra axis) while
+    other paired sub axes (an outer block/common axis) must stay compact/diagonal
+    -- fullifying those would densify an axis the assembler relies on being
+    diagonal.
+
     Called by cross-mixing leaves that contract a paired sub axis, so the
     contraction sees per-site rows instead of a size-1 placeholder.
     Living in ``neml2.types.functions`` per CLAUDE.md rule 2 (typed
@@ -595,10 +603,13 @@ def fullify(w: _TW) -> _TW:
     """
     if not w.k_state:
         return w
+    want = None
+    if sub_axis is not None:
+        want = sub_axis if sub_axis >= 0 else w.sub_batch_ndim + sub_axis
     targets = [
         i
         for i, (s, p) in enumerate(zip(w.k_state, w.k_pairing, strict=True))
-        if s == "broadcast" and p is not None
+        if s == "broadcast" and p is not None and (want is None or p == want)
     ]
     if not targets:
         return w

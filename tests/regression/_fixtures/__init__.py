@@ -34,6 +34,11 @@ native package.
 Importing this package side-effect-registers every fixture with the native
 factory registry via ``@register_neml2_object``. The native ``regression/conftest.py``
 imports it so the registrations fire before pytest collects the input files.
+
+The dense sub-batch-fold fixtures (``DenseSubBatchMixing`` / ``CommonToExtraOffset``)
+live with their test under ``tests/unit/_fold_fixtures`` instead: that test is a
+closed-form assembler-mechanism check (not a gold regression), so it belongs in the
+unit suite the coverage job runs.
 """
 
 from . import SurrogateFlowRate as _surrogate_flow_rate  # noqa: F401

@@ -126,12 +126,28 @@ class AssembledVector:
         tensors: list[Tensor] = []
         for gi, group in enumerate(layout.groups):
             structure = layout.structure[gi]
+            nc = len(layout.group_common_sub_batch(gi)) if structure == "block" else 0
             parts: list[Tensor] = []
             for name in group:
                 wrapped = values[name]
                 t = Tensor.from_typed(wrapped).flatten_base()
                 if structure == "dense" and t.sub_batch_ndim > 0:
                     t = t.flatten_sub_batch_into_first_base_axis()
+                elif structure == "block" and t.sub_batch_ndim > nc:
+                    # Preserve the common leading sub-batch as the block
+                    # intermediate; fold the extra trailing axes into this
+                    # variable's per-site base.
+                    extra = tuple(int(s) for s in t.sub_batch_shape[nc:])
+                    base_numel = int(prod(int(s) for s in t.base_shape)) or 1
+                    fold_size = (prod(extra) or 1) * base_numel
+                    t = t.fold_preserving(
+                        list(range(nc)),
+                        # canonical_order only fixes the preserved sub_batch_ndim
+                        # (= nc) here; labels aren't propagated downstream.
+                        tuple(str(i) for i in range(nc)),
+                        list(range(nc, t.sub_batch_ndim)),
+                        fold_size,
+                    )
                 parts.append(t)
             tensors.append(_cat_along_base(parts))
         return cls(layout, tensors)
@@ -152,8 +168,9 @@ class AssembledVector:
         out: dict[str, TensorWrapper] = {}
         for gi, group in enumerate(self.layout.groups):
             structure = self.layout.structure[gi]
+            nc = len(self.layout.group_common_sub_batch(gi)) if structure == "block" else 0
             t = self.tensors[gi]
-            slices = self._split_group(t, group, structure)
+            slices = self._split_group(gi, t, group, structure)
             for name, part in zip(group, slices, strict=True):
                 type_cls = self.layout.specs[name]
                 sb = self.layout.sub_batch_shape(name)
@@ -170,25 +187,44 @@ class AssembledVector:
                         sub_batch_ndim=len(sb),
                     )
                     out[name] = new_t.unflatten_base(*type_cls.BASE_SHAPE).as_typed(type_cls)
+                elif structure == "block" and len(sb) > nc:
+                    # Unfold the extra trailing sub-batch axes that were folded
+                    # into this variable's per-site base at assembly.
+                    extra = tuple(int(s) for s in sb[nc:])
+                    var_base = _storage_size(type_cls)
+                    target = (*part.data.shape[:-1], *extra, var_base)
+                    raw = part.data.reshape(target)
+                    new_t = Tensor(
+                        raw,
+                        batch_ndim=part.batch_ndim,
+                        sub_batch_ndim=nc + len(extra),
+                    )
+                    out[name] = new_t.unflatten_base(*type_cls.BASE_SHAPE).as_typed(type_cls)
                 else:
                     out[name] = part.unflatten_base(*type_cls.BASE_SHAPE).as_typed(type_cls)
         return SparseVector(self.layout, out)
 
     def _split_group(
         self,
+        gi: int,
         t: Tensor,
         group: tuple[str, ...],
         structure: str,
     ) -> list[Tensor]:
-        per_var_sizes = [
-            (
+        if structure == "block":
+            # Common prefix via the validated helper (enforces the shared-prefix check).
+            nc = len(self.layout.group_common_sub_batch(gi))
+            per_var_sizes = [
+                _storage_size(self.layout.specs[n])
+                * (prod([int(s) for s in self.layout.sub_batch_shape(n)[nc:]]) or 1)
+                for n in group
+            ]
+        else:
+            per_var_sizes = [
                 _storage_size(self.layout.specs[n])
                 * (prod([int(s) for s in self.layout.sub_batch_shape(n)]) or 1)
-                if structure == "dense"
-                else _storage_size(self.layout.specs[n])
-            )
-            for n in group
-        ]
+                for n in group
+            ]
         cuts: list[Tensor] = []
         start = 0
         flat = t.data
@@ -293,10 +329,18 @@ def wrap_group_raw(
     """
     if not group_names:
         return Tensor(raw, batch_ndim=raw.ndim, sub_batch_ndim=0)
-    first_name = group_names[0]
     if structure == "block":
-        # (*dyn, *sub_batch, group_base_total): base_ndim=1.
-        sub_ndim = len(layout.sub_batch_shape(first_name))
+        # (*dyn, *common_sub_batch, group_base_total): base_ndim=1. The
+        # intermediate axes are the group's COMMON sub-batch prefix; any extra
+        # per-variable sub-batch is folded into the group base. Using a single
+        # variable's full sub-batch
+        # here (as an earlier version did) over-counts the intmd axes for a
+        # partial-fold group and mis-tags the tensor -- mirror the common-prefix
+        # convention used by ``_split_group`` and ``AssembledVector.from_flat``.
+        sub_ndim = min(
+            (len(layout.sub_batch_shape(n)) for n in group_names),
+            default=0,
+        )
         return Tensor(raw, batch_ndim=raw.ndim - sub_ndim - 1, sub_batch_ndim=sub_ndim)
     # DENSE: (*dyn, group_total); sub_batch folded into base.
     return Tensor(raw, batch_ndim=raw.ndim - 1, sub_batch_ndim=0)
@@ -326,8 +370,12 @@ def group_block_sub_batch_ndim(
     cs = col_layout.structure[col_gi]
     r_sub = tuple(int(s) for s in row_layout.group_sub_batch_shape(row_gi))
     c_sub = tuple(int(s) for s in col_layout.group_sub_batch_shape(col_gi))
-    if rs == "block" and cs == "block" and r_sub == c_sub and len(r_sub) > 0:
-        return len(r_sub)  # paired diagonal (compact)
+    if rs == "block" and cs == "block":
+        common = _common_prefix(r_sub, c_sub)
+        if len(common) > 0:
+            # paired compact diagonal on the common prefix; each side's extra
+            # trailing sub-batch is folded into its base.
+            return len(common)
     r_intmd = len(r_sub) if rs == "block" else 0
     c_intmd = len(c_sub) if cs == "block" else 0
     return r_intmd + c_intmd
@@ -545,7 +593,10 @@ class AssembledMatrix:
         if structure == "dense":
             sb = layout.sub_batch_shape(name)
             return base * (prod([int(s) for s in sb]) or 1)
-        return base
+        # BLOCK: the group's common prefix stays intermediate; any extra trailing
+        # sub-batch folds into this variable's per-site base.
+        extra = layout.var_extra_sub_batch(gi, name)
+        return base * (prod([int(s) for s in extra]) or 1)
 
     @overload
     def __matmul__(self, other: AssembledVector) -> AssembledVector: ...
@@ -766,6 +817,114 @@ def _build_block_matrix(
     return AssembledMatrix(row_layout, col_layout, blocks)
 
 
+def _common_prefix(a, b) -> tuple[int, ...]:
+    """Longest common leading prefix of two sub-batch shapes (e.g. the shared
+    leading axis of a 1-axis row and a 2-axis col)."""
+    a = tuple(int(s) for s in a)
+    b = tuple(int(s) for s in b)
+    n = 0
+    # a and b may differ in length (prefix match), so strict=False is intended.
+    for x, y in zip(a, b, strict=False):
+        if x == y:
+            n += 1
+        else:
+            break
+    return a[:n]
+
+
+def _convert_tangent_to_paired_block_rowextra(
+    t_block: TensorWrapper,
+    common: tuple[int, ...],
+    row_extra: tuple[int, ...],
+    col_var_base: int,
+) -> Tensor:
+    """Paired-on-``common`` block where the ROW carries an extra trailing sub-batch
+    axis. Strategy: pair on the FULL row sub-batch ``(common, row_extra)`` via
+    :func:`_convert_tangent_to_paired_block` (``col_var_base`` already includes any
+    folded col extra), then fold the ``row_extra`` intermediate axes + row base into
+    a single row-storage axis, leaving ``common`` as the block's sole intermediate.
+    """
+    paired = _convert_tangent_to_paired_block(
+        t_block,
+        paired_sb=tuple(common) + tuple(row_extra),
+        col_var_base=col_var_base,
+    )
+    # paired.data: (*dyn, *common, *row_extra, row_base, col_base), sub_ndim = nc + len(row_extra)
+    dyn = paired.batch_ndim
+    nc = len(common)
+    data = paired.data
+    col_storage = int(data.shape[-1])
+    # Collapse everything between the common axes and col_base into one row-storage
+    # axis (extra-major, matching the vector fold).
+    new_shape = (*data.shape[:dyn], *data.shape[dyn : dyn + nc], -1, col_storage)
+    new_data = data.reshape(new_shape)
+    return Tensor(new_data, batch_ndim=dyn, sub_batch_ndim=nc)
+
+
+def _convert_tangent_to_paired_block_bothextra(
+    t_block: TensorWrapper,
+    common: tuple[int, ...],
+    extra: tuple[int, ...],
+    col_var_base: int,
+) -> Tensor:
+    """Paired-on-``common`` block where BOTH sides carry the SAME extra trailing
+    sub-batch axis and the coupling is paired/diagonal (extra index s depends only
+    on extra index s). Pair on ``(common, extra)``, then **expand** the extra
+    diagonal into a block-diagonal ``(extra*row_base) x (extra*col_base)`` storage
+    so it fits the folded block.
+    """
+    paired = _convert_tangent_to_paired_block(
+        t_block, paired_sb=tuple(common) + tuple(extra), col_var_base=col_var_base
+    )
+    # paired.data: (*dyn, *common, *extra, row_base, col_base)
+    dyn = paired.batch_ndim
+    nc = len(common)
+    data = paired.data
+    lead = data.shape[: dyn + nc]  # (*dyn, *common)
+    e = int(prod(int(s) for s in extra) or 1)
+    rb = int(data.shape[-2])
+    cb = int(data.shape[-1])
+    d2 = data.reshape(*lead, e, rb, cb)
+    full = torch.zeros(*lead, e, rb, e, cb, dtype=data.dtype, device=data.device)
+    for i in range(e):
+        full[..., i, :, i, :] = d2[..., i, :, :]
+    out = full.reshape(*lead, e * rb, e * cb).contiguous()
+    return Tensor(out, batch_ndim=dyn, sub_batch_ndim=nc)
+
+
+def _convert_tangent_to_paired_block_bothextra_dense(
+    t_block: TensorWrapper,
+    common: tuple[int, ...],
+    row_extra: tuple[int, ...],
+    col_extra: tuple[int, ...],
+    col_var_base: int,
+) -> Tensor:
+    """Paired-on-``common`` block where BOTH sides carry an extra trailing sub-batch
+    axis and the coupling is DENSE -- destination index ``i`` depends on ALL source
+    indices ``r``, not just ``i == r``. Pair on ``(common, row_extra)`` treating the
+    row extra index as a site; fold the remaining FULL K axes (the source-index
+    direction + the col base) into one col-storage axis via ``col_storage``; then
+    fold ``row_extra`` + row base into a single row-storage axis, leaving ``common``
+    as the block's sole intermediate. Contrast
+    :func:`_convert_tangent_to_paired_block_bothextra`, which handles the diagonal
+    (``i == r``) case by a block-diagonal expand.
+    """
+    col_storage = col_var_base * (prod(int(s) for s in col_extra) or 1)
+    paired = _convert_tangent_to_paired_block(
+        t_block,
+        paired_sb=tuple(common) + tuple(row_extra),
+        col_var_base=col_var_base,
+        col_storage=col_storage,
+    )
+    # paired.data: (*dyn, *common, *row_extra, row_base, col_storage)
+    dyn = paired.batch_ndim
+    nc = len(common)
+    data = paired.data
+    col_storage = int(data.shape[-1])
+    new_shape = (*data.shape[:dyn], *data.shape[dyn : dyn + nc], -1, col_storage)
+    return Tensor(data.reshape(new_shape), batch_ndim=dyn, sub_batch_ndim=nc)
+
+
 def _build_group_block(
     model: Model,
     row_group: tuple[str, ...],
@@ -807,7 +966,6 @@ def _build_group_block(
     # reflected in the spec's BASE_NDIM).
     first_row = row_group[0]
     like = like_by_row[first_row]
-    row_sb = row_layout.sub_batch_shape(first_row)
     row_batch_dyn = tuple(like.shape[: like.batch_ndim])
 
     # Per-row build.
@@ -827,7 +985,6 @@ def _build_group_block(
                 # Zero block.
                 block = _zero_block(
                     row_batch_dyn,
-                    row_sb if row_structure == "block" else (),
                     row_structure,
                     col_structure,
                     row_name,
@@ -835,6 +992,8 @@ def _build_group_block(
                     row_layout,
                     col_layout,
                     like,
+                    row_gi,
+                    col_gi,
                 )
             else:
                 block = _convert_tangent_to_block(
@@ -861,7 +1020,6 @@ def _build_group_block(
 
 def _zero_block(
     row_batch_dyn: tuple[int, ...],
-    row_intmd: tuple[int, ...],
     row_structure: str,
     col_structure: str,
     row_name: str,
@@ -869,42 +1027,49 @@ def _zero_block(
     row_layout: AxisLayout,
     col_layout: AxisLayout,
     like: Tensor,
+    row_gi: int,
+    col_gi: int,
 ) -> Tensor:
     row_var_base = _storage_size(row_layout.specs[row_name])
     col_var_base = _storage_size(col_layout.specs[col_name])
-    col_sb = col_layout.sub_batch_shape(col_name)
-    col_sb_total = prod([int(s) for s in col_sb]) or 1
-    row_var_base = _storage_size(row_layout.specs[row_name])
-    row_sb = row_layout.sub_batch_shape(row_name)
-    row_sb_total = prod([int(s) for s in row_sb]) or 1
-    # Paired BLOCK+BLOCK: single per-site intmd axis to match
-    # _convert_tangent_to_paired_block's storage convention.
-    paired = (
-        row_structure == "block"
-        and col_structure == "block"
-        and tuple(int(s) for s in row_sb) == tuple(int(s) for s in col_sb)
-        and len(row_sb) > 0
+    row_sb = tuple(int(s) for s in row_layout.sub_batch_shape(row_name))
+    col_sb = tuple(int(s) for s in col_layout.sub_batch_shape(col_name))
+    row_sb_total = prod(row_sb) or 1
+    col_sb_total = prod(col_sb) or 1
+    row_common = (
+        tuple(int(s) for s in row_layout.group_common_sub_batch(row_gi))
+        if row_structure == "block"
+        else ()
     )
-    if paired:
-        site_shape = tuple(int(s) for s in row_sb)
-        full_shape = (*row_batch_dyn, *site_shape, row_var_base, col_var_base)
+    col_common = (
+        tuple(int(s) for s in col_layout.group_common_sub_batch(col_gi))
+        if col_structure == "block"
+        else ()
+    )
+    # Paired BLOCK+BLOCK on the group common prefix: single per-site intmd axis;
+    # each side's extra trailing sub-batch folds into its base.
+    common = _common_prefix(row_common, col_common)
+    if row_structure == "block" and col_structure == "block" and len(common) > 0:
+        row_storage = row_var_base * (prod(row_sb[len(common) :]) or 1)
+        col_storage = col_var_base * (prod(col_sb[len(common) :]) or 1)
+        full_shape = (*row_batch_dyn, *common, row_storage, col_storage)
         return Tensor(
             torch.zeros(full_shape, dtype=like.dtype, device=like.device),
             batch_ndim=len(row_batch_dyn),
-            sub_batch_ndim=len(site_shape),
+            sub_batch_ndim=len(common),
         )
     if row_structure == "dense":
         row_dim = row_var_base * row_sb_total
         row_intmd_shape: tuple[int, ...] = ()
     else:
-        row_dim = row_var_base
-        row_intmd_shape = tuple(int(s) for s in row_sb)
+        row_dim = row_var_base * (prod(row_sb[len(row_common) :]) or 1)
+        row_intmd_shape = row_common
     if col_structure == "dense":
         col_dim = col_var_base * col_sb_total
         col_intmd_shape: tuple[int, ...] = ()
     else:
-        col_dim = col_var_base
-        col_intmd_shape = tuple(int(s) for s in col_sb)
+        col_dim = col_var_base * (prod(col_sb[len(col_common) :]) or 1)
+        col_intmd_shape = col_common
     full_shape = (
         *row_batch_dyn,
         *row_intmd_shape,
@@ -924,6 +1089,7 @@ def _convert_tangent_to_paired_block(
     t_block: TensorWrapper,
     paired_sb: tuple[int, ...],
     col_var_base: int,
+    col_storage: int | None = None,
 ) -> Tensor:
     """Build the paired-site assembled block ``(*dyn, *site, row_base, col_base)``.
 
@@ -970,7 +1136,25 @@ def _convert_tangent_to_paired_block(
         new_k_state.pop(i)
         new_k_pairing.pop(i)
     new_k_ndim = len(new_k_state)
-    if new_k_ndim == 0:
+    if col_storage is not None and new_k_ndim >= 1:
+        # Dense extra-axis coupling: after squeezing the common paired-broadcast K,
+        # the remaining full K axes are the source-index direction (and, when the
+        # col var has base > 1, the col base). Fold them all -- extra-major (leading
+        # axis outer), matching the vector/col fold order -- into one trailing
+        # col-storage axis of size ``col_storage``. (For a Scalar col this is a
+        # single K that simply IS the col storage.)
+        prod_k = 1
+        for i in range(new_k_ndim):
+            prod_k *= int(data.shape[i])
+        if prod_k != col_storage:
+            raise ValueError(
+                f"_convert_tangent_to_paired_block: folded K size {prod_k} "
+                f"!= col_storage {col_storage} (k_state={new_k_state})"
+            )
+        data = data.reshape(col_storage, *data.shape[new_k_ndim:])
+        new_k_ndim = 1
+        col_var_base = col_storage
+    elif new_k_ndim == 0:
         # Scalar-col or base-trivial case: the chain rule emitted no K_base
         # (col_var_base == 1). Insert a leading size-1 axis so the rest of
         # the pipeline can treat it as the col_base axis.
@@ -1051,15 +1235,77 @@ def _convert_tangent_to_block(
     # than a sub_row × sub_col grid of mostly-zero cells -- otherwise the
     # downstream torch.linalg.solve sees off-diagonal site cells as
     # independent zero (10, 10) batches and reports singular.
-    if (
-        row_structure == "block"
-        and col_structure == "block"
-        and tuple(int(s) for s in row_sb) == tuple(int(s) for s in col_sb)
-        and len(row_sb) > 0
-    ):
-        return _convert_tangent_to_paired_block(
+    _row_sb_t = tuple(int(s) for s in row_sb)
+    _col_sb_t = tuple(int(s) for s in col_sb)
+    # The preserved (paired) axis is the GROUP's common sub-batch, not the pairwise
+    # common of the two variables -- otherwise a pair both carrying (common, extra)
+    # would pair on the extra axis too instead of folding it, breaking the block cat.
+    _common = _common_prefix(
+        row_layout.group_common_sub_batch(row_gi),
+        col_layout.group_common_sub_batch(col_gi),
+    )
+    if row_structure == "block" and col_structure == "block" and len(_common) > 0:
+        row_extra = _row_sb_t[len(_common) :]
+        col_extra = _col_sb_t[len(_common) :]
+        # Tangent K-fold verified for one extra axis only; >1 could silently transpose
+        # two equal-length axes, so reject it (the vector fold is general).
+        if len(row_extra) > 1 or len(col_extra) > 1:
+            raise NotImplementedError(
+                "equation-system tangent fold supports at most one folded (extra) "
+                "sub-batch axis per block variable beyond the group common prefix; got "
+                f"row_extra={tuple(row_extra)}, col_extra={tuple(col_extra)}. The vector "
+                "fold is general, but the dense/row tangent K-fold's axis ordering is "
+                "unverified for more than one extra axis (a transpose of two equal-length "
+                "axes would be silent)."
+            )
+        # Pair on the common leading sub-batch. Handle the extra trailing sub-batch
+        # per how the chain rule represents it:
+        if len(row_extra) == 0 and len(col_extra) == 0:
+            # both common-only: standard paired diagonal.
+            return _convert_tangent_to_paired_block(
+                t_block, paired_sb=_common, col_var_base=col_var_base
+            )
+        if len(row_extra) == 0:
+            # col extra is FULL (row depends on all col extra indices) -> fold into
+            # col K. ``col_storage`` also folds the case where the chain rule leaves
+            # the col extra as a SEPARATE full K axis (a dense coupling with an
+            # explicit ``fullify``) rather than pre-folded into the col base; for a
+            # diagonal coupling the tangent already has k_ndim==1 and the col_storage
+            # branch is a no-op, so existing behavior is unchanged.
+            cs = col_var_base * (prod(int(s) for s in col_extra) or 1)
+            return _convert_tangent_to_paired_block(
+                t_block,
+                paired_sb=_common,
+                col_var_base=cs,
+                col_storage=cs,
+            )
+        if len(col_extra) == 0:
+            # row extra folded into row storage; col base full.
+            return _convert_tangent_to_paired_block_rowextra(
+                t_block,
+                common=_common,
+                row_extra=row_extra,
+                col_var_base=col_var_base,
+            )
+        # Both sides carry the extra sub-batch axis. Two couplings:
+        #  - DIAGONAL (index i depends only on index i) -> the tangent's extra K is
+        #    paired/broadcast (no full K) -> block-diagonal expand.
+        #  - DENSE (index i depends on all indices r) -> the extra K is FULL -> fold
+        #    the extra axis into row/col storage.
+        # In the both-extra branch the col is the per-site state (base 1), so a full
+        # K can only come from the dense coupling.
+        if any(s == "full" for s in t_block.k_state):
+            return _convert_tangent_to_paired_block_bothextra_dense(
+                t_block,
+                common=_common,
+                row_extra=row_extra,
+                col_extra=col_extra,
+                col_var_base=col_var_base,
+            )
+        return _convert_tangent_to_paired_block_bothextra(
             t_block,
-            paired_sb=tuple(int(s) for s in row_sb),
+            common=_common,
+            extra=row_extra,
             col_var_base=col_var_base,
         )
 
@@ -1124,6 +1370,24 @@ def _convert_tangent_to_block(
             batch_ndim=block.batch_ndim,
             sub_batch_ndim=block.sub_batch_ndim + len(col_intmd_shape),
         )
+
+    # Block row with an extra trailing sub-batch axis beyond the group common
+    # (against a DENSE col): fold the extra axis into the row storage so the block
+    # carries only the common intermediate -- matching the block×block and vector
+    # fold conventions.
+    if row_structure == "block":
+        nc = len(row_layout.group_common_sub_batch(row_gi))
+        if block.sub_batch_ndim > nc:
+            d = block.data
+            dyn = block.batch_ndim
+            sub = block.sub_batch_ndim
+            common_sh = tuple(int(s) for s in d.shape[dyn : dyn + nc])
+            extra_sh = tuple(int(s) for s in d.shape[dyn + nc : dyn + sub])
+            row_base = int(d.shape[-2])
+            col_dim = int(d.shape[-1])
+            e = int(prod(extra_sh) or 1)
+            new = d.reshape(*d.shape[:dyn], *common_sh, e * row_base, col_dim).contiguous()
+            block = Tensor(new, batch_ndim=dyn, sub_batch_ndim=nc)
 
     # NB: we do NOT broadcast to row_batch_dyn here. The tangent's natural
     # batch_shape is what the chain rule produced; cross-block alignment is

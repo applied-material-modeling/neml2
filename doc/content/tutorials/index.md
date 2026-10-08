@@ -71,4 +71,5 @@ optimization/pyzag
 optimization/deterministic/main
 optimization/statistical/main
 optimization/crystal_plasticity_calibration/main
+optimization/taylor_polycrystal/main
 ```
