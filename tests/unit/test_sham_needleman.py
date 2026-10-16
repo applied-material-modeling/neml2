@@ -475,6 +475,28 @@ _needs_newton = pytest.mark.skipif(
 )
 
 
+def _trajectory(result: dict[str, torch.Tensor], name: str) -> tuple[tuple[int, ...], torch.Tensor]:
+    """Stack the per-step records of ``name`` into one time series.
+
+    ``TransientDriver.result`` is a flat ``output.<step>.<var>`` dict with one
+    entry per step, not a stacked trajectory, so the series has to be
+    reassembled here. Step 0 records only the initial conditions, which is why
+    the steps are returned alongside the values: ``viscous_sliding`` has no IC
+    and so starts at step 1, one entry shorter than ``cavity_fraction``.
+    """
+    records = []
+    for key, value in result.items():
+        kind, step, var = key.split(".", 2)
+        if kind != "output" or var != name:
+            continue
+        flat = value.reshape(-1)
+        assert flat.numel() == 1, f"{key} holds {flat.numel()} values, expected a scalar step"
+        records.append((int(step), flat[0]))
+    assert records, f"driver recorded no output for {name!r}"
+    records.sort()
+    return tuple(step for step, _ in records), torch.stack([v for _, v in records])
+
+
 @_needs_newton
 @pytest.mark.parametrize("variant", _VARIANTS)
 def test_trajectory_runs_and_damage_is_monotone(variant: str):
@@ -488,8 +510,8 @@ def test_trajectory_runs_and_damage_is_monotone(variant: str):
     driver.run()
     result = driver.result()
 
-    f = result["cavity_fraction"].reshape(-1)
-    assert f[0] == pytest.approx(F_0, rel=1e-10)
+    _, f = _trajectory(result, "cavity_fraction")
+    assert float(f[0]) == pytest.approx(F_0, rel=1e-10)
     assert torch.all(torch.diff(f) >= -1e-14), "cavity fraction must never heal"
     assert float(f[-1]) > F_0, "no damage accumulated over the history"
 
@@ -501,13 +523,18 @@ def test_trajectory_freezes_after_separation():
     driver.run()
     result = driver.result()
 
-    f = result["cavity_fraction"].reshape(-1)
+    steps, f = _trajectory(result, "cavity_fraction")
     separated = (f >= F_F).nonzero().reshape(-1)
     if separated.numel() == 0:
         pytest.skip("history does not reach separation")
-    first = int(separated[0])
+    # Slice by step number, not by position: the three variables are not
+    # recorded over the same steps, so a shared positional index would compare
+    # different points of the history.
+    first_step = steps[int(separated[0])]
     for name in ("cavity_fraction", "cavity_density", "viscous_sliding"):
-        tail = result[name].reshape(-1)[first:]
+        var_steps, values = _trajectory(result, name)
+        tail = values[[i for i, step in enumerate(var_steps) if step >= first_step]]
+        assert tail.numel() > 0, f"{name} has no record at or after step {first_step}"
         assert torch.allclose(tail, tail[0], atol=1e-10), f"{name} moved after separation"
 
 
@@ -518,8 +545,7 @@ def test_nucleation_free_trajectory_holds_the_density_fixed():
     driver.run()
     result = driver.result()
 
-    assert torch.allclose(
-        result["cavity_density"].reshape(-1),
-        torch.full_like(result["cavity_density"].reshape(-1), N_0),
-    )
-    assert float(result["cavity_fraction"].reshape(-1)[-1]) > F_0
+    _, density = _trajectory(result, "cavity_density")
+    assert torch.allclose(density, torch.full_like(density, N_0))
+    _, f = _trajectory(result, "cavity_fraction")
+    assert float(f[-1]) > F_0
