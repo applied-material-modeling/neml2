@@ -44,12 +44,18 @@ from .PlasticDeformationRate import PlasticDeformationRate
 from .PlasticSpatialVelocityGradient import PlasticSpatialVelocityGradient
 from .PlasticVorticity import PlasticVorticity
 from .PowerLawSlipRule import PowerLawSlipRule
+from .PrecipitateStrength import PrecipitateStrength
 from .ResolvedShear import ResolvedShear
+from .SimplePrecipitateGrowth import SimplePrecipitateGrowth
 from .SingleSlipHardeningRule import SingleSlipHardeningRule
 from .SingleSlipStrengthMap import SingleSlipStrengthMap
 from .SlipRule import SlipRule
 from .SlipStrengthMap import SlipStrengthMap
 from .SlipSystemElasticInteraction import SlipSystemElasticInteraction
+from .SolidSolutionStrength import SolidSolutionStrength
+from .SoluteDepletion import SoluteDepletion
+from .SubgrainCoarsening import SubgrainCoarsening
+from .SubgrainStrength import SubgrainStrength
 from .SumSlipRates import SumSlipRates
 from .VoceSingleSlipHardeningRule import VoceSingleSlipHardeningRule
 
@@ -66,12 +72,18 @@ __all__ = [
     "PlasticSpatialVelocityGradient",
     "PlasticVorticity",
     "PowerLawSlipRule",
+    "PrecipitateStrength",
     "ResolvedShear",
-    "SlipSystemElasticInteraction",
+    "SimplePrecipitateGrowth",
     "SingleSlipHardeningRule",
     "SingleSlipStrengthMap",
     "SlipRule",
     "SlipStrengthMap",
+    "SlipSystemElasticInteraction",
+    "SolidSolutionStrength",
+    "SoluteDepletion",
+    "SubgrainCoarsening",
+    "SubgrainStrength",
     "SumSlipRates",
     "VoceSingleSlipHardeningRule",
 ]

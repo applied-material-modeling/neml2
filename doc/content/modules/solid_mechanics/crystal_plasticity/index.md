@@ -109,6 +109,41 @@ The final `model_with_stress` composes the implicit update with the elasticity m
 If you need to *post-process* an orientation (e.g. wrap the modified-Rodrigues parameters back into the fundamental zone before writing output), append a [](models-FixOrientation) model to the chain.
 :::
 
+## Additive strength contributions
+
+The example above draws its slip strength from a single source. Tempered
+martensitic and precipitation-strengthened alloys are usually described instead
+as a sum of independent obstacle populations,
+
+$$
+\bar{\tau} = \tau_a + \tau_\text{ss} + \tau_\text{sg} + \tau_\text{p} + \tau_\text{voce},
+$$
+
+with each term supplied by its own leaf and the sum assembled by a
+[](models-ScalarLinearCombination) whose `offset` carries the athermal
+$\tau_a$. Three leaves produce the contributions:
+
+- [](models-SolidSolutionStrength) — $\tau = \alpha \mu \varepsilon^{3/2} c^{1/2}$ from the matrix solute concentration.
+- [](models-SubgrainStrength) — $\tau = \alpha \mu b / \lambda$ from the subgrain size.
+- [](models-PrecipitateStrength) — $\tau = \alpha \mu b / (2 R N)$ from the precipitate radius and number density.
+
+and three more evolve the microstructural state those strengths read:
+
+- [](models-SubgrainCoarsening) — $\dot{\lambda} = \mu b^3 K / (k T \lambda)$, thermally driven subgrain growth.
+- [](models-SimplePrecipitateGrowth) — $\dot{R} = K / (3R^2)$ and $\dot{N} = -K/R^3$, volume-conserving coarsening emitted as one leaf because both rates share $K$ and $R$.
+- [](models-SoluteDepletion) — $\dot{c} = K \left\langle c_0 - c \right\rangle^{1/3} (c - c_\text{eq})$, draining the matrix as precipitates form.
+
+Every coefficient on these leaves is a promotable parameter, so the usual
+temperature dependence comes from driving it with an [](models-ArrheniusParameter)
+or an interpolation rather than from a special case inside the model.
+
+:::{note}
+The Macaulay bracket in [](models-SoluteDepletion) is a deliberate departure
+from the bare $(c_0 - c)^{1/3}$: it keeps the cube root on its real branch if
+an intermediate Newton iterate overshoots $c_0$. The two forms agree wherever
+$c \le c_0$.
+:::
+
 ## Worked examples
 
 End-to-end notebooks that drive a single-crystal model through a rolling
