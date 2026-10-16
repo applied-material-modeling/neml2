@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, output, parameter
-from ....types import Scalar, gt, pow, where
+from ....types import Scalar, gt, log, pow, where
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...model import Model
 
@@ -127,6 +127,12 @@ class CavityNucleationRate(Model):
             # d/dS0 of (Tn/S0)^beta = -beta/S0 * (Tn/S0)^beta
             dN_dS0 = -F_N * dramp_dx * edot * x / S0
             actions[self._promoted_params["S0"].input_name] = lambda V, c=dN_dS0: c * V
+        if "beta" in self._promoted_params:
+            # d/dbeta of x^beta = x^beta * log(x). The same safe base that
+            # keeps the Tn derivative finite also makes this exactly zero in
+            # compression, where `ramp` is zero and log(safe_x) = log(1) = 0.
+            dN_dbeta = Ndot * log(safe_x)
+            actions[self._promoted_params["beta"].input_name] = lambda V, c=dN_dbeta: c * V
         return Ndot, self.apply_chain_rule(v, "cavity_density_rate", actions, output=Ndot)
 
 

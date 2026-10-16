@@ -39,7 +39,10 @@ class EffectiveCavityFraction(Model):
     to the effective fraction $f^*$ that drives the softening functions,
 
     $$
-    f^* = \begin{cases} f, & f \le f_c \\ f_c + \kappa (f - f_c), & f > f_c
+    f^* = \begin{cases}
+      f, & f \le f_c \\
+      f_c + \kappa (f - f_c), & f_c < f < f_F \\
+      f_u^*, & f \ge f_F
     \end{cases}, \qquad \kappa = \frac{f_u^* - f_c}{f_F - f_c}.
     $$
 
@@ -47,8 +50,18 @@ class EffectiveCavityFraction(Model):
     it near $0.5$), $f_F$ the physical fraction at final separation, and
     $f_u^*$ the effective fraction at which the interface carries no load.
     Because both softening functions, $q(f)$ and $(1-f)$, vanish at $f = 1$,
-    $f_u^*$ should be set slightly below one so $q(f^*)$ stays strictly
-    positive and the rates stay finite right up to separation.
+    $f_u^*$ must be set strictly below one so $q(f^*)$ stays positive and the
+    rates stay finite right up to separation.
+
+    The map **saturates** at $f_u^*$ for $f \ge f_F$ rather than extrapolating
+    the accelerated branch. Without that cap a separated state, or a Newton
+    iterate that overshoots, drives $f^*$ through one at
+    $f = f_c + (1 - f_c) / \kappa$ -- a physical fraction below one and
+    therefore reachable -- and both downstream denominators, $q(f^*)$ and
+    $1 - f^*$, vanish together. Saturating bounds every consumer of $f^*$ by
+    $f_u^* < 1$ for any $f$ whatsoever, so the rates are finite however far an
+    iterate strays. The map is continuous at $f_F$: the accelerated branch
+    reaches exactly $f_u^*$ there.
 
     Only the softening functions see $f^*$. The geometric factors ($f/N$,
     $\sqrt{f}$, $V(f,N)$) keep the physical $f$, which is what preserves the
@@ -96,21 +109,45 @@ class EffectiveCavityFraction(Model):
         f_F = self._get_param("f_F", promoted_params, Scalar)
         f_u = self._get_param("f_u", promoted_params, Scalar)
 
-        kappa = (f_u - f_c) / (f_F - f_c)
-        # Detached branch mask, as elsewhere in this module: the coalescence
-        # switch is a kink in f*, not a differentiable function of f, so its
-        # variation must not leak into the pushforward.
+        span = f_F - f_c
+        kappa = (f_u - f_c) / span
+        # Fraction of the way from coalescence onset to failure. Writing the
+        # accelerated branch as f_c + (f_u - f_c) * t rather than
+        # f_c + kappa * (f - f_c) is the same number, but it makes the
+        # parameter partials below read straight off the expression.
+        t = (f - f_c) / span
+        # Detached branch masks, as elsewhere in this module: both the
+        # coalescence switch and the failure cap are kinks in f*, not
+        # differentiable functions of f, so their variation must not leak
+        # into the pushforward.
         coalesced = gt(f, f_c)
-        f_star = where(coalesced, f_c + kappa * (f - f_c), f)
+        failed = gt(f, f_F)
+        f_star = where(failed, f_u, where(coalesced, f_c + (f_u - f_c) * t, f))
 
         if v is None:
             return f_star
 
+        zero = Scalar.from_value(0.0, like=f)
         one = Scalar.from_value(1.0, like=f)
-        df_df = where(coalesced, kappa, one)
+        df_df = where(failed, zero, where(coalesced, kappa, one))
         actions: dict[str, ChainRuleAction] = {
             "cavity_fraction": lambda V, c=df_df: c * V,
         }
+        # On the intact branch f* == f carries no parameter dependence at all;
+        # on the saturated branch it is f_u exactly, so only that one partial
+        # survives. Both are masked here rather than guarded, so a promoted
+        # parameter contributes the right thing on every branch.
+        if "f_c" in self._promoted_params:
+            dfs_dfc = one - t + (f_u - f_c) * (f - f_F) / (span * span)
+            c_fc = where(failed, zero, where(coalesced, dfs_dfc, zero))
+            actions[self._promoted_params["f_c"].input_name] = lambda V, c=c_fc: c * V
+        if "f_F" in self._promoted_params:
+            dfs_dfF = -(f_u - f_c) * (f - f_c) / (span * span)
+            c_fF = where(failed, zero, where(coalesced, dfs_dfF, zero))
+            actions[self._promoted_params["f_F"].input_name] = lambda V, c=c_fF: c * V
+        if "f_u" in self._promoted_params:
+            c_fu = where(failed, one, where(coalesced, t, zero))
+            actions[self._promoted_params["f_u"].input_name] = lambda V, c=c_fu: c * V
         return f_star, self.apply_chain_rule(v, "effective_cavity_fraction", actions, output=f_star)
 
 

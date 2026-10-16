@@ -120,6 +120,14 @@ class CavityVolumeOpening(Model):
         if "h" in self._promoted_params:
             du_dh = opening / h
             actions[self._promoted_params["h"].input_name] = lambda V, k=du_dh: k * V
+        # The initial state enters only through the constant offset NV0, so
+        # both partials carry the sign of -NV0 and none of the current state.
+        if "f0" in self._promoted_params:
+            du_df0 = -1.5 * NV0 / f0
+            actions[self._promoted_params["f0"].input_name] = lambda V, k=du_df0: k * V
+        if "N0" in self._promoted_params:
+            du_dN0 = 0.5 * NV0 / N0
+            actions[self._promoted_params["N0"].input_name] = lambda V, k=du_dN0: k * V
         return opening, self.apply_chain_rule(v, "viscous_normal_opening", actions, output=opening)
 
 
