@@ -393,6 +393,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#math">Math</a></li>
 <li><a class="reference internal" href="#example-model-composition">Example model composition</a></li>
 <li><a class="reference internal" href="#explanation">Explanation</a></li>
+<li><a class="reference internal" href="#additive-strength-contributions">Additive strength contributions</a></li>
 <li><a class="reference internal" href="#latent-slip-system-interaction-hardening">Latent (slip-system interaction) hardening</a><ul>
 <li><a class="reference internal" href="#building-the-interaction-matrix">Building the interaction matrix</a></li>
 <li><a class="reference internal" href="#linear-interaction-forms">Linear interaction forms</a></li>
@@ -476,9 +477,9 @@ l = \dot{\varepsilon} + \Omega^e - \Omega^e \varepsilon + \varepsilon \Omega^e +
 </ol>
 <p>The first holds well for metal plasticity; the second can break down at very high strain rates.</p>
 <p>Defining the current orientation as the composition of the initial lattice rotation <span class="math notranslate nohighlight">\(Q_0\)</span> with the elastic rotation, <span class="math notranslate nohighlight">\(Q = R^e Q_0\)</span>, the elastic spin reduces to <span class="math notranslate nohighlight">\(\Omega^e = \dot{Q} Q^T\)</span>. Splitting the spatial velocity gradient into symmetric and skew parts (<span class="math notranslate nohighlight">\(l = d + w\)</span>, <span class="math notranslate nohighlight">\(l^p = d^p + w^p\)</span>) and rearranging yields the two governing rate equations integrated by this module:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-4847d74e-8374-496b-8b43-9afdd35493e7">
-<div class="amsmath math notranslate nohighlight" id="equation-4847d74e-8374-496b-8b43-9afdd35493e7">
-<span class="eqno">(18)<a class="headerlink" href="#equation-4847d74e-8374-496b-8b43-9afdd35493e7" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-72df4af0-b921-4f43-aede-4a5b7f47fc85">
+<div class="amsmath math notranslate nohighlight" id="equation-72df4af0-b921-4f43-aede-4a5b7f47fc85">
+<span class="eqno">(18)<a class="headerlink" href="#equation-72df4af0-b921-4f43-aede-4a5b7f47fc85" title="Permalink to this equation">#</a></span>\[\begin{align}
   \dot{\varepsilon} &amp;= d - d^p - \varepsilon w + w \varepsilon \\
   \dot{Q} &amp;= \left(w - w^p - \varepsilon d^p + d^p \varepsilon\right) Q.
 \end{align}\]</div>
@@ -751,6 +752,35 @@ l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\rig
 <p class="admonition-title">Tip</p>
 <p>If you need to <em>post-process</em> an orientation (e.g. wrap the modified-Rodrigues parameters back into the fundamental zone before writing output), append a <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/FixOrientation.html#models-fixorientation"><span class="std std-ref">FixOrientation</span></a> model to the chain.</p>
 </div>
+</section>
+<section id="additive-strength-contributions">
+<h2>Additive strength contributions<a class="headerlink" href="#additive-strength-contributions" title="Link to this heading">#</a></h2>
+<p>The example above draws its slip strength from a single source. Tempered
+martensitic and precipitation-strengthened alloys are usually described instead
+as a sum of independent obstacle populations,</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\bar{\tau} = \tau_a + \tau_\text{ss} + \tau_\text{sg} + \tau_\text{p} + \tau_\text{voce},
+\]</div>
+</div>
+<p>with each term supplied by its own leaf and the sum assembled by a
+<a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarLinearCombination.html#models-scalarlinearcombination"><span class="std std-ref">ScalarLinearCombination</span></a> whose <code class="docutils literal notranslate"><span class="pre">offset</span></code> carries the athermal
+<span class="math notranslate nohighlight">\(\tau_a\)</span>. Three leaves produce the contributions:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SolidSolutionStrength.html#models-solidsolutionstrength"><span class="std std-ref">SolidSolutionStrength</span></a> — <span class="math notranslate nohighlight">\(\tau = \alpha \mu \varepsilon^{3/2} c^{1/2}\)</span> from the matrix solute concentration.</p></li>
+<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SubgrainStrength.html#models-subgrainstrength"><span class="std std-ref">SubgrainStrength</span></a> — <span class="math notranslate nohighlight">\(\tau = \alpha \mu b / \lambda\)</span> from the subgrain size.</p></li>
+<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PrecipitateStrength.html#models-precipitatestrength"><span class="std std-ref">PrecipitateStrength</span></a> — <span class="math notranslate nohighlight">\(\tau = \alpha \mu b / (2 R N)\)</span> from the precipitate radius and number density.</p></li>
+</ul>
+<p>and three more evolve the microstructural state those strengths read:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SubgrainCoarsening.html#models-subgraincoarsening"><span class="std std-ref">SubgrainCoarsening</span></a> — <span class="math notranslate nohighlight">\(\dot{\lambda} = \mu b^3 K / (k T \lambda)\)</span>, thermally driven subgrain growth.</p></li>
+<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SimplePrecipitateGrowth.html#models-simpleprecipitategrowth"><span class="std std-ref">SimplePrecipitateGrowth</span></a> — <span class="math notranslate nohighlight">\(\dot{R} = K / (3R^2)\)</span> and <span class="math notranslate nohighlight">\(\dot{N} = -K/R^3\)</span>, volume-conserving coarsening emitted as one leaf because both rates share <span class="math notranslate nohighlight">\(K\)</span> and <span class="math notranslate nohighlight">\(R\)</span>.</p></li>
+<li><p><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SoluteDepletion.html#models-solutedepletion"><span class="std std-ref">SoluteDepletion</span></a> — <span class="math notranslate nohighlight">\(\dot{c} = K \left\langle c_0 - c \right\rangle^{1/3} (c - c_\text{eq})\)</span>, draining the matrix as precipitates form.</p></li>
+</ul>
+<p>Every coefficient on these leaves is a promotable parameter, so the usual
+temperature dependence comes from driving it with an <a class="reference internal" href="../../../../generated/syntax/Models/common/ArrheniusParameter.html#models-arrheniusparameter"><span class="std std-ref">ArrheniusParameter</span></a>
+or an interpolation rather than from a special case inside the model.</p>
 </section>
 <section id="latent-slip-system-interaction-hardening">
 <h2>Latent (slip-system interaction) hardening<a class="headerlink" href="#latent-slip-system-interaction-hardening" title="Link to this heading">#</a></h2>
