@@ -331,6 +331,77 @@ def test_separated_interface_freezes_every_internal_variable():
     )
 
 
+def test_effective_fraction_saturates_past_the_old_extrapolation_singularity():
+    """Beyond ``f_F`` the coalescence map holds ``f*`` at ``f_u``.
+
+    The unsaturated map reached ``f* = 1`` at ``f_c + (1 - f_c) / kappa``,
+    which is ``0.806...`` for these parameters -- a physical fraction below
+    one, so an ordinary Newton iterate lands there. Both softening
+    denominators, ``q(f*)`` and ``1 - f*``, vanish together at that point and
+    the separated rates become ``0/0`` instead of zero.
+
+    The singular fraction itself is the evaluation point that matters: a test
+    only at ``f = 0.95`` passes with the unsaturated map too, because by then
+    ``f*`` has gone past one and ``q`` is merely wrong rather than zero.
+    """
+    kappa = (F_U - F_C) / (F_F - F_C)
+    singular = F_C + (1.0 - F_C) / kappa
+    assert F_F < singular < 1.0, "the singular fraction must be reachable to be worth testing"
+
+    fraction = _residual_model("complete")
+    assert "effective_cavity_fraction" not in fraction.output_spec  # internal to the composition
+
+    for f in (F_F, singular, 0.9, 0.999):
+        state = _state("complete", cavity_fraction=f, normal_jump=0.05, tangential_jump=0.02)
+        state["cavity_fraction~1"] = _scalar(f)
+        out = _evaluate("complete", state)
+        for name, value in out.items():
+            assert math.isfinite(value), f"{name} is {value} at f={f}"
+        # Separated, so every rate is frozen -- which is only true because
+        # q(f*) stayed positive and nothing divided by zero on the way.
+        assert _rate_from_residual(out["cavity_fraction_residual"], f, f, 2.0) == pytest.approx(0.0)
+
+
+def test_residual_brackets_a_root_across_the_failure_threshold():
+    """A step that separates the interface has a root for Newton to find.
+
+    Separation is switched on the converged damage state, not the trial
+    unknown. Were it switched on the trial unknown the residual would carry a
+    jump discontinuity at ``f_F``: sharply negative just below (the softening
+    accelerates without bound as ``f -> f_F``), and ``f - f_old > 0`` at and
+    above, because every rate is switched off there. The residual would step
+    over zero without touching it and the step would simply not converge.
+
+    This is deliberately a statement about the residual rather than about a
+    trajectory: it is the property Newton needs, and unlike the trajectory
+    tests below it does not need the compiled Newton loop to check.
+    """
+    f_old = 0.79  # below f_F, so this step is the one that separates
+
+    def residual(f: float) -> float:
+        state = _state("no_nucleation", cavity_fraction=f, normal_jump=0.3, tangential_jump=0.01)
+        state["cavity_fraction~1"] = _scalar(f_old)
+        return _evaluate("no_nucleation", state)["cavity_fraction_residual"]
+
+    # The bracket has to straddle f_F, otherwise it says nothing about the
+    # threshold; and the sign change is what Newton actually needs.
+    assert residual(f_old) < 0.0, "no damage driven at the start of the step"
+    high = 1.5
+    assert residual(high) > 0.0, "residual never turns positive; nothing bounds the step"
+
+    lo, hi = f_old, high
+    for _ in range(80):
+        mid = 0.5 * (lo + hi)
+        if residual(mid) < 0.0:
+            lo = mid
+        else:
+            hi = mid
+    root = 0.5 * (lo + hi)
+    assert abs(residual(root)) < 1.0e-6, f"bisection did not converge; residual {residual(root)}"
+    assert root > F_F, "this step should carry the interface past separation"
+    assert math.isfinite(root)
+
+
 def test_compression_before_separation_suppresses_growth_but_not_shear():
     """A compressive normal jump switches the normal path to the penalty.
 

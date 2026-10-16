@@ -65,6 +65,10 @@
   # --- Tractions from springs in series with the cavitation and sliding.
   [traction]
     type = ShamNeedlemanTraction
+    # Separation is detected from the converged state at the start of the
+    # step. Switching on the trial unknown instead puts a jump in the
+    # residual at f_F and leaves Newton with no root to find.
+    cavity_fraction = 'cavity_fraction~1'
     normal_stiffness = 1000.0
     shear_stiffness = 800.0
     penalty_stiffness = 2000.0
