@@ -41,6 +41,38 @@ diffusive growth rate (through its Macaulay bracket) all vanish
 identically. $f$, $N$ and $[\![u]\!]_t^v$ therefore hold their values
 without being clamped.
 
+.. important::
+
+   ``cavity_fraction`` here is the **separation indicator**, and in an
+   implicit composition it must be wired to the *old* (converged) damage
+   state, not to the trial unknown::
+
+       [traction]
+         type = ShamNeedlemanTraction
+         cavity_fraction = 'cavity_fraction~1'
+         ...
+
+   Reading the trial state instead puts a jump discontinuity in the
+   backward-Euler residual exactly at $f_F$. Below the threshold the
+   residual is $f - f_\text{old} - \Delta t \dot f$, which the accelerated
+   softening drives sharply negative as $f \to f_F^-$; at and above the
+   threshold every rate is switched off and the residual is
+   $f - f_\text{old} > 0$. The residual therefore steps over zero without
+   touching it and Newton has no root to find, so the first step that
+   would separate the interface fails to converge rather than separating
+   it.
+
+   Switching on the converged state removes the discontinuity: the whole
+   step is taken with intact rates, $f$ is free to pass $f_F$ (the
+   saturated $f^*$ from
+   `EffectiveCavityFraction` keeps every
+   softening denominator bounded while it does), and the following step
+   sees $f_\text{old} \ge f_F$ and freezes the state as described above.
+   The cost is that separation is resolved only to within one time step,
+   the usual first-order accuracy of an explicit switch; resolving the
+   event exactly would need sub-stepping in the time integrator, which is
+   not something a constitutive leaf can do.
+
 ## Inputs
 
 `normal_jump` &mdash; `input` &middot; `Scalar` &middot; **required**
@@ -56,7 +88,7 @@ without being clamped.
 : Viscous part of the sliding jump
 
 `cavity_fraction` &mdash; `input` &middot; `Scalar` &middot; **required**
-: Physical cavitated area fraction, tested against the failure fraction to detect separation
+: Separation indicator: the physical cavitated area fraction, tested against the failure fraction. Wire this to the old (converged) damage state in an implicit composition -- see the class docstring
 
 
 ## Outputs

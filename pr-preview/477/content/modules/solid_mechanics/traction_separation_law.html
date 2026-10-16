@@ -551,9 +551,9 @@ effective scalar separation</p>
 a mixed-mode failure separation <span class="math notranslate nohighlight">\(\delta_f(\beta, \delta_c)\)</span>. Damage is
 then defined piecewise from the historical maximum effective
 separation <span class="math notranslate nohighlight">\(\bar{\delta}_m = \max_{t' \le t} \delta_m(t')\)</span>,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-ee0707f4-4d1a-4677-8449-3bea67c45624">
-<div class="amsmath math notranslate nohighlight" id="equation-ee0707f4-4d1a-4677-8449-3bea67c45624">
-<span class="eqno">(19)<a class="headerlink" href="#equation-ee0707f4-4d1a-4677-8449-3bea67c45624" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-c2b789fb-0f1f-4f43-909a-8ad7c8ba0ed4">
+<div class="amsmath math notranslate nohighlight" id="equation-c2b789fb-0f1f-4f43-909a-8ad7c8ba0ed4">
+<span class="eqno">(19)<a class="headerlink" href="#equation-c2b789fb-0f1f-4f43-909a-8ad7c8ba0ed4" title="Permalink to this equation">#</a></span>\[\begin{align}
 d(\bar{\delta}_m) &amp;= 0,
   &amp; \bar{\delta}_m &amp;\le \delta_c, \\
 d(\bar{\delta}_m) &amp;=
@@ -565,9 +565,9 @@ d(\bar{\delta}_m) &amp;= 1,
 \end{align}\]</div>
 </div>
 <p>so that the traction is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-594d1944-f771-4578-8dd1-a4533c71ef30">
-<div class="amsmath math notranslate nohighlight" id="equation-594d1944-f771-4578-8dd1-a4533c71ef30">
-<span class="eqno">(20)<a class="headerlink" href="#equation-594d1944-f771-4578-8dd1-a4533c71ef30" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-9d5fec8c-a518-47de-992e-ce5c5d38dcd6">
+<div class="amsmath math notranslate nohighlight" id="equation-9d5fec8c-a518-47de-992e-ce5c5d38dcd6">
+<span class="eqno">(20)<a class="headerlink" href="#equation-9d5fec8c-a518-47de-992e-ce5c5d38dcd6" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n   &amp;= K\,(1-d)\,\langle \delta_n \rangle_+ \;+\; K\,\langle \delta_n \rangle_-, \notag \\
 T_{si} &amp;= K\,(1-d)\,\delta_{si}, \quad i \in \{1, 2\},
 \end{align}\]</div>
@@ -822,10 +822,18 @@ on a steeper line to <span class="math notranslate nohighlight">\(f_u\)</span> a
 \[\begin{split}
 f^* = \begin{cases}
   f, &amp; f \le f_c, \\[2pt]
-  f_c + \dfrac{f_u - f_c}{f_F - f_c}\,(f - f_c), &amp; f &gt; f_c.
+  f_c + \dfrac{f_u - f_c}{f_F - f_c}\,(f - f_c), &amp; f_c &lt; f &lt; f_F, \\[2pt]
+  f_u, &amp; f \ge f_F.
 \end{cases}
 \end{split}\]</div>
 </div>
+<p>The map saturates past <span class="math notranslate nohighlight">\(f_F\)</span> rather than extrapolating. Keeping the
+accelerated line going would drive <span class="math notranslate nohighlight">\(f^*\)</span> through one at
+<span class="math notranslate nohighlight">\(f = f_c + (1 - f_c)(f_F - f_c)/(f_u - f_c)\)</span> — a physical fraction
+below one, so an ordinary Newton iterate reaches it — and both
+softening denominators, <span class="math notranslate nohighlight">\(q(f^*)\)</span> and <span class="math notranslate nohighlight">\(1 - f^*\)</span>, vanish there together.
+Saturating bounds every consumer of <span class="math notranslate nohighlight">\(f^*\)</span> by <span class="math notranslate nohighlight">\(f_u &lt; 1\)</span> for any <span class="math notranslate nohighlight">\(f\)</span>, so
+choosing <span class="math notranslate nohighlight">\(f_u\)</span> strictly below one is what keeps the rates finite.</p>
 <p>Only the softening functions see <span class="math notranslate nohighlight">\(f^*\)</span>; the geometry above keeps the
 physical <span class="math notranslate nohighlight">\(f\)</span>, so the kinematic identity <span class="math notranslate nohighlight">\([\![u]\!]_n^v = NV - N_0V_0\)</span>
 holds exactly whatever the coalescence map does.</p>
@@ -876,9 +884,9 @@ part, and the spring acts on the elastic part only — the springs are
 in <strong>series</strong> with the dashpots. A parallel spring would carry load
 forever and the interface would never separate completely. Writing
 <span class="math notranslate nohighlight">\([\![u]\!]_n^v\)</span> for the smeared cavity volume above,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-3115081e-7043-4047-aff4-7a8874aac792">
-<div class="amsmath math notranslate nohighlight" id="equation-3115081e-7043-4047-aff4-7a8874aac792">
-<span class="eqno">(21)<a class="headerlink" href="#equation-3115081e-7043-4047-aff4-7a8874aac792" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-637f6f15-06b0-4697-b933-b32780dba901">
+<div class="amsmath math notranslate nohighlight" id="equation-637f6f15-06b0-4697-b933-b32780dba901">
+<span class="eqno">(21)<a class="headerlink" href="#equation-637f6f15-06b0-4697-b933-b32780dba901" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n &amp;= K_n\left([\![u]\!]_n - [\![u]\!]_n^v\right),
   &amp; [\![u]\!]_n &amp;\ge 0,\ f &lt; f_F, \notag \\
 T_n &amp;= K_p\,[\![u]\!]_n,
@@ -897,6 +905,32 @@ clamping. Every rate above is driven by <span class="math notranslate nohighligh
 separated branch <span class="math notranslate nohighlight">\(T_t = 0\)</span> while <span class="math notranslate nohighlight">\(T_n \le 0\)</span> — so the sliding rate,
 both factors of the nucleation rate, and the Macaulay-bracketed growth
 rate all vanish identically and the state holds itself.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The separation test <span class="math notranslate nohighlight">\(f &lt; f_F\)</span> in <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/ShamNeedlemanTraction.html#models-shamneedlemantraction"><span class="std std-ref">ShamNeedlemanTraction</span></a> must
+read the <strong>old</strong> (converged) damage state, which in an implicit
+composition means wiring it explicitly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">[</span><span class="n">traction</span><span class="p">]</span>
+</span><span data-line="2">  <span class="nb">type</span> <span class="o">=</span> <span class="n">ShamNeedlemanTraction</span>
+</span><span data-line="3">  <span class="n">cavity_fraction</span> <span class="o">=</span> <span class="s1">'cavity_fraction~1'</span>
+</span><span data-line="4">  <span class="o">...</span>
+</span><span data-line="5"><span class="p">[]</span>
+</span></pre></div>
+</div>
+<p>Testing the trial unknown instead puts a jump discontinuity in the
+backward-Euler residual at <span class="math notranslate nohighlight">\(f_F\)</span>. Below the threshold the residual is
+<span class="math notranslate nohighlight">\(f - f_\text{old} - \Delta t\,\dot f\)</span>, which the accelerated softening
+drives sharply negative as <span class="math notranslate nohighlight">\(f \to f_F^-\)</span>; at and above it every rate is
+switched off and the residual is <span class="math notranslate nohighlight">\(f - f_\text{old} &gt; 0\)</span>. The residual
+steps over zero without touching it, so the first step that would
+separate the interface has no root and simply fails to converge.</p>
+<p>Switching on the converged state removes the discontinuity: the whole
+step is taken with intact rates, <span class="math notranslate nohighlight">\(f\)</span> is free to pass <span class="math notranslate nohighlight">\(f_F\)</span> (the
+saturated <span class="math notranslate nohighlight">\(f^*\)</span> keeps every softening denominator bounded while it
+does), and the next step freezes as described above. Separation is then
+resolved to within one time step — the usual first-order accuracy of an
+explicit switch.</p>
 </div>
 </section>
 <section id="id3">
@@ -973,101 +1007,105 @@ than only to integration order.</p>
 </span><span data-line="65"><span class="w">  </span><span class="c1"># --- Tractions from springs in series with the cavitation and sliding.</span>
 </span><span data-line="66"><span class="w">  </span><span class="k">[traction]</span>
 </span><span data-line="67"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ShamNeedlemanTraction</span>
-</span><span data-line="68"><span class="w">    </span><span class="na">normal_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000.0</span>
-</span><span data-line="69"><span class="w">    </span><span class="na">shear_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">800.0</span>
-</span><span data-line="70"><span class="w">    </span><span class="na">penalty_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2000.0</span>
-</span><span data-line="71"><span class="w">    </span><span class="na">failure_fraction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.8</span>
-</span><span data-line="72"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="73">
-</span><span data-line="74"><span class="w">  </span><span class="c1"># --- Cavity growth: Hull-Rimmer diffusive volume rate, then the geometric</span>
-</span><span data-line="75"><span class="w">  </span><span class="c1"># conversion to an area-fraction rate.</span>
-</span><span data-line="76"><span class="w">  </span><span class="k">[volume_rate]</span>
-</span><span data-line="77"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DiffusiveCavityGrowthRate</span>
-</span><span data-line="78"><span class="w">    </span><span class="na">diffusivity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0e-6</span>
-</span><span data-line="79"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="80"><span class="w">  </span><span class="k">[growth_rate]</span>
-</span><span data-line="81"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CavityGrowthDamageRate</span>
-</span><span data-line="82"><span class="w">    </span><span class="na">cavity_shape_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.61</span>
+</span><span data-line="68"><span class="w">    </span><span class="c1"># Separation is detected from the converged state at the start of the</span>
+</span><span data-line="69"><span class="w">    </span><span class="c1"># step. Switching on the trial unknown instead puts a jump in the</span>
+</span><span data-line="70"><span class="w">    </span><span class="c1"># residual at f_F and leaves Newton with no root to find.</span>
+</span><span data-line="71"><span class="w">    </span><span class="na">cavity_fraction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction~1'</span>
+</span><span data-line="72"><span class="w">    </span><span class="na">normal_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000.0</span>
+</span><span data-line="73"><span class="w">    </span><span class="na">shear_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">800.0</span>
+</span><span data-line="74"><span class="w">    </span><span class="na">penalty_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2000.0</span>
+</span><span data-line="75"><span class="w">    </span><span class="na">failure_fraction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.8</span>
+</span><span data-line="76"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="77">
+</span><span data-line="78"><span class="w">  </span><span class="c1"># --- Cavity growth: Hull-Rimmer diffusive volume rate, then the geometric</span>
+</span><span data-line="79"><span class="w">  </span><span class="c1"># conversion to an area-fraction rate.</span>
+</span><span data-line="80"><span class="w">  </span><span class="k">[volume_rate]</span>
+</span><span data-line="81"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DiffusiveCavityGrowthRate</span>
+</span><span data-line="82"><span class="w">    </span><span class="na">diffusivity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0e-6</span>
 </span><span data-line="83"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="84">
-</span><span data-line="85"><span class="w">  </span><span class="c1"># --- Sliding and the local strain rate it drives.</span>
-</span><span data-line="86"><span class="w">  </span><span class="k">[sliding_rate]</span>
-</span><span data-line="87"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">GrainBoundarySlidingRate</span>
-</span><span data-line="88"><span class="w">    </span><span class="na">sliding_viscosity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4.0</span>
-</span><span data-line="89"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="90"><span class="w">  </span><span class="k">[strain_rate]</span>
-</span><span data-line="91"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SlidingDrivenStrainRate</span>
-</span><span data-line="92"><span class="w">    </span><span class="na">length_scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+</span><span data-line="84"><span class="w">  </span><span class="k">[growth_rate]</span>
+</span><span data-line="85"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CavityGrowthDamageRate</span>
+</span><span data-line="86"><span class="w">    </span><span class="na">cavity_shape_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.61</span>
+</span><span data-line="87"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="88">
+</span><span data-line="89"><span class="w">  </span><span class="c1"># --- Sliding and the local strain rate it drives.</span>
+</span><span data-line="90"><span class="w">  </span><span class="k">[sliding_rate]</span>
+</span><span data-line="91"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">GrainBoundarySlidingRate</span>
+</span><span data-line="92"><span class="w">    </span><span class="na">sliding_viscosity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4.0</span>
 </span><span data-line="93"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="94">
-</span><span data-line="95"><span class="w">  </span><span class="c1"># --- Nucleation and its contribution to the area fraction.</span>
-</span><span data-line="96"><span class="w">  </span><span class="k">[nucleation_rate]</span>
-</span><span data-line="97"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CavityNucleationRate</span>
-</span><span data-line="98"><span class="w">    </span><span class="na">nucleation_coefficient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3.0</span>
-</span><span data-line="99"><span class="w">    </span><span class="na">reference_stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span>
-</span><span data-line="100"><span class="w">    </span><span class="na">exponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
-</span><span data-line="101"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="102"><span class="w">  </span><span class="k">[nucleation_damage_rate]</span>
-</span><span data-line="103"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CavityNucleationDamageRate</span>
-</span><span data-line="104"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="105"><span class="w">  </span><span class="k">[total_damage_rate]</span>
-</span><span data-line="106"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
-</span><span data-line="107"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction_growth_rate cavity_fraction_nucleation_rate'</span>
-</span><span data-line="108"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction_rate'</span>
-</span><span data-line="109"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'1 1'</span>
-</span><span data-line="110"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="111">
-</span><span data-line="112"><span class="w">  </span><span class="c1"># --- Implicit integration of the three internal variables.</span>
-</span><span data-line="113"><span class="w">  </span><span class="k">[integrate_f]</span>
-</span><span data-line="114"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
-</span><span data-line="115"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction'</span>
-</span><span data-line="116"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="117"><span class="w">  </span><span class="k">[integrate_N]</span>
+</span><span data-line="94"><span class="w">  </span><span class="k">[strain_rate]</span>
+</span><span data-line="95"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SlidingDrivenStrainRate</span>
+</span><span data-line="96"><span class="w">    </span><span class="na">length_scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+</span><span data-line="97"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="98">
+</span><span data-line="99"><span class="w">  </span><span class="c1"># --- Nucleation and its contribution to the area fraction.</span>
+</span><span data-line="100"><span class="w">  </span><span class="k">[nucleation_rate]</span>
+</span><span data-line="101"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CavityNucleationRate</span>
+</span><span data-line="102"><span class="w">    </span><span class="na">nucleation_coefficient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3.0</span>
+</span><span data-line="103"><span class="w">    </span><span class="na">reference_stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span>
+</span><span data-line="104"><span class="w">    </span><span class="na">exponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
+</span><span data-line="105"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="106"><span class="w">  </span><span class="k">[nucleation_damage_rate]</span>
+</span><span data-line="107"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CavityNucleationDamageRate</span>
+</span><span data-line="108"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="109"><span class="w">  </span><span class="k">[total_damage_rate]</span>
+</span><span data-line="110"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
+</span><span data-line="111"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction_growth_rate cavity_fraction_nucleation_rate'</span>
+</span><span data-line="112"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction_rate'</span>
+</span><span data-line="113"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'1 1'</span>
+</span><span data-line="114"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="115">
+</span><span data-line="116"><span class="w">  </span><span class="c1"># --- Implicit integration of the three internal variables.</span>
+</span><span data-line="117"><span class="w">  </span><span class="k">[integrate_f]</span>
 </span><span data-line="118"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
-</span><span data-line="119"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_density'</span>
+</span><span data-line="119"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction'</span>
 </span><span data-line="120"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="121"><span class="w">  </span><span class="k">[integrate_slip]</span>
+</span><span data-line="121"><span class="w">  </span><span class="k">[integrate_N]</span>
 </span><span data-line="122"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
-</span><span data-line="123"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'viscous_sliding'</span>
+</span><span data-line="123"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_density'</span>
 </span><span data-line="124"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="125">
-</span><span data-line="126"><span class="w">  </span><span class="k">[implicit_rate]</span>
-</span><span data-line="127"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="128"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'effective_fraction opening traction volume_rate growth_rate sliding_rate strain_rate nucleation_rate nucleation_damage_rate total_damage_rate integrate_f integrate_N integrate_slip'</span>
-</span><span data-line="129"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="130"><span class="k">[]</span>
-</span><span data-line="131">
-</span><span data-line="132"><span class="k">[EquationSystems]</span>
-</span><span data-line="133"><span class="w">  </span><span class="k">[eq_sys]</span>
-</span><span data-line="134"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
-</span><span data-line="135"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'implicit_rate'</span>
-</span><span data-line="136"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction cavity_density viscous_sliding'</span>
-</span><span data-line="137"><span class="w">    </span><span class="na">residuals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction_residual cavity_density_residual viscous_sliding_residual'</span>
-</span><span data-line="138"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="139"><span class="k">[]</span>
-</span><span data-line="140">
-</span><span data-line="141"><span class="k">[Solvers]</span>
-</span><span data-line="142"><span class="w">  </span><span class="k">[newton]</span>
-</span><span data-line="143"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
-</span><span data-line="144"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'lu'</span>
-</span><span data-line="145"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="146"><span class="w">  </span><span class="k">[lu]</span>
-</span><span data-line="147"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
-</span><span data-line="148"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="149"><span class="k">[]</span>
-</span><span data-line="150">
-</span><span data-line="151"><span class="k">[Models]</span>
-</span><span data-line="152"><span class="w">  </span><span class="k">[predictor]</span>
-</span><span data-line="153"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
-</span><span data-line="154"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction cavity_density viscous_sliding'</span>
-</span><span data-line="155"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="156"><span class="w">  </span><span class="k">[model]</span>
-</span><span data-line="157"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="158"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'eq_sys'</span>
-</span><span data-line="159"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'newton'</span>
-</span><span data-line="160"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'predictor'</span>
-</span><span data-line="161"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="162"><span class="k">[]</span>
+</span><span data-line="125"><span class="w">  </span><span class="k">[integrate_slip]</span>
+</span><span data-line="126"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
+</span><span data-line="127"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'viscous_sliding'</span>
+</span><span data-line="128"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="129">
+</span><span data-line="130"><span class="w">  </span><span class="k">[implicit_rate]</span>
+</span><span data-line="131"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="132"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'effective_fraction opening traction volume_rate growth_rate sliding_rate strain_rate nucleation_rate nucleation_damage_rate total_damage_rate integrate_f integrate_N integrate_slip'</span>
+</span><span data-line="133"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="134"><span class="k">[]</span>
+</span><span data-line="135">
+</span><span data-line="136"><span class="k">[EquationSystems]</span>
+</span><span data-line="137"><span class="w">  </span><span class="k">[eq_sys]</span>
+</span><span data-line="138"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
+</span><span data-line="139"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'implicit_rate'</span>
+</span><span data-line="140"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction cavity_density viscous_sliding'</span>
+</span><span data-line="141"><span class="w">    </span><span class="na">residuals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction_residual cavity_density_residual viscous_sliding_residual'</span>
+</span><span data-line="142"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="143"><span class="k">[]</span>
+</span><span data-line="144">
+</span><span data-line="145"><span class="k">[Solvers]</span>
+</span><span data-line="146"><span class="w">  </span><span class="k">[newton]</span>
+</span><span data-line="147"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
+</span><span data-line="148"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'lu'</span>
+</span><span data-line="149"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="150"><span class="w">  </span><span class="k">[lu]</span>
+</span><span data-line="151"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
+</span><span data-line="152"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="153"><span class="k">[]</span>
+</span><span data-line="154">
+</span><span data-line="155"><span class="k">[Models]</span>
+</span><span data-line="156"><span class="w">  </span><span class="k">[predictor]</span>
+</span><span data-line="157"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
+</span><span data-line="158"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'cavity_fraction cavity_density viscous_sliding'</span>
+</span><span data-line="159"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="160"><span class="w">  </span><span class="k">[model]</span>
+</span><span data-line="161"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
+</span><span data-line="162"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'eq_sys'</span>
+</span><span data-line="163"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'newton'</span>
+</span><span data-line="164"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'predictor'</span>
+</span><span data-line="165"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="166"><span class="k">[]</span>
 </span></pre></div>
 </div>
 <p>The nucleation-free variant drops

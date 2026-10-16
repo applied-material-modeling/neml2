@@ -473,6 +473,35 @@ sliding rate, the nucleation rate (through both of its factors) and the
 diffusive growth rate (through its Macaulay bracket) all vanish
 identically. <span class="math notranslate nohighlight">\(f\)</span>, <span class="math notranslate nohighlight">\(N\)</span> and <span class="math notranslate nohighlight">\([\![u]\!]_t^v\)</span> therefore hold their values
 without being clamped.</p>
+<p>… important::</p>
+<p><code class="docutils literal notranslate"><span class="pre">cavity_fraction</span></code> here is the <strong>separation indicator</strong>, and in an
+implicit composition it must be wired to the <em>old</em> (converged) damage
+state, not to the trial unknown::</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span><span data-line="1">   [traction]
+</span><span data-line="2">     type = ShamNeedlemanTraction
+</span><span data-line="3">     cavity_fraction = 'cavity_fraction~1'
+</span><span data-line="4">     ...
+</span></pre></div>
+</div>
+<p>Reading the trial state instead puts a jump discontinuity in the
+backward-Euler residual exactly at <span class="math notranslate nohighlight">\(f_F\)</span>. Below the threshold the
+residual is <span class="math notranslate nohighlight">\(f - f_\text{old} - \Delta t \dot f\)</span>, which the accelerated
+softening drives sharply negative as <span class="math notranslate nohighlight">\(f \to f_F^-\)</span>; at and above the
+threshold every rate is switched off and the residual is
+<span class="math notranslate nohighlight">\(f - f_\text{old} &gt; 0\)</span>. The residual therefore steps over zero without
+touching it and Newton has no root to find, so the first step that
+would separate the interface fails to converge rather than separating
+it.</p>
+<p>Switching on the converged state removes the discontinuity: the whole
+step is taken with intact rates, <span class="math notranslate nohighlight">\(f\)</span> is free to pass <span class="math notranslate nohighlight">\(f_F\)</span> (the
+saturated <span class="math notranslate nohighlight">\(f^*\)</span> from
+<code class="docutils literal notranslate"><span class="pre">EffectiveCavityFraction</span></code> keeps every
+softening denominator bounded while it does), and the following step
+sees <span class="math notranslate nohighlight">\(f_\text{old} \ge f_F\)</span> and freezes the state as described above.
+The cost is that separation is resolved only to within one time step,
+the usual first-order accuracy of an explicit switch; resolving the
+event exactly would need sub-stepping in the time integrator, which is
+not something a constitutive leaf can do.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
@@ -484,7 +513,7 @@ without being clamped.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">viscous_sliding</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Viscous part of the sliding jump</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">cavity_fraction</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Physical cavitated area fraction, tested against the failure fraction to detect separation</p>
+<dt><code class="docutils literal notranslate"><span class="pre">cavity_fraction</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Separation indicator: the physical cavitated area fraction, tested against the failure fraction. Wire this to the old (converged) damage state in an implicit composition – see the class docstring</p>
 </dd>
 </dl>
 </section>

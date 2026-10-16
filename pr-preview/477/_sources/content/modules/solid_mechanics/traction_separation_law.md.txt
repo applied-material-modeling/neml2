@@ -288,9 +288,18 @@ on a steeper line to $f_u$ at final separation $f_F$,
 $$
 f^* = \begin{cases}
   f, & f \le f_c, \\[2pt]
-  f_c + \dfrac{f_u - f_c}{f_F - f_c}\,(f - f_c), & f > f_c.
+  f_c + \dfrac{f_u - f_c}{f_F - f_c}\,(f - f_c), & f_c < f < f_F, \\[2pt]
+  f_u, & f \ge f_F.
 \end{cases}
 $$
+
+The map saturates past $f_F$ rather than extrapolating. Keeping the
+accelerated line going would drive $f^*$ through one at
+$f = f_c + (1 - f_c)(f_F - f_c)/(f_u - f_c)$ — a physical fraction
+below one, so an ordinary Newton iterate reaches it — and both
+softening denominators, $q(f^*)$ and $1 - f^*$, vanish there together.
+Saturating bounds every consumer of $f^*$ by $f_u < 1$ for any $f$, so
+choosing $f_u$ strictly below one is what keeps the rates finite.
 
 Only the softening functions see $f^*$; the geometry above keeps the
 physical $f$, so the kinematic identity $[\![u]\!]_n^v = NV - N_0V_0$
@@ -360,6 +369,35 @@ clamping. Every rate above is driven by $T_n$ or $T_t$, and on the
 separated branch $T_t = 0$ while $T_n \le 0$ — so the sliding rate,
 both factors of the nucleation rate, and the Macaulay-bracketed growth
 rate all vanish identically and the state holds itself.
+:::
+
+:::{warning}
+The separation test $f < f_F$ in [](models-ShamNeedlemanTraction) must
+read the **old** (converged) damage state, which in an implicit
+composition means wiring it explicitly:
+
+```
+[traction]
+  type = ShamNeedlemanTraction
+  cavity_fraction = 'cavity_fraction~1'
+  ...
+[]
+```
+
+Testing the trial unknown instead puts a jump discontinuity in the
+backward-Euler residual at $f_F$. Below the threshold the residual is
+$f - f_\text{old} - \Delta t\,\dot f$, which the accelerated softening
+drives sharply negative as $f \to f_F^-$; at and above it every rate is
+switched off and the residual is $f - f_\text{old} > 0$. The residual
+steps over zero without touching it, so the first step that would
+separate the interface has no root and simply fails to converge.
+
+Switching on the converged state removes the discontinuity: the whole
+step is taken with intact rates, $f$ is free to pass $f_F$ (the
+saturated $f^*$ keeps every softening denominator bounded while it
+does), and the next step freezes as described above. Separation is then
+resolved to within one time step — the usual first-order accuracy of an
+explicit switch.
 :::
 
 ### Example model composition
