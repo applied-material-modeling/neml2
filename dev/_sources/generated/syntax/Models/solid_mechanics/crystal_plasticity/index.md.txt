@@ -17,9 +17,15 @@ PlasticDeformationRate
 PlasticSpatialVelocityGradient
 PlasticVorticity
 PowerLawSlipRule
+PrecipitateStrength
 ResolvedShear
+SimplePrecipitateGrowth
 SingleSlipStrengthMap
 SlipSystemElasticInteraction
+SolidSolutionStrength
+SoluteDepletion
+SubgrainCoarsening
+SubgrainStrength
 SumSlipRates
 VoceSingleSlipHardeningRule
 ```
