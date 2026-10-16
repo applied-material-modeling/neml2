@@ -1,0 +1,30 @@
+(models-PerzynaPlasticFlowRate)=
+# PerzynaPlasticFlowRate
+
+**Source:** `models/solid_mechanics/plasticity/PerzynaPlasticFlowRate.py`
+
+Perzyna's viscous approximation of the consistent yield envelope (with a
+power law), i.e. $\dot{\gamma} = \left( \frac{\left< f \right>}{\eta} \right)^n$, where $f$ is
+the yield function, $\eta$ is the
+reference stress, and $n$ is the power-law exponent.
+
+## Inputs
+
+`yield_function` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Yield function
+
+
+## Outputs
+
+`flow_rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Flow rate
+
+
+## Parameters
+
+`reference_stress` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Reference stress
+
+`exponent` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Power-law exponent
+

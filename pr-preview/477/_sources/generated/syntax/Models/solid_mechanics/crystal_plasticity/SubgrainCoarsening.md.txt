@@ -1,0 +1,47 @@
+(models-SubgrainCoarsening)=
+# SubgrainCoarsening
+
+**Source:** `models/solid_mechanics/crystal_plasticity/SubgrainCoarsening.py`
+
+Diffusional coarsening of a subgrain structure, defined by
+$\dot{\lambda} = \dfrac{\mu b^3 K}{k T} \dfrac{1}{\lambda}$
+where $\lambda$ is the subgrain size, $\mu$ is the shear modulus,
+$b$ is the Burgers vector, $K$ is the coarsening coefficient,
+$k$ is the Boltzmann constant and $T$ is the absolute temperature.
+
+$K$ is a promotable parameter, so it may be supplied as a constant or
+driven by another model -- an ``ArrheniusParameter`` for the usual
+thermally activated form.
+
+## Inputs
+
+`subgrain_size` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Current subgrain size
+
+`temperature` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Absolute temperature
+
+
+## Outputs
+
+`subgrain_size_rate` &mdash; `output` &middot; `Scalar` &middot; default `subgrain_size_rate`
+: Optional name for the derived output (defaults to 'subgrain_size_rate', i.e. the 'subgrain_size' variable name with the '_rate' suffix).
+
+
+## Parameters
+
+`coarsening_coefficient` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Coarsening coefficient
+
+`shear_modulus` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Shear modulus
+
+`burgers_vector` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Magnitude of the Burgers vector
+
+
+## Other options
+
+`boltzmann_constant` &mdash; `float` &middot; **required**
+: The Boltzmann constant, in units consistent with the other parameters
+

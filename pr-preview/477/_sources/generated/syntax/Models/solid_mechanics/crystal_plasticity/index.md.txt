@@ -1,0 +1,31 @@
+# crystal_plasticity
+
+`[Models]` types under `solid_mechanics/crystal_plasticity/`.
+
+```{toctree}
+:maxdepth: 1
+
+CrystalPlasticityDeformationGradientPredictor
+CrystalPlasticityStrainPredictor
+DislocationObstacleStrengthMap
+ElasticStrainRate
+FixOrientation
+LinearSingleSlipHardeningRule
+OrientationRate
+PerSlipForestDislocationEvolution
+PlasticDeformationRate
+PlasticSpatialVelocityGradient
+PlasticVorticity
+PowerLawSlipRule
+PrecipitateStrength
+ResolvedShear
+SimplePrecipitateGrowth
+SingleSlipStrengthMap
+SlipSystemElasticInteraction
+SolidSolutionStrength
+SoluteDepletion
+SubgrainCoarsening
+SubgrainStrength
+SumSlipRates
+VoceSingleSlipHardeningRule
+```

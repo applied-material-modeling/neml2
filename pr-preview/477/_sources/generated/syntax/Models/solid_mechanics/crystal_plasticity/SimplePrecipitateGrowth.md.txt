@@ -1,0 +1,42 @@
+(models-SimplePrecipitateGrowth)=
+# SimplePrecipitateGrowth
+
+**Source:** `models/solid_mechanics/crystal_plasticity/SimplePrecipitateGrowth.py`
+
+Simplified, volume-conserving coarsening of a precipitate population,
+defined by
+$\dot{R} = \dfrac{K}{3 R^2}, \qquad \dot{N} = -\dfrac{K}{R^3}$
+where $R$ is the mean precipitate radius, $N$ is the precipitate
+number density and $K$ is the coarsening coefficient.
+
+$K$ is a promotable parameter, so it may be supplied as a constant or
+driven by another model -- an ``ArrheniusParameter`` for the usual
+thermally activated form.
+
+Note $\dot{N}$ does not depend on $N$, following the issue
+specification; the two rates are emitted by one leaf because they share
+the single coefficient $K$ and the same $R$.
+
+## Inputs
+
+`precipitate_radius` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Mean precipitate radius
+
+`precipitate_density` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Precipitate number density
+
+
+## Outputs
+
+`precipitate_radius_rate` &mdash; `output` &middot; `Scalar` &middot; default `precipitate_radius_rate`
+: Optional name for the derived output (defaults to 'precipitate_radius_rate', i.e. the 'precipitate_radius' variable name with the '_rate' suffix).
+
+`precipitate_density_rate` &mdash; `output` &middot; `Scalar` &middot; default `precipitate_density_rate`
+: Optional name for the derived output (defaults to 'precipitate_density_rate', i.e. the 'precipitate_density' variable name with the '_rate' suffix).
+
+
+## Parameters
+
+`coarsening_coefficient` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Coarsening coefficient
+
