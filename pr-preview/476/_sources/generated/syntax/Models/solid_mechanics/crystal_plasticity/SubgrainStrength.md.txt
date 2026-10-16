@@ -1,0 +1,36 @@
+(models-SubgrainStrength)=
+# SubgrainStrength
+
+**Source:** `models/solid_mechanics/crystal_plasticity/SubgrainStrength.py`
+
+Strength contribution of a subgrain structure, defined by
+$\tau = \alpha \dfrac{\mu b}{\lambda}$
+where $\lambda$ is the subgrain size, $\alpha$ is an interaction
+coefficient, $\mu$ is the shear modulus and $b$ is the Burgers vector.
+
+The output is a single strength contribution, intended to be combined with
+the other contributions through a ``ScalarLinearCombination``.
+
+## Inputs
+
+`subgrain_size` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Current subgrain size
+
+
+## Outputs
+
+`subgrain_strength` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The subgrain strength contribution
+
+
+## Parameters
+
+`alpha` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Interaction coefficient
+
+`shear_modulus` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Shear modulus
+
+`burgers_vector` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Magnitude of the Burgers vector
+

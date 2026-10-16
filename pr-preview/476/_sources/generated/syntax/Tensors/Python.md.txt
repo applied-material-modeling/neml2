@@ -1,0 +1,24 @@
+(tensors-Python)=
+# Python
+
+**Source:** `user_tensors/PythonTensor.py`
+
+Tensor built from an inline Python expression.
+
+The ``expr`` option is evaluated in a namespace pre-populated with
+``torch``, every public name from ``neml2.types`` (``Scalar``, ``SR2``,
+``SSR4``, free functions), ``math``, and ``np`` (numpy, if importable).
+Cross-references to other ``[Tensors]`` entries resolve by bare
+identifier: writing ``base`` is equivalent to ``tensor('base')``, which
+avoids HIT's restriction on nested quotes.
+
+The expression's value (``torch.Tensor`` or a ``TensorWrapper`` subclass)
+is returned verbatim; the call site (typically
+`neml2.model.Model.declare_typed_parameter` mode 2) is responsible
+for wrapping a raw tensor into a typed wrapper if needed.
+
+## Other options
+
+`expr` &mdash; `str` &middot; **required**
+: Python expression producing the tensor value. A multi-line block must assign its result to a variable named ``result``.
+
