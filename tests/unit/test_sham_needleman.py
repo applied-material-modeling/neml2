@@ -475,24 +475,31 @@ _needs_newton = pytest.mark.skipif(
 )
 
 
-def _trajectory(result: dict[str, torch.Tensor], name: str) -> tuple[tuple[int, ...], torch.Tensor]:
+def _trajectory(
+    result: dict[str, torch.Tensor], name: str, kind: str = "output"
+) -> tuple[tuple[int, ...], torch.Tensor]:
     """Stack the per-step records of ``name`` into one time series.
 
-    ``TransientDriver.result`` is a flat ``output.<step>.<var>`` dict with one
+    ``TransientDriver.result`` is a flat ``<kind>.<step>.<var>`` dict with one
     entry per step, not a stacked trajectory, so the series has to be
     reassembled here. Step 0 records only the initial conditions, which is why
     the steps are returned alongside the values: ``viscous_sliding`` has no IC
     and so starts at step 1, one entry shorter than ``cavity_fraction``.
+
+    Solved unknowns land under ``output``; prescribed forces land under
+    ``input`` and never appear as an output, so a variable that is an unknown
+    in one variant and a force in another has to be read from the matching
+    side. ``cavity_density`` is exactly that variable.
     """
     records = []
     for key, value in result.items():
-        kind, step, var = key.split(".", 2)
-        if kind != "output" or var != name:
+        record_kind, step, var = key.split(".", 2)
+        if record_kind != kind or var != name:
             continue
         flat = value.reshape(-1)
         assert flat.numel() == 1, f"{key} holds {flat.numel()} values, expected a scalar step"
         records.append((int(step), flat[0]))
-    assert records, f"driver recorded no output for {name!r}"
+    assert records, f"driver recorded no {kind} for {name!r}"
     records.sort()
     return tuple(step for step, _ in records), torch.stack([v for _, v in records])
 
@@ -502,9 +509,13 @@ def _trajectory(result: dict[str, torch.Tensor], name: str) -> tuple[tuple[int, 
 def test_trajectory_runs_and_damage_is_monotone(variant: str):
     """Driving the full model over a tensile history accumulates damage.
 
-    The fixtures ramp the normal jump far enough to carry ``f`` from its
-    initial 1% through coalescence and into separation, so one trajectory
-    covers all three branches of the softening map.
+    The fixtures ramp the normal jump far enough to grow ``f`` well above its
+    initial 1% by diffusive cavity growth, but not far enough to reach the
+    failure fraction: this exercises the pre-coalescence branch of the
+    softening map end to end. Freezing at and past separation is covered at
+    the model level by ``test_separated_interface_freezes_every_internal_variable``,
+    which prescribes the separated state directly instead of trying to reach
+    it through a history.
     """
     driver = load_input(_FIXTURES / f"{variant}.i").get_driver("driver")
     driver.run()
@@ -517,35 +528,47 @@ def test_trajectory_runs_and_damage_is_monotone(variant: str):
 
 
 @_needs_newton
-def test_trajectory_freezes_after_separation():
-    """Once the complete model separates, the state stops moving."""
+def test_trajectory_stays_below_failure_so_the_history_never_separates():
+    """The complete fixture damages but stops short of the failure fraction.
+
+    This pins the reach of the shipped history. Earlier revisions of this file
+    asserted that the trajectory froze after separation, which was never
+    exercised: ``f`` plateaus well under ``F_F`` for this ramp, so that
+    assertion sat behind a ``pytest.skip`` on every platform and tested
+    nothing. If a future fixture change does carry the history into
+    separation, this test fails and the freeze assertion can be written for
+    real instead of being silently skipped.
+    """
     driver = load_input(_FIXTURES / "complete.i").get_driver("driver")
     driver.run()
     result = driver.result()
 
-    steps, f = _trajectory(result, "cavity_fraction")
-    separated = (f >= F_F).nonzero().reshape(-1)
-    if separated.numel() == 0:
-        pytest.skip("history does not reach separation")
-    # Slice by step number, not by position: the three variables are not
-    # recorded over the same steps, so a shared positional index would compare
-    # different points of the history.
-    first_step = steps[int(separated[0])]
-    for name in ("cavity_fraction", "cavity_density", "viscous_sliding"):
-        var_steps, values = _trajectory(result, name)
-        tail = values[[i for i, step in enumerate(var_steps) if step >= first_step]]
-        assert tail.numel() > 0, f"{name} has no record at or after step {first_step}"
-        assert torch.allclose(tail, tail[0], atol=1e-10), f"{name} moved after separation"
+    _, f = _trajectory(result, "cavity_fraction")
+    assert float(f.max()) > 10 * F_0, "history barely damages; the ramp is too weak to be useful"
+    assert float(f.max()) < F_F, (
+        "history now reaches separation: replace this test with the freeze assertion"
+    )
 
 
 @_needs_newton
 def test_nucleation_free_trajectory_holds_the_density_fixed():
-    """The reduced variant keeps ``N`` at ``N_0`` and still damages."""
+    """The reduced variant keeps ``N`` at ``N_0`` and still damages.
+
+    ``cavity_density`` is a prescribed force here, not an unknown, so the
+    driver records it under ``input.<step>.cavity_density`` and emits no
+    output for it at all. Both halves are asserted: the absence of an output
+    record is what "the implicit system dropped the density equation" looks
+    like from the driver, and the input series is what pins the value.
+    """
     driver = load_input(_FIXTURES / "no_nucleation.i").get_driver("driver")
     driver.run()
     result = driver.result()
 
-    _, density = _trajectory(result, "cavity_density")
+    assert not [k for k in result if k.endswith(".cavity_density") and k.startswith("output.")], (
+        "cavity_density is solved for in the nucleation-free variant; "
+        "it should be a prescribed force"
+    )
+    _, density = _trajectory(result, "cavity_density", kind="input")
     assert torch.allclose(density, torch.full_like(density, N_0))
     _, f = _trajectory(result, "cavity_fraction")
     assert float(f[-1]) > F_0
