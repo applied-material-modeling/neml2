@@ -33,17 +33,35 @@ package import.
 from .BenzeggaghKenaneFullSeparation import BenzeggaghKenaneFullSeparation
 from .BilinearTraction import BilinearTraction
 from .CamanhoDavilaCriticalSeparation import CamanhoDavilaCriticalSeparation
+from .CavityGrowthDamageRate import CavityGrowthDamageRate
+from .CavityNucleationDamageRate import CavityNucleationDamageRate
+from .CavityNucleationRate import CavityNucleationRate
+from .CavityVolumeOpening import CavityVolumeOpening
+from .DiffusiveCavityGrowthRate import DiffusiveCavityGrowthRate
+from .EffectiveCavityFraction import EffectiveCavityFraction
+from .GrainBoundarySlidingRate import GrainBoundarySlidingRate
 from .ModeMixity import ModeMixity
 from .OrthotropicLinearTraction import OrthotropicLinearTraction
 from .PowerLawFullSeparation import PowerLawFullSeparation
 from .SalehaniIraniTraction import SalehaniIraniTraction
+from .ShamNeedlemanTraction import ShamNeedlemanTraction
+from .SlidingDrivenStrainRate import SlidingDrivenStrainRate
 
 __all__ = [
     "BenzeggaghKenaneFullSeparation",
     "BilinearTraction",
     "CamanhoDavilaCriticalSeparation",
+    "CavityGrowthDamageRate",
+    "CavityNucleationDamageRate",
+    "CavityNucleationRate",
+    "CavityVolumeOpening",
+    "DiffusiveCavityGrowthRate",
+    "EffectiveCavityFraction",
+    "GrainBoundarySlidingRate",
     "ModeMixity",
     "OrthotropicLinearTraction",
     "PowerLawFullSeparation",
     "SalehaniIraniTraction",
+    "ShamNeedlemanTraction",
+    "SlidingDrivenStrainRate",
 ]
