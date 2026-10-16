@@ -220,6 +220,172 @@ scenario under
 this behavior.
 :::
 
+## Grain-boundary cavitation (Sham–Needleman)
+
+### Overview
+
+The laws above degrade an interface through a scalar damage variable
+driven by the separation history. Creep rupture at a grain boundary
+works the other way round: the interface carries a *physical*
+population of cavities whose area fraction $f$ and number density $N$
+evolve in time under the traction, and the separation is a consequence
+of that population rather than its cause. The simplified Sham–Needleman
+model in NEML2 is this second kind of law.
+
+The primitives are deliberately small so the model can be assembled in
+three forms — with nucleation, without it, and with the
+nucleation-driving strain rate supplied from outside — by changing
+which leaves appear in the `[Models]` block, not by toggling options:
+
+**Cavity-state kinematics**:
+- [](models-EffectiveCavityFraction) — the GTN-style coalescence map
+  $f \mapsto f^*$ that accelerates the softening functions once the
+  cavities start to link up.
+- [](models-CavityVolumeOpening) — the viscous normal opening
+  $[\![u]\!]_n^v = NV - N_0V_0$, i.e. the smeared cavity volume.
+
+**Rates**:
+- [](models-DiffusiveCavityGrowthRate) — Hull–Rimmer diffusive growth
+  of a single cavity's volume, $\dot V$.
+- [](models-CavityGrowthDamageRate) — the geometric conversion from
+  $\dot V$ to an area-fraction rate.
+- [](models-CavityNucleationRate) — stress-driven nucleation of new
+  cavities, $\dot N$.
+- [](models-CavityNucleationDamageRate) — the area-fraction rate the
+  newly nucleated cavities contribute.
+- [](models-GrainBoundarySlidingRate) — viscous sliding of the
+  boundary, softened by the cavitated fraction.
+- [](models-SlidingDrivenStrainRate) — the local strain rate that
+  sliding implies, used as the nucleation driver when no external one
+  is available.
+
+**Traction assembly**:
+- [](models-ShamNeedlemanTraction) — linear springs in *series* with
+  the cavitation and sliding, with a compressive contact penalty and a
+  separated branch past $f_F$.
+
+### Math
+
+A cavity of radius $a$ on a boundary with number density $N$ occupies
+
+$$
+f = \pi a^2 N, \qquad V = \tfrac{4}{3}\pi a^3 h(\psi),
+$$
+
+where $h(\psi)$ is the cavity shape factor ($h \approx 0.61$ at a tip
+angle of 75°). Eliminating $a$ gives both the smeared opening and the
+geometric conversion used below,
+
+$$
+NV = \frac{4h}{3\sqrt{\pi}} \frac{f^{3/2}}{N^{1/2}}, \qquad
+\dot{f}_\text{growth} = \frac{\sqrt{\pi}\,N^{3/2}}{2h\sqrt{f}}\,\dot{V}.
+$$
+
+Cavities soften the boundary through the *effective* fraction $f^*$,
+which equals $f$ until the coalescence threshold $f_c$ and then rises
+on a steeper line to $f_u$ at final separation $f_F$,
+
+$$
+f^* = \begin{cases}
+  f, & f \le f_c, \\[2pt]
+  f_c + \dfrac{f_u - f_c}{f_F - f_c}\,(f - f_c), & f > f_c.
+\end{cases}
+$$
+
+Only the softening functions see $f^*$; the geometry above keeps the
+physical $f$, so the kinematic identity $[\![u]\!]_n^v = NV - N_0V_0$
+holds exactly whatever the coalescence map does.
+
+Cavity volume grows by grain-boundary diffusion (Hull–Rimmer),
+
+$$
+\dot{V} = \frac{8\pi\mathcal{D}\,\langle T_n \rangle}{q(f^*)}, \qquad
+q(f^*) = -2\ln f^* - (3 - f^*)(1 - f^*),
+$$
+
+which combines with the geometric conversion into the Sham–Needleman
+growth term
+
+$$
+\dot{f}_\text{growth}
+  = \frac{4\pi^{3/2}\mathcal{D}\,N^{3/2}\,\langle T_n \rangle}
+         {h\sqrt{f}\,q(f^*)}.
+$$
+
+Keeping $\dot V$ and the conversion in separate models is what lets a
+second growth mechanism be summed onto $\dot V$ later without
+restating the geometry.
+
+New cavities nucleate at a rate set by the normal traction and a
+driving strain rate, and they arrive at the current mean size:
+
+$$
+\dot{N} = F_N \left\langle \frac{T_n}{\Sigma_0} \right\rangle^{\beta}
+          \dot{\varepsilon}, \qquad
+\dot{f}_\text{nucleation} = \frac{f}{N}\,\dot{N}, \qquad
+\dot{f} = \dot{f}_\text{growth} + \dot{f}_\text{nucleation}.
+$$
+
+The boundary also slides viscously, softened by the cavitated
+ligament, and that sliding supplies $\dot\varepsilon$ when no external
+strain rate is prescribed:
+
+$$
+\dot{[\![u]\!]}_t^v = \frac{T_t}{(1 - f^*)\,\eta}, \qquad
+\dot{\varepsilon} = \frac{\left|\dot{[\![u]\!]}_t^v\right|}{d}.
+$$
+
+Finally, each jump splits additively into an elastic and a viscous
+part, and the spring acts on the elastic part only — the springs are
+in **series** with the dashpots. A parallel spring would carry load
+forever and the interface would never separate completely. Writing
+$[\![u]\!]_n^v$ for the smeared cavity volume above,
+
+\begin{align}
+T_n &= K_n\left([\![u]\!]_n - [\![u]\!]_n^v\right),
+  & [\![u]\!]_n &\ge 0,\ f < f_F, \notag \\
+T_n &= K_p\,[\![u]\!]_n,
+  & [\![u]\!]_n &< 0, \notag \\
+T_t &= K_t\left([\![u]\!]_t - [\![u]\!]_t^v\right),
+  & f &< f_F,
+\end{align}
+
+and past final separation, $f \ge f_F$, the interface carries
+$T_n = K_p \min([\![u]\!]_n, 0)$ and $T_t = 0$ — the compressive
+penalty survives separation, the tensile and shear load paths do not.
+
+:::{note}
+Freezing $f$, $N$ and $[\![u]\!]_t^v$ after separation needs no
+clamping. Every rate above is driven by $T_n$ or $T_t$, and on the
+separated branch $T_t = 0$ while $T_n \le 0$ — so the sliding rate,
+both factors of the nucleation rate, and the Macaulay-bracketed growth
+rate all vanish identically and the state holds itself.
+:::
+
+### Example model composition
+
+The input below assembles the complete model, integrating $f$, $N$ and
+$[\![u]\!]_t^v$ implicitly. Note that the normal viscous opening is
+*not* integrated: it is the algebraic function $NV(f, N) - N_0V_0$, so
+the kinematic identity holds exactly at every converged step rather
+than only to integration order.
+
+```{literalinclude} ../../../../tests/unit/fixtures/sham_needleman/complete.i
+:language: ini
+```
+
+The nucleation-free variant drops
+[](models-CavityNucleationRate), [](models-CavityNucleationDamageRate)
+and the [](models-ScalarLinearCombination) that summed the two
+contributions, renames the growth rate straight onto
+`cavity_fraction_rate`, and prescribes `cavity_density` as a constant
+force — two unknowns instead of three. The prescribed-strain-rate
+variant drops only [](models-SlidingDrivenStrainRate) and makes
+`strain_rate` a force, which is the right form when the surrounding
+grains are creeping and *their* strain rate, not the boundary sliding,
+sets how fast cavities appear. Both live beside `complete.i` under
+`tests/unit/fixtures/sham_needleman/`.
+
 ## See also
 
 - [](tutorials-models-composition) — the general pattern of stitching
