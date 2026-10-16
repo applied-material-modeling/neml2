@@ -15,7 +15,7 @@ from structured coefficients.
 : Fill pattern: 'identity', 'zero', 'diagonal', 'diagonal_blocks', 'block', or 'dense'.
 
 `data` &mdash; `list`
-: Coefficients; required length depends on 'type' (n for diagonal, len(blocks) for diagonal_blocks, len(blocks)**2 for block, n**2 for dense).
+: Coefficients; required length depends on 'fill' (n for diagonal, len(blocks) for diagonal_blocks, len(blocks)**2 for block, n**2 for dense).
 
 `blocks` &mdash; `list`
 : Block sizes (slip-family partition) summing to n; used by 'diagonal_blocks' and 'block'.

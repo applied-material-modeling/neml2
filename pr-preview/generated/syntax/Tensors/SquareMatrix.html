@@ -440,7 +440,7 @@ from structured coefficients.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">fill</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · default <code class="docutils literal notranslate"><span class="pre">dense</span></code></dt><dd><p>Fill pattern: ‘identity’, ‘zero’, ‘diagonal’, ‘diagonal_blocks’, ‘block’, or ‘dense’.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">data</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Coefficients; required length depends on ‘type’ (n for diagonal, len(blocks) for diagonal_blocks, len(blocks)<strong>2 for block, n</strong>2 for dense).</p>
+<dt><code class="docutils literal notranslate"><span class="pre">data</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Coefficients; required length depends on ‘fill’ (n for diagonal, len(blocks) for diagonal_blocks, len(blocks)<strong>2 for block, n</strong>2 for dense).</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">blocks</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Block sizes (slip-family partition) summing to n; used by ‘diagonal_blocks’ and ‘block’.</p>
 </dd>
