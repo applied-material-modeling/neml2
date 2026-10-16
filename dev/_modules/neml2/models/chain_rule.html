@@ -535,74 +535,81 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="112">    <span class="c1"># subsequent ``expand`` (for OTHER axes) can treat uniformly.</span>
 </span><span data-line="113">    <span class="kn">from</span><span class="w"> </span><span class="nn">..types.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">fullify</span>  <span class="c1"># noqa: PLC0415</span>
 </span><span data-line="114">
-</span><span data-line="115">    <span class="n">needs_fullify</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="116">    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">cur</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">contributions</span><span class="p">,</span> <span class="n">k_sizes</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span data-line="117">        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="118">            <span class="n">needs_fullify</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-</span><span data-line="119">            <span class="k">continue</span>
-</span><span data-line="120">        <span class="n">nf</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span data-line="121">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">):</span>
-</span><span data-line="122">            <span class="k">if</span> <span class="p">(</span>
-</span><span data-line="123">                <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span><span data-line="124">                <span class="ow">and</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
-</span><span data-line="125">                <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">k_state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"broadcast"</span>
-</span><span data-line="126">                <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">k_pairing</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-</span><span data-line="127">            <span class="p">):</span>
-</span><span data-line="128">                <span class="n">nf</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span data-line="129">                <span class="k">break</span>
-</span><span data-line="130">        <span class="n">needs_fullify</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nf</span><span class="p">)</span>
-</span><span data-line="131">    <span class="n">contributions</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="132">        <span class="n">fullify</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">if</span> <span class="n">nf</span> <span class="k">else</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">nf</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">contributions</span><span class="p">,</span> <span class="n">needs_fullify</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span data-line="133">    <span class="p">]</span>
-</span><span data-line="134">
-</span><span data-line="135">    <span class="n">out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="136">    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">contributions</span><span class="p">:</span>
-</span><span data-line="137">        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="138">            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-</span><span data-line="139">            <span class="k">continue</span>
-</span><span data-line="140">        <span class="n">cur</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">])</span>
-</span><span data-line="141">        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">)):</span>
-</span><span data-line="142">            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-</span><span data-line="143">            <span class="k">continue</span>
-</span><span data-line="144">        <span class="n">target</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</span><span data-line="145">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">):</span>
-</span><span data-line="146">            <span class="k">if</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-</span><span data-line="147">                <span class="k">if</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="148">                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="149">                        <span class="sa">f</span><span class="s2">"equalize_tangent_K: K axis </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has incompatible storage "</span>
-</span><span data-line="150">                        <span class="sa">f</span><span class="s2">"size </span><span class="si">{</span><span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> (target </span><span class="si">{</span><span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">); align upstream."</span>
-</span><span data-line="151">                    <span class="p">)</span>
-</span><span data-line="152">                <span class="n">target</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span><span data-line="153">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
-</span><span data-line="154">        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">c</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">))</span>
-</span><span data-line="155">    <span class="k">return</span> <span class="n">out</span></div>
+</span><span data-line="115">    <span class="c1"># Collect, per contribution, the PAIRED SUB axes whose K needs eye-expansion</span>
+</span><span data-line="116">    <span class="c1"># to reach the common max (broadcast, size 1, and a parallel contribution has</span>
+</span><span data-line="117">    <span class="c1"># this K full). Fullify ONLY those axes (via ``sub_axis``): an un-scoped</span>
+</span><span data-line="118">    <span class="c1"># ``fullify(c)`` would also eye-expand a paired-broadcast axis that is NOT</span>
+</span><span data-line="119">    <span class="c1"># mismatched (an outer block axis with max 1), inflating it to the sub extent</span>
+</span><span data-line="120">    <span class="c1"># and colliding with ``max_k`` in the expand loop below.</span>
+</span><span data-line="121">    <span class="n">fullify_sub_axes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="122">    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">cur</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">contributions</span><span class="p">,</span> <span class="n">k_sizes</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span data-line="123">        <span class="n">axes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="124">        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="125">            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">):</span>
+</span><span data-line="126">                <span class="n">pair</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">k_pairing</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span><span data-line="127">                <span class="k">if</span> <span class="p">(</span>
+</span><span data-line="128">                    <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span><span data-line="129">                    <span class="ow">and</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+</span><span data-line="130">                    <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">k_state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"broadcast"</span>
+</span><span data-line="131">                    <span class="ow">and</span> <span class="n">pair</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span><span data-line="132">                <span class="p">):</span>
+</span><span data-line="133">                    <span class="n">axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pair</span><span class="p">))</span>
+</span><span data-line="134">        <span class="n">fullify_sub_axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+</span><span data-line="135">    <span class="n">new_contributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="136">    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">axes</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">contributions</span><span class="p">,</span> <span class="n">fullify_sub_axes</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span data-line="137">        <span class="k">for</span> <span class="n">sa</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+</span><span data-line="138">            <span class="n">c</span> <span class="o">=</span> <span class="n">fullify</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">sub_axis</span><span class="o">=</span><span class="n">sa</span><span class="p">)</span>
+</span><span data-line="139">        <span class="n">new_contributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+</span><span data-line="140">    <span class="n">contributions</span> <span class="o">=</span> <span class="n">new_contributions</span>
+</span><span data-line="141">
+</span><span data-line="142">    <span class="n">out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="143">    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">contributions</span><span class="p">:</span>
+</span><span data-line="144">        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="145">            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+</span><span data-line="146">            <span class="k">continue</span>
+</span><span data-line="147">        <span class="n">cur</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">])</span>
+</span><span data-line="148">        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">)):</span>
+</span><span data-line="149">            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+</span><span data-line="150">            <span class="k">continue</span>
+</span><span data-line="151">        <span class="n">target</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span><span data-line="152">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">):</span>
+</span><span data-line="153">            <span class="k">if</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+</span><span data-line="154">                <span class="k">if</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="155">                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="156">                        <span class="sa">f</span><span class="s2">"equalize_tangent_K: K axis </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has incompatible storage "</span>
+</span><span data-line="157">                        <span class="sa">f</span><span class="s2">"size </span><span class="si">{</span><span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> (target </span><span class="si">{</span><span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">); align upstream."</span>
+</span><span data-line="158">                    <span class="p">)</span>
+</span><span data-line="159">                <span class="n">target</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span><span data-line="160">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+</span><span data-line="161">        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">c</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">))</span>
+</span><span data-line="162">    <span class="k">return</span> <span class="n">out</span></div>
 
-</span><span data-line="156">
-</span><span data-line="157">
+</span><span data-line="163">
+</span><span data-line="164">
 <div class="viewcode-block" id="matvec">
 <a class="viewcode-back" href="../../../content/python_api/neml2.models.chain_rule.html#neml2.models.chain_rule.matvec">[docs]</a>
-</span><span data-line="158"><span class="k">def</span><span class="w"> </span><span class="nf">matvec</span><span class="p">(</span><span class="n">M</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="159"><span class="w">    </span><span class="sd">"""Fused matrix-vector product without ``einsum``.</span>
-</span><span data-line="160">
-</span><span data-line="161"><span class="sd">    ``M @ v`` where the trailing dims are ``(..., n_row, n_col)`` and</span>
-</span><span data-line="162"><span class="sd">    ``(..., n_col)`` respectively. Implemented as</span>
-</span><span data-line="163"><span class="sd">    ``(M @ v.unsqueeze(-1)).squeeze(-1)`` so Inductor can fuse the trailing</span>
-</span><span data-line="164"><span class="sd">    pointwise ops around the matmul.</span>
-</span><span data-line="165"><span class="sd">    """</span>
-</span><span data-line="166">    <span class="k">return</span> <span class="p">(</span><span class="n">M</span> <span class="o">@</span> <span class="n">v</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
-
+</span><span data-line="165"><span class="k">def</span><span class="w"> </span><span class="nf">matvec</span><span class="p">(</span><span class="n">M</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+</span><span data-line="166"><span class="w">    </span><span class="sd">"""Fused matrix-vector product without ``einsum``.</span>
 </span><span data-line="167">
-</span><span data-line="168">
-</span><span data-line="169"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="170">    <span class="s2">"TangentAction"</span><span class="p">,</span>
-</span><span data-line="171">    <span class="s2">"ChainRuleDict"</span><span class="p">,</span>
-</span><span data-line="172">    <span class="s2">"ChainRuleAction"</span><span class="p">,</span>
-</span><span data-line="173">    <span class="s2">"SecondOrderTangentAction"</span><span class="p">,</span>
-</span><span data-line="174">    <span class="s2">"SecondOrderChainRuleDict"</span><span class="p">,</span>
-</span><span data-line="175">    <span class="s2">"SecondOrderChainRuleAction"</span><span class="p">,</span>
-</span><span data-line="176">    <span class="s2">"matvec"</span><span class="p">,</span>
-</span><span data-line="177">    <span class="s2">"equalize_tangent_K"</span><span class="p">,</span>
-</span><span data-line="178"><span class="p">]</span>
+</span><span data-line="168"><span class="sd">    ``M @ v`` where the trailing dims are ``(..., n_row, n_col)`` and</span>
+</span><span data-line="169"><span class="sd">    ``(..., n_col)`` respectively. Implemented as</span>
+</span><span data-line="170"><span class="sd">    ``(M @ v.unsqueeze(-1)).squeeze(-1)`` so Inductor can fuse the trailing</span>
+</span><span data-line="171"><span class="sd">    pointwise ops around the matmul.</span>
+</span><span data-line="172"><span class="sd">    """</span>
+</span><span data-line="173">    <span class="k">return</span> <span class="p">(</span><span class="n">M</span> <span class="o">@</span> <span class="n">v</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+</span><span data-line="174">
+</span><span data-line="175">
+</span><span data-line="176"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="177">    <span class="s2">"TangentAction"</span><span class="p">,</span>
+</span><span data-line="178">    <span class="s2">"ChainRuleDict"</span><span class="p">,</span>
+</span><span data-line="179">    <span class="s2">"ChainRuleAction"</span><span class="p">,</span>
+</span><span data-line="180">    <span class="s2">"SecondOrderTangentAction"</span><span class="p">,</span>
+</span><span data-line="181">    <span class="s2">"SecondOrderChainRuleDict"</span><span class="p">,</span>
+</span><span data-line="182">    <span class="s2">"SecondOrderChainRuleAction"</span><span class="p">,</span>
+</span><span data-line="183">    <span class="s2">"matvec"</span><span class="p">,</span>
+</span><span data-line="184">    <span class="s2">"equalize_tangent_K"</span><span class="p">,</span>
+</span><span data-line="185"><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
