@@ -18,8 +18,13 @@ The Macaulay bracket on $c_0 - c$ is a deliberate departure from the bare
 $\left( c_0 - c \right)^{1/3}$ of the specification: it keeps the cube
 root on its real branch if the state overshoots $c_0$, which is
 reachable mid-Newton even when the converged solution satisfies
-$c \le c_0$. The two agree wherever $c \le c_0$. See the
-``numerical notes`` section of the model documentation.
+$c \le c_0$. The two agree wherever $c \le c_0$.
+
+On that inactive branch, and at the endpoint $c = c_0$, both the rate
+and its derivative are taken to be zero. The true derivative is unbounded
+at the endpoint; the right-hand limit is used instead so that neither the
+forward pushforward nor reverse-mode differentiation of this model emits
+a ``nan`` into the Newton solve, and so that the two agree.
 
 ## Inputs
 

@@ -467,9 +467,9 @@ l = \dot{\varepsilon} + \Omega^e - \Omega^e \varepsilon + \varepsilon \Omega^e +
 </ol>
 <p>The first holds well for metal plasticity; the second can break down at very high strain rates.</p>
 <p>Defining the current orientation as the composition of the initial lattice rotation <span class="math notranslate nohighlight">\(Q_0\)</span> with the elastic rotation, <span class="math notranslate nohighlight">\(Q = R^e Q_0\)</span>, the elastic spin reduces to <span class="math notranslate nohighlight">\(\Omega^e = \dot{Q} Q^T\)</span>. Splitting the spatial velocity gradient into symmetric and skew parts (<span class="math notranslate nohighlight">\(l = d + w\)</span>, <span class="math notranslate nohighlight">\(l^p = d^p + w^p\)</span>) and rearranging yields the two governing rate equations integrated by this module:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-5010eb40-2399-4499-9101-76a1755aa99d">
-<div class="amsmath math notranslate nohighlight" id="equation-5010eb40-2399-4499-9101-76a1755aa99d">
-<span class="eqno">(18)<a class="headerlink" href="#equation-5010eb40-2399-4499-9101-76a1755aa99d" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-175efe19-7a99-4b8d-9ef6-9eb8a15359a8">
+<div class="amsmath math notranslate nohighlight" id="equation-175efe19-7a99-4b8d-9ef6-9eb8a15359a8">
+<span class="eqno">(18)<a class="headerlink" href="#equation-175efe19-7a99-4b8d-9ef6-9eb8a15359a8" title="Permalink to this equation">#</a></span>\[\begin{align}
   \dot{\varepsilon} &amp;= d - d^p - \varepsilon w + w \varepsilon \\
   \dot{Q} &amp;= \left(w - w^p - \varepsilon d^p + d^p \varepsilon\right) Q.
 \end{align}\]</div>
@@ -771,13 +771,6 @@ as a sum of independent obstacle populations,</p>
 <p>Every coefficient on these leaves is a promotable parameter, so the usual
 temperature dependence comes from driving it with an <a class="reference internal" href="../../../../generated/syntax/Models/common/ArrheniusParameter.html#models-arrheniusparameter"><span class="std std-ref">ArrheniusParameter</span></a>
 or an interpolation rather than from a special case inside the model.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The Macaulay bracket in <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SoluteDepletion.html#models-solutedepletion"><span class="std std-ref">SoluteDepletion</span></a> is a deliberate departure
-from the bare <span class="math notranslate nohighlight">\((c_0 - c)^{1/3}\)</span>: it keeps the cube root on its real branch if
-an intermediate Newton iterate overshoots <span class="math notranslate nohighlight">\(c_0\)</span>. The two forms agree wherever
-<span class="math notranslate nohighlight">\(c \le c_0\)</span>.</p>
-</div>
 </section>
 <section id="worked-examples">
 <h2>Worked examples<a class="headerlink" href="#worked-examples" title="Link to this heading">#</a></h2>
