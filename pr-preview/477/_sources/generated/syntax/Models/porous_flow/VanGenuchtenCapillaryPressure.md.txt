@@ -1,0 +1,41 @@
+(models-VanGenuchtenCapillaryPressure)=
+# VanGenuchtenCapillaryPressure
+
+**Source:** `models/porous_flow/VanGenuchtenCapillaryPressure.py`
+
+Define the van Genuchten correlation for capillary pressure
+$P_c = a \left( S_e^{-\frac{1}{m}} - 1 \right)^{1-m}$. Here
+$S_e$ is the effective saturation, $a$ and $m$ are
+shape parameters. Optionally, a logarithmic extension is applied below a
+user-supplied transition saturation $S_p$ to keep the pressure
+finite as $S_e \to 0$.
+
+## Inputs
+
+`effective_saturation` &mdash; `input` &middot; `Scalar` &middot; **required**
+: The effective saturation
+
+
+## Outputs
+
+`capillary_pressure` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Capillary pressure.
+
+
+## Parameters
+
+`a` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Shape parameter a
+
+`m` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Shape parameter m
+
+
+## Other options
+
+`log_extension` &mdash; `bool` &middot; default `False`
+: Whether to apply logarithmic extension
+
+`transition_saturation` &mdash; `float` &middot; default `0.0`
+: The transition value of the effective saturation below which to apply the logarithmic extension
+
