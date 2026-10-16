@@ -76,18 +76,28 @@ class SubgrainStrength(Model):
 
         # Differential pushforward. Closed-form coefficients of typed Scalars.
         #   d tau / d lambda = -tau / lambda
-        #   d tau / d alpha  =  tau / alpha
-        #   d tau / d mu     =  tau / mu
-        #   d tau / d b      =  tau / b
+        #   d tau / d alpha  =  mu b / lambda
+        #   d tau / d mu     =  alpha b / lambda
+        #   d tau / d b      =  alpha mu / lambda
+        # The three parameter coefficients differentiate the product directly
+        # rather than forming ``tau / <param>``: zeroing a coefficient is a
+        # valid way to switch this contribution off, and the quotient form is
+        # 0/0 there.
         actions: dict[str, ChainRuleAction] = {
             "subgrain_size": lambda V, c=-tau / lambda_sg: c * V,
         }
         if "alpha" in self._promoted_params:
-            actions[self._promoted_params["alpha"].input_name] = lambda V, c=tau / alpha: c * V
+            actions[self._promoted_params["alpha"].input_name] = lambda V, c=mu * b / lambda_sg: (
+                c * V
+            )
         if "shear_modulus" in self._promoted_params:
-            actions[self._promoted_params["shear_modulus"].input_name] = lambda V, c=tau / mu: c * V
+            actions[self._promoted_params["shear_modulus"].input_name] = (
+                lambda V, c=alpha * b / lambda_sg: c * V
+            )
         if "burgers_vector" in self._promoted_params:
-            actions[self._promoted_params["burgers_vector"].input_name] = lambda V, c=tau / b: c * V
+            actions[self._promoted_params["burgers_vector"].input_name] = (
+                lambda V, c=alpha * mu / lambda_sg: c * V
+            )
 
         return tau, self.apply_chain_rule(v, "subgrain_strength", actions, output=tau)
 

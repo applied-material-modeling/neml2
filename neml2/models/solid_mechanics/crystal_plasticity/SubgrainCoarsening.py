@@ -84,7 +84,10 @@ class SubgrainCoarsening(Model):
         k = self.k  # float option, not a registered parameter
 
         # numerator = mu * b^3 * K / k, so lambda_dot = numerator / (T * lambda)
-        numerator = mu * b * b * b * K / k
+        b3 = b * b * b
+        numerator = mu * b3 * K / k
+        # 1 / (k T lambda): the factor every parameter derivative shares.
+        inv_kTl = 1.0 / (temperature * lambda_sg * k)
         lambda_dot = numerator / temperature / lambda_sg
 
         if v is None:
@@ -94,24 +97,28 @@ class SubgrainCoarsening(Model):
         # no Jacobian materialised.
         #   d lambda_dot / d lambda = -lambda_dot / lambda
         #   d lambda_dot / d T      = -lambda_dot / T
-        #   d lambda_dot / d K      =  lambda_dot / K
-        #   d lambda_dot / d mu     =  lambda_dot / mu
-        #   d lambda_dot / d b      =  3 * lambda_dot / b
+        #   d lambda_dot / d K      =  mu b^3 / (k T lambda)
+        #   d lambda_dot / d mu     =  b^3 K / (k T lambda)
+        #   d lambda_dot / d b      =  3 mu b^2 K / (k T lambda)
+        # The three parameter coefficients differentiate the product directly
+        # rather than forming ``lambda_dot / <param>``: zeroing a coefficient
+        # is a valid way to switch coarsening off, and the quotient form is
+        # 0/0 there.
         actions: dict[str, ChainRuleAction] = {
             "subgrain_size": lambda V, c=-lambda_dot / lambda_sg: c * V,
             "temperature": lambda V, c=-lambda_dot / temperature: c * V,
         }
         if "coarsening_coefficient" in self._promoted_params:
             actions[self._promoted_params["coarsening_coefficient"].input_name] = (
-                lambda V, c=lambda_dot / K: c * V
+                lambda V, c=mu * b3 * inv_kTl: c * V
             )
         if "shear_modulus" in self._promoted_params:
             actions[self._promoted_params["shear_modulus"].input_name] = (
-                lambda V, c=lambda_dot / mu: c * V
+                lambda V, c=b3 * K * inv_kTl: c * V
             )
         if "burgers_vector" in self._promoted_params:
             actions[self._promoted_params["burgers_vector"].input_name] = (
-                lambda V, c=3.0 * lambda_dot / b: c * V
+                lambda V, c=3.0 * mu * b * b * K * inv_kTl: c * V
             )
 
         return lambda_dot, self.apply_chain_rule(v, self._lambda_rate, actions, output=lambda_dot)

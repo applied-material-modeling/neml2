@@ -83,9 +83,12 @@ class SimplePrecipitateGrowth(Model):
         # Differential pushforward. Closed-form coefficients of typed Scalars;
         # no Jacobian materialised.
         #   d R_dot / d R = -2 K / (3 R^3) = -2 R_dot / R
-        #   d R_dot / d K =  R_dot / K
+        #   d R_dot / d K =  1 / (3 R^2)
         #   d N_dot / d R =  3 K / R^4     = -3 N_dot / R
-        #   d N_dot / d K =  N_dot / K
+        #   d N_dot / d K = -1 / R^3
+        # Both rates are linear in K, so the K coefficients are written as the
+        # bare R terms rather than as ``<rate> / K``: zeroing K is a valid way
+        # to switch coarsening off, and the quotient form is 0/0 there.
         # N appears in neither rate, so its action is a structural zero and no
         # entry is registered for it.
         actions_R: dict[str, ChainRuleAction] = {
@@ -96,8 +99,8 @@ class SimplePrecipitateGrowth(Model):
         }
         if "coarsening_coefficient" in self._promoted_params:
             ext = self._promoted_params["coarsening_coefficient"].input_name
-            actions_R[ext] = lambda V, c=R_dot / K: c * V
-            actions_N[ext] = lambda V, c=N_dot / K: c * V
+            actions_R[ext] = lambda V, c=1.0 / (3.0 * R2): c * V
+            actions_N[ext] = lambda V, c=-1.0 / R3: c * V
 
         # Both outputs are derived names with no ``_var_renames`` entry, so pass
         # the resolved external names directly (same convention as ZenerElement).

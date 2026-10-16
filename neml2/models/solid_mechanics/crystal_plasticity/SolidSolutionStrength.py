@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, output, parameter
-from ....types import Scalar, sqrt
+from ....types import Scalar, pow, sqrt
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...model import Model
 
@@ -69,27 +69,42 @@ class SolidSolutionStrength(Model):
         eps = self._get_param("misfit_strain", promoted_params, Scalar)
 
         sqrt_c = sqrt(c)
-        eps_32 = eps * sqrt(eps)
+        # ``pow(eps, 1.5)`` rather than the algebraically equal ``eps *
+        # sqrt(eps)``: the factored form's backward is ``inf * 0`` at
+        # ``eps = 0``, so reverse mode (``param_jacobian`` / ``param_vjp``,
+        # which differentiate the primal) returns nan for a misfit strain that
+        # has been zeroed to switch this contribution off. ``torch.pow``'s
+        # backward is ``1.5 * eps^0.5``, which is a clean 0 there.
+        sqrt_eps = pow(eps, 0.5)
+        eps_32 = pow(eps, 1.5)
         tau = alpha * mu * eps_32 * sqrt_c
 
         if v is None:
             return tau
 
         # Differential pushforward. Closed-form coefficients of typed Scalars.
-        #   d tau / d c     = tau / (2 c)
-        #   d tau / d alpha = tau / alpha
-        #   d tau / d mu    = tau / mu
-        #   d tau / d eps   = 3 tau / (2 eps)
+        #   d tau / d c     = alpha mu eps^(3/2) / (2 sqrt(c))
+        #   d tau / d alpha = mu eps^(3/2) sqrt(c)
+        #   d tau / d mu    = alpha eps^(3/2) sqrt(c)
+        #   d tau / d eps   = 3/2 alpha mu eps^(1/2) sqrt(c)
+        # The three parameter coefficients differentiate the product directly
+        # rather than forming ``tau / <param>``: zeroing a coefficient is a
+        # valid way to switch this contribution off, and the quotient form is
+        # 0/0 there.
         actions: dict[str, ChainRuleAction] = {
             "solute_concentration": lambda V, k=0.5 * alpha * mu * eps_32 / sqrt_c: k * V,
         }
         if "alpha" in self._promoted_params:
-            actions[self._promoted_params["alpha"].input_name] = lambda V, k=tau / alpha: k * V
+            actions[self._promoted_params["alpha"].input_name] = lambda V, k=mu * eps_32 * sqrt_c: (
+                k * V
+            )
         if "shear_modulus" in self._promoted_params:
-            actions[self._promoted_params["shear_modulus"].input_name] = lambda V, k=tau / mu: k * V
+            actions[self._promoted_params["shear_modulus"].input_name] = (
+                lambda V, k=alpha * eps_32 * sqrt_c: k * V
+            )
         if "misfit_strain" in self._promoted_params:
             actions[self._promoted_params["misfit_strain"].input_name] = (
-                lambda V, k=1.5 * tau / eps: k * V
+                lambda V, k=1.5 * alpha * mu * sqrt_eps * sqrt_c: k * V
             )
 
         return tau, self.apply_chain_rule(v, "solid_solution_strength", actions, output=tau)

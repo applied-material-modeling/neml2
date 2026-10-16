@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, derived_output, input, parameter
-from ....types import Scalar, heaviside, macaulay, pow
+from ....types import Scalar, gt, macaulay, pow, where
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...model import Model
 
@@ -50,8 +50,13 @@ class SoluteDepletion(Model):
     $\left( c_0 - c \right)^{1/3}$ of the specification: it keeps the cube
     root on its real branch if the state overshoots $c_0$, which is
     reachable mid-Newton even when the converged solution satisfies
-    $c \le c_0$. The two agree wherever $c \le c_0$. See the
-    ``numerical notes`` section of the model documentation.
+    $c \le c_0$. The two agree wherever $c \le c_0$.
+
+    On that inactive branch, and at the endpoint $c = c_0$, both the rate
+    and its derivative are taken to be zero. The true derivative is unbounded
+    at the endpoint; the right-hand limit is used instead so that neither the
+    forward pushforward nor reverse-mode differentiation of this model emits
+    a ``nan`` into the Newton solve, and so that the two agree.
     """
 
     hit = HitSchema(
@@ -86,7 +91,30 @@ class SoluteDepletion(Model):
 
         raw_gap = c0 - c
         gap = macaulay(raw_gap)
-        cube_root = pow(gap, 1.0 / 3.0)
+
+        # On the inactive branch (c >= c0) the bracket is exactly zero, and
+        # ``pow``'s backward at a zero base with a fractional exponent is
+        # infinite. Multiplied by the bracket's own zero derivative that is a
+        # nan, so the guard has to sit in the PRIMAL -- ``param_jacobian`` and
+        # ``param_vjp`` in ``models/param_ad.py`` differentiate the primal with
+        # autograd and never see ``v``, so a guard applied only to the
+        # handwritten pushforward below would leave them broken.
+        #
+        # The fix is the double-``where``: feed ``pow`` a base of 1.0 wherever
+        # the branch is inactive, so its local derivative stays finite, then
+        # mask the result to zero. The value is unchanged (the bracket is zero
+        # there anyway) and the gradient is a clean zero in both modes.
+        #
+        # The mask is strict (``c0 - c > 0``), which fixes the policy at the
+        # endpoint ``c == c0``: value zero, derivative zero, forward and
+        # reverse agreeing. The true derivative is unbounded at that single
+        # point; taking the right-hand limit keeps a nan out of the Newton
+        # solve, and the inactive branch is in any case only reachable by an
+        # intermediate iterate.
+        active = gt(raw_gap, 0.0)
+        zero = gap * 0.0
+        safe_gap = where(active, gap, zero + 1.0)
+        cube_root = where(active, pow(safe_gap, 1.0 / 3.0), zero)
         driving = c - ceq
         c_dot = K * cube_root * driving
 
@@ -96,28 +124,22 @@ class SoluteDepletion(Model):
         # Differential pushforward. Closed-form coefficients of typed Scalars;
         # no Jacobian materialised.
         #
-        # Write g = <c0 - c>, so dg/dc = -H(c0 - c) and dg/dc0 = +H(c0 - c),
-        # with H the Heaviside step. Then with u = g^(1/3),
+        # Write g = <c0 - c>, so dg/dc = -1 and dg/dc0 = +1 on the active
+        # branch and both vanish off it. Then with u = g^(1/3),
         #   du/dg = 1/3 g^(-2/3)
         # and
-        #   d c_dot / d c   = K * (u - (driving / 3) * g^(-2/3) * H)
-        #   d c_dot / d c0  = K * driving / 3 * g^(-2/3) * H
+        #   d c_dot / d c   = K * (u - driving * du/dg)
+        #   d c_dot / d c0  = K * driving * du/dg
         #   d c_dot / d ceq = -K * u
         #   d c_dot / d K   = u * driving
         #
-        # ``heaviside`` gives H directly. Offsetting the gap by (1 - H) makes the
-        # base of the negative power 1.0 on the inactive branch, so g^(-2/3) stays
-        # finite there and the H factor then zeroes the contribution -- this avoids
-        # an inf * 0 = nan. At exactly c == c0 the repo's ``heaviside`` returns 0.5,
-        # so the base is 0.5 and the result is finite: the true derivative is
-        # unbounded at that single point, and this picks a finite subgradient
-        # rather than propagating a nan into the Newton solve.
-        H = heaviside(raw_gap)
-        safe_gap = gap + (1.0 - H)
-        dgap = H * pow(safe_gap, -2.0 / 3.0) / 3.0
+        # ``du/dg`` reuses the same ``safe_gap`` / ``active`` pair as the
+        # primal, so the pushforward agrees with what autograd produces from
+        # the primal on both branches and at the endpoint.
+        dcube = where(active, pow(safe_gap, -2.0 / 3.0) / 3.0, zero)
 
         actions: dict[str, ChainRuleAction] = {
-            "solute_concentration": lambda V, c_=K * (cube_root - driving * dgap): c_ * V,
+            "solute_concentration": lambda V, c_=K * (cube_root - driving * dcube): c_ * V,
         }
         if "depletion_coefficient" in self._promoted_params:
             actions[self._promoted_params["depletion_coefficient"].input_name] = (
@@ -125,7 +147,7 @@ class SoluteDepletion(Model):
             )
         if "initial_concentration" in self._promoted_params:
             actions[self._promoted_params["initial_concentration"].input_name] = (
-                lambda V, c_=K * driving * dgap: c_ * V
+                lambda V, c_=K * driving * dcube: c_ * V
             )
         if "equilibrium_concentration" in self._promoted_params:
             actions[self._promoted_params["equilibrium_concentration"].input_name] = (

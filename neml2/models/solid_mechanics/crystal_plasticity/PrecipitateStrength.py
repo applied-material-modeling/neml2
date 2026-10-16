@@ -72,7 +72,8 @@ class PrecipitateStrength(Model):
         mu = self._get_param("shear_modulus", promoted_params, Scalar)
         b = self._get_param("burgers_vector", promoted_params, Scalar)
 
-        tau = alpha * mu * b / (2.0 * R * N)
+        two_RN = 2.0 * R * N
+        tau = alpha * mu * b / two_RN
 
         if v is None:
             return tau
@@ -80,19 +81,27 @@ class PrecipitateStrength(Model):
         # Differential pushforward. Closed-form coefficients of typed Scalars.
         #   d tau / d R     = -tau / R
         #   d tau / d N     = -tau / N
-        #   d tau / d alpha =  tau / alpha
-        #   d tau / d mu    =  tau / mu
-        #   d tau / d b     =  tau / b
+        #   d tau / d alpha =  mu b / (2 R N)
+        #   d tau / d mu    =  alpha b / (2 R N)
+        #   d tau / d b     =  alpha mu / (2 R N)
+        # The three parameter coefficients differentiate the product directly
+        # rather than forming ``tau / <param>``: zeroing a coefficient is a
+        # valid way to switch this contribution off, and the quotient form is
+        # 0/0 there.
         actions: dict[str, ChainRuleAction] = {
             "precipitate_radius": lambda V, c=-tau / R: c * V,
             "precipitate_density": lambda V, c=-tau / N: c * V,
         }
         if "alpha" in self._promoted_params:
-            actions[self._promoted_params["alpha"].input_name] = lambda V, c=tau / alpha: c * V
+            actions[self._promoted_params["alpha"].input_name] = lambda V, c=mu * b / two_RN: c * V
         if "shear_modulus" in self._promoted_params:
-            actions[self._promoted_params["shear_modulus"].input_name] = lambda V, c=tau / mu: c * V
+            actions[self._promoted_params["shear_modulus"].input_name] = (
+                lambda V, c=alpha * b / two_RN: c * V
+            )
         if "burgers_vector" in self._promoted_params:
-            actions[self._promoted_params["burgers_vector"].input_name] = lambda V, c=tau / b: c * V
+            actions[self._promoted_params["burgers_vector"].input_name] = (
+                lambda V, c=alpha * mu / two_RN: c * V
+            )
 
         return tau, self.apply_chain_rule(v, "precipitate_strength", actions, output=tau)
 

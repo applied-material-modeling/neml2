@@ -1,6 +1,7 @@
-# Combined slip strength for the RAFM-steel style model of issue #474.
+# Combined slip strength for a RAFM-steel style model.
 #
-# Demonstrates all five strength contributions summed into one slip strength:
+# Demonstrates a model where the slip strength is the sum of five
+# contributions:
 #
 #   tau = tau_a + tau_SS + tau_sg + tau_mx + tau_voce
 #

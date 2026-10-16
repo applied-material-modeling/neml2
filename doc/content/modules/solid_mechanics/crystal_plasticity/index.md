@@ -137,13 +137,6 @@ Every coefficient on these leaves is a promotable parameter, so the usual
 temperature dependence comes from driving it with an [](models-ArrheniusParameter)
 or an interpolation rather than from a special case inside the model.
 
-:::{note}
-The Macaulay bracket in [](models-SoluteDepletion) is a deliberate departure
-from the bare $(c_0 - c)^{1/3}$: it keeps the cube root on its real branch if
-an intermediate Newton iterate overshoots $c_0$. The two forms agree wherever
-$c \le c_0$.
-:::
-
 ## Worked examples
 
 End-to-end notebooks that drive a single-crystal model through a rolling
