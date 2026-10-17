@@ -40,12 +40,23 @@
 []
 
 [Models]
-  [model]
-    type = BilinearTraction
+  [envelope]
+    type = BilinearDamage
     critical_separation = 'critical_separation'
     full_separation = 'full_separation'
+  []
+  [update]
+    type = BackwardEulerViscousDamage
+    viscosity = 1.0
+  []
+  [traction]
+    type = BilinearTraction
     normal_penetration = 'normal_penetration'
     penalty_stiffness = 1000.0
-    viscosity = 1.0
+  []
+  [model]
+    type = ComposedModel
+    models = 'envelope update traction'
+    additional_outputs = 'damage'
   []
 []

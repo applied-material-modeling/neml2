@@ -30,20 +30,30 @@ package re-imports each so the ``@register_neml2_object`` side effects fire on
 package import.
 """
 
+from .BackwardEulerViscousDamage import BackwardEulerViscousDamage
 from .BenzeggaghKenaneFullSeparation import BenzeggaghKenaneFullSeparation
+from .BilinearDamage import BilinearDamage
 from .BilinearTraction import BilinearTraction
 from .CamanhoDavilaCriticalSeparation import CamanhoDavilaCriticalSeparation
+from .ExponentialViscousDamage import ExponentialViscousDamage
 from .ModeMixity import ModeMixity
 from .OrthotropicLinearTraction import OrthotropicLinearTraction
 from .PowerLawFullSeparation import PowerLawFullSeparation
+from .SalehaniIraniDamage import SalehaniIraniDamage
 from .SalehaniIraniTraction import SalehaniIraniTraction
+from .ViscousDamageUpdate import ViscousDamageUpdate
 
 __all__ = [
+    "BackwardEulerViscousDamage",
     "BenzeggaghKenaneFullSeparation",
+    "BilinearDamage",
     "BilinearTraction",
     "CamanhoDavilaCriticalSeparation",
+    "ExponentialViscousDamage",
     "ModeMixity",
     "OrthotropicLinearTraction",
     "PowerLawFullSeparation",
+    "SalehaniIraniDamage",
     "SalehaniIraniTraction",
+    "ViscousDamageUpdate",
 ]
