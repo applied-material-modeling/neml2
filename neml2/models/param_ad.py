@@ -256,7 +256,10 @@ def param_jacobian(
                 pbase = tuple(param_base_shapes.get(q, ()))  # natural base, not stored shape
                 # (*batch, n_out, *param_base) -> (*batch, *out_base, *param_base)
                 stacked = torch.stack(cols[q], dim=len(batch))
-                row[q] = stacked.reshape(*batch, *o_base, *pbase).contiguous()
+                # Single list, not unpacked positional args: ``reshape()`` with
+                # zero arguments raises when all three shapes are empty at once.
+                # Mirrors the same guard in ``input_ad._reverse_blocks``.
+                row[q] = stacked.reshape([*batch, *o_base, *pbase]).contiguous()
             jac[o_name] = row
     return jac
 
