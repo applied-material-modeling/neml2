@@ -46,7 +46,7 @@ into typed wrappers immediately after these helpers run.
 from __future__ import annotations
 
 import dataclasses
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 import torch
 
@@ -229,24 +229,38 @@ def contract_jacobian_block(
     return out_type(res)
 
 
-def wrapper_metadata(value: TensorWrapper) -> dict[str, object]:
-    """Snapshot every non-``data`` field of a typed wrapper.
+def nondefault_wrapper_metadata(value: object) -> dict[str, object] | None:
+    """Snapshot a typed wrapper's non-``data`` fields, or ``None`` if they are default.
 
     The typed wrappers register with pytree as ``field_names=["data"]`` plus a
     ``drop_field_names`` list covering all the structural metadata (see
     :mod:`neml2.types._pytree`), so a ``torch.export`` flatten/unflatten
     round-trip rebuilds the wrapper with that metadata reset to the dataclass
-    defaults. Callers that cross the export boundary snapshot the metadata
-    here and restore it with :func:`reattach_wrapper_metadata` on the far side.
+    defaults. Callers that cross the export boundary snapshot the metadata here
+    and restore it with :func:`reattach_wrapper_metadata` on the far side.
 
-    Returns a plain ``dict`` of field name -> value, suitable for
-    ``dataclasses.replace``.
+    ``None`` means there is nothing to restore -- *value* is not a typed
+    wrapper, or every field already holds its dataclass default, so the pytree
+    reset is a no-op. Returning the decision from here (rather than the raw
+    snapshot) keeps the dataclass introspection of the wrappers inside
+    :mod:`neml2.types`, where it belongs.
     """
-    return {f.name: getattr(value, f.name) for f in dataclasses.fields(value) if f.name != "data"}
+    if not dataclasses.is_dataclass(value) or isinstance(value, type):
+        return None
+    metadata: dict[str, object] = {}
+    nondefault = False
+    for f in dataclasses.fields(value):
+        if f.name == "data":
+            continue
+        current = getattr(value, f.name)
+        metadata[f.name] = current
+        if f.default is not dataclasses.MISSING and current != f.default:
+            nondefault = True
+    return metadata if nondefault else None
 
 
 def reattach_wrapper_metadata(value: TensorWrapper, metadata: dict[str, object]) -> TensorWrapper:
-    """Rebuild *value* carrying the *metadata* snapshot from :func:`wrapper_metadata`.
+    """Rebuild *value* carrying a snapshot from :func:`nondefault_wrapper_metadata`.
 
     ``value`` keeps its ``data`` tensor; every other field is taken from
     *metadata*. Used on the inbound side of the ``torch.export`` boundary to
@@ -254,7 +268,9 @@ def reattach_wrapper_metadata(value: TensorWrapper, metadata: dict[str, object])
     a leaf that branches on ``sub_batch_ndim`` (e.g. a reduction over the
     sub-batch) traces as though every batch axis were a plain batch axis.
     """
-    return dataclasses.replace(value, **metadata)
+    # ``TensorWrapper`` is the non-dataclass base of the concrete wrappers; the
+    # runtime value is always one of those `@dataclass` subclasses.
+    return cast("TensorWrapper", dataclasses.replace(cast("Any", value), **metadata))
 
 
 def unwrap_outputs(

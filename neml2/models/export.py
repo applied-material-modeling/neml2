@@ -47,7 +47,7 @@ import torch
 from torch.export import Dim, export
 
 from .._warnings import TORCH_JIT_PY314, TORCH_TREESPEC_LEAFSPEC, ignore_warnings
-from ..types._boundary import reattach_wrapper_metadata, wrapper_metadata
+from ..types._boundary import nondefault_wrapper_metadata, reattach_wrapper_metadata
 
 
 def _patch_inductor_int_array_cache_key() -> None:
@@ -231,24 +231,8 @@ def _reattach_metadata_if_needed(
     flat tensors and pin their sub-batch structure in the equation-system
     layouts instead, so they take the untouched path.
     """
-    from ..types import TensorWrapper  # noqa: PLC0415
-
-    metadata: list[dict[str, object] | None] = []
-    needed = False
-    for arg in example_inputs:
-        if not isinstance(arg, TensorWrapper):
-            metadata.append(None)
-            continue
-        meta = wrapper_metadata(arg)
-        defaults = {
-            f.name: f.default
-            for f in dataclasses.fields(arg)
-            if f.name != "data" and f.default is not dataclasses.MISSING
-        }
-        if any(meta[k] != v for k, v in defaults.items() if k in meta):
-            needed = True
-        metadata.append(meta)
-    return _ReattachMetadata(model, metadata) if needed else model
+    metadata = [nondefault_wrapper_metadata(arg) for arg in example_inputs]
+    return _ReattachMetadata(model, metadata) if any(m is not None for m in metadata) else model
 
 
 def compile_model(
