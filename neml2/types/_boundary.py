@@ -45,6 +45,7 @@ into typed wrappers immediately after these helpers run.
 
 from __future__ import annotations
 
+import dataclasses
 from typing import TYPE_CHECKING
 
 import torch
@@ -226,6 +227,34 @@ def contract_jacobian_block(
     res = (block_flat @ v_flat.unsqueeze(-1)).squeeze(-1)
     res = res.reshape(*res.shape[:-1], *out_base)
     return out_type(res)
+
+
+def wrapper_metadata(value: TensorWrapper) -> dict[str, object]:
+    """Snapshot every non-``data`` field of a typed wrapper.
+
+    The typed wrappers register with pytree as ``field_names=["data"]`` plus a
+    ``drop_field_names`` list covering all the structural metadata (see
+    :mod:`neml2.types._pytree`), so a ``torch.export`` flatten/unflatten
+    round-trip rebuilds the wrapper with that metadata reset to the dataclass
+    defaults. Callers that cross the export boundary snapshot the metadata
+    here and restore it with :func:`reattach_wrapper_metadata` on the far side.
+
+    Returns a plain ``dict`` of field name -> value, suitable for
+    ``dataclasses.replace``.
+    """
+    return {f.name: getattr(value, f.name) for f in dataclasses.fields(value) if f.name != "data"}
+
+
+def reattach_wrapper_metadata(value: TensorWrapper, metadata: dict[str, object]) -> TensorWrapper:
+    """Rebuild *value* carrying the *metadata* snapshot from :func:`wrapper_metadata`.
+
+    ``value`` keeps its ``data`` tensor; every other field is taken from
+    *metadata*. Used on the inbound side of the ``torch.export`` boundary to
+    restore the structural metadata the pytree round-trip dropped -- without it
+    a leaf that branches on ``sub_batch_ndim`` (e.g. a reduction over the
+    sub-batch) traces as though every batch axis were a plain batch axis.
+    """
+    return dataclasses.replace(value, **metadata)
 
 
 def unwrap_outputs(
