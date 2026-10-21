@@ -1,0 +1,18 @@
+(models-R2ToWR2)=
+# R2ToWR2
+
+**Source:** `models/common/R2ToWR2.py`
+
+Extract the skew symmetric part of a second order tensor.
+
+## Inputs
+
+`input` &mdash; `input` &middot; `R2` &middot; **required**
+: Second order tensor to split
+
+
+## Outputs
+
+`output` &mdash; `output` &middot; `WR2` &middot; **required**
+: Output skew symmetric second order tensor
+
