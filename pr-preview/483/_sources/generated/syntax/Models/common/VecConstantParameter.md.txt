@@ -1,0 +1,18 @@
+(models-VecConstantParameter)=
+# VecConstantParameter
+
+**Source:** `models/common/ConstantParameter.py`
+
+Vec-valued constant parameter. Mirrors ``ConstantParameter<Vec>``.
+
+## Outputs
+
+`parameter` &mdash; `output` &middot; `Vec`
+: The output parameter. If not specified, the object name will be used.
+
+
+## Parameters
+
+`value` &mdash; `parameter` &middot; `Vec` &middot; **required**
+: The constant value of the parameter
+
