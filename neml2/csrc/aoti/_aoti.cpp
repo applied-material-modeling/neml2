@@ -191,10 +191,20 @@ Everything else is baked into the graph as a constant.
           "input_base_shapes",
           &Model::input_base_shapes,
           "Per-input base shape (Scalar -> [], SR2 -> [6], R2 -> [3, 3]). Inputs "
-          "must be passed at their canonical (*B, *base_shape) shape.")
+          "must be passed at their canonical (*B, *sub_batch_shape, *base_shape) "
+          "shape.")
       .def_property_readonly("output_base_shapes",
                              &Model::output_base_shapes,
                              "Per-output base shape (Scalar -> [], SR2 -> [6], R2 -> [3, 3]).")
+      .def_property_readonly(
+          "input_sub_batch_shapes",
+          &Model::input_sub_batch_shapes,
+          "Per-input sub-batch shape -- the structural per-site axes (per-grain, "
+          "per-slip-system, per-bin) between the leading dynamic batch and the "
+          "trailing base shape; [] for a plain-batch input. Parallel to "
+          "input_names. Sub-batch axes are always materialized at the boundary, "
+          "so each batch entry is a contiguous block of prod(sub) * prod(base) "
+          "values.")
       .def_property_readonly(
           "parameter_base_shapes",
           &Model::parameter_base_shapes,

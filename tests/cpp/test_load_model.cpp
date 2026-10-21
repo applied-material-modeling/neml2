@@ -91,6 +91,16 @@ main(int argc, char ** argv)
   // takes the artifact folder + device + dtype and resolves
   // metadata.json + the <device>/<dtype>/ binaries itself).
   Model ref(artifact_root, at::kCPU, at::kDouble);
+
+  // Per-input sub-batch shapes are reported alongside the base shapes and are
+  // indexable by the same index as input_names(). This fixture is plain-batch,
+  // so every entry is empty -- the point of the check is that the vector is
+  // sized to the inputs rather than left empty, which is what lets a host index
+  // it unconditionally.
+  NEML2_CHECK(ref.input_sub_batch_shapes().size() == ref.input_names().size());
+  for (const auto & sub : ref.input_sub_batch_shapes())
+    NEML2_CHECK(sub.empty());
+
   const int64_t b = 10;
   const auto inputs = make_inputs(ref, b);
   const auto ref_out = ref.forward(inputs);

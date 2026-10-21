@@ -146,6 +146,10 @@ struct Model::Impl
   {
     return _output_base_shapes;
   }
+  const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept
+  {
+    return _input_sub_batch_shapes;
+  }
   std::map<std::string, at::Tensor> & named_parameters() noexcept { return _named_parameters; }
   const std::map<std::string, at::Tensor> & named_parameters() const noexcept
   {

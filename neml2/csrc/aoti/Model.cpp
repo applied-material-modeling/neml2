@@ -948,6 +948,12 @@ Model::output_base_shapes() const noexcept
   return _impl->output_base_shapes();
 }
 
+const std::vector<std::vector<int64_t>> &
+Model::input_sub_batch_shapes() const noexcept
+{
+  return _impl->input_sub_batch_shapes();
+}
+
 // The ops run through `_guarded` so every exception leaving the public surface
 // is a neml2 Exception with a meaningful `recoverable()`: a recoverable
 // ConvergenceError from the Newton solve passes through, while a foreign torch

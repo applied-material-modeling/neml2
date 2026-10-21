@@ -137,10 +137,22 @@ public:
   const std::vector<std::string> & output_names() const noexcept;
 
   /// Per-name base shape (Scalar -> `{}`, SR2 -> `{6}`, R2 -> `{3,3}`). Inputs
-  /// must be passed at their canonical `(*B, *base_shape)` shape. Cached at
-  /// load; no GIL. Mirrors @ref neml2::aoti::Model::input_base_shapes.
+  /// must be passed at their canonical `(*B, *sub_batch_shape, *base_shape)`
+  /// shape. Cached at load; no GIL. Mirrors
+  /// @ref neml2::aoti::Model::input_base_shapes.
   const std::vector<std::vector<int64_t>> & input_base_shapes() const noexcept;
   const std::vector<std::vector<int64_t>> & output_base_shapes() const noexcept;
+
+  /// Per-input sub-batch shape, parallel to `input_names()`. Identical
+  /// signature to @ref neml2::aoti::Model::input_sub_batch_shapes, so a host
+  /// introspects either runtime the same way.
+  ///
+  /// Every entry is empty today: this runtime is plain-batch only and rejects a
+  /// sub-batched model at construction, so an input that loaded successfully
+  /// has no sub-batch axes. The accessor exists now so the host-side code that
+  /// consumes it does not have to change when eager grows sub-batch support
+  /// (#481). Cached at load; no GIL.
+  const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
 
   /// Evaluate the model. `inputs` is keyed by the names returned by
   /// `input_names()` and shaped `(*B, *base_shape)`; missing keys throw and a

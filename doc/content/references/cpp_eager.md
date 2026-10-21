@@ -34,7 +34,8 @@ Python supplies it automatically.
 `load_model(path, name)` and returns a `neml2::eager::Model` whose operations
 (`forward` / `jvp` / `jacobian` plus the parameter derivatives `param_jacobian` /
 `param_vjp`) and metadata accessors (`input_names` /
-`output_names` / `input_base_shapes` / `output_base_shapes` / `device` / `dtype`)
+`output_names` / `input_base_shapes` / `output_base_shapes` /
+`input_sub_batch_shapes` / `device` / `dtype`)
 have the **same signatures** as `neml2::aoti::Model`. So test code switches between
 the eager and compiled runtimes by changing only the load call and the header.
 
@@ -70,8 +71,15 @@ The reported `input_names` / `input_base_shapes` (and the outputs) are derived
 through the same helper the AOTI metadata uses, so an eager model and its compiled
 twin agree on the boundary contract — making `neml2::eager::Model` a true drop-in
 for `neml2::aoti::Model`. Inputs must be passed at their canonical
-`(*B, *base_shape)` shape; a non-canonical trailing shape (e.g. an SR2 strain
-passed as `(*B, 1)` instead of `(*B, 6)`) is rejected with a `FatalError`.
+`(*B, *sub_batch_shape, *base_shape)` shape; a non-canonical trailing shape
+(e.g. an SR2 strain passed as `(*B, 1)` instead of `(*B, 6)`) is rejected with a
+`FatalError`.
+
+`input_sub_batch_shapes()` is part of that drop-in surface, and every entry it
+reports is empty: this runtime rejects a sub-batched model at construction, so
+an input that loaded has no sub-batch axes. Host code can read it
+unconditionally on either runtime and will not have to change when eager grows
+sub-batch support.
 
 ## Loading external (Python-authored) models
 

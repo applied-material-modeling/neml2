@@ -767,6 +767,12 @@ DispatchedModel::output_base_shapes() const noexcept
   return _impl->active()->output_base_shapes();
 }
 
+const std::vector<std::vector<int64_t>> &
+DispatchedModel::input_sub_batch_shapes() const noexcept
+{
+  return _impl->active()->input_sub_batch_shapes();
+}
+
 const std::map<std::string, std::vector<int64_t>> &
 DispatchedModel::parameter_base_shapes() const noexcept
 {

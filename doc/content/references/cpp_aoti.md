@@ -56,6 +56,42 @@ The bare `Model` is non-copyable and non-movable; hold it as a
 `std::unique_ptr` / `std::shared_ptr` or as an automatic on the
 stack.
 
+## The tensor contract
+
+Every input and output tensor crossing this boundary is laid out as
+
+```
+(*B, *sub_batch_shape, *base_shape)
+```
+
+`*B` is the leading dynamic batch, shared across variables; `base_shape` is the
+variable's type shape (`{}` for a Scalar, `{6}` for an SR2, `{3,3}` for an R2);
+`sub_batch_shape` is the variable's structural per-site extent (per-grain,
+per-slip-system, per-bin) and is empty for a plain-batch variable. See
+[](sub-batch-declaration) for how the extent is declared.
+
+`input_base_shapes()` and `input_sub_batch_shapes()` report the two trailing
+regions, both parallel to `input_names()`:
+
+```cpp
+// Size input i without having a tensor for it yet.
+std::vector<int64_t> shape{8};                            // batch
+const auto & sub = model.input_sub_batch_shapes()[i];     // e.g. {100}, or {} if plain
+const auto & base = model.input_base_shapes()[i];         // e.g. {6} for SR2
+shape.insert(shape.end(), sub.begin(), sub.end());
+shape.insert(shape.end(), base.begin(), base.end());
+```
+
+Sub-batch axes are always materialized here — never a lazily broadcast size-1
+axis — so each batch entry is a contiguous block of
+`prod(sub_batch_shape) * prod(base_shape)` values. `DispatchedModel` and
+`neml2::eager::Model` expose the same two accessors with identical signatures.
+
+There is no `output_sub_batch_shapes()` yet. `metadata.json` carries a
+`sub_batch_shape` for inputs only, so an output's extent is not known before the
+first call; a host that must handle sub-batched outputs should reject them for
+now.
+
 ## Errors
 
 Public ops throw the `neml2::aoti` exception taxonomy: `ConvergenceError`

@@ -108,6 +108,9 @@ main(int argc, char ** argv)
     NEML2_CHECK(disp.input_names() == ref.input_names());
     // The unified parameter surface forwards to the primary device copy.
     NEML2_CHECK(disp.parameter_base_shapes() == ref.parameter_base_shapes());
+    // So do the per-input sub-batch shapes: chunking slices the leading dynamic
+    // batch only, so every device copy agrees with the single-shot reference.
+    NEML2_CHECK(disp.input_sub_batch_shapes() == ref.input_sub_batch_shapes());
     NEML2_CHECK(disp.device().is_cpu());
 
     // forward

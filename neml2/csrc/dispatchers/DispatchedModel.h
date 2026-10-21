@@ -145,6 +145,11 @@ public:
   const std::vector<std::string> & output_names() const noexcept;
   const std::vector<std::vector<int64_t>> & input_base_shapes() const noexcept;
   const std::vector<std::vector<int64_t>> & output_base_shapes() const noexcept;
+  /// Per-input sub-batch shape (empty for a plain-batch input), parallel to
+  /// `input_names()`. Identical signature to @ref neml2::aoti::Model and
+  /// @ref neml2::eager::Model. Chunking slices the leading dynamic batch only,
+  /// so the per-input sub-batch axes are the same on every device copy.
+  const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
   /// Per-promoted-parameter natural base shape, keyed by qualified name (the
   /// unified parameter surface; forwards to the primary device copy, all agree).
   const std::map<std::string, std::vector<int64_t>> & parameter_base_shapes() const noexcept;

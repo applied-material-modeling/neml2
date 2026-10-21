@@ -165,6 +165,16 @@ def test_aoti_export_reload_matches_eager(scenario: Path, tmp_path: Path):
     # these shapes, so calling it with mismatched ones is an error
     # rather than a silent broadcast.
     shapes = _read_per_input_shapes(hit_path, structural_spec)
+
+    # The declared sub-batch extent survives the compile and is readable off the
+    # C++ model before any call -- that is what lets a C++ host size a
+    # sub-batched input. Asserted on the binding (``_inner``) rather than the
+    # shim because the binding is the surface a C++ host sees; the sub-batch
+    # scenarios in _SCENARIOS give this the non-empty case.
+    assert aoti._inner.input_sub_batch_shapes == [
+        list(shapes[name][1]) for name in aoti._inner.input_names
+    ]
+
     inputs = _make_inputs(structural_spec, shapes=shapes)
     raw_inputs = {name: t for name, (t, _) in inputs.items()}
 
