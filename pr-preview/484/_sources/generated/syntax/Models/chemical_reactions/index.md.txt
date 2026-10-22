@@ -1,0 +1,13 @@
+# chemical_reactions
+
+`[Models]` types under `chemical_reactions/`.
+
+```{toctree}
+:maxdepth: 1
+
+AvramiErofeevNucleation
+ContractingGeometry
+CylindricalChannelGeometry
+DiffusionLimitedReaction
+EffectiveVolume
+```

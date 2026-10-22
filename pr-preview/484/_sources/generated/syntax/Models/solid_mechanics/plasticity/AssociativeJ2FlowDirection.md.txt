@@ -1,0 +1,18 @@
+(models-AssociativeJ2FlowDirection)=
+# AssociativeJ2FlowDirection
+
+**Source:** `models/solid_mechanics/plasticity/AssociativeJ2FlowDirection.py`
+
+The plastic flow direction assuming an associative J2 flow.
+
+## Inputs
+
+`mandel_stress` &mdash; `input` &middot; `SR2` &middot; **required**
+: Mandel stress
+
+
+## Outputs
+
+`flow_direction` &mdash; `output` &middot; `SR2` &middot; **required**
+: Flow direction
+
