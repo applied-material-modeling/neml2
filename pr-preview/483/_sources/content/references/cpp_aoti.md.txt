@@ -71,7 +71,8 @@ per-slip-system, per-bin) and is empty for a plain-batch variable. See
 [](sub-batch-declaration) for how the extent is declared.
 
 `input_base_shapes()` and `input_sub_batch_shapes()` report the two trailing
-regions, both parallel to `input_names()`:
+regions, both parallel to `input_names()`; `output_base_shapes()` and
+`output_sub_batch_shapes()` do the same for `output_names()`:
 
 ```cpp
 // Size input i without having a tensor for it yet.
@@ -80,19 +81,29 @@ const auto & sub = model.input_sub_batch_shapes()[i];     // e.g. {100}, or {} i
 const auto & base = model.input_base_shapes()[i];         // e.g. {6} for SR2
 shape.insert(shape.end(), sub.begin(), sub.end());
 shape.insert(shape.end(), base.begin(), base.end());
+
+// Same two lines against the output vectors size output j.
+const auto & osub = model.output_sub_batch_shapes()[j];
+const auto & obase = model.output_base_shapes()[j];
 ```
 
 The runtime materializes every input to this full shape before the call (a
-size-1 sub-batch axis is broadcast to its declared extent), so each batch entry
-of an input is a contiguous block of `prod(sub_batch_shape) * prod(base_shape)`
-values. Outputs are returned as the compiled graph produced them; the same
-guarantee for outputs comes with `output_sub_batch_shapes()`. `DispatchedModel` and
-`neml2::eager::Model` expose the same two accessors with identical signatures.
+size-1 sub-batch axis is broadcast to its declared extent), and `forward`
+materializes every output the same way on the way back, so each batch entry of
+an input *or* an output is a contiguous block of
+`prod(sub_batch_shape) * prod(base_shape)` values. `DispatchedModel` and
+`neml2::eager::Model` expose the same four accessors with identical signatures.
 
-There is no `output_sub_batch_shapes()` yet. `metadata.json` carries a
-`sub_batch_shape` for inputs only, so an output's extent is not known before the
-first call; a host that must handle sub-batched outputs should reject them for
-now.
+The output extents come from what the compiled graph produces, recorded at
+compile time rather than read from the optional
+`[Settings]/example_batch_shape`: a forward segment's eager probe on the
+example inputs, or an implicit segment's solved-unknown layout. Declaring the
+extent is therefore not required for an output to be reported correctly — if
+it were, an undeclared sub-batched output would be reported as plain batch and
+a host would read it at the wrong offsets. On this route and on
+`DispatchedModel` the answer is definite and an empty entry means plain batch.
+On `neml2::eager::Model` the same accessor reports the *declared* extent, where
+empty means "not declared"; see [](model-eager-cpp).
 
 ## Errors
 

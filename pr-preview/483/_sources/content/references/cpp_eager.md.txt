@@ -75,14 +75,23 @@ for `neml2::aoti::Model`. Inputs must be passed at their canonical
 (e.g. an SR2 strain passed as `(*B, 1)` instead of `(*B, 6)`) is rejected with a
 `FatalError`.
 
-`input_sub_batch_shapes()` is part of that drop-in surface. On this runtime it
-reports *declared* extents, so an empty entry means "not declared as
-sub-batched", not "plain-batch". Every entry is empty today: the runtime does
-not read `[Settings]/example_batch_shape` yet, wraps every input as plain-batch,
-and rejects a sub-batched output at call time. It still loads a model whose
-inputs are sub-batched, so a host must not size such an input from this
-accessor alone. Host code can read it unconditionally on either runtime and will
-not have to change when eager grows sub-batch support.
+`input_sub_batch_shapes()` and `output_sub_batch_shapes()` are part of that
+drop-in surface. On this runtime they report *declared* extents, so an empty
+entry means "not declared as sub-batched", not "plain-batch". Every entry on
+both is empty today: the runtime does not read `[Settings]/example_batch_shape`
+yet, wraps every input as plain-batch, and rejects a sub-batched output at call
+time. It still loads a model whose inputs are sub-batched, so a host must not
+size such a variable from these accessors alone. Host code can read them
+unconditionally on either runtime and will not have to change when eager grows
+sub-batch support.
+
+That is the one place the two routes differ in meaning rather than in
+signature. On `neml2::aoti::Model` the output extents were recorded from what
+the compiled graph produces, so they are definite and an empty entry means
+plain batch (see [](cpp-aoti)). A host that supports both keeps treating
+an undeclared variable as plain and checks the shapes it actually receives on
+the first eager evaluation, stopping with a clear message if an output carries
+an undeclared sub-batch axis.
 
 ## Loading external (Python-authored) models
 

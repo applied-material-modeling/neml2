@@ -482,25 +482,36 @@ variable’s type shape (<code class="docutils literal notranslate"><span class=
 per-slip-system, per-bin) and is empty for a plain-batch variable. See
 <a class="reference internal" href="sub_batch.html#sub-batch-declaration"><span class="std std-ref">Sub-batch axes</span></a> for how the extent is declared.</p>
 <p><code class="docutils literal notranslate"><span class="pre">input_base_shapes()</span></code> and <code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes()</span></code> report the two trailing
-regions, both parallel to <code class="docutils literal notranslate"><span class="pre">input_names()</span></code>:</p>
+regions, both parallel to <code class="docutils literal notranslate"><span class="pre">input_names()</span></code>; <code class="docutils literal notranslate"><span class="pre">output_base_shapes()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code> do the same for <code class="docutils literal notranslate"><span class="pre">output_names()</span></code>:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1">// Size input i without having a tensor for it yet.</span>
 </span><span data-line="2"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int64_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">shape</span><span class="p">{</span><span class="mi">8</span><span class="p">};</span><span class="w">                            </span><span class="c1">// batch</span>
 </span><span data-line="3"><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">sub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">input_sub_batch_shapes</span><span class="p">()[</span><span class="n">i</span><span class="p">];</span><span class="w">     </span><span class="c1">// e.g. {100}, or {} if plain</span>
 </span><span data-line="4"><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">input_base_shapes</span><span class="p">()[</span><span class="n">i</span><span class="p">];</span><span class="w">         </span><span class="c1">// e.g. {6} for SR2</span>
 </span><span data-line="5"><span class="n">shape</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">shape</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="n">sub</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">sub</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
 </span><span data-line="6"><span class="n">shape</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">shape</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="n">base</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">base</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="c1">// Same two lines against the output vectors size output j.</span>
+</span><span data-line="9"><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">osub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">output_sub_batch_shapes</span><span class="p">()[</span><span class="n">j</span><span class="p">];</span>
+</span><span data-line="10"><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">obase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">output_base_shapes</span><span class="p">()[</span><span class="n">j</span><span class="p">];</span>
 </span></pre></div>
 </div>
 <p>The runtime materializes every input to this full shape before the call (a
-size-1 sub-batch axis is broadcast to its declared extent), so each batch entry
-of an input is a contiguous block of <code class="docutils literal notranslate"><span class="pre">prod(sub_batch_shape)</span> <span class="pre">*</span> <span class="pre">prod(base_shape)</span></code>
-values. Outputs are returned as the compiled graph produced them; the same
-guarantee for outputs comes with <code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code>. <code class="docutils literal notranslate"><span class="pre">DispatchedModel</span></code> and
-<code class="docutils literal notranslate"><span class="pre">neml2::eager::Model</span></code> expose the same two accessors with identical signatures.</p>
-<p>There is no <code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code> yet. <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> carries a
-<code class="docutils literal notranslate"><span class="pre">sub_batch_shape</span></code> for inputs only, so an output’s extent is not known before the
-first call; a host that must handle sub-batched outputs should reject them for
-now.</p>
+size-1 sub-batch axis is broadcast to its declared extent), and <code class="docutils literal notranslate"><span class="pre">forward</span></code>
+materializes every output the same way on the way back, so each batch entry of
+an input <em>or</em> an output is a contiguous block of
+<code class="docutils literal notranslate"><span class="pre">prod(sub_batch_shape)</span> <span class="pre">*</span> <span class="pre">prod(base_shape)</span></code> values. <code class="docutils literal notranslate"><span class="pre">DispatchedModel</span></code> and
+<code class="docutils literal notranslate"><span class="pre">neml2::eager::Model</span></code> expose the same four accessors with identical signatures.</p>
+<p>The output extents come from what the compiled graph produces, recorded at
+compile time rather than read from the optional
+<code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code>: a forward segment’s eager probe on the
+example inputs, or an implicit segment’s solved-unknown layout. Declaring the
+extent is therefore not required for an output to be reported correctly — if
+it were, an undeclared sub-batched output would be reported as plain batch and
+a host would read it at the wrong offsets. On this route and on
+<code class="docutils literal notranslate"><span class="pre">DispatchedModel</span></code> the answer is definite and an empty entry means plain batch.
+On <code class="docutils literal notranslate"><span class="pre">neml2::eager::Model</span></code> the same accessor reports the <em>declared</em> extent, where
+empty means “not declared”; see <a class="reference internal" href="cpp_eager.html#model-eager-cpp"><span class="std std-ref">cpp-eager — eager evaluation from C++</span></a>.</p>
 </section>
 <section id="errors">
 <h2>Errors<a class="headerlink" href="#errors" title="Link to this heading">#</a></h2>

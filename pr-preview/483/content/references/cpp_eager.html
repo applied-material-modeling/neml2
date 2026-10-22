@@ -504,14 +504,22 @@ for <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Mo
 <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*sub_batch_shape,</span> <span class="pre">*base_shape)</span></code> shape; a non-canonical trailing shape
 (e.g. an SR2 strain passed as <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">1)</span></code> instead of <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">6)</span></code>) is rejected with a
 <code class="docutils literal notranslate"><span class="pre">FatalError</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes()</span></code> is part of that drop-in surface. On this runtime it
-reports <em>declared</em> extents, so an empty entry means “not declared as
-sub-batched”, not “plain-batch”. Every entry is empty today: the runtime does
-not read <code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code> yet, wraps every input as plain-batch,
-and rejects a sub-batched output at call time. It still loads a model whose
-inputs are sub-batched, so a host must not size such an input from this
-accessor alone. Host code can read it unconditionally on either runtime and will
-not have to change when eager grows sub-batch support.</p>
+<p><code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes()</span></code> and <code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code> are part of that
+drop-in surface. On this runtime they report <em>declared</em> extents, so an empty
+entry means “not declared as sub-batched”, not “plain-batch”. Every entry on
+both is empty today: the runtime does not read <code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code>
+yet, wraps every input as plain-batch, and rejects a sub-batched output at call
+time. It still loads a model whose inputs are sub-batched, so a host must not
+size such a variable from these accessors alone. Host code can read them
+unconditionally on either runtime and will not have to change when eager grows
+sub-batch support.</p>
+<p>That is the one place the two routes differ in meaning rather than in
+signature. On <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code> the output extents were recorded from what
+the compiled graph produces, so they are definite and an empty entry means
+plain batch (see <a class="reference internal" href="cpp_aoti.html#cpp-aoti"><span class="std std-ref">cpp-aoti — compiled model from C++</span></a>). A host that supports both keeps treating
+an undeclared variable as plain and checks the shapes it actually receives on
+the first eager evaluation, stopping with a clear message if an output carries
+an undeclared sub-batch axis.</p>
 </section>
 <section id="loading-external-python-authored-models">
 <h2>Loading external (Python-authored) models<a class="headerlink" href="#loading-external-python-authored-models" title="Link to this heading">#</a></h2>
