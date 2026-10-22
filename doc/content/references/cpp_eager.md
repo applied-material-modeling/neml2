@@ -75,11 +75,14 @@ for `neml2::aoti::Model`. Inputs must be passed at their canonical
 (e.g. an SR2 strain passed as `(*B, 1)` instead of `(*B, 6)`) is rejected with a
 `FatalError`.
 
-`input_sub_batch_shapes()` is part of that drop-in surface, and every entry it
-reports is empty: this runtime rejects a sub-batched model at construction, so
-an input that loaded has no sub-batch axes. Host code can read it
-unconditionally on either runtime and will not have to change when eager grows
-sub-batch support.
+`input_sub_batch_shapes()` is part of that drop-in surface. On this runtime it
+reports *declared* extents, so an empty entry means "not declared as
+sub-batched", not "plain-batch". Every entry is empty today: the runtime does
+not read `[Settings]/example_batch_shape` yet, wraps every input as plain-batch,
+and rejects a sub-batched output at call time. It still loads a model whose
+inputs are sub-batched, so a host must not size such an input from this
+accessor alone. Host code can read it unconditionally on either runtime and will
+not have to change when eager grows sub-batch support.
 
 ## Loading external (Python-authored) models
 

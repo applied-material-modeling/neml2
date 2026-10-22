@@ -55,7 +55,7 @@ Model::Impl::_validate_input_shape(std::size_t idx, const at::Tensor & t) const
           base_ref,
           " requires at least ",
           bn,
-          " trailing axes (canonical input shape is (*B, *base)).");
+          " trailing axes (canonical input shape is (*B, *sub_batch, *base)).");
   // The trailing base_ndim axes must equal the declared base shape exactly, so
   // e.g. an SR2 must arrive as (*B, 6) -- not (*B, 1) or (*B, 3, 2). (A Scalar
   // has an empty base shape, so any leading shape is a valid batch.)

@@ -189,9 +189,10 @@ public:
   const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
 
   /// Evaluate the model. `inputs` is keyed by the names returned by
-  /// `input_names()` and shaped `(*B, *base_shape)`; missing keys throw and a
-  /// non-canonical trailing shape is rejected. Returns one tensor per name in
-  /// `output_names()` at `(*B, *out_base_shape)`.
+  /// `input_names()` and shaped `(*B, *sub_batch_shape, *base_shape)` (see
+  /// `input_sub_batch_shapes()`); missing keys throw and a non-canonical
+  /// trailing shape is rejected. Returns one tensor per name in
+  /// `output_names()` at `(*B, *out_sub_batch_shape, *out_base_shape)`.
   ///
   /// `param_overrides` (default empty) replaces a promoted parameter's value for
   /// this call only, without mutating `named_parameters()`. It exists for the

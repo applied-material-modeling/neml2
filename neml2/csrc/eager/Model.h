@@ -147,11 +147,14 @@ public:
   /// signature to @ref neml2::aoti::Model::input_sub_batch_shapes, so a host
   /// introspects either runtime the same way.
   ///
-  /// Every entry is empty today: this runtime is plain-batch only and rejects a
-  /// sub-batched model at construction, so an input that loaded successfully
-  /// has no sub-batch axes. The accessor exists now so the host-side code that
-  /// consumes it does not have to change when eager grows sub-batch support
-  /// (#481). Cached at load; no GIL.
+  /// On this runtime an entry reports the *declared* extent, so an empty entry
+  /// means "not declared as sub-batched" rather than "plain-batch". Every entry
+  /// is empty today: the runtime does not read `[Settings]/example_batch_shape`
+  /// yet, wraps every input as plain-batch, and rejects a sub-batched *output*
+  /// at call time (#481). It does load a model with sub-batched inputs, so a
+  /// host must not size such an input from this accessor alone. The accessor
+  /// exists now so the host-side code that consumes it does not have to change
+  /// when eager grows sub-batch support. Cached at load; no GIL.
   const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
 
   /// Evaluate the model. `inputs` is keyed by the names returned by

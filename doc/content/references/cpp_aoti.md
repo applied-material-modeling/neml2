@@ -82,9 +82,11 @@ shape.insert(shape.end(), sub.begin(), sub.end());
 shape.insert(shape.end(), base.begin(), base.end());
 ```
 
-Sub-batch axes are always materialized here — never a lazily broadcast size-1
-axis — so each batch entry is a contiguous block of
-`prod(sub_batch_shape) * prod(base_shape)` values. `DispatchedModel` and
+The runtime materializes every input to this full shape before the call (a
+size-1 sub-batch axis is broadcast to its declared extent), so each batch entry
+of an input is a contiguous block of `prod(sub_batch_shape) * prod(base_shape)`
+values. Outputs are returned as the compiled graph produced them; the same
+guarantee for outputs comes with `output_sub_batch_shapes()`. `DispatchedModel` and
 `neml2::eager::Model` expose the same two accessors with identical signatures.
 
 There is no `output_sub_batch_shapes()` yet. `metadata.json` carries a

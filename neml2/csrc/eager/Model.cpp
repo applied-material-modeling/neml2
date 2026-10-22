@@ -200,8 +200,8 @@ Model::Model(const std::filesystem::path & input_file,
             _impl->adapter.attr("output_base_shapes").cast<std::vector<std::vector<int64_t>>>();
         _impl->parameter_base_shapes = _impl->adapter.attr("parameter_base_shapes")
                                            .cast<std::map<std::string, std::vector<int64_t>>>();
-        // The adapter rejects a sub-batched model, so every input here is
-        // plain-batch: one empty shape per input, not read from Python.
+        // Eager reports declared sub-batch extents only, and it reads none yet
+        // (#481): one empty shape per input, meaning "not declared".
         _impl->input_sub_batch_shapes.assign(_impl->input_names.size(), {});
         _impl->device = _impl->adapter.attr("device").cast<at::Device>();
         _impl->dtype = _impl->adapter.attr("dtype").cast<at::ScalarType>();

@@ -257,7 +257,7 @@ promoted parameter's value for this call only, without mutating
 Evaluate + JVP.
 
 ``inputs`` and ``tangents`` are keyed by ``input_names`` and shaped
-``(*B, *base_shape)``; a missing tangent key defaults to zero. Returns a
+``(*B, *sub_batch_shape, *base_shape)``; a missing tangent key defaults to zero. Returns a
 2-tuple ``(outputs, jvp_outputs)`` -- both ``dict[str, Tensor]`` keyed by
 ``output_names``; ``jvp_outputs[name]`` is the directional derivative at the
 output's natural ``(*B, *out_base_shape)``.
