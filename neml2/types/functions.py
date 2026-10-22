@@ -883,6 +883,54 @@ def diff(view: DynamicBatchView[_TW] | SubBatchView[_TW], n: int = 1, dim: int =
     return w._rewrap(torch.diff(w.data, n=n, dim=d), sub_batch_ndim=w.sub_batch_ndim)
 
 
+def cumsum(view: DynamicBatchView[_TW] | SubBatchView[_TW], dim: int = 0) -> _TW:
+    """Cumulative sum along an axis of a region view.
+
+    The selected axis length and the wrapper type are preserved (a running
+    total is not a reduction). ``view`` must be ``t.dynamic_batch`` or
+    ``t.sub_batch``. A running total mixes sites along a sub-batch axis, so
+    that axis is materialised first: a ``"broadcast"`` sub-batch axis is
+    expanded to its logical extent and a K axis paired with it is fullified
+    (it no longer stays diagonal). Other K / sub-batch metadata is threaded
+    through unchanged.
+    """
+    w, start, end = _reduce_view_bounds(view, "cumsum")
+    d = _normalize_dim(dim, start, end)
+    if isinstance(view, SubBatchView):
+        axis = d - start
+        w = fullify(w, sub_axis=axis)
+        if w.sub_batch_state and w.sub_batch_state[axis] == "broadcast":
+            w = w.materialize()
+    return w._rewrap(torch.cumsum(w.data, dim=d), sub_batch_ndim=w.sub_batch_ndim)
+
+
+def triu(view: SubBatchView[_TW], diagonal: int = 0) -> _TW:
+    """Zero the entries below the ``diagonal``-th diagonal of the last two
+    sub-batch axes (upper-triangular keep).
+
+    ``diagonal=0`` keeps the main diagonal and above; ``diagonal=1`` keeps
+    the strict upper triangle. Requires ``sub_batch_ndim >= 2``; the two
+    trailing sub-batch axes form the (row, col) grid. The mask depends on the
+    logical (row, col) position, so a ``"broadcast"`` grid axis is
+    materialised before masking.
+    """
+    if not isinstance(view, SubBatchView):
+        raise TypeError(f"triu expects a t.sub_batch view; got {type(view).__name__}")
+    w = view._w
+    if w.sub_batch_ndim < 2:
+        raise ValueError(f"triu requires sub_batch_ndim >= 2, got {w.sub_batch_ndim}")
+    if w.sub_batch_state and "broadcast" in w.sub_batch_state[-2:]:
+        w = w.materialize()
+    _, _, end = _reduce_view_bounds(view, "triu")
+    a, b = end - 2, end - 1
+    # torch.triu acts on the last two dims: move the grid axes there and back so
+    # any K / base axes stay put.
+    data = torch.movedim(w.data, (a, b), (-2, -1))
+    data = torch.triu(data, diagonal=diagonal)
+    data = torch.movedim(data, (-2, -1), (a, b))
+    return w._rewrap(data, sub_batch_ndim=w.sub_batch_ndim)
+
+
 @overload
 def stack(
     views: Sequence[SubBatchView[_TW] | DynamicBatchView[_TW]],
@@ -3019,6 +3067,7 @@ __all__ = [
     "cos",
     "cosh",
     "cross",
+    "cumsum",
     "det",
     "dev",
     "dexp_map",
@@ -3068,6 +3117,7 @@ __all__ = [
     "tanh",
     "to_quaternion",
     "tr",
+    "triu",
     "unit",
     "vdot",
     "vec_component",

@@ -37,7 +37,7 @@ repos:
         entry: doc/scripts/check_notebook_executed.py
         language: script
         files: >-
-          ^doc/content/(tutorials/optimization/(deterministic|statistical|crystal_plasticity_calibration)/main|modules/kwn/(precipitation_316h|al_cu_ttp)|modules/solid_mechanics/crystal_plasticity/(formulations|polefigures))\.ipynb$
+          ^doc/content/(tutorials/optimization/(deterministic|statistical|crystal_plasticity_calibration)/main|modules/kwn/(precipitation_316h|al_cu_ttp)|modules/pbm/grinding|modules/solid_mechanics/crystal_plasticity/(formulations|polefigures))\.ipynb$
         pass_filenames: true
       - id: nmhit-format
         name: nmhit-format

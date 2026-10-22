@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 
 from neml2.types import (
@@ -32,8 +33,10 @@ from neml2.types import (
     asin,
     atan,
     cos,
+    cumsum,
     sin,
     tan,
+    triu,
 )
 
 # ---------------------------------------------------------------------------
@@ -69,3 +72,110 @@ def test_acos() -> None:
 def test_atan() -> None:
     s = atan(Scalar(torch.tensor([-2.0, 0.0, 1.0])))
     assert torch.allclose(s.data, torch.atan(torch.tensor([-2.0, 0.0, 1.0])))
+
+
+# ---------------------------------------------------------------------------
+# Intermediate-dim helpers: cumsum, triu
+# ---------------------------------------------------------------------------
+
+
+def test_cumsum_sub_batch() -> None:
+    x = Scalar(torch.tensor([1.0, 2.0, 3.0, 4.0]), sub_batch_ndim=1)
+    c = cumsum(x.sub_batch, dim=0)
+    assert c.sub_batch_ndim == 1
+    assert torch.allclose(c.data, torch.tensor([1.0, 3.0, 6.0, 10.0]))
+
+
+def test_cumsum_selects_axis() -> None:
+    # (2, 3) sub-batch grid; cumulative sum down each axis independently.
+    m = torch.tensor([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+    x = Scalar(m, sub_batch_ndim=2)
+    assert torch.allclose(cumsum(x.sub_batch, dim=0).data, torch.cumsum(m, dim=0))
+    assert torch.allclose(cumsum(x.sub_batch, dim=1).data, torch.cumsum(m, dim=1))
+
+
+def test_cumsum_broadcast_sub_batch() -> None:
+    # Storage [2] broadcast to logical extent 3: the scan runs over the logical axis.
+    x = Scalar(
+        torch.tensor([2.0]),
+        sub_batch_ndim=1,
+        sub_batch_state=("broadcast",),
+        sub_batch_meta=(3,),
+    )
+    c = cumsum(x.sub_batch, dim=0)
+    assert c.sub_batch_state == ("full",)
+    assert torch.allclose(c.data, torch.tensor([2.0, 4.0, 6.0]))
+
+
+@pytest.mark.parametrize("sub_broadcast", [False, True])
+def test_cumsum_k_paired_tangent(sub_broadcast: bool) -> None:
+    # Compact identity tangent d u_i / d x_k = delta_ik (K paired with the sub axis).
+    # The running total mixes sites: d c_i / d x_k = 1 for k <= i, so K must be
+    # enumerated and lose its diagonal pairing.
+    x = Scalar(
+        torch.ones(1, 1 if sub_broadcast else 3),
+        sub_batch_ndim=1,
+        sub_batch_state=("broadcast",) if sub_broadcast else ("full",),
+        sub_batch_meta=(3,),
+        k_ndim=1,
+        k_state=("broadcast",),
+        k_pairing=(0,),
+    )
+    c = cumsum(x.sub_batch, dim=0)
+    assert c.k_state == ("full",)
+    assert c.k_pairing == (None,)
+    # data layout is (K, sub): entry [k, i] = 1 iff k <= i.
+    assert torch.allclose(c.data, torch.triu(torch.ones(3, 3)))
+
+
+def test_triu_default_and_diagonal() -> None:
+    m = torch.tensor([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
+    x = Scalar(m, sub_batch_ndim=2)
+    assert torch.allclose(triu(x.sub_batch).data, torch.triu(m))
+    assert torch.allclose(triu(x.sub_batch, diagonal=1).data, torch.triu(m, diagonal=1))
+
+
+def test_triu_batched() -> None:
+    # A leading batch axis is preserved; triu acts on the trailing (row, col) grid.
+    m = torch.arange(2.0 * 3.0 * 3.0).reshape(2, 3, 3)
+    x = Scalar(m, sub_batch_ndim=2)
+    out = triu(x.sub_batch, diagonal=1)
+    assert out.sub_batch_ndim == 2
+    assert torch.allclose(out.data, torch.triu(m, diagonal=1))
+
+
+def test_triu_broadcast_row_and_col() -> None:
+    # Storage [[1]] broadcast to a logical (3, 3) grid: the strict upper triangle survives.
+    x = Scalar(
+        torch.tensor([[1.0]]),
+        sub_batch_ndim=2,
+        sub_batch_state=("broadcast", "broadcast"),
+        sub_batch_meta=(3, 3),
+    )
+    out = triu(x.sub_batch, diagonal=1)
+    assert out.sub_batch_state == ("full", "full")
+    assert torch.allclose(out.data, torch.triu(torch.ones(3, 3), diagonal=1))
+
+
+def test_triu_broadcast_col() -> None:
+    # Rows stored in full, columns broadcast: each row is constant before masking.
+    x = Scalar(
+        torch.tensor([[1.0], [2.0], [3.0]]),
+        sub_batch_ndim=2,
+        sub_batch_state=("full", "broadcast"),
+        sub_batch_meta=(3, 3),
+    )
+    expected = torch.triu(torch.tensor([1.0, 2.0, 3.0]).unsqueeze(-1).expand(3, 3))
+    assert torch.allclose(triu(x.sub_batch).data, expected)
+
+
+def test_triu_requires_two_sub_batch_axes() -> None:
+    x = Scalar(torch.tensor([1.0, 2.0, 3.0]), sub_batch_ndim=1)
+    with pytest.raises(ValueError, match="sub_batch_ndim >= 2"):
+        triu(x.sub_batch)
+
+
+def test_triu_rejects_non_sub_batch_view() -> None:
+    x = Scalar(torch.tensor([[1.0, 2.0], [3.0, 4.0]]), sub_batch_ndim=2)
+    with pytest.raises(TypeError, match="t.sub_batch view"):
+        triu(x.dynamic_batch)  # type: ignore[arg-type]
