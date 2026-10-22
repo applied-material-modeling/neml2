@@ -1,0 +1,32 @@
+(models-ResolvedShear)=
+# ResolvedShear
+
+**Source:** `models/solid_mechanics/crystal_plasticity/ResolvedShear.py`
+
+Calculates the resolved shears as
+$\tau_i = \sigma : Q \operatorname{sym}\left(d_i \otimes n_i \right) Q^T$ where $\tau_i$ is the
+resolved shear on slip system i,
+$\sigma$ is the Cauchy stress $Q$ is the orientation matrix,
+$d_i$ is the slip direction, and $n_i$ is the slip system
+normal.
+
+## Inputs
+
+`stress` &mdash; `input` &middot; `SR2` &middot; **required**
+: The name of the Cauchy stress tensor
+
+`orientation_matrix` &mdash; `input` &middot; `R2` &middot; **required**
+: The name of the orientation matrix
+
+
+## Outputs
+
+`resolved_shears` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The name of the resolved shears
+
+
+## Other options
+
+`crystal_geometry` &mdash; `str` &middot; default `crystal_geometry`
+: The name of the data object with the crystallographic information
+
