@@ -1,0 +1,19 @@
+(models-SumSlipRates)=
+# SumSlipRates
+
+**Source:** `models/solid_mechanics/crystal_plasticity/SumSlipRates.py`
+
+Calculates the sum of the absolute value of all the slip rates as
+$\sum_{i=1}^{n_{slip}} \left| \dot{\gamma}_i \right|$.
+
+## Inputs
+
+`slip_rates` &mdash; `input` &middot; `Scalar` &middot; **required**
+: The name of individual slip rates
+
+
+## Outputs
+
+`sum_slip_rates` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The output name for the scalar sum of the slip rates
+
