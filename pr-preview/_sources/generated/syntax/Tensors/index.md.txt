@@ -11,5 +11,4 @@ CSVScalar
 CSVVec
 CSVWR2
 Python
-SquareMatrix
 ```

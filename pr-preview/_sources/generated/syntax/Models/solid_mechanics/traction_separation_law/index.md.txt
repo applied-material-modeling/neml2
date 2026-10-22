@@ -8,8 +8,17 @@
 BenzeggaghKenaneFullSeparation
 BilinearTraction
 CamanhoDavilaCriticalSeparation
+CavityGrowthDamageRate
+CavityNucleationDamageRate
+CavityNucleationRate
+CavityVolumeOpening
+DiffusiveCavityGrowthRate
+EffectiveCavityFraction
+GrainBoundarySlidingRate
 ModeMixity
 OrthotropicLinearTraction
 PowerLawFullSeparation
 SalehaniIraniTraction
+ShamNeedlemanTraction
+SlidingDrivenStrainRate
 ```
