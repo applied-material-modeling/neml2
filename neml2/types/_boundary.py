@@ -240,13 +240,21 @@ def nondefault_wrapper_metadata(value: object) -> dict[str, object] | None:
     and restore it with :func:`reattach_wrapper_metadata` on the far side.
 
     ``None`` means there is nothing to restore -- *value* is not a typed
-    wrapper, or every field already holds its dataclass default, so the pytree
-    reset is a no-op. Returning the decision from here (rather than the raw
-    snapshot) keeps the dataclass introspection of the wrappers inside
-    :mod:`neml2.types`, where it belongs.
+    wrapper, or every field already holds the value the pytree rebuild would
+    give it, so the reset is a no-op. Returning the decision from here (rather
+    than the raw snapshot) keeps the dataclass introspection of the wrappers
+    inside :mod:`neml2.types`, where it belongs.
+
+    The comparison is against a wrapper rebuilt from ``data`` alone -- what the
+    pytree unflatten produces -- not against the dataclass field defaults: the
+    wrappers default every metadata field to the ``UNSET`` sentinel and seat the
+    real value in ``__post_init__``, so a seated field never equals its declared
+    default.
     """
     if not dataclasses.is_dataclass(value) or isinstance(value, type):
         return None
+    value_any = cast("Any", value)
+    rebuilt = type(value_any)(value_any.data)
     metadata: dict[str, object] = {}
     nondefault = False
     for f in dataclasses.fields(value):
@@ -254,7 +262,7 @@ def nondefault_wrapper_metadata(value: object) -> dict[str, object] | None:
             continue
         current = getattr(value, f.name)
         metadata[f.name] = current
-        if f.default is not dataclasses.MISSING and current != f.default:
+        if current != getattr(rebuilt, f.name):
             nondefault = True
     return metadata if nondefault else None
 
