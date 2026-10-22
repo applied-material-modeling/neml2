@@ -339,6 +339,49 @@ def test_aoti_export_persists_sub_batch_labels(tmp_path: Path):
     )
 
 
+def test_aoti_plain_jacobian_with_sub_batched_input_matches_fd(tmp_path: Path):
+    """A plain-to-plain derivative of a model that also takes a sub-batched input.
+
+    ``implicit_sub_batch_forward`` computes ``vf = sum_i 4/3 pi R_i^3 T x_i`` with ``x``
+    sub-batched. ``d(vf)/dT`` involves only plain variables, but the forward
+    derivative module seeds every structural input, including ``x``. The seed
+    carries ``x``'s sub-batch extent in its shape, so it must also carry
+    ``sub_batch_ndim``; otherwise the per-bin axis reads as plain batch and the
+    chain rule fails to broadcast it against the plain-batch ``T``.
+    """
+    from neml2 import load_input
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    hit_path = _SCENARIO_DIR / "implicit_sub_batch_forward" / "model.i"
+    out_dir = tmp_path / "implicit_sub_batch_forward"
+    export_model_for_aoti(hit_path, "model", out_dir, derivatives=["vf:T"])
+
+    eager_model = load_input(hit_path).get_model("model")
+    structural_spec = dict(eager_model.input_spec)
+    shapes = _read_per_input_shapes(hit_path, structural_spec)
+    inputs = _make_inputs(structural_spec, shapes=shapes)
+    raw_inputs = {name: t for name, (t, _) in inputs.items()}
+    _, jac = AOTIModel(str(out_dir)).jacobian(raw_inputs)
+
+    out_names = list(eager_model.output_spec)
+
+    def eager_vf(T: torch.Tensor) -> torch.Tensor:
+        args = tuple(
+            structural_spec[name](T if name == "T" else t, sub_batch_ndim=sbn)
+            for name, (t, sbn) in inputs.items()
+        )
+        return eager_model(*args)[out_names.index("vf")].data
+
+    h = 1e-6
+    T = raw_inputs["T"]
+    fd = (eager_vf(T + h) - eager_vf(T - h)) / (2 * h)
+    block = jac["vf"]["T"].reshape(fd.shape)
+    assert torch.allclose(block, fd, rtol=1e-6, atol=1e-8), (
+        f"d(vf)/dT mismatch (max abs diff = {(block - fd).abs().max().item():.3e})"
+    )
+
+
 def test_scenarios_discovered():
     """Sanity: at least one scenario is on disk."""
     assert _SCENARIOS, (
