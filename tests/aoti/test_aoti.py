@@ -191,6 +191,13 @@ def test_aoti_export_reload_matches_eager(scenario: Path, tmp_path: Path):
         eager_val = eager_tuple[i]
         eager_data = eager_val.data if hasattr(eager_val, "data") else eager_val
         aoti_data = aoti_outs[name]
+        # Compare shapes first: allclose broadcasts, so an output that lost a
+        # reduction over the sub-batch can still compare equal whenever its
+        # extra axis happens to broadcast (#479).
+        assert tuple(aoti_data.shape) == tuple(eager_data.shape), (
+            f"{scenario.name}: output {name!r} shape {tuple(aoti_data.shape)} "
+            f"!= eager {tuple(eager_data.shape)}"
+        )
         max_diff = (aoti_data - eager_data).abs().max().item()
         assert torch.allclose(eager_data, aoti_data, rtol=1e-10, atol=1e-10), (
             f"{scenario.name}: output {name!r} mismatch (max abs diff = {max_diff:.3e})"

@@ -48,9 +48,14 @@ The wrappers carry six non-leaf metadata fields:
 
 All six are excluded from the pytree via ``drop_field_names`` so the
 only flat leaf is ``data``; roundtrips through `torch.export`'s
-flatten/unflatten reset them to the dataclass defaults -- which is fine
-because the exported graph operates on raw tensors whose shapes already
-encode the sub-batch axes (including the size-1 broadcast positions).
+flatten/unflatten reset them to the dataclass defaults. The raw shapes
+still encode the sub-batch axes (including the size-1 broadcast
+positions), but the *labels* are gone, and a leaf that branches on them
+(a reduction over the sub-batch, a broadcast against a plain-batch
+operand) would trace the wrong graph. :func:`neml2.models.export.compile_model`
+therefore snapshots the metadata off the example inputs and re-attaches it
+inside the graph (:func:`neml2.types._boundary.nondefault_wrapper_metadata`
+/ :func:`neml2.types._boundary.reattach_wrapper_metadata`).
 
 All `torch._inductor` / `torch.utils._pytree` internal-API drift is contained
 to this one file per RISK.md R-001.
