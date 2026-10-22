@@ -195,10 +195,30 @@ def test_aoti_export_reload_matches_eager(scenario: Path, tmp_path: Path):
     assert list(aoti_outs.keys()) == out_names, (
         f"AOTI output keys {list(aoti_outs.keys())} do not match eager output_spec {out_names}"
     )
+
+    # The output extents are readable off the C++ model before any call, and
+    # they are what the model actually produces -- the point of recording them
+    # from the compiled graph rather than from the optional [Settings] block,
+    # which would report an undeclared sub-batched output as plain batch. Eager
+    # is the reference: its typed outputs carry the true extent.
+    assert aoti.output_sub_batch_shapes == [list(out.sub_batch_shape) for out in eager_tuple], (
+        f"{scenario.name}: output_sub_batch_shapes disagrees with the eager outputs"
+    )
+
     for i, name in enumerate(out_names):
         eager_val = eager_tuple[i]
         eager_data = eager_val.data if hasattr(eager_val, "data") else eager_val
         aoti_data = aoti_outs[name]
+        # forward materializes every output to (*B, *sub, *base) and makes it
+        # contiguous, so a host that sized the tensor from the two output
+        # accessors reads contiguous prod(sub) * prod(base) blocks.
+        trailing = tuple(aoti.output_sub_batch_shapes[i]) + tuple(aoti.output_base_shapes[i])
+        if trailing:
+            assert tuple(aoti_data.shape)[-len(trailing) :] == trailing, (
+                f"{scenario.name}: output {name!r} is {tuple(aoti_data.shape)}, "
+                f"not materialized to a trailing {trailing}"
+            )
+        assert aoti_data.is_contiguous(), f"{scenario.name}: output {name!r} is not contiguous"
         max_diff = (aoti_data - eager_data).abs().max().item()
         assert torch.allclose(eager_data, aoti_data, rtol=1e-10, atol=1e-10), (
             f"{scenario.name}: output {name!r} mismatch (max abs diff = {max_diff:.3e})"

@@ -181,12 +181,26 @@ public:
   /// Sub-batch axes are always materialized at this boundary -- never lazily
   /// broadcast -- which is what makes the contiguous-block statement safe.
   /// Parallel to `input_names()`, same indices.
-  ///
-  /// There is deliberately no `output_sub_batch_shapes()` yet: the artifact
-  /// metadata carries no per-output sub-batch shape (the Python shim recovers
-  /// it from the returned tensor at call time), so it cannot be answered before
-  /// the first call. See issue #482.
   const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
+
+  /// Per-output sub-batch shape, the output-side counterpart of
+  /// `input_sub_batch_shapes()`. Parallel to `output_names()`, same indices;
+  /// output `i` is returned at
+  /// `(*B, *output_sub_batch_shapes()[i], *output_base_shapes()[i])`.
+  ///
+  /// On this runtime the answer is definite and an empty entry means
+  /// plain-batch: the exporter recorded what the producing segment actually
+  /// returns -- a forward segment's eager probe, or an implicit segment's
+  /// solved-unknown layout -- rather than reading the optional
+  /// `[Settings]/example_batch_shape`, which would report an undeclared
+  /// sub-batched output as plain. `neml2::eager::Model` exposes the same
+  /// signature but reports the *declared* extent; see its own doc.
+  ///
+  /// Read from `metadata.json` at load, so a host can size an output before
+  /// its first call. `forward` materializes each output to the full shape
+  /// above, so the contiguous-block guarantee stated for inputs holds for
+  /// outputs too.
+  const std::vector<std::vector<int64_t>> & output_sub_batch_shapes() const noexcept;
 
   /// Evaluate the model. `inputs` is keyed by the names returned by
   /// `input_names()` and shaped `(*B, *sub_batch_shape, *base_shape)` (see

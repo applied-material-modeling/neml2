@@ -101,6 +101,13 @@ main(int argc, char ** argv)
   for (const auto & sub : ref.input_sub_batch_shapes())
     NEML2_CHECK(sub.empty());
 
+  // Same on the output side, and the same reason: the vector is sized to
+  // output_names() so a host can size an output from it plus
+  // output_base_shapes() before it has ever called forward().
+  NEML2_CHECK(ref.output_sub_batch_shapes().size() == ref.output_names().size());
+  for (const auto & sub : ref.output_sub_batch_shapes())
+    NEML2_CHECK(sub.empty());
+
   const int64_t b = 10;
   const auto inputs = make_inputs(ref, b);
   const auto ref_out = ref.forward(inputs);

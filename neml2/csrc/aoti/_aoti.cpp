@@ -206,6 +206,14 @@ Everything else is baked into the graph as a constant.
           "so each batch entry is a contiguous block of prod(sub) * prod(base) "
           "values.")
       .def_property_readonly(
+          "output_sub_batch_shapes",
+          &Model::output_sub_batch_shapes,
+          "Per-output sub-batch shape; [] for a plain-batch output. Parallel to "
+          "output_names. Recorded at compile time from what the producing segment "
+          "returns, so on this runtime it is definite. forward materializes each "
+          "output to (*B, *sub_batch_shape, *base_shape), so the contiguous-block "
+          "guarantee stated for inputs holds for outputs too.")
+      .def_property_readonly(
           "parameter_base_shapes",
           &Model::parameter_base_shapes,
           "Per-promoted-parameter natural base shape, keyed by qualified name "

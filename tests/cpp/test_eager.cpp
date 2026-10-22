@@ -79,11 +79,12 @@ main(int argc, char ** argv)
   NEML2_CHECK(m.output_names() == std::vector<std::string>{"stress"});
   NEML2_CHECK(m.input_base_shapes() == std::vector<std::vector<int64_t>>{{6}});
   NEML2_CHECK(m.output_base_shapes() == std::vector<std::vector<int64_t>>{{6}});
-  // Sub-batch shapes complete the drop-in metadata surface. This runtime is
-  // plain-batch only (a sub-batched model is rejected at construction), so the
-  // vector is one empty shape per input -- never short, so a host can index it
-  // next to input_base_shapes() without a size check.
+  // Sub-batch shapes complete the drop-in metadata surface. This runtime
+  // reports DECLARED extents and reads none yet (#481), so both vectors are
+  // one empty shape per name -- never short, so a host can index them next to
+  // the base-shape vectors without a size check.
   NEML2_CHECK(m.input_sub_batch_shapes() == std::vector<std::vector<int64_t>>{{}});
+  NEML2_CHECK(m.output_sub_batch_shapes() == std::vector<std::vector<int64_t>>{{}});
   NEML2_CHECK(m.device().is_cpu());
   NEML2_CHECK(m.dtype() == at::kDouble);
 

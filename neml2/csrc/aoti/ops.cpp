@@ -184,16 +184,43 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
   }
 
   std::map<std::string, at::Tensor> outputs;
-  for (const auto & n : _output_names)
+  for (std::size_t k = 0; k < _output_names.size(); ++k)
   {
+    const auto & n = _output_names[k];
     auto it = state.find(n);
     _assert(it != state.end(),
             "aoti::Model::forward: output '",
             n,
             "' was not produced by any segment.");
-    outputs[n] = it->second;
+    outputs[n] = _materialize_output(k, it->second, batch);
   }
   return outputs;
+}
+
+at::Tensor
+Model::Impl::_materialize_output(std::size_t idx,
+                                 const at::Tensor & t,
+                                 const std::vector<int64_t> & batch) const
+{
+  // Lift the output to its full `(*B, *sub_batch, *base)` shape and make it
+  // contiguous, so a host reading `output_sub_batch_shapes()` finds each batch
+  // entry as a contiguous block of `prod(sub) * prod(base)` values -- the same
+  // guarantee `_prepare_inputs` gives on the way in. A segment may return a
+  // size-1 (lazily broadcast) sub-batch or dynamic-batch axis, e.g. a value
+  // that happens not to vary per site; without this a host sizing from the
+  // accessor would read at the wrong offsets.
+  std::vector<int64_t> target(batch);
+  const auto & sub = _output_sub_batch_shapes[idx];
+  target.insert(target.end(), sub.begin(), sub.end());
+  const auto & base = _output_base_shapes[idx];
+  target.insert(target.end(), base.begin(), base.end());
+  // A batch-independent output can come back with fewer leading axes than the
+  // call batch; broadcast_to prepends them. Anything that does not broadcast
+  // to the recorded shape is a metadata/graph disagreement, not a user error,
+  // so let torch's error surface through `_guarded` as a FatalError.
+  if (t.sizes() == at::IntArrayRef(target))
+    return t.contiguous();
+  return t.broadcast_to(target).contiguous();
 }
 
 std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
