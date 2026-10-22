@@ -200,6 +200,12 @@ Model::Model(const std::filesystem::path & input_file,
             _impl->adapter.attr("output_base_shapes").cast<std::vector<std::vector<int64_t>>>();
         _impl->parameter_base_shapes = _impl->adapter.attr("parameter_base_shapes")
                                            .cast<std::map<std::string, std::vector<int64_t>>>();
+        // Eager reports declared sub-batch extents only, and it reads none yet
+        // (#481): one empty shape per input, meaning "not declared". Same for
+        // the output side -- sized to the names so a host can index either
+        // alongside the matching base-shape vector without a size check.
+        _impl->input_sub_batch_shapes.assign(_impl->input_names.size(), {});
+        _impl->output_sub_batch_shapes.assign(_impl->output_names.size(), {});
         _impl->device = _impl->adapter.attr("device").cast<at::Device>();
         _impl->dtype = _impl->adapter.attr("dtype").cast<at::ScalarType>();
       },
@@ -233,6 +239,18 @@ const std::vector<std::vector<int64_t>> &
 Model::output_base_shapes() const noexcept
 {
   return _impl->output_base_shapes;
+}
+
+const std::vector<std::vector<int64_t>> &
+Model::input_sub_batch_shapes() const noexcept
+{
+  return _impl->input_sub_batch_shapes;
+}
+
+const std::vector<std::vector<int64_t>> &
+Model::output_sub_batch_shapes() const noexcept
+{
+  return _impl->output_sub_batch_shapes;
 }
 
 // NOTE on tensor lifetime: the tensors returned by forward / jvp / jacobian

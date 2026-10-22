@@ -127,6 +127,7 @@ name is caught when the file is read, not left to describe nothing.
 | `ImplicitUpdate` | lay out the unknown vector, and expand a seeded initial guess into the declared extent |
 | `neml2-compile` | build the example inputs it traces, and seed each nested equation system's layout ([](model-compilation-pipeline)) |
 | `NEML2PyzagModel` | check the state and force tensors it is handed |
+| `cpp-aoti` / `cpp-dispatch` | report each input's extent to the host through `input_sub_batch_shapes()`, after `neml2-compile` persisted it in `metadata.json` ([](cpp-aoti)) |
 
 All of them resolve it through the same reader, which is what keeps the routes
 from drifting apart.
@@ -145,3 +146,9 @@ explicitly.
 `cpp-eager` does not support sub-batch models at all — it has no slot to
 declare per-input sub-batch shapes at its boundary and rejects them. See
 [](model-eager-cpp).
+
+The compiled artifact persists the extent for **inputs** only. There is no
+`output_sub_batch_shapes()` on the C++ model classes, because `metadata.json`
+records no per-output `sub_batch_shape`: the Python shim recovers an output's
+extent from the returned tensor at call time, which a C++ host cannot do before
+its first call.

@@ -137,10 +137,41 @@ public:
   const std::vector<std::string> & output_names() const noexcept;
 
   /// Per-name base shape (Scalar -> `{}`, SR2 -> `{6}`, R2 -> `{3,3}`). Inputs
-  /// must be passed at their canonical `(*B, *base_shape)` shape. Cached at
-  /// load; no GIL. Mirrors @ref neml2::aoti::Model::input_base_shapes.
+  /// must be passed at their canonical `(*B, *sub_batch_shape, *base_shape)`
+  /// shape. Cached at load; no GIL. Mirrors
+  /// @ref neml2::aoti::Model::input_base_shapes.
   const std::vector<std::vector<int64_t>> & input_base_shapes() const noexcept;
   const std::vector<std::vector<int64_t>> & output_base_shapes() const noexcept;
+
+  /// Per-input sub-batch shape, parallel to `input_names()`. Identical
+  /// signature to @ref neml2::aoti::Model::input_sub_batch_shapes, so a host
+  /// introspects either runtime the same way.
+  ///
+  /// On this runtime an entry reports the *declared* extent, so an empty entry
+  /// means "not declared as sub-batched" rather than "plain-batch". Every entry
+  /// is empty today: the runtime does not read `[Settings]/example_batch_shape`
+  /// yet, wraps every input as plain-batch, and rejects a sub-batched *output*
+  /// at call time (#481). It does load a model with sub-batched inputs, so a
+  /// host must not size such an input from this accessor alone. The accessor
+  /// exists now so the host-side code that consumes it does not have to change
+  /// when eager grows sub-batch support. Cached at load; no GIL.
+  const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
+
+  /// Per-output sub-batch shape, parallel to `output_names()`. Identical
+  /// signature to @ref neml2::aoti::Model::output_sub_batch_shapes, so a host
+  /// introspects either runtime the same way -- but *not* the same semantics.
+  ///
+  /// On this runtime an entry reports the *declared* extent, so an empty entry
+  /// means "not declared as sub-batched", not "plain-batch". Every entry is
+  /// empty today: the runtime does not read `[Settings]/example_batch_shape`
+  /// yet (#481). On the AOTI route the answer is definite, because the
+  /// exporter recorded what the compiled graph produces. A host that cares
+  /// about the difference keeps treating an undeclared output as plain-batch
+  /// and checks the shapes it actually gets on the first evaluation, stopping
+  /// with a clear message if one carries an undeclared sub-batch axis; this
+  /// runtime rejects a sub-batched output at call time, so that check fires.
+  /// Cached at load; no GIL.
+  const std::vector<std::vector<int64_t>> & output_sub_batch_shapes() const noexcept;
 
   /// Evaluate the model. `inputs` is keyed by the names returned by
   /// `input_names()` and shaped `(*B, *base_shape)`; missing keys throw and a

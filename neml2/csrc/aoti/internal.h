@@ -146,6 +146,14 @@ struct Model::Impl
   {
     return _output_base_shapes;
   }
+  const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept
+  {
+    return _input_sub_batch_shapes;
+  }
+  const std::vector<std::vector<int64_t>> & output_sub_batch_shapes() const noexcept
+  {
+    return _output_sub_batch_shapes;
+  }
   std::map<std::string, at::Tensor> & named_parameters() noexcept { return _named_parameters; }
   const std::map<std::string, at::Tensor> & named_parameters() const noexcept
   {
@@ -596,6 +604,16 @@ struct Model::Impl
   std::map<std::string, at::Tensor>
   _prepare_inputs(const std::map<std::string, at::Tensor> & inputs) const;
 
+  /// Lift output `idx` to its recorded `(*batch, *sub_batch, *base)` shape and
+  /// make it contiguous -- the output-side counterpart of `_prepare_inputs`'s
+  /// second pass. A segment is free to return a lazily broadcast size-1
+  /// dynamic-batch or sub-batch axis; materializing here is what lets a host
+  /// size an output from `output_sub_batch_shapes()` and read contiguous
+  /// per-entry blocks.
+  at::Tensor _materialize_output(std::size_t idx,
+                                 const at::Tensor & t,
+                                 const std::vector<int64_t> & dyn_batch) const;
+
   /// Compose the master Jacobian carrier: returns the output values plus the
   /// per-variable `dstate` map, where `dstate[var]` is `(*common_dyn,
   /// var_folded, M_req)` -- the variable's sensitivity to the requested input
@@ -634,6 +652,15 @@ struct Model::Impl
   // variable's own sub-batch axes folded into the storage dim -- so a
   // heterogeneous mix of global and per-grain inputs composes correctly.
   std::vector<std::vector<int64_t>> _input_sub_batch_shapes;
+
+  // Per-master-output sub-batch shapes (empty when plain-batch), recorded at
+  // compile time from what the producing segment's eager forward returned --
+  // a forward segment's probe, or an implicit segment's unknown layout. Read
+  // by `forward` to materialize each output to its full
+  // `(*B, *sub_batch, *base)` shape, and reported by
+  // `Model::output_sub_batch_shapes()` so a host can size an output tensor
+  // before its first call.
+  std::vector<std::vector<int64_t>> _output_sub_batch_shapes;
 
   // Master (out, in) derivative pairs the artifact supports, in the order the
   // metadata recorded them (output-order, input-order). Empty => no derivative
