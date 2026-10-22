@@ -163,6 +163,15 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
   const std::vector<int64_t> batch =
       _input_names.empty() ? std::vector<int64_t>{} : _batch_shape_of(0, state.at(_input_names[0]));
 
+  // The plain (dynamic) batch, i.e. `batch` minus the first input's own
+  // sub-batch axes. That is what an output's recorded sub-batch shape sits on
+  // top of; `batch` itself cannot be used, since for a sub-batched first input
+  // it already carries that input's per-site axes. `_prepare_inputs` has lifted
+  // every input's dynamic batch to the common shape, so input 0 carries it.
+  const std::vector<int64_t> dyn_batch =
+      _input_names.empty() ? std::vector<int64_t>{}
+                           : _dynamic_batch_shape_of(0, state.at(_input_names[0]));
+
   for (const auto & seg : _segments)
   {
     if (seg.kind == SegmentKind::Forward)
@@ -192,7 +201,7 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
             "aoti::Model::forward: output '",
             n,
             "' was not produced by any segment.");
-    outputs[n] = _materialize_output(k, it->second, batch);
+    outputs[n] = _materialize_output(k, it->second, dyn_batch);
   }
   return outputs;
 }
@@ -200,7 +209,7 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
 at::Tensor
 Model::Impl::_materialize_output(std::size_t idx,
                                  const at::Tensor & t,
-                                 const std::vector<int64_t> & batch) const
+                                 const std::vector<int64_t> & dyn_batch) const
 {
   // Lift the output to its full `(*B, *sub_batch, *base)` shape and make it
   // contiguous, so a host reading `output_sub_batch_shapes()` finds each batch
@@ -209,7 +218,7 @@ Model::Impl::_materialize_output(std::size_t idx,
   // size-1 (lazily broadcast) sub-batch or dynamic-batch axis, e.g. a value
   // that happens not to vary per site; without this a host sizing from the
   // accessor would read at the wrong offsets.
-  std::vector<int64_t> target(batch);
+  std::vector<int64_t> target(dyn_batch);
   const auto & sub = _output_sub_batch_shapes[idx];
   target.insert(target.end(), sub.begin(), sub.end());
   const auto & base = _output_base_shapes[idx];

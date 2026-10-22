@@ -612,7 +612,7 @@ struct Model::Impl
   /// per-entry blocks.
   at::Tensor _materialize_output(std::size_t idx,
                                  const at::Tensor & t,
-                                 const std::vector<int64_t> & batch) const;
+                                 const std::vector<int64_t> & dyn_batch) const;
 
   /// Compose the master Jacobian carrier: returns the output values plus the
   /// per-variable `dstate` map, where `dstate[var]` is `(*common_dyn,
