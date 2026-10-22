@@ -36,6 +36,7 @@ Pinned to torch 2.12.0 — see RISK.md R-001 and decision D-001.
 
 from __future__ import annotations
 
+import dataclasses
 import io
 import struct
 import zipfile
@@ -46,6 +47,7 @@ import torch
 from torch.export import Dim, export
 
 from .._warnings import TORCH_JIT_PY314, TORCH_TREESPEC_LEAFSPEC, ignore_warnings
+from ..types._boundary import nondefault_wrapper_metadata, reattach_wrapper_metadata
 
 
 def _patch_inductor_int_array_cache_key() -> None:
@@ -176,6 +178,63 @@ def _walk_tensors(arg: Any):
             yield from _walk_tensors(x)
 
 
+class _ReattachMetadata(torch.nn.Module):
+    """Restore the typed-wrapper metadata ``torch.export`` drops at the boundary.
+
+    The typed wrappers register with pytree as ``field_names=["data"]``: every
+    structural metadata field (``sub_batch_ndim``, the sub-batch storage
+    state/meta tuples, the chain-rule ``k_*`` fields, and the dynamic-base
+    ``Tensor``'s ``batch_ndim``) is listed in ``drop_field_names``. So the
+    flatten/unflatten round-trip ``torch.export`` performs on the call inputs
+    hands the traced module wrappers whose metadata has been reset to the
+    dataclass defaults -- ``sub_batch_ndim = 0`` in particular.
+
+    For a leaf whose output is a pure function of the raw tensor that is
+    harmless, which is the assumption :mod:`neml2.types._pytree` records. It
+    does not hold for a leaf that *branches* on the metadata: a reduction over
+    the sub-batch (``PrecipitateVolumeFraction`` and friends) sees a
+    sub-batched input as plain batch and silently skips the reduction, and a
+    binary op against a plain-batch input stops broadcasting against the
+    now-batch sub-batch axis and fails the trace outright.
+
+    Wrapping the exported module here re-attaches the metadata the caller
+    declared on ``example_inputs``, inside the graph, so the trace sees the
+    same typed inputs an eager call would. The forward signature is pure
+    ``*inputs``, matching the ``ComposedModel`` / chain-rule modules this wraps,
+    so the ``dynamic_shapes`` structure :func:`compile_model` builds is
+    unchanged.
+    """
+
+    def __init__(self, model: torch.nn.Module, metadata: list[dict[str, object] | None]):
+        super().__init__()
+        self.model = model
+        self._input_metadata = metadata
+
+    def forward(self, *inputs):
+        return self.model(
+            *(
+                inp if meta is None else reattach_wrapper_metadata(inp, meta)
+                for inp, meta in zip(inputs, self._input_metadata, strict=True)
+            )
+        )
+
+
+def _reattach_metadata_if_needed(
+    model: torch.nn.Module, example_inputs: tuple[Any, ...]
+) -> torch.nn.Module:
+    """Wrap *model* in :class:`_ReattachMetadata` when any example input needs it.
+
+    Returns *model* untouched when every example input is either a raw tensor
+    or a typed wrapper already at its default metadata -- the pytree reset is a
+    no-op in that case, so the wrapper would only add a graph level. The
+    implicit-segment graphs (``RHS`` / ``Jacobian`` / ``LinearSolve``) feed raw
+    flat tensors and pin their sub-batch structure in the equation-system
+    layouts instead, so they take the untouched path.
+    """
+    metadata = [nondefault_wrapper_metadata(arg) for arg in example_inputs]
+    return _ReattachMetadata(model, metadata) if any(m is not None for m in metadata) else model
+
+
 def compile_model(
     model: torch.nn.Module,
     example_inputs: tuple[Any, ...],
@@ -225,8 +284,6 @@ def compile_model(
     Path
         The absolute path to the produced ``.pt2`` artifact.
     """
-    import dataclasses
-
     from .._accelerator import check_toolchain, target_accelerator_family
 
     # Preflight: if any example input lives on an accelerator, the Inductor
@@ -236,6 +293,11 @@ def compile_model(
     _target_family = target_accelerator_family(t for a in example_inputs for t in _walk_tensors(a))
     if _target_family is not None:
         check_toolchain(_target_family)
+
+    # Restore the typed-wrapper metadata the export pytree round-trip drops
+    # before anything reads the forward signature -- the wrapper's pure
+    # ``*inputs`` signature is what the dynamic_shapes split below must mirror.
+    model = _reattach_metadata_if_needed(model, example_inputs)
 
     # Mirror the model's forward signature in the dynamic_shapes structure.
     # `torch.export` collapses a ``*args`` (VAR_POSITIONAL) pack into a single

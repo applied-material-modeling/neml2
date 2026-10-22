@@ -180,8 +180,14 @@ def _leading_k_identity_seed(
     *,
     dtype: torch.dtype,
     device: torch.device,
+    sub_batch_ndim: int = 0,
 ) -> TensorWrapper:
-    """Identity seed for Phase-14 leading-K typed tangents."""
+    """Identity seed for Phase-14 leading-K typed tangents.
+
+    The trailing *sub_batch_ndim* axes of *batch_shape* are the input's sub-batch
+    region and are declared as such on the seed; without it a per-site axis would
+    read as plain batch and stop broadcasting against the input's own sub-batch.
+    """
     n = _var_size(type_cls)
     eye = torch.eye(n, dtype=dtype, device=device)
     mid = (1,) * len(batch_shape)
@@ -194,7 +200,9 @@ def _leading_k_identity_seed(
     # same downstream sum (e.g. a frozen flow_direction passed as a given to an
     # ImplicitUpdate solve). Establishing the K region at the seed keeps the
     # whole chain rule consistent.
-    return type_cls(data, k_ndim=1, k_state=("full",), k_pairing=(None,))
+    return type_cls(
+        data, sub_batch_ndim=sub_batch_ndim, k_ndim=1, k_state=("full",), k_pairing=(None,)
+    )
 
 
 def _leading_k_block_to_trailing_k(block: torch.Tensor | TensorWrapper) -> torch.Tensor:
@@ -1046,6 +1054,7 @@ class _ForwardJacobianModule(nn.Module):
                     seed_batch,
                     dtype=ti.dtype,
                     device=ti.device,
+                    sub_batch_ndim=sub_ndim,
                 )
             }
         result = self.model(*typed_inputs, v=seed)
