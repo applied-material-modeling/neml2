@@ -68,12 +68,12 @@ namespace neml2::eager
  * and `jacobian` are all implemented (the latter two on the native model's `v=`
  * chain rule).
  *
- * **Plain-batch only.** The raw-tensor `forward(map)` boundary has no slot to
- * declare per-input sub-batch shapes (in NEML2 those are caller-declared at AOTI
- * compile time), so the eager runtime is restricted to plain-batch models. A
- * model that carries BLOCK-aware / labelled sub-batch axes (e.g.
- * crystal-plasticity geometry) is rejected with a @ref neml2::aoti::FatalError
- * rather than silently mishandled; use the AOTI / dispatched path for those.
+ * **Sub-batch.** Variables are `(*B, *sub_batch_shape, *base_shape)`, as on
+ * `aoti::Model`. The sub-batch extents come from the input file's
+ * `[Settings]/example_batch_shape` (see @ref input_sub_batch_shapes); an
+ * undeclared input is plain-batch. Derivatives (`jvp` / `jacobian`) are taken
+ * with respect to plain-batch inputs only, and the parameter derivatives are
+ * plain-batch only.
  *
  * **PImpl + visibility.** Every implementation detail -- the embedded
  * interpreter handle and the `pybind11` adapter object -- lives behind an
@@ -102,7 +102,10 @@ public:
   /// (the original `.i`, not a compiled stub) by constructing it in an embedded
   /// Python interpreter. Throws @ref neml2::aoti::FatalError if the interpreter
   /// cannot start, the `neml2` package is not importable, the file cannot be
-  /// parsed, or `model_name` is not found.
+  /// parsed, `model_name` is not found, or the file's
+  /// `[Settings]/example_batch_shape` names an unknown variable or its output
+  /// sub-batch shapes cannot be worked out (the compile plan run at load fails,
+  /// even if the model itself would evaluate).
   ///
   /// `device_override`, when set, moves the model onto that device (e.g.
   /// `cuda:1`); when omitted, the model's natural device is used.
@@ -137,30 +140,63 @@ public:
   const std::vector<std::string> & output_names() const noexcept;
 
   /// Per-name base shape (Scalar -> `{}`, SR2 -> `{6}`, R2 -> `{3,3}`). Inputs
-  /// must be passed at their canonical `(*B, *base_shape)` shape. Cached at
-  /// load; no GIL. Mirrors @ref neml2::aoti::Model::input_base_shapes.
+  /// must be passed at their canonical `(*B, *sub_batch_shape, *base_shape)`
+  /// shape. Cached at load; no GIL. Mirrors
+  /// @ref neml2::aoti::Model::input_base_shapes.
   const std::vector<std::vector<int64_t>> & input_base_shapes() const noexcept;
   const std::vector<std::vector<int64_t>> & output_base_shapes() const noexcept;
 
+  /// Per-input sub-batch shape, parallel to `input_names()`. Identical
+  /// signature to @ref neml2::aoti::Model::input_sub_batch_shapes, so a host
+  /// introspects either runtime the same way.
+  ///
+  /// On this runtime an entry reports the *declared* extent, read from the
+  /// input file's `[Settings]/example_batch_shape`, so an empty entry means
+  /// "not declared as sub-batched" rather than "plain-batch". An undeclared
+  /// input is evaluated as plain-batch. Cached at load; no GIL.
+  const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
+
+  /// Per-output sub-batch shape, parallel to `output_names()`. Identical
+  /// signature to @ref neml2::aoti::Model::output_sub_batch_shapes, so a host
+  /// introspects either runtime the same way -- but *not* the same semantics.
+  ///
+  /// When the input file declares a sub-batch extent in
+  /// `[Settings]/example_batch_shape`, the entries are what `neml2-compile`
+  /// would record for the same declaration, worked out at load without
+  /// compiling or solving. Without a declaration every entry is empty, meaning
+  /// "not declared", not "plain-batch": a model can still return a sub-batched
+  /// output (e.g. one built on a sub-batched parameter grid). On the AOTI route
+  /// the answer is always definite. A host that cares about the difference
+  /// treats an undeclared output as plain-batch and checks the shapes it gets
+  /// on the first evaluation. Cached at load; no GIL.
+  const std::vector<std::vector<int64_t>> & output_sub_batch_shapes() const noexcept;
+
   /// Evaluate the model. `inputs` is keyed by the names returned by
-  /// `input_names()` and shaped `(*B, *base_shape)`; missing keys throw and a
-  /// non-canonical trailing shape is rejected. Returns one tensor per name in
-  /// `output_names()` at `(*B, *out_base_shape)`. Acquires the GIL.
+  /// `input_names()` and shaped `(*B, *sub_batch_shape, *base_shape)` (see
+  /// `input_sub_batch_shapes()`); missing keys throw, a non-canonical trailing
+  /// shape is rejected, and a tensor that does not carry its declared sub-batch
+  /// extent is rejected. Returns one contiguous tensor per name in
+  /// `output_names()` at `(*B, *out_sub_batch_shape, *out_base_shape)`.
+  /// Acquires the GIL.
   std::map<std::string, at::Tensor> forward(const std::map<std::string, at::Tensor> & inputs) const;
 
-  /// Evaluate + JVP. `tangents` shares its keys + `(*B, *in_base)` shapes with
-  /// `inputs`; a missing key defaults to a zero tangent. Returns
+  /// Evaluate + JVP. `tangents` is keyed like `inputs`, each at `(*B, *in_base)`;
+  /// a missing key defaults to a zero tangent. Returns
   /// `{outputs, jvp_outputs}` -- both maps keyed by `output_names()`;
   /// `jvp_outputs[name]` is the directional derivative at the output's natural
-  /// `(*B, *out_base_shape)`. Mirrors @ref neml2::aoti::Model::jvp. Holds the GIL.
+  /// `(*B, *out_sub_batch_shape, *out_base_shape)`. A tangent for a sub-batched
+  /// input is rejected. Mirrors @ref neml2::aoti::Model::jvp. Holds the GIL.
   std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
   jvp(const std::map<std::string, at::Tensor> & inputs,
       const std::map<std::string, at::Tensor> & tangents) const;
 
   /// Evaluate + full Jacobian as unflattened variable-pair blocks. Returns
-  /// `{outputs, J}` where `J[out_name][in_name]` is `(*B, *out_base, *in_base)`
-  /// (see @ref neml2::aoti::VariablePairJacobian), matching
-  /// @ref neml2::aoti::Model::jacobian. Acquires the GIL.
+  /// `{outputs, J}` where `J[out_name][in_name]` is
+  /// `(*B, *out_sub_batch, *out_base, *in_base)` (see
+  /// @ref neml2::aoti::VariablePairJacobian), matching
+  /// @ref neml2::aoti::Model::jacobian. Columns are the plain-batch inputs only:
+  /// a sub-batched input has no column, as an AOTI artifact returns only the
+  /// pairs it was compiled with. Acquires the GIL.
   std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs) const;
 

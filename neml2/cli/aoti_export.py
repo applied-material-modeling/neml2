@@ -75,6 +75,7 @@ from ..settings import DEFAULT_EXAMPLE_SHAPE, model_variable_names, resolve_exam
 from ..types import TensorWrapper
 
 if TYPE_CHECKING:
+    from ..models.common import ImplicitUpdate
     from ..models.model import Model
 
 # ---------------------------------------------------------------------------
@@ -90,7 +91,7 @@ if TYPE_CHECKING:
 #: ``scripts/dep_manager.py`` (which keeps this literal, the C++ loader, and the
 #: docs in sync).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 14
+AOTI_META_SCHEMA_VERSION = 15
 
 
 def _var_size(type_cls) -> int:
@@ -240,7 +241,7 @@ def _leading_k_block_to_per_pair(
 def _var_infos(
     spec: dict,
     *,
-    sub_batch_shapes: dict[str, tuple[int, ...]] | None = None,
+    sub_batch_shapes: Mapping[str, Sequence[int]] | None = None,
 ) -> list[dict]:
     """Build the master-level per-variable metadata list.
 
@@ -291,6 +292,45 @@ def _var_infos(
             info["sub_batch_shape"] = list(sb)
         infos.append(info)
     return infos
+
+
+def _probe_output_sub_batch_shapes(exportable, example_inputs) -> dict[str, tuple[int, ...]]:
+    """Record each output's sub-batch extent from an eager run of *exportable*.
+
+    The metadata records what the graph actually produces, not what
+    ``[Settings]/example_batch_shape`` declares. That block is optional, so
+    deriving an output's extent from it would write an undeclared sub-batched
+    output out as plain-batch -- exactly the silent mis-read a host hits today
+    (#482). An eager forward on the same ``example_inputs`` the trace uses
+    cannot be wrong about it.
+
+    Returns ``{name: sub_batch_shape}`` for the sub-batched outputs only;
+    plain-batch outputs are absent, matching :func:`_var_infos`'s omit-if-empty
+    convention.
+    """
+    typed_inputs = tuple(
+        arg if isinstance(arg, type_cls) else type_cls(arg)
+        for type_cls, arg in zip(exportable.input_spec.values(), example_inputs, strict=True)
+    )
+    with torch.no_grad():
+        result = exportable(*typed_inputs)
+    outputs = result if isinstance(result, tuple) else (result,)
+    return _output_sub_batch_shapes(exportable.output_spec, outputs)
+
+
+def _output_sub_batch_shapes(output_spec, typed_outputs) -> dict[str, tuple[int, ...]]:
+    """``{name: sub_batch_shape}`` for the sub-batched entries of *typed_outputs*.
+
+    *typed_outputs* are the typed wrappers a segment's forward returned, in
+    ``output_spec`` order. Split out of :func:`_probe_output_sub_batch_shapes`
+    so the JVP probe -- which already ran the same forward -- can reuse its
+    typed outputs instead of evaluating the segment a second time.
+    """
+    return {
+        name: tuple(int(s) for s in out.sub_batch_shape)
+        for name, out in zip(output_spec, typed_outputs, strict=True)
+        if len(out.sub_batch_shape) > 0
+    }
 
 
 def _segment_var_infos(spec_or_infos) -> list[dict]:
@@ -1556,6 +1596,11 @@ def _compile_forward_segment(
 
     jvp_pkg_name: str | None = None
     jacobian_pairs: list[dict] | None = None
+    # Typed outputs of an eager run of this segment, used below to record each
+    # output's sub-batch extent. The JVP probe runs that same forward, so when
+    # derivatives are requested its typed outputs are reused and the segment is
+    # not evaluated twice; a value-only segment runs its own probe afterwards.
+    probe_outputs: tuple | None = None
     do_jvp = selected_pairs is None or len(selected_pairs) > 0
     if do_jvp:
         # JVP wrapper differentiates along structural inputs only -- promoted
@@ -1583,6 +1628,7 @@ def _compile_forward_segment(
         with torch.no_grad():
             probe = jvp_module(*example_inputs)
         n_outs = len(jvp_module.output_names)
+        probe_outputs = tuple(probe[:n_outs])
         probe_pairs = list(probe[n_outs:])
         jvp_pkg_name = f"{pkg_basename}_jvp.pt2"
         if uses_ad:
@@ -1627,12 +1673,21 @@ def _compile_forward_segment(
                 )
                 k += 1
 
+    # Per-output sub-batch extents, always recorded -- not only when
+    # derivatives are requested -- so a value-only artifact still tells a host
+    # how its outputs are shaped.
+    out_sb = (
+        _output_sub_batch_shapes(exportable.output_spec, probe_outputs)
+        if probe_outputs is not None
+        else _probe_output_sub_batch_shapes(exportable, example_inputs)
+    )
+
     structural_in = _structural_inputs(model.input_spec, promoted_qnames)
     in_sb = {n: sub for n, (_, sub) in (shapes or {}).items() if sub}
     return (
         pkg_name,
         _var_infos(structural_in, sub_batch_shapes=in_sb),
-        _var_infos(model.output_spec),
+        _var_infos(model.output_spec, sub_batch_shapes=out_sb),
         jvp_pkg_name,
         seg_param_inputs,
         jacobian_pairs,
@@ -3276,6 +3331,17 @@ def _execute_segment_plan(
             "outputs": _segment_var_infos(out_infos),
             "param_inputs": param_inputs,
         }
+        # Sub-batched outputs of this segment, keyed by name. Not folded into
+        # the `outputs` list: `_segment_var_infos` is deliberately name-only
+        # (the C++ routes `state[name]` by key and sizes from the live tensor).
+        # This dict exists purely so `_build_meta` can attribute each master
+        # output's extent to the segment that produced it; plain-batch outputs
+        # are omitted.
+        seg_out_sb = {
+            i["name"]: i["sub_batch_shape"] for i in out_infos if i.get("sub_batch_shape")
+        }
+        if seg_out_sb:
+            seg_entry["output_sub_batch_shapes"] = seg_out_sb
         if jvp_pkg_name is not None:
             seg_entry["jvp_package"] = jvp_pkg_name
             seg_entry["jacobian_pairs"] = jacobian_pairs
@@ -3573,6 +3639,90 @@ def _extract_solver_config(model) -> dict | None:
     return None
 
 
+def _master_output_sub_batch_shapes(output_spec, seg_metas: list[dict]) -> dict[str, list[int]]:
+    """Per-master-output sub-batch extents, taken from the producing segment.
+
+    A master output is written by exactly one segment, so the two sources below
+    do not compete:
+
+    * a forward segment records what its eager probe produced, in
+      ``output_sub_batch_shapes`` (see :func:`_probe_output_sub_batch_shapes`);
+    * an implicit segment's outputs are its solved unknowns, whose extents the
+      unknown layout already pinned in
+      ``unknown_group_infos[].per_var_info[].sub_batch_shape``.
+
+    Segments are walked in execution order and a later writer wins, so a value
+    re-produced downstream is reported at the shape the model finally returns.
+    Plain-batch outputs are omitted, matching :func:`_var_infos`.
+    """
+    produced: dict[str, list[int]] = {}
+    for seg in seg_metas:
+        if seg.get("kind") == "implicit":
+            for group in seg.get("unknown_group_infos", []):
+                for info in group.get("per_var_info", []):
+                    sb = [int(s) for s in info.get("sub_batch_shape", ())]
+                    if sb:
+                        produced[info["name"]] = sb
+        else:
+            for name, sb in (seg.get("output_sub_batch_shapes") or {}).items():
+                produced[name] = [int(s) for s in sb]
+    return {n: produced[n] for n in output_spec if produced.get(n)}
+
+
+def plan_output_sub_batch_shapes(
+    hit_path: str | Path,
+    model_name: str,
+    *,
+    device: str = "cpu",
+    example_batch_shape: dict[str, str] | str | None = None,
+) -> dict[str, list[int]]:
+    """Per-output sub-batch extents a compile of *model_name* would record, without compiling.
+
+    Runs the same prelude and segment plan as ``neml2-compile`` and takes each
+    output's extent from the same two sources as the metadata (see
+    :func:`_master_output_sub_batch_shapes`): a forward segment's eager probe on
+    the example inputs, and an implicit segment's unknown layout. No Newton solve
+    runs -- a whole-model evaluation on zero inputs is not guaranteed to converge
+    -- and no ``.pt2`` is produced. The eager runtime calls this at load so it
+    reports the same output extents as the AOTI-compiled twin.
+
+    The model is loaded afresh from *hit_path*, because the prelude rewrites it
+    (parameters frozen to buffers, implicit layouts seeded). Plain-batch outputs
+    are omitted. *example_batch_shape* overrides the file's ``[Settings]``, as
+    ``neml2-compile --example-batch-shape`` does.
+    """
+    prepared = _prepare_export(
+        hit_path, model_name, device=device, example_batch_shape=example_batch_shape
+    )
+    # Only the sub-batch extents matter here, so every probe input gets the same
+    # dynamic batch: a declaration that sizes only the sub-batched variables
+    # leaves the others at the default, and mixed batches would not broadcast.
+    shapes = {
+        n: (DEFAULT_EXAMPLE_SHAPE[0], sub) for n, (_dyn, sub) in prepared.resolved_shapes.items()
+    }
+    seg_metas: list[dict] = []
+    for plan in _plan_segments(prepared, model_name):
+        if plan.kind == "forward":
+            exportable = cast("Model", plan.seg_model).to(device)
+            example_inputs = _build_example_inputs(
+                exportable.input_spec, set(), {}, device, shapes=shapes
+            )
+            seg_metas.append(
+                {
+                    "kind": "forward",
+                    "output_sub_batch_shapes": _probe_output_sub_batch_shapes(
+                        exportable, example_inputs
+                    ),
+                }
+            )
+        else:
+            group_meta = _enumerate_group_infos(cast("ImplicitUpdate", plan.impl_model).system)
+            seg_metas.append(
+                {"kind": "implicit", "unknown_group_infos": group_meta["unknown_group_infos"]}
+            )
+    return _master_output_sub_batch_shapes(prepared.model.output_spec, seg_metas)
+
+
 def _build_meta(
     prepared: _PreparedExport,
     seg_metas: list[dict],
@@ -3590,11 +3740,12 @@ def _build_meta(
     model = prepared.model
     structural_in = _structural_inputs(model.input_spec, prepared.promoted_qnames)
     in_sb = {n: sub for n, (_, sub) in (prepared.resolved_shapes or {}).items() if sub}
+    out_sb = _master_output_sub_batch_shapes(model.output_spec, seg_metas)
     meta: dict = {
         "schema_version": AOTI_META_SCHEMA_VERSION,
         "type": "composed",
         "inputs": _var_infos(structural_in, sub_batch_shapes=in_sb),
-        "outputs": _var_infos(model.output_spec),
+        "outputs": _var_infos(model.output_spec, sub_batch_shapes=out_sb),
         "segments": seg_metas,
     }
     meta["parameters"] = _parameter_infos(

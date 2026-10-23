@@ -164,15 +164,49 @@ public:
   const std::vector<std::string> & output_names() const noexcept;
 
   /// Per-name base shape (e.g. Scalar -> `{}`, SR2 -> `{6}`, R2 -> `{3,3}`).
-  /// Inputs must be passed at their canonical `(*B, *base_shape)` shape; the
-  /// flat per-variable size is `prod(base_shape)`.
+  /// Inputs must be passed at their canonical
+  /// `(*B, *sub_batch_shape, *base_shape)` shape; the flat per-variable size is
+  /// `prod(sub_batch_shape) * prod(base_shape)`.
   const std::vector<std::vector<int64_t>> & input_base_shapes() const noexcept;
   const std::vector<std::vector<int64_t>> & output_base_shapes() const noexcept;
 
+  /// Per-input sub-batch shape -- the structural per-site axes (per-grain,
+  /// per-slip-system, per-bin) sitting between the leading dynamic batch `*B`
+  /// and the trailing `base_shape`. Empty for a plain-batch input, which is the
+  /// common case. Read from the artifact's `metadata.json` at load, so a host
+  /// can size an input before it has a tensor for it: input `i` is laid out as
+  /// `(*B, *input_sub_batch_shapes()[i], *input_base_shapes()[i])` and each
+  /// batch entry is a contiguous block of `prod(sub) * prod(base)` values.
+  ///
+  /// Sub-batch axes are always materialized at this boundary -- never lazily
+  /// broadcast -- which is what makes the contiguous-block statement safe.
+  /// Parallel to `input_names()`, same indices.
+  const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
+
+  /// Per-output sub-batch shape, the output-side counterpart of
+  /// `input_sub_batch_shapes()`. Parallel to `output_names()`, same indices;
+  /// output `i` is returned at
+  /// `(*B, *output_sub_batch_shapes()[i], *output_base_shapes()[i])`.
+  ///
+  /// On this runtime the answer is definite and an empty entry means
+  /// plain-batch: the exporter recorded what the producing segment actually
+  /// returns -- a forward segment's eager probe, or an implicit segment's
+  /// solved-unknown layout -- rather than reading the optional
+  /// `[Settings]/example_batch_shape`, which would report an undeclared
+  /// sub-batched output as plain. `neml2::eager::Model` exposes the same
+  /// signature but reports the *declared* extent; see its own doc.
+  ///
+  /// Read from `metadata.json` at load, so a host can size an output before
+  /// its first call. `forward` materializes each output to the full shape
+  /// above, so the contiguous-block guarantee stated for inputs holds for
+  /// outputs too.
+  const std::vector<std::vector<int64_t>> & output_sub_batch_shapes() const noexcept;
+
   /// Evaluate the model. `inputs` is keyed by the names returned by
-  /// `input_names()` and shaped `(*B, *base_shape)`; missing keys throw and a
-  /// non-canonical trailing shape is rejected. Returns one tensor per name in
-  /// `output_names()` at `(*B, *out_base_shape)`.
+  /// `input_names()` and shaped `(*B, *sub_batch_shape, *base_shape)` (see
+  /// `input_sub_batch_shapes()`); missing keys throw and a non-canonical
+  /// trailing shape is rejected. Returns one tensor per name in
+  /// `output_names()` at `(*B, *out_sub_batch_shape, *out_base_shape)`.
   ///
   /// `param_overrides` (default empty) replaces a promoted parameter's value for
   /// this call only, without mutating `named_parameters()`. It exists for the

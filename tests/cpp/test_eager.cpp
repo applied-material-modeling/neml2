@@ -79,6 +79,13 @@ main(int argc, char ** argv)
   NEML2_CHECK(m.output_names() == std::vector<std::string>{"stress"});
   NEML2_CHECK(m.input_base_shapes() == std::vector<std::vector<int64_t>>{{6}});
   NEML2_CHECK(m.output_base_shapes() == std::vector<std::vector<int64_t>>{{6}});
+  // Sub-batch shapes complete the drop-in metadata surface. This runtime
+  // reports DECLARED extents and this .i declares none, so both vectors are
+  // one empty shape per name -- never short, so a host can index them next to
+  // the base-shape vectors without a size check. (#8 below covers a declared
+  // sub-batched model.)
+  NEML2_CHECK(m.input_sub_batch_shapes() == std::vector<std::vector<int64_t>>{{}});
+  NEML2_CHECK(m.output_sub_batch_shapes() == std::vector<std::vector<int64_t>>{{}});
   NEML2_CHECK(m.device().is_cpu());
   NEML2_CHECK(m.dtype() == at::kDouble);
 
@@ -388,6 +395,59 @@ main(int argc, char ** argv)
       got_fatal = true;
     }
     NEML2_CHECK(!got_conv);
+    NEML2_CHECK(got_fatal);
+  }
+
+  // #8: a sub-batched model. argv[9] is tests/aoti/implicit_cross_group_sub_batch,
+  // whose [Settings] declares u_per / g_per with sub-batch (3,) and u_glob /
+  // g_glob plain. The accessors report the declared extents, forward returns
+  // (b, 3) / (b,), the Jacobian has columns for the plain inputs only, and an
+  // input that does not carry its declared extent is rejected.
+  if (argc >= 10)
+  {
+    const auto sm = load_model(argv[9], "model");
+    NEML2_CHECK(sm.input_names() ==
+                std::vector<std::string>({"u_per", "u_glob", "g_glob", "g_per"}));
+    NEML2_CHECK(sm.input_sub_batch_shapes() ==
+                std::vector<std::vector<int64_t>>({{3}, {}, {}, {3}}));
+    NEML2_CHECK(sm.output_names() == std::vector<std::string>({"u_per", "u_glob"}));
+    NEML2_CHECK(sm.output_sub_batch_shapes() == std::vector<std::vector<int64_t>>({{3}, {}}));
+
+    const int64_t sb = 4;
+    const auto sopts = at::TensorOptions().dtype(sm.dtype()).device(sm.device());
+    std::map<std::string, at::Tensor> sin;
+    sin.emplace("u_per", 0.1 + 0.5 * at::rand({sb, 3}, sopts));
+    sin.emplace("u_glob", 0.1 + 0.5 * at::rand({sb}, sopts));
+    sin.emplace("g_glob", 0.1 + 0.5 * at::rand({sb}, sopts));
+    sin.emplace("g_per", 0.1 + 0.5 * at::rand({sb, 3}, sopts));
+
+    const auto sout = sm.forward(sin);
+    NEML2_CHECK(sout.at("u_per").sizes() == at::IntArrayRef({sb, 3}));
+    NEML2_CHECK(sout.at("u_glob").sizes() == at::IntArrayRef({sb}));
+    NEML2_CHECK(sout.at("u_per").is_contiguous());
+    NEML2_CHECK(at::isfinite(sout.at("u_per")).all().item<bool>());
+
+    const auto [sjout, sJ] = sm.jacobian(sin);
+    NEML2_CHECK(at::allclose(sjout.at("u_per"), sout.at("u_per")));
+    for (const auto & row : {"u_per", "u_glob"})
+    {
+      NEML2_CHECK(sJ.at(row).size() == 2);
+      NEML2_CHECK(sJ.at(row).count("u_glob") == 1 && sJ.at(row).count("g_glob") == 1);
+    }
+    NEML2_CHECK(sJ.at("u_per").at("g_glob").sizes() == at::IntArrayRef({sb, 3}));
+    NEML2_CHECK(sJ.at("u_glob").at("g_glob").sizes() == at::IntArrayRef({sb}));
+
+    bool got_fatal = false;
+    auto bad = sin;
+    bad["u_per"] = at::rand({sb, 4}, sopts);
+    try
+    {
+      sm.forward(bad);
+    }
+    catch (const neml2::aoti::FatalError &)
+    {
+      got_fatal = true;
+    }
     NEML2_CHECK(got_fatal);
   }
 

@@ -106,7 +106,9 @@ def call_batch_shape(
     from the trailing end.
     """
     params = dict(model.named_parameters())
-    shapes: list[tuple[int, ...]] = [tuple(ti.batch_shape) for ti in typed_inputs]
+    # An input's plain batch only: a sub-batched input's `batch_shape` also holds
+    # its sub-batch axes, which are not call-batch axes (see the parameter case).
+    shapes: list[tuple[int, ...]] = [tuple(ti.dynamic_batch_shape) for ti in typed_inputs]
     for q in param_names:
         base = tuple(param_base_shapes.get(q, ()))
         pshape = tuple(params[q].shape)

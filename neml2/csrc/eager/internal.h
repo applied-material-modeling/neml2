@@ -61,6 +61,14 @@ struct Model::Impl
   std::vector<std::string> output_names;
   std::vector<std::vector<int64_t>> input_base_shapes;
   std::vector<std::vector<int64_t>> output_base_shapes;
+  // Per-input declared sub-batch shapes, from `[Settings]/example_batch_shape`;
+  // empty means "not declared", not "plain-batch". One entry per input, so
+  // indexing it alongside `input_base_shapes` is always valid.
+  std::vector<std::vector<int64_t>> input_sub_batch_shapes;
+  // Per-output sub-batch shapes, planned at load from the same declaration (what
+  // neml2-compile would record for it); empty means "not declared", as above.
+  // One entry per output, for the same indexing reason.
+  std::vector<std::vector<int64_t>> output_sub_batch_shapes;
   // Calibration-parameter natural base shapes, keyed by qualified name (the
   // unified parameter surface shared with aoti::Model).
   std::map<std::string, std::vector<int64_t>> parameter_base_shapes;

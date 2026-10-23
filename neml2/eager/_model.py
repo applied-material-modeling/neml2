@@ -123,11 +123,19 @@ class _EagerModel:
     ) -> None:
         # Lazy imports: keep module import (which the C++ ctor triggers) cheap
         # and avoid any import-time coupling to the CLI / model packages.
-        from ..cli.aoti_export import _var_infos
-        from ..factory import load_model
+        from ..cli.aoti_export import _var_infos, plan_output_sub_batch_shapes
+        from ..factory import load_input
         from ..models.common import ComposedModel
+        from ..settings import model_variable_names
 
-        model = load_model(input_file, model_name)
+        factory = load_input(input_file)
+        model = factory.get_model(model_name)
+        # `[Settings]/example_batch_shape` is optional. When present it is checked
+        # here, as neml2-compile checks it: an unknown name raises at load.
+        settings = factory.settings
+        settings.validate_names(
+            model_variable_names(model), universe=f"{type(model).__name__} variables"
+        )
         # Wrap a bare leaf in a ComposedModel for a stable plain-tensor boundary,
         # exactly as the AOTI export path does (see neml2/cli/aoti_export.py).
         self._model = model if isinstance(model, ComposedModel) else ComposedModel([model])
@@ -147,6 +155,40 @@ class _EagerModel:
         self.output_names: list[str] = [i["name"] for i in out_infos]
         self.input_base_shapes: list[list[int]] = [list(i["base_shape"]) for i in in_infos]
         self.output_base_shapes: list[list[int]] = [list(i["base_shape"]) for i in out_infos]
+
+        # Sub-batch extents. This runtime reports *declared* extents: an empty
+        # entry means "not declared as sub-batched", not "plain batch". An input's
+        # extent is its `[Settings]` declaration (None when undeclared). Output
+        # extents come from the same plan neml2-compile records them from, so an
+        # eager model reports what its AOTI twin would; the plan runs only when
+        # the file declares a sub-batch extent, since without one there is
+        # nothing to report.
+        self._declared_sub: dict[str, tuple[int, ...] | None] = {
+            n: settings.sub_batch_shape(n) for n in self.input_names
+        }
+        self.input_sub_batch_shapes: list[list[int]] = [
+            list(self._declared_sub[n] or ()) for n in self.input_names
+        ]
+        declares_sub = any(
+            settings.sub_batch_shape(n) is not None for n in model_variable_names(model)
+        )
+        planned: dict[str, list[int]] = {}
+        if declares_sub:
+            # The extents are authoritative, so a planner failure fails the load;
+            # say where it came from, since the model itself may evaluate fine.
+            try:
+                planned = plan_output_sub_batch_shapes(
+                    input_file, model_name, device=str(self._device)
+                )
+            except Exception as err:
+                raise RuntimeError(
+                    f"EagerModel: could not work out the output sub-batch shapes for the "
+                    f"[Settings]/example_batch_shape declaration of model {model_name!r} in "
+                    f"'{input_file}' (the compile plan failed: {type(err).__name__}: {err})."
+                ) from err
+        self.output_sub_batch_shapes: list[list[int]] = [
+            list(planned.get(n, [])) for n in self.output_names
+        ]
 
         # Calibration-parameter surface (d(output)/d(parameter), reverse-mode AD).
         # Parameters are addressed by their named_parameters() qualified name
@@ -192,9 +234,11 @@ class _EagerModel:
 
     def _check_canonical(self, name: str, t: torch.Tensor, *, kind: str) -> None:
         """Reject a non-canonical tensor: its trailing axes must equal the
-        variable's declared base shape, so an input/tangent is `(*B, *base)`
-        (e.g. an SR2 is `(*B, 6)`, never `(*B, 1)` or `(*B, 3, 2)`). A Scalar has
-        an empty base shape, so any leading shape is a valid batch.
+        variable's declared base shape (e.g. an SR2 ends in `6`, never `1` or
+        `(3, 2)`). Only the trailing base is checked here; the leading axes are
+        `(*B, *sub_batch)` for an input and `(*B,)` for a tangent, split by
+        :meth:`_sub_batch_ndim`. A Scalar has an empty base shape, so any
+        leading shape passes.
         """
         base = tuple(self.input_spec[name].BASE_SHAPE)
         bn = len(base)
@@ -202,23 +246,63 @@ class _EagerModel:
         if t.ndim < bn or trailing != base:
             raise ValueError(
                 f"EagerModel {kind} {name!r}: non-canonical shape {tuple(t.shape)}; "
-                f"expected trailing base shape {base} (canonical shape is (*B, *base))."
+                f"expected trailing base shape {base} (canonical shape is (*B, *sub_batch, *base))."
             )
 
-    def _typed_args(self, inputs: dict[str, torch.Tensor]) -> tuple:
+    def _sub_batch_ndim(self, name: str, t: torch.Tensor, batch_ndim: int | None) -> int:
+        """Number of sub-batch axes of input *name* passed as *t*.
+
+        Every axis between the leading *batch_ndim* batch axes and the base shape
+        is sub-batch. Without *batch_ndim*, the input's ``[Settings]``
+        declaration gives the count, and an undeclared input is plain batch. A
+        declared extent is checked against the tensor either way, as AOTI checks
+        its compiled metadata; a size-1 axis broadcasts to the declared extent.
+        """
+        base_ndim = len(self.input_spec[name].BASE_SHAPE)
+        declared = self._declared_sub[name]
+        if batch_ndim is not None:
+            # Clamp, not error: an input with fewer leading axes than batch_ndim
+            # (e.g. a base-only 0-d time) has no sub-batch and broadcasts.
+            n = max(t.ndim - base_ndim - batch_ndim, 0)
+        elif declared is not None:
+            n = len(declared)
+        else:
+            return 0
+        if declared is not None:
+            sub = tuple(t.shape[t.ndim - base_ndim - n : t.ndim - base_ndim])
+            if (
+                t.ndim < base_ndim + n
+                or len(sub) != len(declared)
+                or any(s not in (d, 1) for s, d in zip(sub, declared, strict=True))
+            ):
+                raise ValueError(
+                    f"EagerModel input {name!r}: shape {tuple(t.shape)} does not carry the "
+                    f"sub-batch extent {declared} declared in [Settings]/example_batch_shape "
+                    f"(canonical shape is (*B, *sub_batch, *base)"
+                    + ("" if batch_ndim is None else f", with {batch_ndim} batch axes")
+                    + ")."
+                )
+        return n
+
+    def _typed_args(
+        self, inputs: dict[str, torch.Tensor], batch_ndim: int | None = None
+    ) -> tuple[tuple, torch.Size]:
         """Validate + wrap the raw input dict into typed wrappers in input order.
 
         The inbound half of the raw-tensor boundary, shared by ``forward`` /
         ``jvp`` / ``jacobian``: checks for missing keys, validates each tensor's
-        device + dtype, broadcasts to a common batch, and wraps each into its
-        declared ``TensorWrapper`` (``sub_batch_ndim=0`` -- eager is a plain-batch
-        runtime; sub-batched inputs are rejected on output, see ``_eval``).
+        device + dtype, splits it into ``(*B, *sub_batch, *base)`` (see
+        :meth:`_sub_batch_ndim`), broadcasts the batch axes to a common batch and
+        each sub-batch axis to its declared extent, and wraps each into its
+        declared ``TensorWrapper`` with that ``sub_batch_ndim``. Returns the
+        typed inputs and the common batch.
         """
         missing = [n for n in self.input_names if n not in inputs]
         if missing:
             raise KeyError(f"EagerModel: missing input(s) {missing}; expected {self.input_names}.")
-        # Eager inputs carry no baked sub-batch axes (plain-batch contract).
-        per_input_sub_ndim = {n: 0 for n in self.input_names}
+        if batch_ndim is not None and batch_ndim < 0:
+            raise ValueError(f"EagerModel: batch_ndim must be non-negative, got {batch_ndim}.")
+        per_input_sub_ndim: dict[str, int] = {}
         raw: dict[str, torch.Tensor] = {}
         for name in self.input_names:
             t = inputs[name]
@@ -232,12 +316,50 @@ class _EagerModel:
                 hint=self._device_hint,
             )
             self._check_canonical(name, t, kind="input")
+            n = self._sub_batch_ndim(name, t, batch_ndim)
+            declared = self._declared_sub[name]
+            if n and declared is not None:
+                # Lift any size-1 sub-batch axis to its declared extent.
+                base = tuple(self.input_spec[name].BASE_SHAPE)
+                t = t.expand(*t.shape[: t.ndim - len(base) - n], *declared, *base)
+            per_input_sub_ndim[name] = n
             raw[name] = t
-        raw, _ = broadcast_to_common_batch(raw, self.input_spec, per_input_sub_ndim)
-        return tuple(self.input_spec[name](raw[name]) for name in self.input_names)
+        raw, common_dyn = broadcast_to_common_batch(raw, self.input_spec, per_input_sub_ndim)
+        typed = tuple(
+            self.input_spec[name](raw[name], sub_batch_ndim=per_input_sub_ndim[name])
+            for name in self.input_names
+        )
+        return typed, common_dyn
+
+    def _plain_inputs(self, typed_args: tuple) -> list[str]:
+        """Names of the inputs that carry no sub-batch axes in this call.
+
+        Derivatives are taken with respect to these only; a sub-batched input
+        (e.g. per-bin history ``number_density~1``) is held fixed, as on AOTI.
+        """
+        return [
+            n for n, ta in zip(self.input_names, typed_args, strict=True) if ta.sub_batch_ndim == 0
+        ]
+
+    def _reject_sub_batch(self, names: list[str], wrappers: tuple, what: str) -> None:
+        """Guard for the parameter-derivative paths, which are plain-batch only.
+
+        ``forward`` / ``jvp`` / ``jacobian`` accept sub-batched variables; the
+        reverse-mode parameter derivatives have not been extended to them, so a
+        call that carries one is rejected instead of returning mis-shaped blocks.
+        Called on the inputs before the evaluation (so a rejected call pays no
+        solve) and on the outputs after it (a plain input can still produce a
+        sub-batched output).
+        """
+        bad = [n for n, w in zip(names, wrappers, strict=True) if w.sub_batch_ndim > 0]
+        if bad:
+            raise NotImplementedError(
+                f"EagerModel {what}: {bad} carry sub-batch axes; parameter derivatives "
+                f"are plain-batch only on this runtime."
+            )
 
     def _eval(self, typed_args: tuple, *, v=None) -> tuple[tuple, dict | None]:
-        """Run the native model and enforce the plain-batch contract.
+        """Run the native model.
 
         Returns ``(typed_outputs, v_out)`` -- ``v_out`` is ``None`` when ``v`` is
         not supplied. ``ComposedModel.forward`` returns a bare output tuple when
@@ -250,69 +372,61 @@ class _EagerModel:
         else:
             *outs, v_out = result
             typed_outputs = tuple(outs)
-        self._reject_sub_batch(typed_outputs)
         return typed_outputs, v_out
 
-    def _reject_sub_batch(self, typed_outputs: tuple) -> None:
-        """Guard: the eager runtime is plain-batch only.
-
-        A non-zero ``sub_batch_ndim`` on any output is the signal that the model
-        carries BLOCK-aware / labelled axes (e.g. crystal-plasticity geometry),
-        which the raw-tensor ``forward(dict)`` boundary cannot faithfully
-        represent (per-input sub-batch shapes are caller-declared at AOTI compile
-        time and have no slot here). Reject loudly instead of returning silently
-        mislabelled results.
-        """
-        bad = [
-            n
-            for n, o in zip(self.output_names, typed_outputs, strict=True)
-            if getattr(o, "sub_batch_ndim", 0) > 0
-        ]
-        if bad:
-            raise NotImplementedError(
-                f"EagerModel: output(s) {bad} carry sub-batch axes (sub_batch_ndim>0). "
-                f"The eager runtime is plain-batch only; crystal-plasticity / "
-                f"sub-batched models must use the AOTI / dispatched runtime."
-            )
-
-    def forward(self, inputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+    def forward(
+        self, inputs: dict[str, torch.Tensor], batch_ndim: int | None = None
+    ) -> dict[str, torch.Tensor]:
         """Evaluate the model on raw, name-keyed tensors.
 
         ``inputs`` is keyed by ``input_names``; missing keys raise ``KeyError``.
-        Returns one raw tensor per name in ``output_names``. This is the
-        raw-tensor boundary (see module docstring): inputs are validated and
-        broadcast to a common batch, wrapped into typed wrappers, run through
-        the native model, and unwrapped back to raw tensors at the return.
+        Each tensor is ``(*B, *sub_batch, *base)``. *batch_ndim*, when given, is
+        the number of leading batch axes ``B``; otherwise an input's
+        ``[Settings]`` declaration gives its sub-batch axes, and an undeclared
+        input is plain batch. Returns one raw tensor per name in
+        ``output_names`` at ``(*B, *out_sub_batch, *out_base)``, contiguous.
+        This is the raw-tensor boundary (see module docstring): inputs are
+        validated and broadcast to a common batch, wrapped into typed wrappers,
+        run through the native model, and unwrapped back to raw tensors at the
+        return.
         """
-        typed_outputs, _ = self._eval(self._typed_args(inputs))
-        return unwrap_outputs(typed_outputs, self.output_names)
+        typed_args, common_dyn = self._typed_args(inputs, batch_ndim)
+        typed_outputs, _ = self._eval(typed_args)
+        return unwrap_outputs(typed_outputs, self.output_names, common_dyn)
 
     def jvp(
         self,
         inputs: dict[str, torch.Tensor],
         tangents: dict[str, torch.Tensor],
+        batch_ndim: int | None = None,
     ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
         """Evaluate the model and its Jacobian-vector product.
 
-        ``inputs`` is keyed by ``input_names``; ``tangents`` shares those keys +
-        ``(*B, *in_base)`` shapes, and a missing tangent defaults to zero (no
-        contribution). Returns ``(outputs, jvp_outputs)`` -- both keyed by
+        ``inputs`` is keyed by ``input_names`` and split as in :meth:`forward`;
+        ``tangents`` shares those keys + ``(*B, *in_base)`` shapes, and a missing
+        tangent defaults to zero (no contribution). A tangent for a sub-batched
+        input is rejected: derivatives are taken with respect to plain-batch
+        inputs only. Returns ``(outputs, jvp_outputs)`` -- both keyed by
         ``output_names``, mirroring the C++ ``neml2::aoti::Model::jvp`` contract;
-        ``jvp_outputs[name]`` is the directional derivative at the output's
-        natural ``(*batch, *out_base)``.
+        ``jvp_outputs[name]`` is the directional derivative, materialized like
+        ``outputs[name]`` at ``(*B, *out_sub_batch, *out_base)``, contiguous.
 
         Implemented on the native chain rule: each tangent is seeded as a single
         leading-K (K=1) direction; the per-input contributions to each output are
         summed at the boundary.
         """
-        typed_args = self._typed_args(inputs)
-        # All inputs share the common batch after broadcasting.
-        common_batch = tuple(typed_args[0].batch_shape)
+        typed_args, common_dyn = self._typed_args(inputs, batch_ndim)
+        plain = set(self._plain_inputs(typed_args))
         seed: dict[str, dict] = {}
         for name in self.input_names:
             td = tangents.get(name)
             if td is None:
                 continue
+            if name not in plain:
+                raise ValueError(
+                    f"EagerModel jvp: input {name!r} is sub-batched; derivatives are taken "
+                    f"with respect to plain-batch inputs only."
+                )
             check_tensor(
                 td,
                 name,
@@ -324,32 +438,37 @@ class _EagerModel:
             )
             self._check_canonical(name, td, kind="tangent")
             base_shape = tuple(self.input_spec[name].BASE_SHAPE)
-            td = torch.broadcast_to(td, (*common_batch, *base_shape))
+            td = torch.broadcast_to(td, (*common_dyn, *base_shape))
             # Leading K=1 axis -> a single directional seed (see apply_chain_rule).
             seed[name] = {name: self.input_spec[name](td.unsqueeze(0))}
         typed_outputs, v_out = self._eval(typed_args, v=seed)
-        outputs = unwrap_outputs(typed_outputs, self.output_names)
+        outputs = unwrap_outputs(typed_outputs, self.output_names, common_dyn)
         assert v_out is not None
-        jvp_outputs = assemble_jvp_outputs(v_out, typed_outputs, self.output_names)
+        jvp_outputs = assemble_jvp_outputs(v_out, typed_outputs, self.output_names, common_dyn)
         return outputs, jvp_outputs
 
     def jacobian(
         self,
         inputs: dict[str, torch.Tensor],
+        batch_ndim: int | None = None,
     ) -> tuple[dict[str, torch.Tensor], dict[str, dict[str, torch.Tensor]]]:
-        """Evaluate the model and its full Jacobian as variable-pair blocks.
+        """Evaluate the model and its Jacobian as variable-pair blocks.
 
-        Returns ``(outputs, J)`` -- ``outputs`` keyed by ``output_names`` and ``J``
-        the nested ``{out_name: {in_name: (*batch, *out_base, *in_base)}}`` block
-        dict (rows in ``output_spec`` order, cols in ``input_spec`` order),
-        matching the C++ ``neml2::aoti::Model::jacobian`` contract. Built on the
-        native chain rule via a leading-K identity seed per input (reusing the
-        AOTI export's ``_leading_k_identity_seed``).
+        ``inputs`` is split as in :meth:`forward`. Returns ``(outputs, J)`` --
+        ``outputs`` keyed by ``output_names`` and ``J`` the nested
+        ``{out_name: {in_name: (*B, *out_sub_batch, *out_base, *in_base)}}``
+        block dict (rows in ``output_spec`` order, cols in ``input_spec`` order),
+        matching the C++ ``neml2::aoti::Model::jacobian`` contract. Columns are
+        the plain-batch inputs only: a sub-batched input is held fixed and has no
+        column, as an AOTI artifact returns only the pairs it was compiled with.
+        Built on the native chain rule via a leading-K identity seed per input
+        (reusing the AOTI export's ``_leading_k_identity_seed``).
         """
         from ..cli.aoti_export import _leading_k_identity_seed
         from ..models.param_ad import call_batch_shape
 
-        typed_args = self._typed_args(inputs)
+        typed_args, common_dyn = self._typed_args(inputs, batch_ndim)
+        plain = self._plain_inputs(typed_args)
         # The output batches on broadcast(input batches, parameter batches) -- a
         # parameter may carry its own batch dim (e.g. a per-batch-element Scalar).
         # Build every input's identity seed at that common call batch so the chain
@@ -368,17 +487,19 @@ class _EagerModel:
                 )
             }
             for name, typed_in in zip(self.input_names, typed_args, strict=True)
+            if name in plain
         }
         typed_outputs, v_out = self._eval(typed_args, v=seed)
-        outputs = unwrap_outputs(typed_outputs, self.output_names)
+        outputs = unwrap_outputs(typed_outputs, self.output_names, common_dyn)
         assert v_out is not None
         jac = assemble_jacobian(
             v_out,
             typed_outputs,
             self.output_names,
             self.output_spec,
-            self.input_names,
+            plain,
             self.input_spec,
+            call_batch,
         )
         return outputs, jac
 
@@ -426,11 +547,13 @@ class _EagerModel:
         """
         from ..models.param_ad import param_jacobian as _param_jacobian
 
-        typed_args = self._typed_args(inputs)
-        # Plain forward for the value outputs + the plain-batch (sub-batch) guard;
-        # the parameter Jacobian re-runs the forward under functional_call.
+        typed_args, common_dyn = self._typed_args(inputs)
+        self._reject_sub_batch(self.input_names, typed_args, "param_jacobian")
+        # Plain forward for the value outputs + the output half of the guard; the
+        # parameter Jacobian re-runs the forward under functional_call.
         typed_outputs, _ = self._eval(typed_args)
-        outputs = unwrap_outputs(typed_outputs, self.output_names)
+        self._reject_sub_batch(self.output_names, typed_outputs, "param_jacobian")
+        outputs = unwrap_outputs(typed_outputs, self.output_names, common_dyn)
         pjac = _param_jacobian(
             self._model,
             typed_args,
@@ -457,13 +580,16 @@ class _EagerModel:
         swap's backward, exactly as in :meth:`param_jacobian`.
 
         *cotangents* maps each output name to ``w_o`` at the output's
-        ``(*batch, *out_base)`` shape (raw tensor; sub-batch is rejected upstream).
+        ``(*B, *out_base)`` shape (raw tensor). A call whose inputs or outputs
+        carry sub-batch axes raises ``NotImplementedError``.
         """
         from ..models.param_ad import param_vjp as _param_vjp
 
-        typed_args = self._typed_args(inputs)
-        # Plain forward runs the plain-batch (sub-batch) guard before the adjoint.
-        self._eval(typed_args)
+        typed_args, _ = self._typed_args(inputs)
+        self._reject_sub_batch(self.input_names, typed_args, "param_vjp")
+        # Plain forward runs the output half of the guard before the adjoint.
+        typed_outputs, _ = self._eval(typed_args)
+        self._reject_sub_batch(self.output_names, typed_outputs, "param_vjp")
         return _param_vjp(
             self._model,
             typed_args,

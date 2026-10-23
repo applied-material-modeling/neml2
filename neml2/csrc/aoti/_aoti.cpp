@@ -191,10 +191,28 @@ Everything else is baked into the graph as a constant.
           "input_base_shapes",
           &Model::input_base_shapes,
           "Per-input base shape (Scalar -> [], SR2 -> [6], R2 -> [3, 3]). Inputs "
-          "must be passed at their canonical (*B, *base_shape) shape.")
+          "must be passed at their canonical (*B, *sub_batch_shape, *base_shape) "
+          "shape.")
       .def_property_readonly("output_base_shapes",
                              &Model::output_base_shapes,
                              "Per-output base shape (Scalar -> [], SR2 -> [6], R2 -> [3, 3]).")
+      .def_property_readonly(
+          "input_sub_batch_shapes",
+          &Model::input_sub_batch_shapes,
+          "Per-input sub-batch shape -- the structural per-site axes (per-grain, "
+          "per-slip-system, per-bin) between the leading dynamic batch and the "
+          "trailing base shape; [] for a plain-batch input. Parallel to "
+          "input_names. Sub-batch axes are always materialized at the boundary, "
+          "so each batch entry is a contiguous block of prod(sub) * prod(base) "
+          "values.")
+      .def_property_readonly(
+          "output_sub_batch_shapes",
+          &Model::output_sub_batch_shapes,
+          "Per-output sub-batch shape; [] for a plain-batch output. Parallel to "
+          "output_names. Recorded at compile time from what the producing segment "
+          "returns, so on this runtime it is definite. forward materializes each "
+          "output to (*B, *sub_batch_shape, *base_shape), so the contiguous-block "
+          "guarantee stated for inputs holds for outputs too.")
       .def_property_readonly(
           "parameter_base_shapes",
           &Model::parameter_base_shapes,
@@ -247,7 +265,7 @@ promoted parameter's value for this call only, without mutating
 Evaluate + JVP.
 
 ``inputs`` and ``tangents`` are keyed by ``input_names`` and shaped
-``(*B, *base_shape)``; a missing tangent key defaults to zero. Returns a
+``(*B, *sub_batch_shape, *base_shape)``; a missing tangent key defaults to zero. Returns a
 2-tuple ``(outputs, jvp_outputs)`` -- both ``dict[str, Tensor]`` keyed by
 ``output_names``; ``jvp_outputs[name]`` is the directional derivative at the
 output's natural ``(*B, *out_base_shape)``.
