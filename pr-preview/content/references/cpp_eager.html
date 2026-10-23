@@ -589,8 +589,9 @@ variable.</p>
 <section id="errors">
 <h2>Errors<a class="headerlink" href="#errors" title="Link to this heading">#</a></h2>
 <p>A Python-side failure — a parse error, an unknown model name, a wrong-dtype
-input, an input missing its declared sub-batch extent — is normalized to <code class="docutils literal notranslate"><span class="pre">neml2::aoti::FatalError</span></code> (the same
-taxonomy the AOTI runtime uses; see <a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>). The one exception is a
+input, an input missing its declared sub-batch extent — is normalized to
+<code class="docutils literal notranslate"><span class="pre">neml2::aoti::FatalError</span></code> (the same taxonomy the AOTI runtime uses; see
+<a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>). The one exception is a
 <strong>solver divergence / max-iterations</strong>, which is re-raised as the <em>recoverable</em>
 <code class="docutils literal notranslate"><span class="pre">neml2::aoti::ConvergenceError</span></code> (it originates as that type inside <code class="docutils literal notranslate"><span class="pre">libneml2.so</span></code>
 and round-trips faithfully through the embedded interpreter), so a host can cut

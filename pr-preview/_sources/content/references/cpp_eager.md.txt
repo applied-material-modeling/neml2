@@ -163,8 +163,9 @@ variable.
 ## Errors
 
 A Python-side failure — a parse error, an unknown model name, a wrong-dtype
-input, an input missing its declared sub-batch extent — is normalized to `neml2::aoti::FatalError` (the same
-taxonomy the AOTI runtime uses; see [](aoti-packages)). The one exception is a
+input, an input missing its declared sub-batch extent — is normalized to
+`neml2::aoti::FatalError` (the same taxonomy the AOTI runtime uses; see
+[](aoti-packages)). The one exception is a
 **solver divergence / max-iterations**, which is re-raised as the *recoverable*
 `neml2::aoti::ConvergenceError` (it originates as that type inside `libneml2.so`
 and round-trips faithfully through the embedded interpreter), so a host can cut
