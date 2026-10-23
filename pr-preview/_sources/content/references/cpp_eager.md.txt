@@ -92,7 +92,10 @@ declaration `neml2-compile` reads. The block stays optional:
 *declared* extents, so an empty entry means "not declared as sub-batched", not
 "plain-batch". The output extents are what `neml2-compile` would record for the
 same declaration, worked out at load without compiling or solving, so a host can
-size sub-batched outputs before the first call.
+size sub-batched outputs before the first call. With a declaration the load
+therefore also runs the compile plan for these extents, which costs one more
+model load plus a zero-input probe of each forward segment, and a failure there
+fails the load.
 
 That is the one place the two routes differ in meaning rather than in
 signature. On `neml2::aoti::Model` the extents were recorded from what the

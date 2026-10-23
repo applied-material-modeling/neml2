@@ -147,8 +147,9 @@ explicitly.
 `cpp-eager` takes derivatives with respect to plain-batch inputs only, and its
 parameter derivatives are plain-batch only. See [](model-eager-cpp).
 
-The compiled artifact persists the extent for **inputs** only. There is no
-`output_sub_batch_shapes()` on the C++ model classes, because `metadata.json`
-records no per-output `sub_batch_shape`: the Python shim recovers an output's
-extent from the returned tensor at call time, which a C++ host cannot do before
-its first call.
+The compiled artifact records the extent of every input and output in
+`metadata.json`, and the C++ model classes report them through
+`input_sub_batch_shapes()` / `output_sub_batch_shapes()`. `cpp-eager` reports
+the same extents at load, worked out from the `[Settings]` declaration. Without
+a declaration its accessors stay empty, even for a model whose outputs come back
+sub-batched.

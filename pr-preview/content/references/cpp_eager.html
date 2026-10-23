@@ -523,7 +523,10 @@ declaration fails the load, as it fails <code class="docutils literal notranslat
 <em>declared</em> extents, so an empty entry means “not declared as sub-batched”, not
 “plain-batch”. The output extents are what <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> would record for the
 same declaration, worked out at load without compiling or solving, so a host can
-size sub-batched outputs before the first call.</p>
+size sub-batched outputs before the first call. With a declaration the load
+therefore also runs the compile plan for these extents, which costs one more
+model load plus a zero-input probe of each forward segment, and a failure there
+fails the load.</p>
 <p>That is the one place the two routes differ in meaning rather than in
 signature. On <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code> the extents were recorded from what the
 compiled graph produces, so they are definite and an empty entry means plain

@@ -570,11 +570,12 @@ crystal geometry, the bin count, or any other data object in the file. State it
 explicitly.</p>
 <p><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> takes derivatives with respect to plain-batch inputs only, and its
 parameter derivatives are plain-batch only. See <a class="reference internal" href="cpp_eager.html#model-eager-cpp"><span class="std std-ref">cpp-eager — eager evaluation from C++</span></a>.</p>
-<p>The compiled artifact persists the extent for <strong>inputs</strong> only. There is no
-<code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code> on the C++ model classes, because <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>
-records no per-output <code class="docutils literal notranslate"><span class="pre">sub_batch_shape</span></code>: the Python shim recovers an output’s
-extent from the returned tensor at call time, which a C++ host cannot do before
-its first call.</p>
+<p>The compiled artifact records the extent of every input and output in
+<code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>, and the C++ model classes report them through
+<code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes()</span></code> / <code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code>. <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> reports
+the same extents at load, worked out from the <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code> declaration. Without
+a declaration its accessors stay empty, even for a model whose outputs come back
+sub-batched.</p>
 </section>
 </section>
 
