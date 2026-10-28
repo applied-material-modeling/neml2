@@ -143,7 +143,15 @@ jobs:
         # exploit path. The 2.13.0 fix is unreachable while torch is pinned at
         # 2.12.1 for the AOTI runtime ABI lock. Remove once neml2 moves to
         # torch >= 2.13.0.
-        run: pip-audit --vulnerability-service osv --strict --ignore-vuln PYSEC-2026-3447 --ignore-vuln PYSEC-2025-194
+        #
+        # GHSA-xmj3-9gf7-h52w: a Windows-only path escape via
+        # ``namespace_packages.txt`` in setuptools' legacy wheel install path
+        # (``install_as_egg``), affecting >= 38.2.2 and fixed in 84.1.0. LOW
+        # severity (CVSS:4.0/AV:L/AC:H/AT:P/PR:L/UI:A). Same unreachable-fix
+        # situation as PYSEC-2026-3447 -- torch pins setuptools < 82 -- and
+        # neml2 builds via scikit-build-core, never taking the legacy egg
+        # path. Remove once torch permits setuptools >= 84.1.0.
+        run: pip-audit --vulnerability-service osv --strict --ignore-vuln PYSEC-2026-3447 --ignore-vuln PYSEC-2025-194 --ignore-vuln GHSA-xmj3-9gf7-h52w
       - name: Add the dev extra on top
         # Install the ``dev`` extra's requirements directly instead of
         # re-running ``pip install ".[dev]"``, which would rebuild libneml2
@@ -163,11 +171,11 @@ jobs:
         # Advisory only -- see the job comment for why this closure does not
         # block. pip-audit still exits non-zero when it finds something, so
         # ``continue-on-error`` is what keeps the finding visible in the log
-        # and the annotation without failing the merge. The two ignores match
+        # and the annotation without failing the merge. The three ignores match
         # the strict scan above (same justifications) so this surfaces only
         # what that gate has not already accounted for.
         continue-on-error: true
-        run: pip-audit --vulnerability-service osv --ignore-vuln PYSEC-2026-3447 --ignore-vuln PYSEC-2025-194
+        run: pip-audit --vulnerability-service osv --ignore-vuln PYSEC-2026-3447 --ignore-vuln PYSEC-2025-194 --ignore-vuln GHSA-xmj3-9gf7-h52w
 
   coverage:
     # Python branch + line coverage. Runs the fast lane only -- the
