@@ -5,7 +5,9 @@
 ```{toctree}
 :maxdepth: 1
 
+BackwardEulerViscousDamage
 BenzeggaghKenaneFullSeparation
+BilinearDamage
 BilinearTraction
 CamanhoDavilaCriticalSeparation
 CavityGrowthDamageRate
@@ -14,10 +16,12 @@ CavityNucleationRate
 CavityVolumeOpening
 DiffusiveCavityGrowthRate
 EffectiveCavityFraction
+ExponentialViscousDamage
 GrainBoundarySlidingRate
 ModeMixity
 OrthotropicLinearTraction
 PowerLawFullSeparation
+SalehaniIraniDamage
 SalehaniIraniTraction
 ShamNeedlemanTraction
 SlidingDrivenStrainRate

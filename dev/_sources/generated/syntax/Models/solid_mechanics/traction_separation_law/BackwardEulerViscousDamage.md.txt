@@ -1,0 +1,27 @@
+(models-BackwardEulerViscousDamage)=
+# BackwardEulerViscousDamage
+
+**Source:** `models/solid_mechanics/traction_separation_law/BackwardEulerViscousDamage.py`
+
+Irreversible update with $\alpha=\Delta t/(\eta+\Delta t)$.
+
+## Inputs
+
+`trial_damage` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Rate-independent trial damage
+
+`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
+: Time
+
+
+## Outputs
+
+`damage` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Updated irreversible damage
+
+
+## Parameters
+
+`viscosity` &mdash; `parameter` &middot; `Scalar` &middot; default `0`
+: Damage viscosity, which must be non-negative. Zero recovers the rate-independent update exactly.
+

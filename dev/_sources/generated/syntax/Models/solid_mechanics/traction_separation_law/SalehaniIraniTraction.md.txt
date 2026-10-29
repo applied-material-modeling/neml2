@@ -3,23 +3,30 @@
 
 **Source:** `models/solid_mechanics/traction_separation_law/SalehaniIraniTraction.py`
 
-3D coupled exponential cohesive law of Salehani & Irani with internal damage state.
-Computes $d_\text{trial} = 1 - \exp(-x)$ where $x = b_n + b_{s1}^2 + b_{s2}^2$, caps it for
-irreversibility against the previous-step value
-(auto-declared via `history_name`), and assembles $T_i = a_i b_i (1 - d)$.
-For monotonic loading this is exactly equivalent to the original $T_i = a_i b_i \exp(-x)$; under
-unloading the damage cap freezes the softness at its historical
-peak. The internal tangential characteristic length is $\sqrt{2}\,\delta_{u0,t}$. If
-`normal_penetration` is supplied, $K_\text{pen}\,\delta_n^\text{pen}$
-is added to $T_n$ (`penalty_stiffness` becomes required).
+Assemble 3D coupled exponential cohesive traction of Salehani & Irani from an
+externally updated damage:
+$T_n = a_n b_n (1 - d) + K_\text{pen}\delta_n^\text{pen}$ and $T_{si} = a_t b_{si} (1 - d)$,
+where $a_n = e T_{\max,n}$, $a_t = \sqrt{2e} T_{\max,t}$, $b_n = \delta_n / \delta_{u0,n}$,
+and $b_{si} = \delta_{si} / (\sqrt{2} \delta_{u0,t})$.
+
+Note:
+    `normal_characteristic_length` ($\delta_{u0,n}$) and
+    `tangential_characteristic_length` ($\delta_{u0,t}$) must match the parameters
+    configured in the corresponding upstream `SalehaniIraniDamage`.
+    For calibrated parameters, wire both models to the same
+    ``ScalarConstantParameter`` outputs. For fixed parameters, both models may reference
+    the same ``[Tensors]`` definitions.
 
 ## Inputs
+
+`damage` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Current damage
 
 `normal_separation` &mdash; `input` &middot; `Scalar` &middot; **required**
 : Normal separation (typically the Macaulay-positive part of the normal jump)
 
 `normal_penetration` &mdash; `input` &middot; `Scalar`
-: Optional normal penetration. When supplied, the penalty stiffness times this is added to the normal traction as a penalty term resisting interpenetration. Requires `penalty_stiffness` to be supplied as well.
+: Optional normal penetration (typically the Macaulay-negative part of the normal jump). When supplied, the penalty stiffness times this is added to the normal traction as a penalty term resisting interpenetration.
 
 `tangential_separation_1` &mdash; `input` &middot; `Scalar` &middot; **required**
 : First tangential separation
@@ -27,26 +34,20 @@ is added to $T_n$ (`penalty_stiffness` becomes required).
 `tangential_separation_2` &mdash; `input` &middot; `Scalar` &middot; **required**
 : Second tangential separation
 
-`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
-: Time
-
 
 ## Outputs
 
 `traction` &mdash; `output` &middot; `Vec` &middot; **required**
-: Traction Vec
-
-`damage` &mdash; `output` &middot; `Scalar` &middot; **required**
-: Damage scalar (current step, irreversibility-capped)
+: Traction vector
 
 
 ## Parameters
 
 `normal_characteristic_length` &mdash; `parameter` &middot; `Scalar` &middot; **required**
-: Normal characteristic length (raw user input)
+: Normal characteristic length (must match SalehaniIraniDamage)
 
 `tangential_characteristic_length` &mdash; `parameter` &middot; `Scalar` &middot; **required**
-: Tangential characteristic length (raw user input; the internal value is sqrt(2) times this)
+: Tangential characteristic length (must match SalehaniIraniDamage)
 
 `normal_strength` &mdash; `parameter` &middot; `Scalar` &middot; **required**
 : Normal strength (peak normal traction)
@@ -55,8 +56,5 @@ is added to $T_n$ (`penalty_stiffness` becomes required).
 : Shear strength (peak shear traction)
 
 `penalty_stiffness` &mdash; `parameter` &middot; `Scalar` &middot; default `0`
-: Penalty stiffness used to resist interpenetration. Required when `normal_penetration` is supplied; ignored otherwise.
-
-`viscosity` &mdash; `parameter` &middot; `Scalar` &middot; default `0`
-: Damage viscosity, which must be non-negative. Zero recovers the rate-independent law exactly; positive values apply the backward-Euler regularization and delay damage growth.
+: Penalty stiffness
 
