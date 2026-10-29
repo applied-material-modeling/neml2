@@ -111,6 +111,10 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="al_cu_ttp.html">Al–Cu TTP diagram</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../pbm/index.html">Population balance (fragmentation)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pbm/grinding.html">Grinding example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -193,6 +197,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -209,6 +214,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2LinearCombination.html">R2LinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
@@ -265,6 +271,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -531,9 +538,9 @@ growth rate vanishes as <span class="math notranslate nohighlight">\(x^\infty_\s
 <p>The more general <strong>SFFK</strong> form (Svoboda–Fischer–Fratzl–Kozeschnik)
 handles multi-component diffusion in the dilute, diffusion-limited
 regime,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-00b06c83-07bd-4a38-aa7d-4cc0ec9d7c41">
-<div class="amsmath math notranslate nohighlight" id="equation-00b06c83-07bd-4a38-aa7d-4cc0ec9d7c41">
-<span class="eqno">(6)<a class="headerlink" href="#equation-00b06c83-07bd-4a38-aa7d-4cc0ec9d7c41" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-a27b8524-a07a-4bc2-9b77-ad9b96769a0e">
+<div class="amsmath math notranslate nohighlight" id="equation-a27b8524-a07a-4bc2-9b77-ad9b96769a0e">
+<span class="eqno">(6)<a class="headerlink" href="#equation-a27b8524-a07a-4bc2-9b77-ad9b96769a0e" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{R}^{(j)} &amp;= \frac{1}{R^{(j)}} \,
   \frac{\Delta G^{(j)}_{\text{chem}}
       + \Delta G^{(j)}_{\text{surf}}
@@ -546,9 +553,9 @@ S^{(j)} &amp;= \sum_{k \in \mathcal{S}_j}
 <p>with <span class="math notranslate nohighlight">\(\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\)</span> and <span class="math notranslate nohighlight">\(D_k\)</span> the matrix
 diffusivity of species <span class="math notranslate nohighlight">\(k\)</span>. The driving force is split into chemical,
 surface, and elastic contributions:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-13043643-fddc-4cd9-b9cf-04afd7b5a073">
-<div class="amsmath math notranslate nohighlight" id="equation-13043643-fddc-4cd9-b9cf-04afd7b5a073">
-<span class="eqno">(7)<a class="headerlink" href="#equation-13043643-fddc-4cd9-b9cf-04afd7b5a073" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-c44b336e-76ee-44a5-a939-36607e5f4599">
+<div class="amsmath math notranslate nohighlight" id="equation-c44b336e-76ee-44a5-a939-36607e5f4599">
+<span class="eqno">(7)<a class="headerlink" href="#equation-c44b336e-76ee-44a5-a939-36607e5f4599" title="Permalink to this equation">#</a></span>\[\begin{align}
 \Delta G^{(j)}_{\text{chem}} &amp;=
   \sum_{k \in \mathcal{S}_j} \Delta x^{(j)}_k
   \bigl[\mu^{\text{matrix}}_k(x^\infty) - \mu^{\text{equil},(j)}_k\bigr],
@@ -580,9 +587,9 @@ J^{(j)}_{\text{nuc}} =
 \]</div>
 </div>
 <p>with the classical-nucleation-theory expressions</p>
-<div class="math-wrapper amsmath docutils container" id="equation-ca23c1c3-faf8-4d46-8925-2b4a45ee1604">
-<div class="amsmath math notranslate nohighlight" id="equation-ca23c1c3-faf8-4d46-8925-2b4a45ee1604">
-<span class="eqno">(8)<a class="headerlink" href="#equation-ca23c1c3-faf8-4d46-8925-2b4a45ee1604" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-3f417785-e476-4aa9-839e-7c2d242bf394">
+<div class="amsmath math notranslate nohighlight" id="equation-3f417785-e476-4aa9-839e-7c2d242bf394">
+<span class="eqno">(8)<a class="headerlink" href="#equation-3f417785-e476-4aa9-839e-7c2d242bf394" title="Permalink to this equation">#</a></span>\[\begin{align}
 R^{(j)}_{\text{crit}} &amp;=
   \frac{2 \gamma^{(j)} V_m^{(j)}}{\Delta g^{(j)}_v}, \\
 \Delta G^{*,(j)} &amp;=

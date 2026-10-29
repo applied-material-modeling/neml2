@@ -111,6 +111,10 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/pbm/index.html">Population balance (fragmentation)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/pbm/grinding.html">Grinding example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -193,6 +197,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -209,6 +214,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2LinearCombination.html">R2LinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
@@ -265,6 +271,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -830,7 +837,7 @@ stay flat (their sub-batch was folded into base at assembly).</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
-<li><p><strong>flat</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p></li>
+<li><p><strong>flat</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -872,7 +879,7 @@ form the pyzag adapter and time-integration solvers consume. Inverse of
 <a class="reference internal" href="#neml2.es.AssembledVector.from_flat" title="neml2.es.AssembledVector.from_flat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_flat()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -890,9 +897,9 @@ sub-batch shapes, and per-group <code class="xref py py-data docutils literal no
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>groups</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>...</em><em>]</em><em>, </em><em>...</em><em>]</em>)</p></li>
 <li><p><strong>specs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.15)"><em>type</em></a><em>[</em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em><em>]</em>)</p></li>
-<li><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>]</em>)</p></li>
+<li><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a><em>]</em>)</p></li>
 <li><p><strong>structure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><em>Literal</em></a><em>[</em><em>'block'</em><em>, </em><em>'dense'</em><em>]</em><em>, </em><em>...</em><em>]</em>)</p></li>
-<li><p><strong>group_common</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em> | </em><em>None</em><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>group_common</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a><em> | </em><em>None</em><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -923,7 +930,7 @@ over this layout packs to (see <a class="reference internal" href="#neml2.es.Ass
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout.group_common">
-<span class="sig-name descname"><span class="pre">group_common</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><span class="pre">Size</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.group_common" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">group_common</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><span class="pre">Size</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.group_common" title="Link to this definition">#</a></dt>
 <dd><p>Optional per-group explicit common sub-batch prefix (one entry per group;
 <code class="docutils literal notranslate"><span class="pre">None</span></code> = infer from members). Used by generated layouts that must retain a
 matched prefix rather than re-infer a longer one from a lone member.</p>
@@ -945,7 +952,7 @@ intermediate axis). Returns the empty shape for a DENSE group.</p>
 <dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1010,7 +1017,7 @@ the FIRST variable’s shape for shape inference only.</p>
 <dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1059,14 +1066,14 @@ the FIRST variable’s shape for shape inference only.</p>
 <dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AxisLayout.sub_batch_shapes">
-<span class="sig-name descname"><span class="pre">sub_batch_shapes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><span class="pre">Size</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.sub_batch_shapes" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">sub_batch_shapes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><span class="pre">Size</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AxisLayout.sub_batch_shapes" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1110,7 +1117,7 @@ common-only variables and for DENSE groups.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1144,7 +1151,7 @@ common-only variables and for DENSE groups.</p>
 <dd><p>Return a new layout with updated sub-batch shapes (frozen replacement).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>]</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1191,10 +1198,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1236,10 +1243,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1281,10 +1288,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1328,10 +1335,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1386,10 +1393,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1430,12 +1437,12 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>A</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p></li>
-<li><p><strong>Bp</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p></li>
+<li><p><strong>A</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p></li>
+<li><p><strong>Bp</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1575,7 +1582,7 @@ registered subclass (<code class="docutils literal notranslate"><span class="pre
 <span class="sig-name descname"><span class="pre">setup_blayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem.setup_blayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem.setup_blayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1588,7 +1595,7 @@ registered subclass (<code class="docutils literal notranslate"><span class="pre
 <span class="sig-name descname"><span class="pre">setup_glayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem.setup_glayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem.setup_glayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1601,7 +1608,7 @@ registered subclass (<code class="docutils literal notranslate"><span class="pre
 <span class="sig-name descname"><span class="pre">setup_ulayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#LinearSystem.setup_ulayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.LinearSystem.setup_ulayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1663,10 +1670,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1685,7 +1692,7 @@ registered hooks while the latter silently ignores them.</p>
 <li><p><strong>unknowns</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>)</p></li>
 <li><p><strong>residuals</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
 <li><p><strong>structure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
-<li><p><strong>declared_sub_batch_shapes</strong> (<em>Mapping</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>torch.Size</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>declared_sub_batch_shapes</strong> (<em>Mapping</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>torch.Size</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1708,7 +1715,7 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes">
-<span class="sig-name descname"><span class="pre">declared_sub_batch_shapes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><span class="pre">Size</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">declared_sub_batch_shapes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><span class="pre">Size</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes" title="Link to this definition">#</a></dt>
 <dd><p>Per-variable sub-batch extents declared in the input file’s
 <code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code>, keyed by variable name. Empty
 when the system is constructed directly in Python. This is what lets
@@ -1816,7 +1823,7 @@ by the C++-backed Newton solver to write the converged iterate back
 into the system state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>u_raws</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a><em>]</em>)</p>
+<dd class="field-odd"><p><strong>u_raws</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -1829,7 +1836,7 @@ into the system state.</p>
 <span class="sig-name descname"><span class="pre">setup_blayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem.setup_blayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.setup_blayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1842,7 +1849,7 @@ into the system state.</p>
 <span class="sig-name descname"><span class="pre">setup_glayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem.setup_glayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.setup_glayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1855,7 +1862,7 @@ into the system state.</p>
 <span class="sig-name descname"><span class="pre">setup_ulayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem.setup_ulayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.setup_ulayout" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.14)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
+<dd class="field-odd"><p><strong>sub_batch_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.15)"><em>Size</em></a><em>] </em><em>| </em><em>None</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a></p>
@@ -1973,10 +1980,10 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, …]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>, …]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2127,7 +2134,7 @@ an internal neml2 helper.</p>
 <dd class="field-odd"><p><strong>v</strong> (<a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2141,7 +2148,7 @@ an internal neml2 helper.</p>
 <dd class="field-odd"><p><strong>v</strong> (<a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a></p>
 </dd>
 </dl>
 </dd></dl>

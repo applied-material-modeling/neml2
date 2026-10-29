@@ -111,6 +111,10 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/pbm/index.html">Population balance (fragmentation)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/pbm/grinding.html">Grinding example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -193,6 +197,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -209,6 +214,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2LinearCombination.html">R2LinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
@@ -265,6 +271,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -450,7 +457,7 @@ side effects.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.data.CrystalGeometry">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.data.</span></span><span class="sig-name descname"><span class="pre">CrystalGeometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sym_ops</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lattice_vectors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slip_directions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slip_planes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/data/CrystalGeometry.html#CrystalGeometry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.data.CrystalGeometry" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
 <p>Slip-system geometry shared by all CP leaves in a single crystal model.</p>
 <p>Constructed once at HIT-load time by the factory; CP slip leaves
 (<code class="docutils literal notranslate"><span class="pre">ResolvedShear</span></code>, <code class="docutils literal notranslate"><span class="pre">PlasticDeformationRate</span></code>, <code class="docutils literal notranslate"><span class="pre">PlasticVorticity</span></code>)
@@ -553,7 +560,7 @@ slip_directions, slip_planes : MillerIndex</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sym_ops</strong> (<a class="reference internal" href="neml2.types.html#neml2.types.R2" title="neml2.types.R2"><em>R2</em></a>)</p></li>
-<li><p><strong>lattice_vectors</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>lattice_vectors</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>torch.Tensor</em></a>)</p></li>
 <li><p><strong>slip_directions</strong> (<a class="reference internal" href="neml2.types.html#neml2.types.MillerIndex" title="neml2.types.MillerIndex"><em>MillerIndex</em></a>)</p></li>
 <li><p><strong>slip_planes</strong> (<a class="reference internal" href="neml2.types.html#neml2.types.MillerIndex" title="neml2.types.MillerIndex"><em>MillerIndex</em></a>)</p></li>
 </ul>
@@ -604,8 +611,8 @@ as a per-operator sub-batch. Mirrors
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.14)"><em>dtype</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>device</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.14)"><em>device</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.15)"><em>dtype</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.15)"><em>device</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>

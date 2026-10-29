@@ -63,7 +63,7 @@ declared and which routes read it):
 | `py-aoti` | `neml2.aoti.Model` | offline | Python (pybind) | ✓ | ✓ | compiled model from Python |
 | `cpp-aoti` | `neml2::aoti::Model` | offline | C++ | ✓ | ✓ | production C++ deployment |
 | `cpp-dispatch` | `neml2::aoti::DispatchedModel` | offline | C++ | ✓ | ✓ | multi-device throughput |
-| `cpp-eager` | `neml2::eager::Model` | none | C++ + embedded Python | ✓ | ✓ (declared in `[Settings]`) | compile-free C++ tests |
+| `cpp-eager` | `neml2::eager::Model` | none | C++ + embedded Python | ✓ | ✗ | compile-free C++ tests |
 
 **Parameter derivatives.** All six routes additionally expose the same
 `param_jacobian(inputs) -> (outputs, {out: {param: block}})` and
@@ -131,10 +131,9 @@ line is a fourth way to drive a model with no code at all: [](cli-utilities).
 - **Calling a compiled model from Python**, or reproducing C++ numerics without a
   NEML2 source dependency → `py-aoti`.
 - **C++ tests that can't pay the compile cost** → `cpp-eager`.
-- **Sub-batch models** (crystal plasticity and friends) run on every runtime.
-  On `cpp-eager` the extents come from the input file's `[Settings]` block, and
-  derivatives are taken with respect to plain-batch inputs only
-  ([](model-eager-cpp)).
+- **Sub-batch models** (crystal plasticity and friends) run on every runtime
+  *except* `cpp-eager`. If you need a compiled sub-batch model in C++, use
+  `cpp-aoti`.
 
 (runtimes-vs-consumers)=
 ## Runtimes vs. consumers

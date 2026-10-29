@@ -111,6 +111,10 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/pbm/index.html">Population balance (fragmentation)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/pbm/grinding.html">Grinding example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -193,6 +197,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -209,6 +214,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2LinearCombination.html">R2LinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
@@ -265,6 +271,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -880,7 +887,7 @@ primary solves, or a Thomas sweep reusing a diagonal block).</p>
 <code class="docutils literal notranslate"><span class="pre">_version</span></code>: holding it alive keeps the key safe (a freed tensor’s <code class="docutils literal notranslate"><span class="pre">id</span></code> can
 be recycled, so <code class="docutils literal notranslate"><span class="pre">id()</span></code> alone could return a stale factorization), and the
 <code class="docutils literal notranslate"><span class="pre">_version</span></code> check invalidates on an in-place edit. <code class="docutils literal notranslate"><span class="pre">factor_fn</span></code> selects the
-routine (default <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.linalg.lu_factor.html#torch.linalg.lu_factor" title="(in PyTorch v2.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.linalg.lu_factor()</span></code></a>; a CUDA caller may inject a
+routine (default <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.linalg.lu_factor.html#torch.linalg.lu_factor" title="(in PyTorch v2.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.linalg.lu_factor()</span></code></a>; a CUDA caller may inject a
 guarded variant).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -893,10 +900,10 @@ guarded variant).</p>
 <dd><p>Return the cached <code class="docutils literal notranslate"><span class="pre">(LU,</span> <span class="pre">pivots)</span></code> of <code class="docutils literal notranslate"><span class="pre">matrix</span></code>, refactoring on change.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>matrix</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>)</p>
+<dd class="field-odd"><p><strong>matrix</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>, <a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)"><em>Tensor</em></a>]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>, <a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>Tensor</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -997,7 +1004,7 @@ iterate they got stuck at. Direct linear solvers only.</p>
 <dd class="field-odd"><p><strong>system</strong> (<a class="reference internal" href="neml2.es.html#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.14)">torch.Tensor</a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a>]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)">torch.Tensor</a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a>]</p>
 </dd>
 </dl>
 </dd></dl>
