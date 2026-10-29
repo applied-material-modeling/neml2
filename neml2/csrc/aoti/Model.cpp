@@ -290,7 +290,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 14;
+  static constexpr int kSupportedSchemaVersion = 15;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -400,11 +400,15 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   }
   _output_names.reserve(meta["outputs"].size());
   _output_base_shapes.reserve(meta["outputs"].size());
+  _output_sub_batch_shapes.reserve(meta["outputs"].size());
   _output_sizes.reserve(meta["outputs"].size());
   for (const auto & v : meta["outputs"])
   {
     _output_names.push_back(v["name"].get<std::string>());
     _output_base_shapes.push_back(v["base_shape"].get<std::vector<int64_t>>());
+    _output_sub_batch_shapes.push_back(v.contains("sub_batch_shape")
+                                           ? v["sub_batch_shape"].get<std::vector<int64_t>>()
+                                           : std::vector<int64_t>{});
     _output_sizes.push_back(v["var_size"].get<int>());
   }
 
@@ -946,6 +950,18 @@ const std::vector<std::vector<int64_t>> &
 Model::output_base_shapes() const noexcept
 {
   return _impl->output_base_shapes();
+}
+
+const std::vector<std::vector<int64_t>> &
+Model::input_sub_batch_shapes() const noexcept
+{
+  return _impl->input_sub_batch_shapes();
+}
+
+const std::vector<std::vector<int64_t>> &
+Model::output_sub_batch_shapes() const noexcept
+{
+  return _impl->output_sub_batch_shapes();
 }
 
 // The ops run through `_guarded` so every exception leaving the public surface

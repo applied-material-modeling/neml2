@@ -61,6 +61,17 @@ struct Model::Impl
   std::vector<std::string> output_names;
   std::vector<std::vector<int64_t>> input_base_shapes;
   std::vector<std::vector<int64_t>> output_base_shapes;
+  // Per-input declared sub-batch shapes. All empty until the eager runtime
+  // reads `[Settings]/example_batch_shape` (#481); empty means "not declared",
+  // not "plain-batch" -- a model with sub-batched inputs still loads. Sized to
+  // `input_names` at load rather than left empty, so indexing it alongside
+  // `input_base_shapes` is always valid.
+  std::vector<std::vector<int64_t>> input_sub_batch_shapes;
+  // Per-output declared sub-batch shapes, on the same terms as the input
+  // vector above: all empty until the runtime reads
+  // `[Settings]/example_batch_shape` (#481), and empty means "not declared".
+  // Sized to `output_names` at load for the same indexing reason.
+  std::vector<std::vector<int64_t>> output_sub_batch_shapes;
   // Calibration-parameter natural base shapes, keyed by qualified name (the
   // unified parameter surface shared with aoti::Model).
   std::map<std::string, std::vector<int64_t>> parameter_base_shapes;
