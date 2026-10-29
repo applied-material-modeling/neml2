@@ -534,7 +534,7 @@ declared and which routes read it):</p>
 <td><p>none</p></td>
 <td><p>C++ + embedded Python</p></td>
 <td class="text-center"><p>✓</p></td>
-<td class="text-center"><p>✗</p></td>
+<td class="text-center"><p>✓ (declared in <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code>)</p></td>
 <td><p>compile-free C++ tests</p></td>
 </tr>
 </tbody>
@@ -604,9 +604,10 @@ when you need to saturate multiple GPUs (or CPU + GPU) with one batched call.</p
 <li><p><strong>Calling a compiled model from Python</strong>, or reproducing C++ numerics without a
 NEML2 source dependency → <code class="docutils literal notranslate"><span class="pre">py-aoti</span></code>.</p></li>
 <li><p><strong>C++ tests that can’t pay the compile cost</strong> → <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>.</p></li>
-<li><p><strong>Sub-batch models</strong> (crystal plasticity and friends) run on every runtime
-<em>except</em> <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>. If you need a compiled sub-batch model in C++, use
-<code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code>.</p></li>
+<li><p><strong>Sub-batch models</strong> (crystal plasticity and friends) run on every runtime.
+On <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> the extents come from the input file’s <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code> block, and
+derivatives are taken with respect to plain-batch inputs only
+(<a class="reference internal" href="../references/cpp_eager.html#model-eager-cpp"><span class="std std-ref">cpp-eager — eager evaluation from C++</span></a>).</p></li>
 </ul>
 </section>
 <section id="runtimes-vs-consumers">
