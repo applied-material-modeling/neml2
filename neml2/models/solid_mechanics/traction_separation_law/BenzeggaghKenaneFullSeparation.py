@@ -106,9 +106,9 @@ class BenzeggaghKenaneFullSeparation(Model):
         *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        # ``beta`` and ``delta_c`` are promotion-capable; route through
-        # ``_get_param`` so the same code path works whether they remained
-        # static parameters or were promoted to runtime inputs.
+        # Route promotion-capable parameters through ``_get_param`` so the
+        # same code path works whether they remained static parameters or were
+        # promoted to runtime inputs.
         beta = self._get_param("beta", promoted_params, Scalar)
         delta_c = self._get_param("delta_c", promoted_params, Scalar)
         K = self._get_param("K", promoted_params, Scalar)
@@ -143,11 +143,10 @@ class BenzeggaghKenaneFullSeparation(Model):
         # -------- D-062 pushforward.
         #
         # The forward depends on ``normal_separation`` only through the
-        # detached branch mask, so its action is structural zero (omitted
-        # from ``actions`` -> ``apply_chain_rule`` treats it as zero). The
-        # two promotion-capable parameters ``beta`` and ``delta_c`` carry
-        # closed-form partials, emitted only when promoted to runtime
-        # inputs (mode 3/4).
+        # detached branch mask, so its action is structural zero. It is omitted
+        # from ``actions``, and ``apply_chain_rule`` therefore treats it as zero.
+        # Promotion-capable parameters receive closed-form partials below,
+        # emitted only when promoted to runtime inputs (mode 3/4).
         actions: dict[str, ChainRuleAction] = {}
 
         delta_c_nlp = self._promoted_params.get("delta_c")

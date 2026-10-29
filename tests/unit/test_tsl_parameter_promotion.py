@@ -32,6 +32,7 @@ import torch
 from neml2.models.solid_mechanics.traction_separation_law.BenzeggaghKenaneFullSeparation import (
     BenzeggaghKenaneFullSeparation,
 )
+from neml2.models.solid_mechanics.traction_separation_law.BilinearDamage import BilinearDamage
 from neml2.models.solid_mechanics.traction_separation_law.BilinearTraction import BilinearTraction
 from neml2.models.solid_mechanics.traction_separation_law.CamanhoDavilaCriticalSeparation import (
     CamanhoDavilaCriticalSeparation,
@@ -130,6 +131,20 @@ def test_benzeggagh_kenane_shared_parameter_jvps(compression, parameter):
         "shear_strength": 12.0,
     }
     _check_jvp_against_finite_difference(model, inputs, parameter, "full_separation")
+
+
+@pytest.mark.parametrize("parameter", ["critical_separation", "full_separation"])
+def test_bilinear_damage_separation_jvps(parameter):
+    model = BilinearDamage(
+        critical_separation="critical_separation",
+        full_separation="full_separation",
+    )
+    inputs = {
+        "effective_separation": 0.02,
+        "critical_separation": 0.01,
+        "full_separation": 0.04,
+    }
+    _check_jvp_against_finite_difference(model, inputs, parameter, "trial_damage")
 
 
 def test_bilinear_traction_shared_stiffness_jvp():

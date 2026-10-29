@@ -108,8 +108,8 @@ class CamanhoDavilaCriticalSeparation(Model):
         # -------- D-062 pushforward.
         #
         # The forward depends on ``normal_separation`` only through the
-        # detached branch mask, so its action is structural zero (omitted
-        # from ``actions`` -> ``apply_chain_rule`` treats it as zero). The
+        # detached branch mask, so its action is structural zero. It is omitted
+        # from ``actions``, and ``apply_chain_rule`` therefore treats it as zero.
         # Promoted parameters receive closed-form partials below.
         actions: dict[str, ChainRuleAction] = {}
 
@@ -127,24 +127,29 @@ class CamanhoDavilaCriticalSeparation(Model):
             ddc_dbeta = where(pos_mask, ddc_dbeta_open, zero)
             actions[beta_nlp.input_name] = lambda V, c=ddc_dbeta: c * V
 
-        delta_mixed_cubed = delta_mixed * delta_mixed * delta_mixed
-        ddc_dn0 = delta_s0 * sqrt(1.0 + beta_sq) * (delta_s0 * delta_s0 + eps) / delta_mixed_cubed
-        ddc_ds0 = (
-            delta_n0
-            * sqrt(1.0 + beta_sq)
-            * (beta_sq * delta_n0 * delta_n0 + eps)
-            / delta_mixed_cubed
-        )
         stiffness = self._promoted_params.get("K")
-        if stiffness is not None:
-            ddc_dK_open = -(delta_n0 * ddc_dn0 + delta_s0 * ddc_ds0) / K
-            ddc_dK = where(pos_mask, ddc_dK_open, -delta_s0 / K)
-            actions[stiffness.input_name] = lambda V, c=ddc_dK: c * V
         shear = self._promoted_params.get("S")
-        if shear is not None:
-            ddc_dS_open = ddc_ds0 / K
-            ddc_dS = where(pos_mask, ddc_dS_open, 1.0 / K)
-            actions[shear.input_name] = lambda V, c=ddc_dS: c * V
+        if stiffness is not None or shear is not None:
+            delta_mixed_cubed = delta_mixed * delta_mixed * delta_mixed
+            ddc_ds0 = (
+                delta_n0
+                * sqrt(1.0 + beta_sq)
+                * (beta_sq * delta_n0 * delta_n0 + eps)
+                / delta_mixed_cubed
+            )
+
+            if stiffness is not None:
+                ddc_dn0 = (
+                    delta_s0 * sqrt(1.0 + beta_sq) * (delta_s0 * delta_s0 + eps) / delta_mixed_cubed
+                )
+                ddc_dK_open = -(delta_n0 * ddc_dn0 + delta_s0 * ddc_ds0) / K
+                ddc_dK = where(pos_mask, ddc_dK_open, -delta_s0 / K)
+                actions[stiffness.input_name] = lambda V, c=ddc_dK: c * V
+
+            if shear is not None:
+                ddc_dS_open = ddc_ds0 / K
+                ddc_dS = where(pos_mask, ddc_dS_open, 1.0 / K)
+                actions[shear.input_name] = lambda V, c=ddc_dS: c * V
 
         return delta_c, self.apply_chain_rule(v, "critical_separation", actions, output=delta_c)
 
