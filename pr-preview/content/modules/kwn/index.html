@@ -93,6 +93,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../tensor_types/index.html">Tensor types</a><ul>
@@ -124,6 +125,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -331,6 +333,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/Python.html">Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -538,9 +541,9 @@ growth rate vanishes as <span class="math notranslate nohighlight">\(x^\infty_\s
 <p>The more general <strong>SFFK</strong> form (Svoboda–Fischer–Fratzl–Kozeschnik)
 handles multi-component diffusion in the dilute, diffusion-limited
 regime,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-96722c77-d378-40bb-8fdb-2b33e9e093c9">
-<div class="amsmath math notranslate nohighlight" id="equation-96722c77-d378-40bb-8fdb-2b33e9e093c9">
-<span class="eqno">(6)<a class="headerlink" href="#equation-96722c77-d378-40bb-8fdb-2b33e9e093c9" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-20e43a24-3e69-4df6-b3ed-669c853d5641">
+<div class="amsmath math notranslate nohighlight" id="equation-20e43a24-3e69-4df6-b3ed-669c853d5641">
+<span class="eqno">(6)<a class="headerlink" href="#equation-20e43a24-3e69-4df6-b3ed-669c853d5641" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{R}^{(j)} &amp;= \frac{1}{R^{(j)}} \,
   \frac{\Delta G^{(j)}_{\text{chem}}
       + \Delta G^{(j)}_{\text{surf}}
@@ -553,9 +556,9 @@ S^{(j)} &amp;= \sum_{k \in \mathcal{S}_j}
 <p>with <span class="math notranslate nohighlight">\(\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\)</span> and <span class="math notranslate nohighlight">\(D_k\)</span> the matrix
 diffusivity of species <span class="math notranslate nohighlight">\(k\)</span>. The driving force is split into chemical,
 surface, and elastic contributions:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-687e0b88-91d8-4909-91e5-040f51d25654">
-<div class="amsmath math notranslate nohighlight" id="equation-687e0b88-91d8-4909-91e5-040f51d25654">
-<span class="eqno">(7)<a class="headerlink" href="#equation-687e0b88-91d8-4909-91e5-040f51d25654" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-9b60dc78-8544-4e84-b4ef-0b74d7b6f7e8">
+<div class="amsmath math notranslate nohighlight" id="equation-9b60dc78-8544-4e84-b4ef-0b74d7b6f7e8">
+<span class="eqno">(7)<a class="headerlink" href="#equation-9b60dc78-8544-4e84-b4ef-0b74d7b6f7e8" title="Permalink to this equation">#</a></span>\[\begin{align}
 \Delta G^{(j)}_{\text{chem}} &amp;=
   \sum_{k \in \mathcal{S}_j} \Delta x^{(j)}_k
   \bigl[\mu^{\text{matrix}}_k(x^\infty) - \mu^{\text{equil},(j)}_k\bigr],
@@ -587,9 +590,9 @@ J^{(j)}_{\text{nuc}} =
 \]</div>
 </div>
 <p>with the classical-nucleation-theory expressions</p>
-<div class="math-wrapper amsmath docutils container" id="equation-479074f9-8c25-45b2-af07-d3bcbce61267">
-<div class="amsmath math notranslate nohighlight" id="equation-479074f9-8c25-45b2-af07-d3bcbce61267">
-<span class="eqno">(8)<a class="headerlink" href="#equation-479074f9-8c25-45b2-af07-d3bcbce61267" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-55158bb8-c082-41d8-87be-afae44ea4275">
+<div class="amsmath math notranslate nohighlight" id="equation-55158bb8-c082-41d8-87be-afae44ea4275">
+<span class="eqno">(8)<a class="headerlink" href="#equation-55158bb8-c082-41d8-87be-afae44ea4275" title="Permalink to this equation">#</a></span>\[\begin{align}
 R^{(j)}_{\text{crit}} &amp;=
   \frac{2 \gamma^{(j)} V_m^{(j)}}{\Delta g^{(j)}_v}, \\
 \Delta G^{*,(j)} &amp;=

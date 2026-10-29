@@ -93,6 +93,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../tensor_types/index.html">Tensor types</a><ul>
@@ -124,6 +125,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="traction_separation_law.html">Traction–separation laws</a></li>
@@ -331,6 +333,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/Python.html">Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -506,9 +509,9 @@ and deviatoric projectors:</p>
 <p>Any pair drawn from <span class="math notranslate nohighlight">\(\{E,\,\nu,\,K,\,G,\,\lambda,\,M\}\)</span> converts to
 <span class="math notranslate nohighlight">\((K,\,G)\)</span> via the standard textbook relations; e.g. with
 <span class="math notranslate nohighlight">\(E,\,\nu\)</span> as inputs,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-fcc395e5-1fc5-43e4-8e71-52f6d72b43d4">
-<div class="amsmath math notranslate nohighlight" id="equation-fcc395e5-1fc5-43e4-8e71-52f6d72b43d4">
-<span class="eqno">(11)<a class="headerlink" href="#equation-fcc395e5-1fc5-43e4-8e71-52f6d72b43d4" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-0f3acc06-c916-4668-b94d-e8177fe83507">
+<div class="amsmath math notranslate nohighlight" id="equation-0f3acc06-c916-4668-b94d-e8177fe83507">
+<span class="eqno">(11)<a class="headerlink" href="#equation-0f3acc06-c916-4668-b94d-e8177fe83507" title="Permalink to this equation">#</a></span>\[\begin{align}
   K &amp;= \dfrac{E}{3(1 - 2\nu)}, \\
   G &amp;= \dfrac{E}{2(1 + \nu)}.
 \end{align}\]</div>
@@ -524,9 +527,9 @@ fourth-order stiffness onto three cubic-symmetry projectors
 \]</div>
 </div>
 <p>With <span class="math notranslate nohighlight">\((G,\,E,\,\nu)\)</span> as inputs, the canonical triple is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-87b531b7-5788-4c1c-9298-7e9c7b713106">
-<div class="amsmath math notranslate nohighlight" id="equation-87b531b7-5788-4c1c-9298-7e9c7b713106">
-<span class="eqno">(12)<a class="headerlink" href="#equation-87b531b7-5788-4c1c-9298-7e9c7b713106" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-f1065689-18c4-41e6-8614-5ae16b827228">
+<div class="amsmath math notranslate nohighlight" id="equation-f1065689-18c4-41e6-8614-5ae16b827228">
+<span class="eqno">(12)<a class="headerlink" href="#equation-f1065689-18c4-41e6-8614-5ae16b827228" title="Permalink to this equation">#</a></span>\[\begin{align}
   C_1 &amp;= \dfrac{E\,(1 - \nu)}{(1 + \nu)(1 - 2\nu)}, \\
   C_2 &amp;= \dfrac{E\,\nu}{(1 + \nu)(1 - 2\nu)}, \\
   C_3 &amp;= 2G.

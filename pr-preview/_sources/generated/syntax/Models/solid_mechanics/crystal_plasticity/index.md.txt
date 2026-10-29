@@ -7,9 +7,12 @@
 
 CrystalPlasticityDeformationGradientPredictor
 CrystalPlasticityStrainPredictor
+DislocationInteractionStrengthMap
 DislocationObstacleStrengthMap
 ElasticStrainRate
 FixOrientation
+LinearInteractionHardeningRule
+LinearInteractionStrengthMap
 LinearSingleSlipHardeningRule
 OrientationRate
 PerSlipForestDislocationEvolution

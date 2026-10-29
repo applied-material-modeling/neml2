@@ -1,0 +1,43 @@
+(models-LinearInteractionStrengthMap)=
+# LinearInteractionStrengthMap
+
+**Source:** `models/solid_mechanics/crystal_plasticity/LinearInteractionStrengthMap.py`
+
+Per-slip hardening state to strength through a linear slip-system interaction matrix,
+
+$\tau_i = \tau_{0,i} + \sum_j h_{ij}\,\phi_j,$
+
+where the per-slip hardening state $\phi_j$ is commonly the accumulated slip $|\gamma_j|$.
+The interaction matrix $h$ couples slip systems linearly -- latent hardening with a
+constant (state-independent) Jacobian $h_{ij}$ -- in contrast to
+`DislocationInteractionStrengthMap`, whose forest form adds the $\alpha\mu b
+\sqrt{\cdot}$ nonlinearity. With $h = I$ the systems decouple into independent linear
+hardening.
+
+``interaction_matrix`` is an $n_\text{slip}\times n_\text{slip}$ `Scalar`
+carried on two sub-batch axes (build it with the ``SquareMatrix`` ``[Tensors]`` type --
+fully, or from a handful of coefficients via its ``block`` / ``diagonal_blocks`` fills).
+``constant_strength`` is the offset $\tau_0$ (shared, or per-slip if sub-batched). Both
+are promotable/calibratable; the interaction matrix carries a chain-rule action only when
+promoted.
+
+## Inputs
+
+`slip_hardening` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Per-slip hardening state (e.g. accumulated slip)
+
+
+## Outputs
+
+`slip_strengths` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Per-slip slip system strengths
+
+
+## Parameters
+
+`constant_strength` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Constant strength offset
+
+`interaction_matrix` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Slip-system interaction matrix, sub-batched over (n_slip, n_slip)
+

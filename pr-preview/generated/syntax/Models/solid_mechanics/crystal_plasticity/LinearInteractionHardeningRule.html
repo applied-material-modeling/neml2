@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>BilinearDamage - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="BilinearTraction" href="BilinearTraction.html" /><link rel="prev" title="BenzeggaghKenaneFullSeparation" href="BenzeggaghKenaneFullSeparation.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>LinearInteractionHardeningRule - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="LinearInteractionStrengthMap" href="LinearInteractionStrengthMap.html" /><link rel="prev" title="FixOrientation" href="FixOrientation.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="BilinearDamage"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="LinearInteractionHardeningRule"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -93,6 +93,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../content/tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../content/tensor_types/index.html">Tensor types</a><ul>
@@ -124,6 +125,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -312,11 +314,11 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html">solid_mechanics</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="../crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html">crystal_plasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../plasticity/index.html">plasticity</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="index.html">traction_separation_law</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../traction_separation_law/index.html">traction_separation_law</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../viscoelasticity/index.html">viscoelasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
@@ -331,6 +333,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../Tensors/Python.html">Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../Solvers/index.html">Solvers</a><ul>
@@ -425,11 +428,11 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="4" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <a itemprop="item" href="index.html"><span itemprop="name">traction_separation_law</span></a>
+        <a itemprop="item" href="index.html"><span itemprop="name">crystal_plasticity</span></a>
         <span>/</span>
         <meta itemprop="position" content="5" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">BilinearDamage</strong>
+        <strong itemprop="name">LinearInteractionHardeningRule</strong>
         <meta itemprop="position" content="6" />
       </li></ol>
     <div class="xl:hidden ml-1">
@@ -442,33 +445,42 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="bilineardamage">
-<span id="models-bilineardamage"></span><h1>BilinearDamage<a class="headerlink" href="#bilineardamage" title="Link to this heading">#</a></h1>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/traction_separation_law/BilinearDamage.py</span></code></p>
-<p>Bilinear trial damage as a function of effective separation:
-<span class="math notranslate nohighlight">\(d_\text{trial} = 0\)</span> for <span class="math notranslate nohighlight">\(\delta_m \le \delta_c\)</span>,
-<span class="math notranslate nohighlight">\(d_\text{trial} = \frac{\delta_f(\delta_m - \delta_c)}{\delta_m(\delta_f - \delta_c)}\)</span>
-for <span class="math notranslate nohighlight">\(\delta_c &lt; \delta_m &lt; \delta_f\)</span>, and <span class="math notranslate nohighlight">\(1\)</span> for <span class="math notranslate nohighlight">\(\delta_m \ge \delta_f\)</span>.</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="linearinteractionhardeningrule">
+<span id="models-linearinteractionhardeningrule"></span><h1>LinearInteractionHardeningRule<a class="headerlink" href="#linearinteractionhardeningrule" title="Link to this heading">#</a></h1>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/crystal_plasticity/LinearInteractionHardeningRule.py</span></code></p>
+<p>Per-slip hardening rate from a linear slip-system interaction matrix,</p>
+<p><span class="math notranslate nohighlight">\(\dot{h}_i = \sum_j M_{ij}\, \lvert \dot{\gamma}_j \rvert,\)</span></p>
+<p>putting the slip-system interaction in the hardening <em>rate</em> (evolution); the strength is
+then the trivial per-slip sum <span class="math notranslate nohighlight">\(\tau_i = \tau_{0,i} + h_i\)</span>, composed from existing
+primitives. The interaction matrix <span class="math notranslate nohighlight">\(M\)</span> couples the per-system slip rates into each
+system’s hardening rate – latent hardening with a constant Jacobian <span class="math notranslate nohighlight">\(\partial \dot{h}_i /
+\partial \lvert\dot{\gamma}_j\rvert = M_{ij}\)</span>. With <span class="math notranslate nohighlight">\(M = I\)</span> the systems decouple into
+independent linear hardening.</p>
+<p>The absolute value <span class="math notranslate nohighlight">\(\lvert\dot{\gamma}\rvert\)</span> makes hardening accumulate regardless of
+slip direction. <code class="docutils literal notranslate"><span class="pre">interaction_matrix</span></code> is an <span class="math notranslate nohighlight">\(n_\text{slip}\times n_\text{slip}\)</span>
+<code class="docutils literal notranslate"><span class="pre">Scalar</span></code> carried on two sub-batch axes (build it with the
+<code class="docutils literal notranslate"><span class="pre">SquareMatrix</span></code> <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> type); it is promotable and carries a chain-rule action
+only when promoted.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">effective_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Effective separation</p>
+<dt><code class="docutils literal notranslate"><span class="pre">slip_hardening</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per-slip hardening state. Unused in the rate (which depends only on the slip rates), present so the time integrator wires the state being evolved.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">slip_rates</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per-slip system slip rates</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">trial_damage</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Rate-independent trial damage</p>
+<dt><code class="docutils literal notranslate"><span class="pre">slip_hardening_rate</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per-slip hardening rate</p>
 </dd>
 </dl>
 </section>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">critical_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Critical (damage-onset) separation. May be wired to an upstream <code class="docutils literal notranslate"><span class="pre">CamanhoDavilaCriticalSeparation</span></code> (promotion-capable).</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">full_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Full (failure) separation. May be wired to an upstream <code class="docutils literal notranslate"><span class="pre">BenzeggaghKenaneFullSeparation</span></code> or <code class="docutils literal notranslate"><span class="pre">PowerLawFullSeparation</span></code> (promotion-capable).</p>
+<dt><code class="docutils literal notranslate"><span class="pre">interaction_matrix</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Slip-system interaction matrix, sub-batched over (n_slip, n_slip)</p>
 </dd>
 </dl>
 </section>
@@ -480,16 +492,16 @@ for <span class="math notranslate nohighlight">\(\delta_c &lt; \delta_m &lt; \de
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="BenzeggaghKenaneFullSeparation.html">
+    <a href="FixOrientation.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">BenzeggaghKenaneFullSeparation</div></div>
+        <span>Previous</span><div class="title">FixOrientation</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="BilinearTraction.html">
+    <a href="LinearInteractionStrengthMap.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">BilinearTraction</div>
+        <div class="title">LinearInteractionStrengthMap</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
