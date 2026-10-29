@@ -37,23 +37,36 @@ from ...model import Model
 
 @register_neml2_object("SalehaniIraniDamage")
 class SalehaniIraniDamage(Model):
-    r"""Trial damage $1-\exp[-(b_n+b_{s1}^2+b_{s2}^2)]$."""
+    r"""Trial damage $d_\text{trial} = 1 - \exp[-(b_n + b_{s1}^2 + b_{s2}^2)]$ of Salehani & Irani,
+    where $b_n = \delta_n / \delta_{u0,n}$ and $b_{si} = \delta_{si} / (\sqrt{2} \delta_{u0,t})$.
+
+    Note:
+        `normal_characteristic_length` ($\delta_{u0,n}$) and
+        `tangential_characteristic_length` ($\delta_{u0,t}$) must match the parameters
+        configured in the corresponding downstream :class:`SalehaniIraniTraction`.
+        It is recommended to define them as shared objects under ``[Tensors]`` and reference
+        them in both models.
+    """
 
     hit = HitSchema(
-        input("normal_separation", Scalar, "Normal separation"),
+        input(
+            "normal_separation",
+            Scalar,
+            "Normal separation (typically the Macaulay-positive part of the normal jump)",
+        ),
         input("tangential_separation_1", Scalar, "First tangential separation"),
         input("tangential_separation_2", Scalar, "Second tangential separation"),
         output("trial_damage", Scalar, "Rate-independent trial damage"),
         parameter(
             "normal_characteristic_length",
             Scalar,
-            "Normal characteristic length",
+            "Normal characteristic length (must match SalehaniIraniTraction)",
             attr="delta_u0_n",
         ),
         parameter(
             "tangential_characteristic_length",
             Scalar,
-            "Tangential characteristic length",
+            "Tangential characteristic length (must match SalehaniIraniTraction)",
             attr="delta_u0_t",
         ),
     )

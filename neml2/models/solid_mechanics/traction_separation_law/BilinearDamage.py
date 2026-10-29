@@ -35,7 +35,11 @@ from ...model import Model
 
 @register_neml2_object("BilinearDamage")
 class BilinearDamage(Model):
-    r"""Bilinear trial damage as a function of effective separation."""
+    r"""Bilinear trial damage as a function of effective separation:
+    $d_\text{trial} = 0$ for $\delta_m \le \delta_c$,
+    $d_\text{trial} = \frac{\delta_f(\delta_m - \delta_c)}{\delta_m(\delta_f - \delta_c)}$
+    for $\delta_c < \delta_m < \delta_f$, and $1$ for $\delta_m \ge \delta_f$.
+    """
 
     hit = HitSchema(
         input("effective_separation", Scalar, "Effective separation"),
@@ -43,14 +47,17 @@ class BilinearDamage(Model):
         parameter(
             "critical_separation",
             Scalar,
-            "Critical damage-onset separation",
+            "Critical (damage-onset) separation. May be wired to an upstream "
+            "`CamanhoDavilaCriticalSeparation` (promotion-capable).",
             attr="delta_c",
             allow_promotion=True,
         ),
         parameter(
             "full_separation",
             Scalar,
-            "Full failure separation",
+            "Full (failure) separation. May be wired to an upstream "
+            "`BenzeggaghKenaneFullSeparation` or `PowerLawFullSeparation` "
+            "(promotion-capable).",
             attr="delta_f",
             allow_promotion=True,
         ),
@@ -90,7 +97,7 @@ class BilinearDamage(Model):
                 Scalar.zeros_like(V),
             )
 
-        inv_dm = one / delta_m
+        inv_dm = one / safe_delta_m
         inv_diff = one / safe_diff
         inv_diff_sq = inv_diff * inv_diff
         actions: dict[str, ChainRuleAction] = {

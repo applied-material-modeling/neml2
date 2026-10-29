@@ -37,15 +37,33 @@ from ...model import Model
 
 @register_neml2_object("SalehaniIraniTraction")
 class SalehaniIraniTraction(Model):
-    r"""Assemble Salehani-Irani traction from an externally updated damage."""
+    r"""Assemble 3D coupled exponential cohesive traction of Salehani & Irani from an
+    externally updated damage:
+    $T_n = a_n b_n (1 - d) + K_\text{pen}\delta_n^\text{pen}$ and $T_{si} = a_t b_{si} (1 - d)$,
+    where $a_n = e T_{\max,n}$, $a_t = \sqrt{2e} T_{\max,t}$, $b_n = \delta_n / \delta_{u0,n}$,
+    and $b_{si} = \delta_{si} / (\sqrt{2} \delta_{u0,t})$.
+
+    Note:
+        `normal_characteristic_length` ($\delta_{u0,n}$) and
+        `tangential_characteristic_length` ($\delta_{u0,t}$) must match the parameters
+        configured in the corresponding upstream :class:`SalehaniIraniDamage`.
+        It is recommended to define them as shared objects under ``[Tensors]`` and reference
+        them in both models.
+    """
 
     hit = HitSchema(
         input("damage", Scalar, "Current damage"),
-        input("normal_separation", Scalar, "Normal opening separation"),
+        input(
+            "normal_separation",
+            Scalar,
+            "Normal separation (typically the Macaulay-positive part of the normal jump)",
+        ),
         input(
             "normal_penetration",
             Scalar,
-            "Optional normal penetration included through the penalty term",
+            "Optional normal penetration (typically the Macaulay-negative part of the "
+            "normal jump). When supplied, the penalty stiffness times this is added to "
+            "the normal traction as a penalty term resisting interpenetration.",
             default=None,
             attr="_dn_pen_name",
         ),
@@ -55,17 +73,19 @@ class SalehaniIraniTraction(Model):
         parameter(
             "normal_characteristic_length",
             Scalar,
-            "Normal characteristic length",
+            "Normal characteristic length (must match SalehaniIraniDamage)",
             attr="delta_u0_n",
         ),
         parameter(
             "tangential_characteristic_length",
             Scalar,
-            "Tangential characteristic length",
+            "Tangential characteristic length (must match SalehaniIraniDamage)",
             attr="delta_u0_t",
         ),
-        parameter("normal_strength", Scalar, "Normal strength", attr="Tmax_n"),
-        parameter("shear_strength", Scalar, "Shear strength", attr="Tmax_t"),
+        parameter(
+            "normal_strength", Scalar, "Normal strength (peak normal traction)", attr="Tmax_n"
+        ),
+        parameter("shear_strength", Scalar, "Shear strength (peak shear traction)", attr="Tmax_t"),
         parameter("penalty_stiffness", Scalar, "Penalty stiffness", attr="Kpen", default="0"),
     )
 

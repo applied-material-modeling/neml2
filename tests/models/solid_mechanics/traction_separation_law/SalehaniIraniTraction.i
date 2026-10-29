@@ -24,6 +24,14 @@
 []
 
 [Tensors]
+  [delta_u0_n]
+    type = Python
+    expr = 'Scalar(1.0)'
+  []
+  [delta_u0_t]
+    type = Python
+    expr = 'Scalar(1.0)'
+  []
   [T_expected]
     type = Python
     # T_n  = e * 0.5 * (1 - d)   = 0.8058294320
@@ -36,8 +44,8 @@
 [Models]
   [envelope]
     type = SalehaniIraniDamage
-    normal_characteristic_length = 1.0
-    tangential_characteristic_length = 1.0
+    normal_characteristic_length = 'delta_u0_n'
+    tangential_characteristic_length = 'delta_u0_t'
   []
   [update]
     type = ExponentialViscousDamage
@@ -45,8 +53,8 @@
   []
   [traction]
     type = SalehaniIraniTraction
-    normal_characteristic_length = 1.0
-    tangential_characteristic_length = 1.0
+    normal_characteristic_length = 'delta_u0_n'
+    tangential_characteristic_length = 'delta_u0_t'
     normal_strength = 1.0
     shear_strength = 1.0
     normal_penetration = 'normal_penetration'

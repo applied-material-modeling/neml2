@@ -98,6 +98,16 @@ changing the other two. The traction leaves optionally accept a
 `normal_penetration` channel and penalty stiffness to resist
 interpenetration.
 
+:::{tip} Rewiring existing models
+In previous versions, `BilinearTraction` and `SalehaniIraniTraction` contained the damage
+envelope and viscous update internally. Under the decoupled architecture, existing inputs
+are rewired by composing `envelope -> update -> traction` within a [](models-ComposedModel),
+setting `additional_outputs = 'damage'` if the damage variable is needed for diagnostics or downstream models.
+For `SalehaniIraniTraction`, `normal_characteristic_length` and `tangential_characteristic_length`
+should reference a single shared definition under `[Tensors]` to guarantee consistency between the envelope
+and traction leaves.
+:::
+
 ## Math
 
 A bilinear cohesive law in the spirit of Camanho & Dávila uses an

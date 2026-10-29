@@ -64,7 +64,11 @@ class ViscousDamageUpdate(Model, ABC):
 
     def __post_init__(self) -> None:
         if self.eta.ndim == 0 and self.eta.item() < 0.0:
-            raise ValueError(f"{type(self).__name__}: viscosity must be non-negative")
+            val = self.eta.item()
+            raise ValueError(
+                f"{type(self).__name__}: viscosity must be non-negative, got {val}. "
+                "Use 0 for the rate-independent law."
+            )
 
     @abstractmethod
     def _coefficient(

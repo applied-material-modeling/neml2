@@ -35,15 +35,23 @@ from ...model import Model
 
 @register_neml2_object("BilinearTraction")
 class BilinearTraction(Model):
-    r"""Assemble bilinear cohesive traction from an externally updated damage."""
+    r"""Assemble bilinear cohesive zone traction from an externally updated damage:
+    $T_n = K(1-d)\delta_n^+ + K\delta_n^-,\;T_{si} = K(1-d)\delta_{si}$.
+    """
 
     hit = HitSchema(
         input("damage", Scalar, "Current damage"),
-        input("normal_separation", Scalar, "Normal opening separation"),
+        input(
+            "normal_separation",
+            Scalar,
+            "Normal separation (typically the Macaulay-positive part of the normal jump)",
+        ),
         input(
             "normal_penetration",
             Scalar,
-            "Optional normal penetration included through the penalty term",
+            "Optional normal penetration (typically the Macaulay-negative part of the "
+            "normal jump). When supplied, K times this is added to the normal traction "
+            "as a penalty term resisting interpenetration.",
             default=None,
             attr="_dn_pen_name",
         ),

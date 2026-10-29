@@ -2,6 +2,14 @@
 # 3D exponential cohesive law (Salehani-Irani) under a monotonic mixed-mode opening ramp.
 # Traction grows, peaks near the characteristic length, then decays exponentially to zero.
 [Tensors]
+  [delta_u0_n]
+    type = Python
+    expr = 'Scalar(1.0)'
+  []
+  [delta_u0_t]
+    type = Python
+    expr = 'Scalar(1.0)'
+  []
   [times]
     type = Python
     expr = 'linspace(Scalar(0.0).dynamic_batch, Scalar(1.0).dynamic_batch, 40)'
@@ -35,16 +43,16 @@
   []
   [damage_envelope]
     type = SalehaniIraniDamage
-    normal_characteristic_length = 1.0
-    tangential_characteristic_length = 1.0
+    normal_characteristic_length = 'delta_u0_n'
+    tangential_characteristic_length = 'delta_u0_t'
   []
   [damage_update]
     type = BackwardEulerViscousDamage
   []
   [traction]
     type = SalehaniIraniTraction
-    normal_characteristic_length = 1.0
-    tangential_characteristic_length = 1.0
+    normal_characteristic_length = 'delta_u0_n'
+    tangential_characteristic_length = 'delta_u0_t'
     normal_strength = 1.0
     shear_strength = 1.0
   []
