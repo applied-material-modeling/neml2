@@ -34,7 +34,8 @@ Python supplies it automatically.
 `load_model(path, name)` and returns a `neml2::eager::Model` whose operations
 (`forward` / `jvp` / `jacobian` plus the parameter derivatives `param_jacobian` /
 `param_vjp`) and metadata accessors (`input_names` /
-`output_names` / `input_base_shapes` / `output_base_shapes` / `device` / `dtype`)
+`output_names` / `input_base_shapes` / `output_base_shapes` /
+`input_sub_batch_shapes` / `device` / `dtype`)
 have the **same signatures** as `neml2::aoti::Model`. So test code switches between
 the eager and compiled runtimes by changing only the load call and the header.
 
@@ -70,8 +71,27 @@ The reported `input_names` / `input_base_shapes` (and the outputs) are derived
 through the same helper the AOTI metadata uses, so an eager model and its compiled
 twin agree on the boundary contract — making `neml2::eager::Model` a true drop-in
 for `neml2::aoti::Model`. Inputs must be passed at their canonical
-`(*B, *base_shape)` shape; a non-canonical trailing shape (e.g. an SR2 strain
-passed as `(*B, 1)` instead of `(*B, 6)`) is rejected with a `FatalError`.
+`(*B, *sub_batch_shape, *base_shape)` shape; a non-canonical trailing shape
+(e.g. an SR2 strain passed as `(*B, 1)` instead of `(*B, 6)`) is rejected with a
+`FatalError`.
+
+`input_sub_batch_shapes()` and `output_sub_batch_shapes()` are part of that
+drop-in surface. On this runtime they report *declared* extents, so an empty
+entry means "not declared as sub-batched", not "plain-batch". Every entry on
+both is empty today: the runtime does not read `[Settings]/example_batch_shape`
+yet, wraps every input as plain-batch, and rejects a sub-batched output at call
+time. It still loads a model whose inputs are sub-batched, so a host must not
+size such a variable from these accessors alone. Host code can read them
+unconditionally on either runtime and will not have to change when eager grows
+sub-batch support.
+
+That is the one place the two routes differ in meaning rather than in
+signature. On `neml2::aoti::Model` the output extents were recorded from what
+the compiled graph produces, so they are definite and an empty entry means
+plain batch (see [](cpp-aoti)). A host that supports both keeps treating
+an undeclared variable as plain and checks the shapes it actually receives on
+the first eager evaluation, stopping with a clear message if an output carries
+an undeclared sub-batch axis.
 
 ## Loading external (Python-authored) models
 
