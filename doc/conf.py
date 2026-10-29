@@ -185,11 +185,13 @@ nb_execution_excludepatterns = [
     "optimization/deterministic/main.ipynb",
     "optimization/statistical/main.ipynb",
     "optimization/crystal_plasticity_calibration/main.ipynb",
+    "optimization/taylor_polycrystal/main.ipynb",
     "modules/kwn/precipitation_316h.ipynb",
     "modules/kwn/al_cu_ttp.ipynb",
     "modules/pbm/grinding.ipynb",
     "modules/solid_mechanics/crystal_plasticity/formulations.ipynb",
     "modules/solid_mechanics/crystal_plasticity/polefigures.ipynb",
+    "modules/solid_mechanics/crystal_plasticity/slip_anisotropy.ipynb",
 ]
 
 # ---------------------------------------------------------------------------
