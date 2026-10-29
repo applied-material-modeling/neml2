@@ -1,0 +1,51 @@
+(models-CavityGrowthDamageRate)=
+# CavityGrowthDamageRate
+
+**Source:** `models/solid_mechanics/traction_separation_law/CavityGrowthDamageRate.py`
+
+The part of $\dot f$ driven by growth of the existing cavities,
+
+$$
+\dot{f}_\text{growth}
+  = \frac{\sqrt{\pi}\, N^{3/2}}{2 h \sqrt{f}} \dot{V}.
+$$
+
+This is the geometric conversion from a single-cavity volume rate to an
+area-fraction rate, obtained from $f = \pi a^2 N$ and
+$V = \tfrac{4}{3}\pi a^3 h$ by eliminating $a$. Feeding it the diffusive
+rate $\dot V = 8\pi\mathcal{D}\langle T_n\rangle / q(f^*)$ recovers the
+Sham-Needleman growth term
+$4\pi^{3/2}\mathcal{D} N^{3/2} \langle T_n \rangle / (h \sqrt{f} q(f^*))$
+exactly.
+
+Keeping the conversion separate from the growth law is what lets a second
+growth mechanism be summed onto $\dot V$ (with a
+`ScalarLinearCombination`) without restating this geometry.
+
+Note the *physical* $f$ appears here, not the effective $f^*$: the
+coalescence map accelerates the softening functions only, so that the
+identity $[\![u]\!]_n^v = NV - N_0V_0$ keeps holding.
+
+## Inputs
+
+`cavity_fraction` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Physical cavitated area fraction
+
+`cavity_density` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Cavity number density per unit boundary area
+
+`cavity_volume_rate` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Rate of change of a single cavity volume
+
+
+## Outputs
+
+`cavity_fraction_growth_rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Area fraction rate contributed by growth of existing cavities
+
+
+## Parameters
+
+`cavity_shape_factor` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Cavity shape factor h(psi); h is about 0.61 at a tip angle of 75 degrees
+
