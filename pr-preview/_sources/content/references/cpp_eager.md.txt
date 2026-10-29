@@ -35,7 +35,7 @@ Python supplies it automatically.
 (`forward` / `jvp` / `jacobian` plus the parameter derivatives `param_jacobian` /
 `param_vjp`) and metadata accessors (`input_names` /
 `output_names` / `input_base_shapes` / `output_base_shapes` /
-`input_sub_batch_shapes` / `device` / `dtype`)
+`input_sub_batch_shapes` / `output_sub_batch_shapes` / `device` / `dtype`)
 have the **same signatures** as `neml2::aoti::Model`. So test code switches between
 the eager and compiled runtimes by changing only the load call and the header.
 
@@ -73,25 +73,43 @@ twin agree on the boundary contract — making `neml2::eager::Model` a true drop
 for `neml2::aoti::Model`. Inputs must be passed at their canonical
 `(*B, *sub_batch_shape, *base_shape)` shape; a non-canonical trailing shape
 (e.g. an SR2 strain passed as `(*B, 1)` instead of `(*B, 6)`) is rejected with a
-`FatalError`.
+`FatalError`. Outputs come back at `(*B, *out_sub_batch_shape, *out_base_shape)`,
+contiguous, as on `neml2::aoti::Model`.
 
-`input_sub_batch_shapes()` and `output_sub_batch_shapes()` are part of that
-drop-in surface. On this runtime they report *declared* extents, so an empty
-entry means "not declared as sub-batched", not "plain-batch". Every entry on
-both is empty today: the runtime does not read `[Settings]/example_batch_shape`
-yet, wraps every input as plain-batch, and rejects a sub-batched output at call
-time. It still loads a model whose inputs are sub-batched, so a host must not
-size such a variable from these accessors alone. Host code can read them
-unconditionally on either runtime and will not have to change when eager grows
-sub-batch support.
+## Sub-batch
+
+The sub-batch extents come from the input file's
+`[Settings]/example_batch_shape` ([](sub-batch-declaration)), the same
+declaration `neml2-compile` reads. The block stays optional:
+
+- **declared**: each declared input is split into `(*B, *sub_batch, *base)`
+  with the declared extent, and a tensor that does not carry it is rejected (a
+  size-1 sub-batch axis is broadcast to the extent). An unknown name in the
+  declaration fails the load, as it fails `neml2-compile`.
+- **not declared**: the input is plain batch, as before.
+
+`input_sub_batch_shapes()` and `output_sub_batch_shapes()` report these
+*declared* extents, so an empty entry means "not declared as sub-batched", not
+"plain-batch". The output extents are what `neml2-compile` would record for the
+same declaration, worked out at load without compiling or solving, so a host can
+size sub-batched outputs before the first call. With a declaration the load
+therefore also runs the compile plan for these extents, which costs one more
+model load plus a zero-input probe of each forward segment, and a failure there
+fails the load.
 
 That is the one place the two routes differ in meaning rather than in
-signature. On `neml2::aoti::Model` the output extents were recorded from what
-the compiled graph produces, so they are definite and an empty entry means
-plain batch (see [](cpp-aoti)). A host that supports both keeps treating
-an undeclared variable as plain and checks the shapes it actually receives on
-the first eager evaluation, stopping with a clear message if an output carries
-an undeclared sub-batch axis.
+signature. On `neml2::aoti::Model` the extents were recorded from what the
+compiled graph produces, so they are definite and an empty entry means plain
+batch (see [](cpp-aoti)). Without a declaration an eager model can still return
+a sub-batched output, e.g. one built on a sub-batched parameter grid; a host
+that supports both runtimes treats an undeclared variable as plain and checks
+the shapes it receives on the first eager evaluation, stopping with a clear
+message if an output carries an undeclared sub-batch axis.
+
+From Python, `neml2.eager._EagerModel`'s `forward` / `jvp` / `jacobian` also take
+an optional `batch_ndim`, the number of leading batch axes; every axis between
+those and the base shape is then sub-batch, with or without a declaration (a
+declared extent is still checked). The C++ signatures do not take it.
 
 ## Loading external (Python-authored) models
 
@@ -122,29 +140,32 @@ boundary works in variables, not flattened group vectors.
 
 ```cpp
 // Jacobian-vector product: jvp_out[name] is the directional derivative at the
-// output's natural (*B, *out_base) shape.
+// output's natural (*B, *out_sub_batch, *out_base) shape.
 auto [out, jvp_out] = m.jvp(inputs, tangents);   // tangents keyed + shaped like
                                                  // inputs; a missing key is zero.
 
 // Full Jacobian as unflattened variable-pair blocks: J[out_name][in_name] is
-// (*B, *out_base, *in_base) -- e.g. SR2->SR2 -> (*B, 6, 6); Scalar->SR2 -> (*B, 6).
+// (*B, *out_sub_batch, *out_base, *in_base) -- e.g. SR2->SR2 -> (*B, 6, 6);
+// Scalar->SR2 -> (*B, 6).
 auto [out2, J] = m.jacobian(inputs);
 ```
 
-:::{warning}
-**Plain-batch only.** The raw-tensor `forward(map)` boundary has no slot to
-declare per-input *sub-batch* shapes (in NEML2 those are caller-declared at
-compile time), so the eager runtime supports only plain-batch models. A model
-that carries BLOCK-aware / labelled sub-batch axes (e.g. crystal-plasticity
-geometry) is **rejected** with a `neml2::aoti::FatalError` rather than silently
-mishandled — use the compiled / dispatched path ([](model-dispatch)) for those.
+:::{note}
+**Derivatives are with respect to plain-batch inputs.** A sub-batched input
+(e.g. per-bin history `number_density~1`) is held fixed: `jacobian` returns no
+column for it, as an AOTI artifact returns only the pairs it was compiled with,
+and `jvp` rejects a tangent for it. Rows for sub-batched outputs carry the
+output's sub-batch axes. The parameter derivatives (`param_jacobian` /
+`param_vjp`) are plain-batch only and reject a call that carries a sub-batched
+variable.
 :::
 
 ## Errors
 
 A Python-side failure — a parse error, an unknown model name, a wrong-dtype
-input, a sub-batch model — is normalized to `neml2::aoti::FatalError` (the same
-taxonomy the AOTI runtime uses; see [](aoti-packages)). The one exception is a
+input, an input missing its declared sub-batch extent — is normalized to
+`neml2::aoti::FatalError` (the same taxonomy the AOTI runtime uses; see
+[](aoti-packages)). The one exception is a
 **solver divergence / max-iterations**, which is re-raised as the *recoverable*
 `neml2::aoti::ConvergenceError` (it originates as that type inside `libneml2.so`
 and round-trips faithfully through the embedded interpreter), so a host can cut

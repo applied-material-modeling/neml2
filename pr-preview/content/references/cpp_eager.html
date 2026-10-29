@@ -387,6 +387,7 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#load-and-run-from-c">Load and run from C++</a></li>
+<li><a class="reference internal" href="#sub-batch">Sub-batch</a></li>
 <li><a class="reference internal" href="#loading-external-python-authored-models">Loading external (Python-authored) models</a></li>
 <li><a class="reference internal" href="#sensitivities-jvp-and-jacobian">Sensitivities: <code class="docutils literal notranslate"><span class="pre">jvp</span></code> and <code class="docutils literal notranslate"><span class="pre">jacobian</span></code></a></li>
 <li><a class="reference internal" href="#errors">Errors</a></li>
@@ -455,7 +456,7 @@ Python supplies it automatically.</p>
 (<code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> plus the parameter derivatives <code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> /
 <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code>) and metadata accessors (<code class="docutils literal notranslate"><span class="pre">input_names</span></code> /
 <code class="docutils literal notranslate"><span class="pre">output_names</span></code> / <code class="docutils literal notranslate"><span class="pre">input_base_shapes</span></code> / <code class="docutils literal notranslate"><span class="pre">output_base_shapes</span></code> /
-<code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes</span></code> / <code class="docutils literal notranslate"><span class="pre">device</span></code> / <code class="docutils literal notranslate"><span class="pre">dtype</span></code>)
+<code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes</span></code> / <code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes</span></code> / <code class="docutils literal notranslate"><span class="pre">device</span></code> / <code class="docutils literal notranslate"><span class="pre">dtype</span></code>)
 have the <strong>same signatures</strong> as <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code>. So test code switches between
 the eager and compiled runtimes by changing only the load call and the header.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
@@ -503,23 +504,41 @@ twin agree on the boundary contract — making <code class="docutils literal not
 for <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code>. Inputs must be passed at their canonical
 <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*sub_batch_shape,</span> <span class="pre">*base_shape)</span></code> shape; a non-canonical trailing shape
 (e.g. an SR2 strain passed as <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">1)</span></code> instead of <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">6)</span></code>) is rejected with a
-<code class="docutils literal notranslate"><span class="pre">FatalError</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes()</span></code> and <code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code> are part of that
-drop-in surface. On this runtime they report <em>declared</em> extents, so an empty
-entry means “not declared as sub-batched”, not “plain-batch”. Every entry on
-both is empty today: the runtime does not read <code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code>
-yet, wraps every input as plain-batch, and rejects a sub-batched output at call
-time. It still loads a model whose inputs are sub-batched, so a host must not
-size such a variable from these accessors alone. Host code can read them
-unconditionally on either runtime and will not have to change when eager grows
-sub-batch support.</p>
+<code class="docutils literal notranslate"><span class="pre">FatalError</span></code>. Outputs come back at <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_sub_batch_shape,</span> <span class="pre">*out_base_shape)</span></code>,
+contiguous, as on <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code>.</p>
+</section>
+<section id="sub-batch">
+<h2>Sub-batch<a class="headerlink" href="#sub-batch" title="Link to this heading">#</a></h2>
+<p>The sub-batch extents come from the input file’s
+<code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code> (<a class="reference internal" href="sub_batch.html#sub-batch-declaration"><span class="std std-ref">Sub-batch axes</span></a>), the same
+declaration <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> reads. The block stays optional:</p>
+<ul class="simple">
+<li><p><strong>declared</strong>: each declared input is split into <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*sub_batch,</span> <span class="pre">*base)</span></code>
+with the declared extent, and a tensor that does not carry it is rejected (a
+size-1 sub-batch axis is broadcast to the extent). An unknown name in the
+declaration fails the load, as it fails <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>.</p></li>
+<li><p><strong>not declared</strong>: the input is plain batch, as before.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes()</span></code> and <code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code> report these
+<em>declared</em> extents, so an empty entry means “not declared as sub-batched”, not
+“plain-batch”. The output extents are what <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> would record for the
+same declaration, worked out at load without compiling or solving, so a host can
+size sub-batched outputs before the first call. With a declaration the load
+therefore also runs the compile plan for these extents, which costs one more
+model load plus a zero-input probe of each forward segment, and a failure there
+fails the load.</p>
 <p>That is the one place the two routes differ in meaning rather than in
-signature. On <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code> the output extents were recorded from what
-the compiled graph produces, so they are definite and an empty entry means
-plain batch (see <a class="reference internal" href="cpp_aoti.html#cpp-aoti"><span class="std std-ref">cpp-aoti — compiled model from C++</span></a>). A host that supports both keeps treating
-an undeclared variable as plain and checks the shapes it actually receives on
-the first eager evaluation, stopping with a clear message if an output carries
-an undeclared sub-batch axis.</p>
+signature. On <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code> the extents were recorded from what the
+compiled graph produces, so they are definite and an empty entry means plain
+batch (see <a class="reference internal" href="cpp_aoti.html#cpp-aoti"><span class="std std-ref">cpp-aoti — compiled model from C++</span></a>). Without a declaration an eager model can still return
+a sub-batched output, e.g. one built on a sub-batched parameter grid; a host
+that supports both runtimes treats an undeclared variable as plain and checks
+the shapes it receives on the first eager evaluation, stopping with a clear
+message if an output carries an undeclared sub-batch axis.</p>
+<p>From Python, <code class="docutils literal notranslate"><span class="pre">neml2.eager._EagerModel</span></code>’s <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> also take
+an optional <code class="docutils literal notranslate"><span class="pre">batch_ndim</span></code>, the number of leading batch axes; every axis between
+those and the base shape is then sub-batch, with or without a declaration (a
+declared extent is still checked). The C++ signatures do not take it.</p>
 </section>
 <section id="loading-external-python-authored-models">
 <h2>Loading external (Python-authored) models<a class="headerlink" href="#loading-external-python-authored-models" title="Link to this heading">#</a></h2>
@@ -546,30 +565,33 @@ model’s chain rule (the same <code class="docutils literal notranslate"><span 
 for forward and implicit (Newton) models alike. Both are <strong>variable-native</strong>: the
 boundary works in variables, not flattened group vectors.</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1">// Jacobian-vector product: jvp_out[name] is the directional derivative at the</span>
-</span><span data-line="2"><span class="c1">// output's natural (*B, *out_base) shape.</span>
+</span><span data-line="2"><span class="c1">// output's natural (*B, *out_sub_batch, *out_base) shape.</span>
 </span><span data-line="3"><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">jvp_out</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">jvp</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span><span class="w"> </span><span class="n">tangents</span><span class="p">);</span><span class="w">   </span><span class="c1">// tangents keyed + shaped like</span>
 </span><span data-line="4"><span class="w">                                                 </span><span class="c1">// inputs; a missing key is zero.</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="c1">// Full Jacobian as unflattened variable-pair blocks: J[out_name][in_name] is</span>
-</span><span data-line="7"><span class="c1">// (*B, *out_base, *in_base) -- e.g. SR2-&gt;SR2 -&gt; (*B, 6, 6); Scalar-&gt;SR2 -&gt; (*B, 6).</span>
-</span><span data-line="8"><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">out2</span><span class="p">,</span><span class="w"> </span><span class="n">J</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">);</span>
+</span><span data-line="7"><span class="c1">// (*B, *out_sub_batch, *out_base, *in_base) -- e.g. SR2-&gt;SR2 -&gt; (*B, 6, 6);</span>
+</span><span data-line="8"><span class="c1">// Scalar-&gt;SR2 -&gt; (*B, 6).</span>
+</span><span data-line="9"><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">out2</span><span class="p">,</span><span class="w"> </span><span class="n">J</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">);</span>
 </span></pre></div>
 </div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p><strong>Plain-batch only.</strong> The raw-tensor <code class="docutils literal notranslate"><span class="pre">forward(map)</span></code> boundary has no slot to
-declare per-input <em>sub-batch</em> shapes (in NEML2 those are caller-declared at
-compile time), so the eager runtime supports only plain-batch models. A model
-that carries BLOCK-aware / labelled sub-batch axes (e.g. crystal-plasticity
-geometry) is <strong>rejected</strong> with a <code class="docutils literal notranslate"><span class="pre">neml2::aoti::FatalError</span></code> rather than silently
-mishandled — use the compiled / dispatched path (<a class="reference internal" href="cpp_dispatch.html#model-dispatch"><span class="std std-ref">cpp-dispatch — dispatching across devices</span></a>) for those.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Derivatives are with respect to plain-batch inputs.</strong> A sub-batched input
+(e.g. per-bin history <code class="docutils literal notranslate"><span class="pre">number_density~1</span></code>) is held fixed: <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> returns no
+column for it, as an AOTI artifact returns only the pairs it was compiled with,
+and <code class="docutils literal notranslate"><span class="pre">jvp</span></code> rejects a tangent for it. Rows for sub-batched outputs carry the
+output’s sub-batch axes. The parameter derivatives (<code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> /
+<code class="docutils literal notranslate"><span class="pre">param_vjp</span></code>) are plain-batch only and reject a call that carries a sub-batched
+variable.</p>
 </div>
 </section>
 <section id="errors">
 <h2>Errors<a class="headerlink" href="#errors" title="Link to this heading">#</a></h2>
 <p>A Python-side failure — a parse error, an unknown model name, a wrong-dtype
-input, a sub-batch model — is normalized to <code class="docutils literal notranslate"><span class="pre">neml2::aoti::FatalError</span></code> (the same
-taxonomy the AOTI runtime uses; see <a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>). The one exception is a
+input, an input missing its declared sub-batch extent — is normalized to
+<code class="docutils literal notranslate"><span class="pre">neml2::aoti::FatalError</span></code> (the same taxonomy the AOTI runtime uses; see
+<a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>). The one exception is a
 <strong>solver divergence / max-iterations</strong>, which is re-raised as the <em>recoverable</em>
 <code class="docutils literal notranslate"><span class="pre">neml2::aoti::ConvergenceError</span></code> (it originates as that type inside <code class="docutils literal notranslate"><span class="pre">libneml2.so</span></code>
 and round-trips faithfully through the embedded interpreter), so a host can cut
