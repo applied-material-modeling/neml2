@@ -20,6 +20,7 @@ CopyWR2
 FBComplementarity
 HermiteSmoothStep
 ImplicitUpdate
+IntermediateLinearContraction
 IrreversibleScalar
 LinearExtrapolationPredictor
 MRPConstantParameter
@@ -36,6 +37,7 @@ R2ConstantParameter
 R2Determinant
 R2ForwardEulerTimeIntegration
 R2InputParameter
+R2LinearCombination
 R2Multiplication
 R2ParameterToVariable
 R2ToSR2
