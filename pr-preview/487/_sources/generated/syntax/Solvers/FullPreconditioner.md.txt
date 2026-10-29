@@ -1,9 +1,0 @@
-(solvers-FullPreconditioner)=
-# FullPreconditioner
-
-**Source:** `solvers/preconditioners.py`
-
-Full (LU) preconditioner: ``M = A`` (exact per-solve; with a caching
-``cache_strategy`` this is modified Newton -- factor once, reuse).
-
-*This type has no documented options.*
