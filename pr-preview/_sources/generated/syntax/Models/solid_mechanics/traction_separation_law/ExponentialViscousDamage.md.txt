@@ -1,0 +1,27 @@
+(models-ExponentialViscousDamage)=
+# ExponentialViscousDamage
+
+**Source:** `models/solid_mechanics/traction_separation_law/ExponentialViscousDamage.py`
+
+Irreversible update with $\alpha=1-\exp(-\Delta t/\eta)$.
+
+## Inputs
+
+`trial_damage` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Rate-independent trial damage
+
+`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
+: Time
+
+
+## Outputs
+
+`damage` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Updated irreversible damage
+
+
+## Parameters
+
+`viscosity` &mdash; `parameter` &middot; `Scalar` &middot; default `0`
+: Damage viscosity, which must be non-negative. Zero recovers the rate-independent update exactly.
+

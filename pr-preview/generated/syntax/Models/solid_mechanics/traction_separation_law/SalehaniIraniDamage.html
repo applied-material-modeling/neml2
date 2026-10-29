@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>DislocationInteractionStrengthMap - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="DislocationObstacleStrengthMap" href="DislocationObstacleStrengthMap.html" /><link rel="prev" title="CrystalPlasticityStrainPredictor" href="CrystalPlasticityStrainPredictor.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SalehaniIraniDamage - NEML2 3.1.0</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="SalehaniIraniTraction" href="SalehaniIraniTraction.html" /><link rel="prev" title="PowerLawFullSeparation" href="PowerLawFullSeparation.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="DislocationInteractionStrengthMap"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="SalehaniIraniDamage"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -93,7 +93,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../../content/tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../content/tensor_types/index.html">Tensor types</a><ul>
@@ -125,7 +124,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -314,11 +312,11 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html">solid_mechanics</a><ul class="current">
-<li class="toctree-l4 current"><a class="reference internal" href="index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../crystal_plasticity/index.html">crystal_plasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../plasticity/index.html">plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../traction_separation_law/index.html">traction_separation_law</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html">traction_separation_law</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../viscoelasticity/index.html">viscoelasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
@@ -333,7 +331,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../Tensors/Python.html">Python</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../Solvers/index.html">Solvers</a><ul>
@@ -428,11 +425,11 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="4" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <a itemprop="item" href="index.html"><span itemprop="name">crystal_plasticity</span></a>
+        <a itemprop="item" href="index.html"><span itemprop="name">traction_separation_law</span></a>
         <span>/</span>
         <meta itemprop="position" content="5" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">DislocationInteractionStrengthMap</strong>
+        <strong itemprop="name">SalehaniIraniDamage</strong>
         <meta itemprop="position" content="6" />
       </li></ol>
     <div class="xl:hidden ml-1">
@@ -445,60 +442,42 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="dislocationinteractionstrengthmap">
-<span id="models-dislocationinteractionstrengthmap"></span><h1>DislocationInteractionStrengthMap<a class="headerlink" href="#dislocationinteractionstrengthmap" title="Link to this heading">#</a></h1>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/crystal_plasticity/DislocationInteractionStrengthMap.py</span></code></p>
-<p>Dislocation density to strength with a slip-system interaction matrix,</p>
-<p><span class="math notranslate nohighlight">\(\tau_i = \tau_{const} + \alpha \mu b \sqrt{\sum_r h_{ir} \rho_r}\)</span>.</p>
-<p>This generalizes <code class="docutils literal notranslate"><span class="pre">DislocationObstacleStrengthMap</span></code> (which is the
-diagonal, self-hardening special case <span class="math notranslate nohighlight">\(h = I\)</span>) by letting the forest density
-seen by slip system <span class="math notranslate nohighlight">\(i\)</span> be a weighted sum over all systems – classical
-latent hardening, where dislocations on system <span class="math notranslate nohighlight">\(r\)</span> obstruct system <span class="math notranslate nohighlight">\(i\)</span>
-through the interaction matrix <span class="math notranslate nohighlight">\(h_{ir}\)</span>.</p>
-<p>The interaction matrix <code class="docutils literal notranslate"><span class="pre">interaction_matrix</span></code> is a <strong>parameter</strong>: a
-<code class="docutils literal notranslate"><span class="pre">Scalar</span></code> carried on two sub-batch axes
-<code class="docutils literal notranslate"><span class="pre">(n_slip,</span> <span class="pre">n_slip)</span></code> – the same representation
-<code class="docutils literal notranslate"><span class="pre">SlipSystemElasticInteraction</span></code> uses for a slip-system matrix. As a
-parameter it is model-agnostic in how it is supplied (a <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code>
-constant, a promoted/calibratable value, or another <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> output such
-as a junction-category classifier) and general in <code class="docutils literal notranslate"><span class="pre">n_slip</span></code>. With <span class="math notranslate nohighlight">\(h = I\)</span>
-the map reduces exactly to <code class="docutils literal notranslate"><span class="pre">DislocationObstacleStrengthMap</span></code>.</p>
-<p>The scalar coefficients <code class="docutils literal notranslate"><span class="pre">constant_strength</span></code>, <code class="docutils literal notranslate"><span class="pre">alpha</span></code>, <code class="docutils literal notranslate"><span class="pre">mu</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>
-are shared across slip systems. All parameters are promotable/calibratable;
-for the interaction matrix, a chain-rule action is registered only when it is
-promoted (calibrated) – when it is a static material property it carries no
-sensitivity, so no derivative is assembled for it.</p>
-<p>Non-negativity: the forest sum <span class="math notranslate nohighlight">\(\sum_r h_{ir}\rho_r\)</span> must be <span class="math notranslate nohighlight">\(\ge 0\)</span> for every
-system (the sqrt and its derivative <span class="math notranslate nohighlight">\(\propto 1/\sqrt{\cdot}\)</span> are real only then).
-This holds automatically for <span class="math notranslate nohighlight">\(\rho \ge 0\)</span> and a non-negative <span class="math notranslate nohighlight">\(h\)</span> (e.g.
-<span class="math notranslate nohighlight">\(h = I + q(1-I)\)</span> with <span class="math notranslate nohighlight">\(q \ge 0\)</span>); a general/calibrated <span class="math notranslate nohighlight">\(h\)</span> must be constrained to
-keep it non-negative, else the value and gradient are NaN.</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="salehaniiranidamage">
+<span id="models-salehaniiranidamage"></span><h1>SalehaniIraniDamage<a class="headerlink" href="#salehaniiranidamage" title="Link to this heading">#</a></h1>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/traction_separation_law/SalehaniIraniDamage.py</span></code></p>
+<p>Trial damage <span class="math notranslate nohighlight">\(d_\text{trial} = 1 - \exp[-(b_n + b_{s1}^2 + b_{s2}^2)]\)</span> of Salehani &amp; Irani,
+where <span class="math notranslate nohighlight">\(b_n = \delta_n / \delta_{u0,n}\)</span> and <span class="math notranslate nohighlight">\(b_{si} = \delta_{si} / (\sqrt{2} \delta_{u0,t})\)</span>.</p>
+<p>Note:
+<code class="docutils literal notranslate"><span class="pre">normal_characteristic_length</span></code> (<span class="math notranslate nohighlight">\(\delta_{u0,n}\)</span>) and
+<code class="docutils literal notranslate"><span class="pre">tangential_characteristic_length</span></code> (<span class="math notranslate nohighlight">\(\delta_{u0,t}\)</span>) must match the parameters
+configured in the corresponding downstream <code class="docutils literal notranslate"><span class="pre">SalehaniIraniTraction</span></code>.
+For calibrated parameters, wire both models to the same
+<code class="docutils literal notranslate"><span class="pre">ScalarConstantParameter</span></code> outputs. For fixed parameters, both models may reference
+the same <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> definitions.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">dislocation_density</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per-slip dislocation density</p>
+<dt><code class="docutils literal notranslate"><span class="pre">normal_separation</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Normal separation (typically the Macaulay-positive part of the normal jump)</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tangential_separation_1</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>First tangential separation</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tangential_separation_2</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Second tangential separation</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">slip_strengths</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Name of the slip system strengths</p>
+<dt><code class="docutils literal notranslate"><span class="pre">trial_damage</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Rate-independent trial damage</p>
 </dd>
 </dl>
 </section>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">constant_strength</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Constant strength offset</p>
+<dt><code class="docutils literal notranslate"><span class="pre">normal_characteristic_length</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Normal characteristic length (must match SalehaniIraniTraction)</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">alpha</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Interaction coefficient</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">mu</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Shear modulus</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">b</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Burgers vector</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">interaction_matrix</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Slip-system interaction (latent-hardening) matrix, sub-batched over (n_slip, n_slip)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">tangential_characteristic_length</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Tangential characteristic length (must match SalehaniIraniTraction)</p>
 </dd>
 </dl>
 </section>
@@ -510,16 +489,16 @@ keep it non-negative, else the value and gradient are NaN.</p>
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="CrystalPlasticityStrainPredictor.html">
+    <a href="PowerLawFullSeparation.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">CrystalPlasticityStrainPredictor</div></div>
+        <span>Previous</span><div class="title">PowerLawFullSeparation</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="DislocationObstacleStrengthMap.html">
+    <a href="SalehaniIraniTraction.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">DislocationObstacleStrengthMap</div>
+        <div class="title">SalehaniIraniTraction</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
