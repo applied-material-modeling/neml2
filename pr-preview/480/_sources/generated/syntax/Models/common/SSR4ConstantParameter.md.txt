@@ -1,0 +1,18 @@
+(models-SSR4ConstantParameter)=
+# SSR4ConstantParameter
+
+**Source:** `models/common/ConstantParameter.py`
+
+SSR4-valued constant parameter. Mirrors ``ConstantParameter<SSR4>``.
+
+## Outputs
+
+`parameter` &mdash; `output` &middot; `SSR4`
+: The output parameter. If not specified, the object name will be used.
+
+
+## Parameters
+
+`value` &mdash; `parameter` &middot; `SSR4` &middot; **required**
+: The constant value of the parameter
+

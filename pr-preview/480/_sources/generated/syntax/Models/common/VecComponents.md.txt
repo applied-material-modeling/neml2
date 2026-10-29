@@ -1,0 +1,26 @@
+(models-VecComponents)=
+# VecComponents
+
+**Source:** `models/common/VecComponents.py`
+
+Decompose a Vec into its three Scalar components.
+
+Wraps the C++ ``Vec::operator()(int)`` slot access as a registered Model
+so component extraction can participate in ``ComposedModel`` assemblies.
+The three output names are user-supplied via the ``to = 's1 s2 s3'``
+option (resolved positionally as components 0, 1, 2 of the input ``Vec``).
+
+Linear leaf: the forward is ``to[i] = from(i)`` and the D-062 pushforward
+is ``action_i(V) = V(i)`` for any incoming ``Vec`` tangent $V$.
+
+## Inputs
+
+`from` &mdash; `input` &middot; `Vec` &middot; **required**
+: The Vec to decompose
+
+
+## Other options
+
+`to` &mdash; `list` &middot; **required**
+: Names of the three Scalar component outputs (in order: 0, 1, 2).
+
