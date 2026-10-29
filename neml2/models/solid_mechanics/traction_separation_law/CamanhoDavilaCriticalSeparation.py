@@ -58,9 +58,11 @@ class CamanhoDavilaCriticalSeparation(Model):
             attr="beta",
             allow_promotion=True,
         ),
-        parameter("penalty_stiffness", Scalar, "Penalty stiffness K", attr="K"),
+        parameter(
+            "penalty_stiffness", Scalar, "Penalty stiffness K", attr="K", allow_promotion=True
+        ),
         parameter("normal_strength", Scalar, "Tensile (normal) strength N", attr="N"),
-        parameter("shear_strength", Scalar, "Shear strength S", attr="S"),
+        parameter("shear_strength", Scalar, "Shear strength S", attr="S", allow_promotion=True),
     )
 
     # ``from_hit`` auto-declares each parameter via ``declare_typed_parameter``.
@@ -76,11 +78,7 @@ class CamanhoDavilaCriticalSeparation(Model):
         *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        # ``beta`` is promotion-capable; route through ``_get_param`` so the
-        # same code path works whether it remained a static parameter or got
-        # promoted to a runtime input. ``K``, ``N``, ``S`` are
-        # allow_promotion=False on the C++ side (no promoted-parameter Jacobian), but the
-        # ``_get_param`` resolver works uniformly for static parameters too.
+        # Resolve static or promoted parameter values through the same path.
         beta = self._get_param("beta", promoted_params, Scalar)
         K = self._get_param("K", promoted_params, Scalar)
         N = self._get_param("N", promoted_params, Scalar)
@@ -110,11 +108,9 @@ class CamanhoDavilaCriticalSeparation(Model):
         # -------- D-062 pushforward.
         #
         # The forward depends on ``normal_separation`` only through the
-        # detached branch mask, so its action is structural zero (omitted
-        # from ``actions`` -> ``apply_chain_rule`` treats it as zero). The
-        # ``beta`` partial is emitted only when promoted to a runtime input
-        # (mode 3/4). ``K``, ``N``, ``S`` are allow_promotion=False so no
-        # action is emitted for them.
+        # detached branch mask, so its action is structural zero. It is omitted
+        # from ``actions``, and ``apply_chain_rule`` therefore treats it as zero.
+        # Promoted parameters receive closed-form partials below.
         actions: dict[str, ChainRuleAction] = {}
 
         beta_nlp = self._promoted_params.get("beta")
@@ -130,6 +126,30 @@ class CamanhoDavilaCriticalSeparation(Model):
             )
             ddc_dbeta = where(pos_mask, ddc_dbeta_open, zero)
             actions[beta_nlp.input_name] = lambda V, c=ddc_dbeta: c * V
+
+        stiffness = self._promoted_params.get("K")
+        shear = self._promoted_params.get("S")
+        if stiffness is not None or shear is not None:
+            delta_mixed_cubed = delta_mixed * delta_mixed * delta_mixed
+            ddc_ds0 = (
+                delta_n0
+                * sqrt(1.0 + beta_sq)
+                * (beta_sq * delta_n0 * delta_n0 + eps)
+                / delta_mixed_cubed
+            )
+
+            if stiffness is not None:
+                ddc_dn0 = (
+                    delta_s0 * sqrt(1.0 + beta_sq) * (delta_s0 * delta_s0 + eps) / delta_mixed_cubed
+                )
+                ddc_dK_open = -(delta_n0 * ddc_dn0 + delta_s0 * ddc_ds0) / K
+                ddc_dK = where(pos_mask, ddc_dK_open, -delta_s0 / K)
+                actions[stiffness.input_name] = lambda V, c=ddc_dK: c * V
+
+            if shear is not None:
+                ddc_dS_open = ddc_ds0 / K
+                ddc_dS = where(pos_mask, ddc_dS_open, 1.0 / K)
+                actions[shear.input_name] = lambda V, c=ddc_dS: c * V
 
         return delta_c, self.apply_chain_rule(v, "critical_separation", actions, output=delta_c)
 

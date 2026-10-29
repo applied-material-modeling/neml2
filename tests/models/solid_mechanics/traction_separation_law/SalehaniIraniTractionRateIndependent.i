@@ -1,5 +1,5 @@
 # neml2
-# The rate-independent branch of SalehaniIraniTraction (viscosity = 0), on the
+# The rate-independent Salehani-Irani damage update (viscosity omitted), on the
 # same loading as SalehaniIraniTraction.i -- where d_trial = 0.5276334473 already
 # sits below damage~1 = 0.6, so the irreversibility cap freezes and d must come
 # back as exactly 0.6. Raising damage~1 above d_trial is the whole point: on the
@@ -39,12 +39,32 @@
 []
 
 [Models]
-  [model]
+  [delta_u0_n]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
+  [delta_u0_t]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
+  [envelope]
+    type = SalehaniIraniDamage
+    normal_characteristic_length = 'delta_u0_n'
+    tangential_characteristic_length = 'delta_u0_t'
+  []
+  [update]
+    type = BackwardEulerViscousDamage
+  []
+  [traction]
     type = SalehaniIraniTraction
-    normal_characteristic_length = 1.0
-    tangential_characteristic_length = 1.0
+    normal_characteristic_length = 'delta_u0_n'
+    tangential_characteristic_length = 'delta_u0_t'
     normal_strength = 1.0
     shear_strength = 1.0
-    viscosity = 0.0
+  []
+  [model]
+    type = ComposedModel
+    models = 'envelope update traction'
+    additional_outputs = 'damage'
   []
 []
