@@ -468,7 +468,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="47"><span class="kn">from</span><span class="w"> </span><span class="nn">torch.export</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dim</span><span class="p">,</span> <span class="n">export</span>
 </span><span data-line="48">
 </span><span data-line="49"><span class="kn">from</span><span class="w"> </span><span class="nn">.._warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">TORCH_JIT_PY314</span><span class="p">,</span> <span class="n">TORCH_TREESPEC_LEAFSPEC</span><span class="p">,</span> <span class="n">ignore_warnings</span>
-</span><span data-line="50"><span class="kn">from</span><span class="w"> </span><span class="nn">..types._boundary</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrapper_metadata_to_restore</span><span class="p">,</span> <span class="n">reattach_wrapper_metadata</span>
+</span><span data-line="50"><span class="kn">from</span><span class="w"> </span><span class="nn">..types._boundary</span><span class="w"> </span><span class="kn">import</span> <span class="n">reattach_wrapper_metadata</span><span class="p">,</span> <span class="n">wrapper_metadata_to_restore</span>
 </span><span data-line="51">
 </span><span data-line="52">
 </span><span data-line="53"><span class="k">def</span><span class="w"> </span><span class="nf">_patch_inductor_int_array_cache_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
