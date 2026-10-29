@@ -54,7 +54,7 @@ positions), but the *labels* are gone, and a leaf that branches on them
 (a reduction over the sub-batch, a broadcast against a plain-batch
 operand) would trace the wrong graph. :func:`neml2.models.export.compile_model`
 therefore snapshots the metadata off the example inputs and re-attaches it
-inside the graph (:func:`neml2.types._boundary.nondefault_wrapper_metadata`
+inside the graph (:func:`neml2.types._boundary.wrapper_metadata_to_restore`
 / :func:`neml2.types._boundary.reattach_wrapper_metadata`).
 
 All `torch._inductor` / `torch.utils._pytree` internal-API drift is contained
