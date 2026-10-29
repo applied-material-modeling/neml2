@@ -58,7 +58,7 @@ class BilinearTraction(Model):
         input("tangential_separation_1", Scalar, "First tangential separation"),
         input("tangential_separation_2", Scalar, "Second tangential separation"),
         output("traction", Vec, "Traction vector"),
-        parameter("penalty_stiffness", Scalar, "Penalty stiffness", attr="K"),
+        parameter("penalty_stiffness", Scalar, "Penalty stiffness", attr="K", allow_promotion=True),
     )
 
     K: Scalar
@@ -70,7 +70,10 @@ class BilinearTraction(Model):
         v: ChainRuleDict | None = None,
     ):
         names = list(self.input_spec)
-        bound = dict(zip(names, args, strict=True))
+        n_promoted = len(self._promoted_params)
+        structural_names = names[:-n_promoted] if n_promoted else names
+        bound = dict(zip(structural_names, args[: len(structural_names)], strict=True))
+        promoted_params = args[len(structural_names) :]
         renames = getattr(self, "_var_renames", {})
 
         def resolved(name: str) -> str:
@@ -81,7 +84,7 @@ class BilinearTraction(Model):
         ds1 = bound[resolved("tangential_separation_1")]
         ds2 = bound[resolved("tangential_separation_2")]
         dn_pen = bound.get(self._dn_pen_name) if self._dn_pen_name is not None else None
-        K = self._get_param("K", (), Scalar)
+        K = self._get_param("K", promoted_params, Scalar)
         scale = K * (1.0 - damage)
         Tn = scale * dn
         if dn_pen is not None:
@@ -108,6 +111,13 @@ class BilinearTraction(Model):
         }
         if self._dn_pen_name is not None:
             actions[self._dn_pen_name] = diagonal(0, K)
+        stiffness = self._promoted_params.get("K")
+        if stiffness is not None:
+            actions[stiffness.input_name] = lambda V: vec_from_scalars(
+                ((1.0 - damage) * dn + (dn_pen if dn_pen is not None else zero)) * V,
+                (1.0 - damage) * ds1 * V,
+                (1.0 - damage) * ds2 * V,
+            )
         return traction, self.apply_chain_rule(v, "traction", actions, output=traction)
 
 

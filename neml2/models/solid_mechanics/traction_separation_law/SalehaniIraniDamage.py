@@ -44,8 +44,9 @@ class SalehaniIraniDamage(Model):
         `normal_characteristic_length` ($\delta_{u0,n}$) and
         `tangential_characteristic_length` ($\delta_{u0,t}$) must match the parameters
         configured in the corresponding downstream :class:`SalehaniIraniTraction`.
-        It is recommended to define them as shared objects under ``[Tensors]`` and reference
-        them in both models.
+        For calibrated parameters, wire both models to the same
+        ``ScalarConstantParameter`` outputs. For fixed parameters, both models may reference
+        the same ``[Tensors]`` definitions.
     """
 
     hit = HitSchema(
@@ -62,12 +63,14 @@ class SalehaniIraniDamage(Model):
             Scalar,
             "Normal characteristic length (must match SalehaniIraniTraction)",
             attr="delta_u0_n",
+            allow_promotion=True,
         ),
         parameter(
             "tangential_characteristic_length",
             Scalar,
             "Tangential characteristic length (must match SalehaniIraniTraction)",
             attr="delta_u0_t",
+            allow_promotion=True,
         ),
     )
 
@@ -83,7 +86,8 @@ class SalehaniIraniDamage(Model):
         v: ChainRuleDict | None = None,
     ):
         delta_n = self._get_param("delta_u0_n", promoted_params, Scalar)
-        delta_t = math.sqrt(2.0) * self._get_param("delta_u0_t", promoted_params, Scalar)
+        delta_u0_t = self._get_param("delta_u0_t", promoted_params, Scalar)
+        delta_t = math.sqrt(2.0) * delta_u0_t
         bn = dn / delta_n
         bs1 = ds1 / delta_t
         bs2 = ds2 / delta_t
@@ -92,14 +96,24 @@ class SalehaniIraniDamage(Model):
         if v is None:
             return damage
 
+        actions = {
+            "normal_separation": lambda V: decay / delta_n * V,
+            "tangential_separation_1": lambda V: decay * 2.0 * ds1 / (delta_t * delta_t) * V,
+            "tangential_separation_2": lambda V: decay * 2.0 * ds2 / (delta_t * delta_t) * V,
+        }
+        normal_length = self._promoted_params.get("delta_u0_n")
+        if normal_length is not None:
+            actions[normal_length.input_name] = lambda V: -decay * dn / (delta_n * delta_n) * V
+        tangential_length = self._promoted_params.get("delta_u0_t")
+        if tangential_length is not None:
+            actions[tangential_length.input_name] = lambda V: (
+                -decay * (ds1 * ds1 + ds2 * ds2) / (delta_u0_t * delta_u0_t * delta_u0_t) * V
+            )
+
         return damage, self.apply_chain_rule(
             v,
             "trial_damage",
-            {
-                "normal_separation": lambda V: decay / delta_n * V,
-                "tangential_separation_1": lambda V: decay * 2.0 * ds1 / (delta_t * delta_t) * V,
-                "tangential_separation_2": lambda V: decay * 2.0 * ds2 / (delta_t * delta_t) * V,
-            },
+            actions,
             output=damage,
         )
 

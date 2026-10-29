@@ -47,8 +47,9 @@ class SalehaniIraniTraction(Model):
         `normal_characteristic_length` ($\delta_{u0,n}$) and
         `tangential_characteristic_length` ($\delta_{u0,t}$) must match the parameters
         configured in the corresponding upstream :class:`SalehaniIraniDamage`.
-        It is recommended to define them as shared objects under ``[Tensors]`` and reference
-        them in both models.
+        For calibrated parameters, wire both models to the same
+        ``ScalarConstantParameter`` outputs. For fixed parameters, both models may reference
+        the same ``[Tensors]`` definitions.
     """
 
     hit = HitSchema(
@@ -75,12 +76,14 @@ class SalehaniIraniTraction(Model):
             Scalar,
             "Normal characteristic length (must match SalehaniIraniDamage)",
             attr="delta_u0_n",
+            allow_promotion=True,
         ),
         parameter(
             "tangential_characteristic_length",
             Scalar,
             "Tangential characteristic length (must match SalehaniIraniDamage)",
             attr="delta_u0_t",
+            allow_promotion=True,
         ),
         parameter(
             "normal_strength", Scalar, "Normal strength (peak normal traction)", attr="Tmax_n"
@@ -102,7 +105,10 @@ class SalehaniIraniTraction(Model):
         v: ChainRuleDict | None = None,
     ):
         names = list(self.input_spec)
-        bound = dict(zip(names, args, strict=True))
+        n_promoted = len(self._promoted_params)
+        structural_names = names[:-n_promoted] if n_promoted else names
+        bound = dict(zip(structural_names, args[: len(structural_names)], strict=True))
+        promoted_params = args[len(structural_names) :]
         renames = getattr(self, "_var_renames", {})
 
         def resolved(name: str) -> str:
@@ -113,8 +119,9 @@ class SalehaniIraniTraction(Model):
         ds1 = bound[resolved("tangential_separation_1")]
         ds2 = bound[resolved("tangential_separation_2")]
         dn_pen = bound.get(self._dn_pen_name) if self._dn_pen_name is not None else None
-        delta_n = self._get_param("delta_u0_n", (), Scalar)
-        delta_t = math.sqrt(2.0) * self._get_param("delta_u0_t", (), Scalar)
+        delta_n = self._get_param("delta_u0_n", promoted_params, Scalar)
+        delta_u0_t = self._get_param("delta_u0_t", promoted_params, Scalar)
+        delta_t = math.sqrt(2.0) * delta_u0_t
         an = math.e * self._get_param("Tmax_n", (), Scalar)
         at = math.sqrt(2.0 * math.e) * self._get_param("Tmax_t", (), Scalar)
         Kpen = self._get_param("Kpen", (), Scalar)
@@ -147,6 +154,20 @@ class SalehaniIraniTraction(Model):
         }
         if self._dn_pen_name is not None:
             actions[self._dn_pen_name] = diagonal(0, Kpen)
+        normal_length = self._promoted_params.get("delta_u0_n")
+        if normal_length is not None:
+            actions[normal_length.input_name] = lambda V: vec_from_scalars(
+                -an * bn * factor / delta_n * V,
+                zero * V,
+                zero * V,
+            )
+        tangential_length = self._promoted_params.get("delta_u0_t")
+        if tangential_length is not None:
+            actions[tangential_length.input_name] = lambda V: vec_from_scalars(
+                zero * V,
+                -at * bs1 * factor / delta_u0_t * V,
+                -at * bs2 * factor / delta_u0_t * V,
+            )
         return traction, self.apply_chain_rule(v, "traction", actions, output=traction)
 
 

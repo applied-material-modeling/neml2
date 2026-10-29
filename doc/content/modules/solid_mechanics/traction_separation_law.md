@@ -98,14 +98,23 @@ changing the other two. The traction leaves optionally accept a
 `normal_penetration` channel and penalty stiffness to resist
 interpenetration.
 
+When multiple leaves use the same material parameter, define it once with a
+`ScalarConstantParameter` and wire each consumer to that model output. This
+creates one provider (and one calibration parameter) with multiple DAG edges.
+For example, the bilinear examples share `K_shared` between the initiation,
+failure, and traction models; the Salehani-Irani examples share each
+characteristic length between the damage and traction models. Repeating a
+`[Tensors]` reference in each leaf supplies equal initial values, but does not
+express a single shared calibration parameter.
+
 :::{tip} Rewiring existing models
 In previous versions, `BilinearTraction` and `SalehaniIraniTraction` contained the damage
 envelope and viscous update internally. Under the decoupled architecture, existing inputs
 are rewired by composing `envelope -> update -> traction` within a [](models-ComposedModel),
 setting `additional_outputs = 'damage'` if the damage variable is needed for diagnostics or downstream models.
 For `SalehaniIraniTraction`, `normal_characteristic_length` and `tangential_characteristic_length`
-should reference a single shared definition under `[Tensors]` to guarantee consistency between the envelope
-and traction leaves.
+should use the same `ScalarConstantParameter` output in both leaves when they are calibrated.
+For fixed values, both leaves can reference the same `[Tensors]` definition.
 :::
 
 ## Math

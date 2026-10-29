@@ -67,7 +67,7 @@ class BenzeggaghKenaneFullSeparation(Model):
             attr="delta_c",
             allow_promotion=True,
         ),
-        parameter("penalty_stiffness", Scalar, "Penalty stiffness", attr="K"),
+        parameter("penalty_stiffness", Scalar, "Penalty stiffness", attr="K", allow_promotion=True),
         parameter(
             "mode_I_fracture_toughness",
             Scalar,
@@ -85,6 +85,7 @@ class BenzeggaghKenaneFullSeparation(Model):
             Scalar,
             "Shear strength (used in compression branch)",
             attr="S",
+            allow_promotion=True,
         ),
         parameter("eta", Scalar, "BK exponent", attr="eta"),
     )
@@ -174,6 +175,18 @@ class BenzeggaghKenaneFullSeparation(Model):
             )
             ddf_dbeta = where(pos_mask, ddf_dbeta_open, zero)
             actions[beta_nlp.input_name] = lambda V, c=ddf_dbeta: c * V
+
+        stiffness = self._promoted_params.get("K")
+        if stiffness is not None:
+            zero = Scalar.from_value(0.0, like=delta_f)
+            ddf_dK = where(pos_mask, -delta_final_open / K, zero)
+            actions[stiffness.input_name] = lambda V, c=ddf_dK: c * V
+
+        shear = self._promoted_params.get("S")
+        if shear is not None:
+            zero = Scalar.from_value(0.0, like=delta_f)
+            ddf_dS = where(pos_mask, zero, -delta_final_default / S)
+            actions[shear.input_name] = lambda V, c=ddf_dS: c * V
 
         return delta_f, self.apply_chain_rule(v, "full_separation", actions, output=delta_f)
 

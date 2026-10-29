@@ -4,14 +4,6 @@
 # Reference data (jumps and tractions) is in reference.csv.
 
 [Tensors]
-  [delta_u0_n]
-    type = Python
-    expr = 'Scalar(1.0)'
-  []
-  [delta_u0_t]
-    type = Python
-    expr = 'Scalar(1.0)'
-  []
   [times]
     type = CSVScalar
     csv_file = 'reference.csv'
@@ -50,6 +42,14 @@
 []
 
 [Models]
+  [delta_u0_n]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
+  [delta_u0_t]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
   [decompose]
     type = VecComponents
     from = 'separation'

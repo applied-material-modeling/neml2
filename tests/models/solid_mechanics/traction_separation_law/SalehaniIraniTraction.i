@@ -24,14 +24,6 @@
 []
 
 [Tensors]
-  [delta_u0_n]
-    type = Python
-    expr = 'Scalar(1.0)'
-  []
-  [delta_u0_t]
-    type = Python
-    expr = 'Scalar(1.0)'
-  []
   [T_expected]
     type = Python
     # T_n  = e * 0.5 * (1 - d)   = 0.8058294320
@@ -42,6 +34,14 @@
 []
 
 [Models]
+  [delta_u0_n]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
+  [delta_u0_t]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
   [envelope]
     type = SalehaniIraniDamage
     normal_characteristic_length = 'delta_u0_n'

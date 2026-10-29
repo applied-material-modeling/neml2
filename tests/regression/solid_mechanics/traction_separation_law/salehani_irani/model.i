@@ -2,14 +2,6 @@
 # 3D exponential cohesive law (Salehani-Irani) under a monotonic mixed-mode opening ramp.
 # Traction grows, peaks near the characteristic length, then decays exponentially to zero.
 [Tensors]
-  [delta_u0_n]
-    type = Python
-    expr = 'Scalar(1.0)'
-  []
-  [delta_u0_t]
-    type = Python
-    expr = 'Scalar(1.0)'
-  []
   [times]
     type = Python
     expr = 'linspace(Scalar(0.0).dynamic_batch, Scalar(1.0).dynamic_batch, 40)'
@@ -36,6 +28,14 @@
 []
 
 [Models]
+  [delta_u0_n]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
+  [delta_u0_t]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
   [decompose]
     type = VecComponents
     from = 'separation'
