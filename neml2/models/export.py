@@ -47,7 +47,7 @@ import torch
 from torch.export import Dim, export
 
 from .._warnings import TORCH_JIT_PY314, TORCH_TREESPEC_LEAFSPEC, ignore_warnings
-from ..types._boundary import wrapper_metadata_to_restore, reattach_wrapper_metadata
+from ..types._boundary import reattach_wrapper_metadata, wrapper_metadata_to_restore
 
 
 def _patch_inductor_int_array_cache_key() -> None:
