@@ -290,7 +290,8 @@ Model::jvp(const std::map<std::string, at::Tensor> & inputs,
 }
 
 std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
-Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
+Model::jacobian(const std::map<std::string, at::Tensor> & inputs,
+                const std::vector<std::string> & derivatives) const
 {
   using Ret = std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>;
   return guarded("jacobian",
@@ -298,8 +299,11 @@ Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
                  {
                    // The adapter returns (outputs, J) -- a dict[str, Tensor] and
                    // the nested dict[str, dict[str, Tensor]] of variable-pair
-                   // blocks (*B, *out_base, *in_base).
-                   py::object out = _impl->adapter.attr("jacobian")(inputs);
+                   // blocks.
+                   py::object out = derivatives.empty()
+                                        ? _impl->adapter.attr("jacobian")(inputs)
+                                        : _impl->adapter.attr("jacobian")(
+                                              inputs, py::arg("derivatives") = derivatives);
                    return out.cast<Ret>();
                  });
 }

@@ -27,6 +27,7 @@
 // interpreter, and forward() evaluates it. argv[1] is the path to
 // tests/aoti/forward_single/model.i (LinearIsotropicElasticity, strain->stress).
 
+#include <cmath>
 #include <map>
 #include <string>
 #include <vector>
@@ -449,6 +450,39 @@ main(int argc, char ** argv)
       got_fatal = true;
     }
     NEML2_CHECK(got_fatal);
+  }
+
+  // #9: derivative selection, including sub-batched inputs. argv[10] is
+  // tests/aoti/implicit_sub_batch_ift_reduce (closed forms in its header).
+  if (argc >= 11)
+  {
+    const auto rm = load_model(argv[10], "model");
+    const int64_t rb = 3, n = 4;
+    const double dt = 0.1;
+    const auto ropts = at::TensorOptions().dtype(rm.dtype()).device(rm.device());
+    std::map<std::string, at::Tensor> rin;
+    rin.emplace("x", at::rand({rb, n}, ropts));
+    rin.emplace("x~1", at::rand({rb, n}, ropts));
+    rin.emplace("s", at::rand({rb}, ropts));
+    rin.emplace("t", at::full({rb}, dt, ropts));
+    rin.emplace("t~1", at::zeros({rb}, ropts));
+    rin.emplace("z", at::rand({rb, n}, ropts));
+
+    // Default: plain inputs only.
+    const auto Jd = rm.jacobian(rin).second;
+    NEML2_CHECK(Jd.at("vf").count("x~1") == 0 && Jd.at("vf").count("s") == 1);
+
+    const auto J = rm.jacobian(rin, {"vf:s", "x:x~1", "vf:x~1", "y:z"}).second;
+    NEML2_CHECK(J.size() == 3 && J.at("vf").size() == 2 && J.at("x").size() == 1);
+    const auto R = at::logspace(-1.0, 0.0, n, 10.0, ropts);
+    const auto k = -at::logspace(0.0, 1.0, n, 10.0, ropts);
+    const auto w = 4.0 / 3.0 * M_PI * R.pow(3);
+    const auto dx_dxo = 1.0 / (1.0 - k * dt);
+    NEML2_CHECK(at::allclose(J.at("vf").at("s"), (w * dt * dx_dxo).sum().expand({rb})));
+    NEML2_CHECK(J.at("x").at("x~1").sizes() == at::IntArrayRef({rb, n, n}));
+    NEML2_CHECK(at::allclose(J.at("x").at("x~1"), at::diag(dx_dxo).expand({rb, n, n})));
+    NEML2_CHECK(at::allclose(J.at("vf").at("x~1"), (w * dx_dxo).expand({rb, n})));
+    NEML2_CHECK(at::allclose(J.at("y").at("z"), R.expand({rb, n})));
   }
 
   return 0;

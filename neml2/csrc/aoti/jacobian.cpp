@@ -36,7 +36,7 @@ namespace neml2::aoti
 {
 void
 Model::Impl::_init_dstate(const at::TensorOptions & options,
-                          at::IntArrayRef batch_shape,
+                          at::IntArrayRef dyn_batch,
                           std::map<std::string, at::Tensor> & dstate) const
 {
   // Narrowed carrier: columns span only the *requested* input directions
@@ -45,34 +45,21 @@ Model::Impl::_init_dstate(const at::TensorOptions & options,
   // is never on the `in` side of a requested pair gets an all-zero block (it is
   // never differentiated, so it contributes nothing downstream).
   //
-  // `batch_shape` is the FIRST input's full leading shape `(*dyn, *sub0)`. Each
-  // dstate block carries the shared dynamic batch `*common_dyn` (with the first
-  // input's own sub-batch axes stripped) and the per-variable folded storage
-  // `sub_total_k * base_k`, so a heterogeneous mix of global and per-grain
-  // inputs each gets the right shape (the first input being per-grain must not
-  // impose its grain axis on a global input's sensitivity).
-  const std::size_t in0_sub =
-      _input_sub_batch_shapes.empty() ? 0 : _input_sub_batch_shapes[0].size();
-  std::vector<int64_t> common_dyn(batch_shape.begin(),
-                                  batch_shape.end() - static_cast<int64_t>(in0_sub));
+  // Each block is `(*dyn, sub_total_k * base_k, M)`, sites outer, base inner.
   for (std::size_t k = 0; k < _input_names.size(); ++k)
   {
     int64_t sub_total = 1;
     for (auto s : _input_sub_batch_shapes[k])
       sub_total *= s;
     const int64_t folded = sub_total * _input_sizes[k];
-    std::vector<int64_t> shape_vec = common_dyn;
+    std::vector<int64_t> shape_vec(dyn_batch.begin(), dyn_batch.end());
     shape_vec.push_back(folded);
     shape_vec.push_back(_req_total_size);
     auto block = at::zeros(shape_vec, options);
     auto it = _req_input_offset.find(_input_names[k]);
     if (it != _req_input_offset.end())
-    {
-      // Requested inputs are plain-batch (the compile-time guard rejects
-      // sub-batched requested pairs), so folded == _req_input_size here.
-      const auto rs = _req_input_size.at(_input_names[k]);
-      block.narrow(/*dim=*/-1, /*start=*/it->second, /*length=*/rs).copy_(at::eye(rs, options));
-    }
+      block.narrow(/*dim=*/-1, /*start=*/it->second, /*length=*/folded)
+          .copy_(at::eye(folded, options));
     dstate[_input_names[k]] = block;
   }
 }
@@ -119,14 +106,16 @@ Model::Impl::_forward_pair_blocks(const std::map<std::string, at::Tensor> & inpu
   for (std::size_t k = 0; k < n_pairs; ++k)
   {
     const auto & p = seg.jacobian_pairs[k];
-    auto block = outs[n_outs + k]; // (*dyn, *in_sub, *out_base, *in_base)
+    // Already at the public shape of its form.
+    auto block = outs[n_outs + k];
     if (p.batch_independent)
     {
       // A batch-independent block traced to a static size-1 dynamic-batch axis;
       // drop the leading size-1 axes so it is returned unbatched (broadcasts
       // against any runtime batch). The metadata flag gates this, so a
       // state-dependent block that happens to run at batch=1 is never squeezed.
-      const int64_t trail = static_cast<int64_t>(p.in_sub_batch_shape.size() +
+      const std::size_t out_sub = p.form == "full" ? p.out_sub_batch_shape.size() : 0;
+      const int64_t trail = static_cast<int64_t>(out_sub + p.in_sub_batch_shape.size() +
                                                  p.out_base_shape.size() + p.in_base_shape.size());
       while (block.dim() > trail && block.size(0) == 1)
         block = block.squeeze(0);
@@ -583,112 +572,105 @@ Model::Impl::_run_forward_segment_jacobian(const Segment & seg,
     dout_acc[seg.fwd_outputs[i]] = at::zeros(shape, val.options());
   }
 
-  // Iterate pairs; per-pair matmul + reshape + accumulate.
+  // Contract each pair's block, by its form, against the folded carrier
+  // (*B, folded, M).
+  const auto prod = [](const std::vector<int64_t> & v)
+  {
+    int64_t n = 1;
+    for (auto s : v)
+      n *= s;
+    return n;
+  };
   for (std::size_t k = 0; k < n_pairs; ++k)
   {
-    const auto & pair = jvp_outs[n_outs + k];
+    auto pair = jvp_outs[n_outs + k];
     const auto & pinfo = seg.jacobian_pairs[k];
+    const int64_t ob = prod(pinfo.out_base_shape);
+    const int64_t ib = prod(pinfo.in_base_shape);
+    const int64_t out_sub = prod(pinfo.out_sub_batch_shape);
+    const int64_t in_sub = prod(pinfo.in_sub_batch_shape);
+    const auto ob_nd = static_cast<int64_t>(pinfo.out_base_shape.size());
+    const auto ib_nd = static_cast<int64_t>(pinfo.in_base_shape.size());
+    const auto osub_nd = static_cast<int64_t>(pinfo.out_sub_batch_shape.size());
+    const auto isub_nd = static_cast<int64_t>(pinfo.in_sub_batch_shape.size());
 
-    int64_t in_base_total = 1;
-    for (auto s : pinfo.in_base_shape)
-      in_base_total *= s;
-    int64_t in_sub_total = 1;
-    for (auto s : pinfo.in_sub_batch_shape)
-      in_sub_total *= s;
-    int64_t out_base_total = 1;
-    for (auto s : pinfo.out_base_shape)
-      out_base_total *= s;
-    const int64_t in_var_size = in_sub_total * in_base_total;
-
-    // dstate[in_var] shape: (*B, in_var_size, M). View as (*B, *in_sub,
-    // *in_base, M) -- last 1+in_base_ndim dims index over the in side.
     auto din_it = dstate.find(pinfo.in_var);
     _assert(din_it != dstate.end(),
             "aoti::Model: forward-Jacobian needs dstate['",
             pinfo.in_var,
             "'] which is missing.");
-    const auto & din = din_it->second;
-    std::vector<int64_t> din_target = batch_shape;
-    for (auto s : pinfo.in_sub_batch_shape)
-      din_target.push_back(s);
-    for (auto s : pinfo.in_base_shape)
-      din_target.push_back(s);
-    din_target.push_back(M);
-    auto din_view = din.reshape(din_target);
+    const auto & din = din_it->second; // (*B, in_sub * ib, M)
 
-    // pair shape: (*B, *sub, *out_base, *in_base). View as (*B, *sub,
-    // out_base_total, in_base_total) for the matmul, where *sub may be
-    // empty (in_sub absent) or in_sub (chain-rule preserved). For
-    // simplicity, flatten the pair's trailing 2*ndim into (out_base,
-    // in_base) and rely on the matmul to broadcast against din_view.
-    //
-    // Tensordot over in_base axes. Use reshape to (..., out_base,
-    // in_base) then matmul against (..., in_base, M).
-    const int64_t pair_trail =
-        static_cast<int64_t>(pinfo.out_base_shape.size() + pinfo.in_base_shape.size());
-    _assert(pair.dim() >= pair_trail,
-            "aoti::Model: Jacobian pair tensor ndim=",
-            pair.dim(),
-            " < expected trail=",
-            pair_trail);
-    const int64_t pair_lead = pair.dim() - pair_trail;
-    std::vector<int64_t> pair_shape;
-    pair_shape.reserve(static_cast<std::size_t>(pair_lead + 2));
-    for (int64_t d = 0; d < pair_lead; ++d)
-      pair_shape.push_back(pair.size(d));
-    pair_shape.push_back(out_base_total);
-    pair_shape.push_back(in_base_total);
-    auto pair_view = pair.reshape(pair_shape);
-
-    // din_view's trailing layout: (..., in_base_total, M). Reshape to
-    // collapse in_base axes and (if present) in_sub axes.
-    std::vector<int64_t> din_collapsed_shape = batch_shape;
-    if (!pinfo.in_sub_batch_shape.empty())
+    // Leading axes may be size 1 (batch-independent) and broadcast against *B.
+    const auto lead_of = [&](int64_t trailing)
     {
-      for (auto s : pinfo.in_sub_batch_shape)
-        din_collapsed_shape.push_back(s);
-    }
-    din_collapsed_shape.push_back(in_base_total);
-    din_collapsed_shape.push_back(M);
-    auto din_collapsed = din.reshape(din_collapsed_shape);
-
-    // pair_view @ din_collapsed: pair_view (*B, *sub_or_none,
-    // out_base_total, in_base_total) and din_collapsed
-    // (*B, *in_sub, in_base_total, M). For paired BLOCK pairs (sub
-    // present on both), broadcast aligns the sub. For DENSE in_var
-    // (no in_sub), din shape (*B, in_base_total, M).
-    auto contrib = at::matmul(pair_view, din_collapsed);
-    // contrib shape (*B, *sub_union, out_base_total, M); for the DENSE
-    // out_var case, accumulate as-is into (*B, out_var_size, M).
-    // For BLOCK out_var (out_sub present), the sub axes need to be
-    // folded into out_var_size. The current implementation supports
-    // only DENSE out_var; reject BLOCK out_var here pending the future
-    // BLOCK-output forward-Jacobian path.
-    const int64_t accumulator_var_size = dout_acc[pinfo.out_var].size(-2);
-    int64_t contrib_var_size = 1;
-    for (int64_t d = static_cast<int64_t>(batch_shape.size()); d < contrib.dim() - 1; ++d)
-      contrib_var_size *= contrib.size(d);
-    if (contrib_var_size == accumulator_var_size)
-    {
-      std::vector<int64_t> flat_shape = batch_shape;
-      flat_shape.push_back(accumulator_var_size);
-      flat_shape.push_back(M);
-      dout_acc[pinfo.out_var] = dout_acc[pinfo.out_var] + contrib.reshape(flat_shape);
-    }
-    else
-    {
-      _assert(false,
-              "aoti::Model: forward-Jacobian per-pair contribution for (",
+      _assert(pair.dim() >= trailing,
+              "aoti::Model: Jacobian pair (",
               pinfo.out_var,
               ", ",
               pinfo.in_var,
-              ") has var_size ",
-              contrib_var_size,
-              " which does not match accumulator ",
-              accumulator_var_size,
-              ". BLOCK-output forward-Jacobian path is not yet implemented.");
+              ") has ndim ",
+              pair.dim(),
+              " < its form's trailing ",
+              trailing,
+              ".");
+      return std::vector<int64_t>(pair.sizes().begin(), pair.sizes().end() - trailing);
+    };
+
+    at::Tensor contrib;
+    if (pinfo.form == "paired")
+    {
+      // Site by site: (*B, *sub, ib, M) -> (*B, *sub, ob, M).
+      auto shape = lead_of(isub_nd + ob_nd + ib_nd);
+      shape.insert(shape.end(), pinfo.in_sub_batch_shape.begin(), pinfo.in_sub_batch_shape.end());
+      shape.push_back(ob);
+      shape.push_back(ib);
+      std::vector<int64_t> din_shape = batch_shape;
+      din_shape.insert(
+          din_shape.end(), pinfo.in_sub_batch_shape.begin(), pinfo.in_sub_batch_shape.end());
+      din_shape.push_back(ib);
+      din_shape.push_back(M);
+      contrib = at::matmul(pair.reshape(shape), din.reshape(din_shape));
     }
-    (void)in_var_size;
+    else
+    {
+      // One (out_sub*ob, in_sub*ib) matrix per batch entry ("plain": in_sub = 1).
+      const int64_t trailing =
+          pinfo.form == "full" ? osub_nd + ob_nd + isub_nd + ib_nd : osub_nd + ob_nd + ib_nd;
+      if (pinfo.form == "plain" &&
+          pair.dim() == static_cast<int64_t>(batch_shape.size()) + ob_nd + ib_nd && osub_nd > 0)
+        // The tangent never met the output's sites: same block for each site.
+        for (int64_t d = 0; d < osub_nd; ++d)
+          pair = pair.unsqueeze(static_cast<int64_t>(batch_shape.size()));
+      auto lead = lead_of(trailing);
+      std::vector<int64_t> target = lead;
+      target.insert(
+          target.end(), pinfo.out_sub_batch_shape.begin(), pinfo.out_sub_batch_shape.end());
+      target.insert(target.end(), pinfo.out_base_shape.begin(), pinfo.out_base_shape.end());
+      if (pinfo.form == "full")
+        target.insert(
+            target.end(), pinfo.in_sub_batch_shape.begin(), pinfo.in_sub_batch_shape.end());
+      target.insert(target.end(), pinfo.in_base_shape.begin(), pinfo.in_base_shape.end());
+      std::vector<int64_t> mat = lead;
+      mat.push_back(out_sub * ob);
+      mat.push_back((pinfo.form == "full" ? in_sub : 1) * ib);
+      contrib = at::matmul(pair.expand(target).reshape(mat), din);
+    }
+
+    std::vector<int64_t> flat_shape = batch_shape;
+    flat_shape.push_back(dout_acc[pinfo.out_var].size(-2));
+    flat_shape.push_back(M);
+    _assert(contrib.numel() == prod(flat_shape),
+            "aoti::Model: forward-Jacobian contribution for (",
+            pinfo.out_var,
+            ", ",
+            pinfo.in_var,
+            ") has ",
+            contrib.sizes(),
+            ", which does not fold to the carrier ",
+            at::IntArrayRef(flat_shape),
+            ".");
+    dout_acc[pinfo.out_var] = dout_acc[pinfo.out_var] + contrib.reshape(flat_shape);
   }
 
   for (const auto & oname : seg.fwd_outputs)
@@ -802,21 +784,19 @@ Model::Impl::_run_implicit_segment_jacobian(const Segment & seg,
             "'] which is missing.");
     const auto & din = din_it->second;
 
-    // ``disassemble`` blocks carry exactly two trailing storage axes
-    // ``(*B, [sub], out_storage, in_storage)`` (out_storage == unknown var_size,
-    // in_storage == given var_size). For a plain batch the block is
-    // ``(*B, out_storage, in_storage)`` and ``dstate[given]`` is
-    // ``(*B, in_storage, M)``, so the IFT composition is a direct matmul. A
-    // BLOCK (per-grain) side adds an intermediate sub axis that needs the paired
-    // / cross-grain reduction -- deferred (rejected) until the sub-batch IFT
-    // path lands.
-    _assert(pinfo.in_sub_batch_shape.empty() &&
-                blk.dim() == static_cast<int64_t>(batch_shape.size()) + 2,
-            "aoti::Model: sub-batch (BLOCK) IFT Jacobian for (",
+    // Blocks are (*B, out_storage, in_storage); a DENSE group folds its sites
+    // into storage exactly as the carrier does, so this is a direct matmul.
+    _assert(blk.dim() == static_cast<int64_t>(batch_shape.size()) + 2 &&
+                blk.size(-1) == din.size(-2),
+            "aoti::Model: IFT block for (",
             pinfo.out_var,
             ", ",
             pinfo.in_var,
-            ") is not yet implemented.");
+            ") has shape ",
+            blk.sizes(),
+            ", which does not match the carrier ",
+            din.sizes(),
+            ".");
 
     auto contrib = at::matmul(blk, din); // (*B, out_storage, M)
     du_acc[pinfo.out_var] = du_acc[pinfo.out_var] + contrib;

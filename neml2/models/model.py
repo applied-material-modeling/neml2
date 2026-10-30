@@ -1200,6 +1200,7 @@ class Model(nn.Module, ABC):
     def jacobian(
         self,
         inputs: Mapping[str, TensorWrapper | torch.Tensor],
+        derivatives: Sequence[str] | None = None,
     ) -> tuple[dict[str, TensorWrapper], dict[str, dict[str, Tensor]]]:
         """Evaluate the model and its full Jacobian as typed variable-pair blocks.
 
@@ -1219,9 +1220,20 @@ class Model(nn.Module, ABC):
         parameter is handled, matching ``_EagerModel.jacobian``. The typed
         py-eager analogue of the (raw, name-keyed) ``jacobian`` the compiled /
         embedded routes expose.
+
+        *derivatives* takes ``neml2-compile -d`` specs; the default is every
+        output against the plain-batch inputs. A sub-batched input is included
+        only when named (block forms:
+        :func:`~neml2.types._boundary.sub_batched_pair_block`).
         """
-        from ..cli.aoti_export import _leading_k_identity_seed  # noqa: PLC0415
-        from ..types._boundary import assemble_jacobian_typed  # noqa: PLC0415
+        from ..cli.aoti_export import (  # noqa: PLC0415
+            _leading_k_identity_seed,
+            _resolve_derivative_specs,
+        )
+        from ..types._boundary import (  # noqa: PLC0415
+            assemble_jacobian_typed,
+            sub_batched_identity_seed,
+        )
         from .param_ad import call_batch_shape, enumerate_typed_params  # noqa: PLC0415
 
         typed_args = tuple(t(inputs[n]) for n, t in self.input_spec.items())  # type: ignore[call-arg]
@@ -1232,20 +1244,43 @@ class Model(nn.Module, ABC):
         # every identity seed at that common call batch so the chain rule and the
         # output-batch-keyed assembly agree (a parameter may carry its own batch).
         call_batch = call_batch_shape(typed_args, self, param_qnames, param_base)
-        seed = {
-            n: {n: _leading_k_identity_seed(t_cls, call_batch, dtype=ta.dtype, device=ta.device)}
-            for (n, t_cls), ta in zip(self.input_spec.items(), typed_args, strict=True)
-        }
-        *typed_outs, v_out = self(*typed_args, v=seed)
+        input_names = list(self.input_spec)
         output_names = list(self.output_spec)
+        sub_shapes = {
+            n: tuple(int(s) for s in ta.sub_batch_shape)
+            for n, ta in zip(input_names, typed_args, strict=True)
+            if ta.sub_batch_ndim > 0
+        }
+        pairs, _ = _resolve_derivative_specs(
+            [":"] if derivatives is None else derivatives,
+            output_names,
+            input_names,
+            sub_batched_inputs=sub_shapes,
+        )
+        requested = {i for _, i in pairs}
+        columns = [n for n in input_names if n in requested]
+        seed: dict[str, dict[str, TensorWrapper]] = {}
+        for (n, t_cls), ta in zip(self.input_spec.items(), typed_args, strict=True):
+            if n not in requested:
+                continue
+            if n in sub_shapes:
+                leaf = sub_batched_identity_seed(
+                    t_cls, call_batch, sub_shapes[n], dtype=ta.dtype, device=ta.device
+                )
+            else:
+                leaf = _leading_k_identity_seed(t_cls, call_batch, dtype=ta.dtype, device=ta.device)
+            seed[n] = {n: leaf}
+        *typed_outs, v_out = self(*typed_args, v=seed)
         outputs = dict(zip(output_names, typed_outs, strict=True))
         jac = assemble_jacobian_typed(
             v_out,
             tuple(typed_outs),
             output_names,
             self.output_spec,
-            list(self.input_spec),
+            columns,
             self.input_spec,
+            input_sub_batch_shapes=sub_shapes,
+            pairs=None if derivatives is None else pairs,
         )
         return outputs, jac
 

@@ -30,6 +30,8 @@
 
 #include "neml2/csrc/aoti/internal.h"
 
+#include <algorithm>
+
 // at::infer_size (broadcast two shapes) for the common-batch computation.
 #include <ATen/ExpandUtils.h>
 
@@ -238,22 +240,19 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
   // Pack state from caller inputs (validating + broadcasting to the common batch).
   auto state = _prepare_inputs(inputs);
 
-  // dstate[var] is (*B, var_size, M) where M = _input_total_size. Initialized
-  // with identity columns for each master input, then composed segment-by-
-  // segment in lockstep with `state`. The batch shape is the leading axes of a
-  // master input ahead of its trailing base axes (validated above). For a
-  // sub-batched master input the (*dyn, *sub) region is all treated as batch,
-  // matching the legacy var_size-trailing split.
+  // dstate[var] is (*dyn, var_folded, M), M = _req_total_size, composed
+  // segment-by-segment in lockstep with `state`. `batch_shape_vec` (input 0's
+  // sub-batch included) only broadcasts promoted parameters, as the value path does.
   const auto & ref = state.at(_input_names.front());
   const auto batch_shape_vec = _batch_shape_of(0, ref);
-  at::IntArrayRef batch_shape(batch_shape_vec);
+  const auto dyn_vec = _dynamic_batch_shape_of(0, ref);
 
   std::map<std::string, at::Tensor> dstate;
-  _init_dstate(ref.options(), batch_shape, dstate);
+  _init_dstate(ref.options(), dyn_vec, dstate);
 
-  int64_t batch_numel = 1;
-  for (auto s : batch_shape_vec)
-    batch_numel *= s;
+  int64_t dyn_numel = 1;
+  for (auto s : dyn_vec)
+    dyn_numel *= s;
   for (const auto & seg : _segments)
   {
     if (seg.kind == SegmentKind::Forward)
@@ -270,8 +269,8 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
         for (const auto & oname : seg.fwd_outputs)
         {
           const auto & val = state.at(oname);
-          const int64_t osz = batch_numel > 0 ? val.numel() / batch_numel : 0;
-          std::vector<int64_t> shp = batch_shape_vec;
+          const int64_t osz = dyn_numel > 0 ? val.numel() / dyn_numel : 0;
+          std::vector<int64_t> shp = dyn_vec;
           shp.push_back(osz);
           shp.push_back(_req_total_size);
           dstate[oname] = at::zeros(shp, ref.options());
@@ -305,7 +304,7 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
         // zero-fill the unknowns' dstate (never consumed by a kept pair).
         for (const auto & u : seg.unknowns)
         {
-          std::vector<int64_t> shp = batch_shape_vec;
+          std::vector<int64_t> shp = dyn_vec;
           shp.push_back(u.var_size);
           shp.push_back(_req_total_size);
           dstate[u.name] = at::zeros(shp, ref.options());
@@ -319,6 +318,57 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
     outputs[n] = state.at(n);
 
   return {std::move(outputs), std::move(dstate)};
+}
+
+at::Tensor
+Model::Impl::_public_pair_block(const at::Tensor & band,
+                                const std::string & out_name,
+                                const std::string & in_name) const
+{
+  // band: (*dyn, out_sub*out_base, in_sub*in_base), sites outer, base inner.
+  const auto oit = std::find(_output_names.begin(), _output_names.end(), out_name);
+  const auto iit = std::find(_input_names.begin(), _input_names.end(), in_name);
+  _assert(oit != _output_names.end() && iit != _input_names.end(),
+          "aoti::Model: unknown derivative pair '",
+          out_name,
+          ":",
+          in_name,
+          "'.");
+  const auto oi = static_cast<std::size_t>(oit - _output_names.begin());
+  const auto ii = static_cast<std::size_t>(iit - _input_names.begin());
+  const auto & out_sub = _output_sub_batch_shapes[oi];
+  const auto & out_base = _output_base_shapes[oi];
+  const auto & in_sub = _input_sub_batch_shapes[ii];
+  const auto & in_base = _input_base_shapes[ii];
+  const auto & form = _deriv_form.at(out_name).at(in_name);
+  const auto prod = [](const std::vector<int64_t> & v)
+  {
+    int64_t n = 1;
+    for (auto s : v)
+      n *= s;
+    return n;
+  };
+  std::vector<int64_t> dyn(band.sizes().begin(), band.sizes().end() - 2);
+  const auto nd = static_cast<int64_t>(dyn.size());
+  std::vector<int64_t> shape = dyn;
+  if (form == "paired")
+  {
+    // Each site's output against the same site's input.
+    const int64_t S = prod(in_sub);
+    std::vector<int64_t> grid = dyn;
+    grid.insert(grid.end(), {S, prod(out_base), S, prod(in_base)});
+    auto diag = band.reshape(grid).diagonal(0, nd, nd + 2).movedim(-1, nd);
+    shape.insert(shape.end(), in_sub.begin(), in_sub.end());
+    shape.insert(shape.end(), out_base.begin(), out_base.end());
+    shape.insert(shape.end(), in_base.begin(), in_base.end());
+    return diag.reshape(shape);
+  }
+  shape.insert(shape.end(), out_sub.begin(), out_sub.end());
+  shape.insert(shape.end(), out_base.begin(), out_base.end());
+  if (form == "full")
+    shape.insert(shape.end(), in_sub.begin(), in_sub.end());
+  shape.insert(shape.end(), in_base.begin(), in_base.end());
+  return band.reshape(shape);
 }
 
 std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
@@ -338,30 +388,14 @@ Model::Impl::jacobian(const std::map<std::string, at::Tensor> & inputs,
 
   auto [outputs, dstate] = _jacobian_dstate(inputs); // dstate[var]: (*B, var_folded, M_req)
 
-  std::map<std::string, std::size_t> out_idx, in_idx;
-  for (std::size_t i = 0; i < _output_names.size(); ++i)
-    out_idx[_output_names[i]] = i;
-  for (std::size_t j = 0; j < _input_names.size(); ++j)
-    in_idx[_input_names[j]] = j;
-
   // Slice each requested output's dstate block directly (no flat cat): take the
-  // input's column band [req_offset, +in_var) and reshape to
-  // (*B, *out_base, *in_base). Per-output slicing keeps offsets correct even
-  // with heterogeneous folded output sizes.
+  // input's column band and reshape it to the pair's public block.
   VariablePairJacobian jac;
   for (const auto & [o, i] : _derivatives)
   {
     const auto & blk = dstate.at(o); // (*B, out_folded, M_req)
-    std::vector<int64_t> batch(blk.sizes().begin(), blk.sizes().end() - 2);
-    const auto ji = in_idx.at(i);
-    auto col = blk.narrow(-1, _req_input_offset.at(i), _req_input_size.at(i));
-    std::vector<int64_t> block_shape = batch;
-    block_shape.insert(block_shape.end(),
-                       _output_base_shapes[out_idx.at(o)].begin(),
-                       _output_base_shapes[out_idx.at(o)].end());
-    block_shape.insert(
-        block_shape.end(), _input_base_shapes[ji].begin(), _input_base_shapes[ji].end());
-    jac[o][i] = col.reshape(block_shape).contiguous();
+    auto band = blk.narrow(-1, _req_input_offset.at(i), _req_input_size.at(i));
+    jac[o][i] = _public_pair_block(band, o, i).contiguous();
   }
 
   return {std::move(outputs), std::move(jac)};
@@ -590,13 +624,14 @@ Model::Impl::jvp(const std::map<std::string, at::Tensor> & inputs,
                          const at::TensorOptions & opts) -> at::Tensor
   {
     const auto ji = in_idx.at(iname);
-    const auto sz = _input_sizes[ji];
+    const auto sz = _req_input_size.at(iname);
     auto it = tangents.find(iname);
     if (it != tangents.end())
     {
-      _validate_input_shape(ji, it->second); // canonical (*B, *base) contract
-      auto shape = _batch_shape_of(ji, it->second);
-      shape.push_back(sz); // flatten trailing base axes into the var_size slot
+      _validate_input_shape(ji, it->second); // canonical (*B, *sub, *base) contract
+      // Fold a sub-batched tangent's sites into its columns, as in the carrier.
+      auto shape = _dynamic_batch_shape_of(ji, it->second);
+      shape.push_back(sz);
       return it->second.reshape(shape).to(_dtype).unsqueeze(-1).contiguous();
     }
     std::vector<int64_t> shape = batch;
@@ -618,6 +653,8 @@ Model::Impl::jvp(const std::map<std::string, at::Tensor> & inputs,
       acc = acc.defined() ? acc + contrib : contrib;
     }
     std::vector<int64_t> shape = batch;
+    const auto & osub = _output_sub_batch_shapes[out_idx.at(o)];
+    shape.insert(shape.end(), osub.begin(), osub.end());
     shape.insert(shape.end(),
                  _output_base_shapes[out_idx.at(o)].begin(),
                  _output_base_shapes[out_idx.at(o)].end());

@@ -248,12 +248,19 @@ def test_subbatch_implicit_global_global_compiles_and_matches_fd(tmp_path):
 
 def test_subbatch_implicit_per_grain_pair_errors_at_compile(tmp_path):
     """Requesting a derivative that touches a sub-batched (per-grain) implicit
-    variable fails fast at ``neml2-compile`` with a clear message (the per-pair
-    IFT consumer is plain-batch only)."""
+    variable of a BLOCK-structured group fails fast at ``neml2-compile`` with a
+    clear message. A DENSE group (the default) is supported: see
+    ``test_sub_batch_derivatives.py``."""
     from neml2.cli.aoti_export import export_model_for_aoti
 
+    src = _SUBBATCH_IMPLICIT_I.read_text().replace(
+        "residuals = 'r_per ; r_glob'",
+        "residuals = 'r_per ; r_glob'\n    structure = 'block dense'",
+    )
+    hit = tmp_path / "block.i"
+    hit.write_text(src)
     with pytest.raises(NotImplementedError, match="sub-batched"):
-        export_model_for_aoti(_SUBBATCH_IMPLICIT_I, "model", tmp_path / "a", derivatives=[":"])
+        export_model_for_aoti(hit, "model", tmp_path / "a", derivatives=[":"])
 
 
 def test_all_pairs_parity_with_eager_composed(tmp_path):

@@ -27,7 +27,7 @@ the model-backed :class:`ModelNonlinearSystem` concrete implementation."""
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, cast
 
 import torch
@@ -110,7 +110,9 @@ class LinearSystem:
         need_A: bool,
         need_B: bool,
         need_b: bool,
+        given_names: Sequence[str] | None = None,
     ) -> tuple[AssembledMatrix | None, AssembledMatrix | None, AssembledVector | None]:
+        """*given_names* restricts ``B`` to those givens' columns (default: all)."""
         raise NotImplementedError
 
     def A(self) -> AssembledMatrix:
@@ -128,8 +130,10 @@ class LinearSystem:
         assert A is not None and b is not None
         return A, b
 
-    def A_and_B(self) -> tuple[AssembledMatrix, AssembledMatrix]:
-        A, B, _ = self.assemble(True, True, False)
+    def A_and_B(
+        self, given_names: Sequence[str] | None = None
+    ) -> tuple[AssembledMatrix, AssembledMatrix]:
+        A, B, _ = self.assemble(True, True, False, given_names)
         assert A is not None and B is not None
         return A, B
 
@@ -689,12 +693,14 @@ class ModelNonlinearSystem(NonlinearSystem):
         need_A: bool,
         need_B: bool,
         need_b: bool,
+        given_names: Sequence[str] | None = None,
     ) -> tuple[AssembledMatrix | None, AssembledMatrix | None, AssembledVector | None]:
+        glayout = self.glayout if given_names is None else self.glayout.restricted(given_names)
         seed_names: list[str] = []
         if need_A:
             seed_names.extend(self.unknown_names)
         if need_B:
-            seed_names.extend(self.given_names)
+            seed_names.extend(glayout.vars())
         seed = self._identity_seed(seed_names) if seed_names else None
         result = self._call_model(v=seed)
 
@@ -725,11 +731,7 @@ class ModelNonlinearSystem(NonlinearSystem):
             if need_A
             else None
         )
-        B = (
-            self._assemble_matrix(self.blayout, self.glayout, v_out, like_by_row)
-            if need_B
-            else None
-        )
+        B = self._assemble_matrix(self.blayout, glayout, v_out, like_by_row) if need_B else None
         b = -AssembledVector.from_dict(self.blayout, residual_values) if need_b else None
         return A, B, b
 

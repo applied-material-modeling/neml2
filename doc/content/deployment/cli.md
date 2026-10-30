@@ -161,6 +161,7 @@ into a frozen graph for performance.
 Derivative graphs are opt-in: with no `-d` flag only `forward` is
 compiled and `jvp` / `jacobian` raise at runtime. Request the pairs you
 need with `-d OUT:IN` (e.g. `-d stress:strain`, or `-d :` for all).
+Wildcards skip sub-batched inputs ([](sub-batch-derivatives)).
 
 ### Boundary renaming
 

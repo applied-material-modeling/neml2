@@ -62,7 +62,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from collections.abc import Callable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from math import prod
 from pathlib import Path
@@ -71,8 +71,18 @@ from typing import TYPE_CHECKING, cast
 import torch
 from torch import nn
 
-from ..settings import DEFAULT_EXAMPLE_SHAPE, model_variable_names, resolve_example_shapes
+from ..settings import (
+    DEFAULT_EXAMPLE_SHAPE,
+    UNIFORM_KEY,
+    model_variable_names,
+    resolve_example_shapes,
+)
 from ..types import TensorWrapper
+from ..types._boundary import (
+    sub_batched_identity_seed,
+    sub_batched_pair_block,
+    zero_pair_block_shape,
+)
 
 if TYPE_CHECKING:
     from ..models.common import ImplicitUpdate
@@ -91,7 +101,7 @@ if TYPE_CHECKING:
 #: ``scripts/dep_manager.py`` (which keeps this literal, the C++ loader, and the
 #: docs in sync).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 15
+AOTI_META_SCHEMA_VERSION = 16
 
 
 def _var_size(type_cls) -> int:
@@ -1065,6 +1075,17 @@ class _ForwardJacobianModule(nn.Module):
         self.structural_idx = tuple(
             i for i, n in enumerate(self.input_names) if n not in self.promoted_qnames
         )
+        # Block form of each emitted pair, filled by the eager probe.
+        self.pair_forms: list[str] = []
+
+    def _per_site_seed(self, in_name: str, sub_ndim: int) -> bool:
+        # Per-site seed for a sub-batched input on a selected pair; other inputs
+        # keep the per-input seed.
+        if sub_ndim == 0:
+            return False
+        if self.selected_pairs is None:
+            return True
+        return any(i == in_name for _, i in self.selected_pairs)
 
     def forward(self, *inputs) -> tuple:
         typed_inputs = tuple(
@@ -1087,6 +1108,17 @@ class _ForwardJacobianModule(nn.Module):
             full_batch = tuple(ti.batch_shape)
             sub_ndim = ti.sub_batch_ndim
             dyn_ndim = len(full_batch) - sub_ndim
+            if self._per_site_seed(name, sub_ndim):
+                seed[name] = {
+                    name: sub_batched_identity_seed(
+                        self.in_types[i],
+                        (1,) * dyn_ndim,
+                        full_batch[dyn_ndim:],
+                        dtype=ti.dtype,
+                        device=ti.device,
+                    )
+                }
+                continue
             seed_batch = (1,) * dyn_ndim + full_batch[dyn_ndim:]
             seed[name] = {
                 name: _leading_k_identity_seed(
@@ -1103,7 +1135,10 @@ class _ForwardJacobianModule(nn.Module):
         first_out = typed_outputs[0]
         batch_shape = first_out.batch_shape
         pairs: list[torch.Tensor] = []
-        for out_name, out_type in zip(self.output_names, self.out_types, strict=True):
+        forms: list[str] = []
+        for out_name, out_type, typed_out in zip(
+            self.output_names, self.out_types, typed_outputs, strict=True
+        ):
             out_base = tuple(int(s) for s in out_type.BASE_SHAPE)
             for i in self.structural_idx:
                 in_name = self.input_names[i]
@@ -1115,6 +1150,24 @@ class _ForwardJacobianModule(nn.Module):
                 in_type = self.in_types[i]
                 in_base = tuple(int(s) for s in in_type.BASE_SHAPE)
                 block = v_out.get(out_name, {}).get(in_name)
+                ti = typed_inputs[i]
+                if self._per_site_seed(in_name, ti.sub_batch_ndim):
+                    in_sub = tuple(int(s) for s in ti.sub_batch_shape)
+                    if block is None:
+                        shape, form = zero_pair_block_shape(
+                            tuple(typed_out.dynamic_batch_shape),
+                            tuple(int(s) for s in typed_out.sub_batch_shape),
+                            out_base,
+                            in_sub,
+                            in_base,
+                        )
+                        pair = torch.zeros(shape, dtype=first_out.dtype, device=first_out.device)
+                    else:
+                        pair, form, _, _ = sub_batched_pair_block(block, in_type, in_sub)
+                    pairs.append(pair)
+                    forms.append(form)
+                    continue
+                forms.append("plain")
                 if block is None:
                     # Zero block at natural per-pair shape. No sub axes
                     # since the tangent didn't survive to this pair.
@@ -1128,6 +1181,7 @@ class _ForwardJacobianModule(nn.Module):
                 else:
                     pair = _leading_k_block_to_per_pair(block, in_type)
                 pairs.append(pair)
+        self.pair_forms = forms
         return (*typed_outputs, *pairs)
 
 
@@ -1387,6 +1441,7 @@ def _resolve_derivative_specs(
     output_names: Sequence[str],
     structural_input_names: Sequence[str],
     param_names: Sequence[str] = (),
+    sub_batched_inputs: Collection[str] = (),
 ) -> tuple[set[tuple[str, str]], set[tuple[str, str]]]:
     """Resolve ``-d/--derivative`` ``OUT:IN`` specs into master pairs.
 
@@ -1404,12 +1459,17 @@ def _resolve_derivative_specs(
     ``strain``; ``:`` is all structural pairs. An empty *specs* yields two empty
     sets -- no derivative graphs are compiled and ``jvp`` / ``jacobian`` raise.
 
+    A wildcard ``IN`` skips the *sub_batched_inputs*, which, like parameters,
+    are opt-in by name. The eager runtimes resolve their ``derivatives`` here too.
+
     Unknown output / input names raise ``ValueError`` listing both the structural
     inputs and the promoted parameters available.
     """
     outputs = list(output_names)
     inputs = list(structural_input_names)
     params = list(param_names)
+    sub_batched = set(sub_batched_inputs)
+    wildcard_inputs = [i for i in inputs if i not in sub_batched]
     struct_pairs: set[tuple[str, str]] = set()
     param_pairs: set[tuple[str, str]] = set()
     for spec in specs:
@@ -1425,7 +1485,8 @@ def _resolve_derivative_specs(
                 f"--derivative {spec!r}: unknown output {out_part!r}; available outputs: {outputs}."
             )
         if in_part == "":
-            sel_struct, sel_param = inputs, []  # all structural; params opt-in by name
+            # Params and sub-batched inputs are opt-in by name.
+            sel_struct, sel_param = wildcard_inputs, []
         elif in_part in inputs:
             sel_struct, sel_param = [in_part], []
         elif in_part in params:
@@ -1639,6 +1700,7 @@ def _compile_forward_segment(
         n_outs = len(jvp_module.output_names)
         probe_outputs = tuple(probe[:n_outs])
         probe_pairs = list(probe[n_outs:])
+        probe_forms = list(jvp_module.pair_forms)
         jvp_pkg_name = f"{pkg_basename}_jvp.pt2"
         if uses_ad:
             _compile_param_derivative_graph(
@@ -1653,20 +1715,34 @@ def _compile_forward_segment(
         # module emits trailing tensors: rows-outer (output_spec order),
         # cols-inner (structural inputs in input_spec order).
         structural_in_spec = _structural_inputs(model.input_spec, promoted_qnames)
-        shapes_local = shapes or {}
+        # Each input's sub-batch as traced (the example inputs resolve an
+        # undeclared unknown through its ``~1`` history).
+        traced_in_sub = {
+            n: tuple(int(x) for x in ex.sub_batch_shape)
+            for n, ex in zip(seg_spec, example_inputs, strict=True)
+            if isinstance(ex, TensorWrapper)
+        }
+        probe_out_sub = {
+            n: tuple(int(x) for x in o.sub_batch_shape)
+            for n, o in zip(jvp_module.output_names, probe_outputs, strict=True)
+        }
         jacobian_pairs = []
         k = 0
         for out_name, out_type in model.output_spec.items():
             out_base_ndim = len(out_type.BASE_SHAPE)
+            out_sub = probe_out_sub[out_name]
             for in_name, in_type in structural_in_spec.items():
                 if selected_pairs is not None and (out_name, in_name) not in selected_pairs:
                     continue
-                in_sub = shapes_local.get(in_name, ((), ()))[1]
+                in_sub = traced_in_sub.get(in_name, ())
                 in_base_ndim = len(in_type.BASE_SHAPE)
                 pair_t = probe_pairs[k]
-                # Pair shape is (*dyn, *sub, *out_base, *in_base); the leading
-                # dyn axes are size-1 iff this block is batch-independent.
-                dyn_ndim = max(pair_t.dim() - len(in_sub) - out_base_ndim - in_base_ndim, 0)
+                form = probe_forms[k]
+                # The leading dyn axes are size-1 iff the block is batch-independent.
+                trailing = len(in_sub) + out_base_ndim + in_base_ndim
+                if form == "full":
+                    trailing += len(out_sub)
+                dyn_ndim = max(pair_t.dim() - trailing, 0)
                 batch_independent = bool(dynamic_batch) and all(
                     int(pair_t.shape[d]) == 1 for d in range(dyn_ndim)
                 )
@@ -1677,6 +1753,8 @@ def _compile_forward_segment(
                         "out_base_shape": [int(s) for s in out_type.BASE_SHAPE],
                         "in_base_shape": [int(s) for s in in_type.BASE_SHAPE],
                         "in_sub_batch_shape": [int(s) for s in in_sub],
+                        "out_sub_batch_shape": list(out_sub),
+                        "form": form,
                         "batch_independent": batch_independent,
                     }
                 )
@@ -2159,9 +2237,22 @@ def _compile_implicit_segment(
     # `jacobian_given` supplies B = ∂r/∂g; `solve_ift` applies A^{-1}B and emits
     # per-(unknown, given) blocks. ParamIFT: `dr_dparam` emits the dense A + ∂r/∂θ
     # (strict + reverse-AD); `solve_param` does the dense sensitivity solve.
-    jacobian_given = JacobianGiven(system, param_names=param_tail).to(device)
+    # B gets columns only for the givens of a selected pair: a per-site history
+    # nobody differentiates against would otherwise add a column per site.
+    ift_givens = (
+        None
+        if selected_ift_pairs is None
+        else [g for g in system.given_names if any(p[1] == g for p in selected_ift_pairs)]
+    )
+    jacobian_given = JacobianGiven(system, param_names=param_tail, given_names=ift_givens).to(
+        device
+    )
     solve_ift = LinearSolveIFT(
-        system, in_sens_solver, selected_pairs=selected_ift_pairs, param_names=param_tail
+        system,
+        in_sens_solver,
+        selected_pairs=selected_ift_pairs,
+        param_names=param_tail,
+        given_names=ift_givens,
     ).to(device)
     dr_dparam = DrDParam(
         system, param_sens_solver, param_tail, selected_pairs=selected_param_pairs
@@ -2170,24 +2261,45 @@ def _compile_implicit_segment(
         system, param_sens_solver, param_tail, selected_pairs=selected_param_pairs
     ).to(device)
 
-    # Compile-time guard: the per-pair IFT consumer only supports plain-batch
-    # (DENSE) variable pairs. A requested pair touching a sub-batched (per-grain)
-    # unknown or given -- e.g. crystal plasticity's per-grain state -- is not yet
-    # supported; fail fast here with a clear message instead of at runtime. A
-    # global-output / global-input pair of the same model compiles fine.
+    # Sub-batched pairs need DENSE groups (sites folded into storage, as in the
+    # runtime carrier) and a direct input-sensitivity solve.
     if emit_ift:
+
+        def _structure_of(layout, name: str) -> str:
+            gi = next(i for i, group in enumerate(layout.groups) if name in group)
+            return layout.structure[gi]
+
         for u, g in solve_ift.emitted_pairs():
             u_sub = tuple(system.ulayout.sub_batch_shape(u))
             g_sub = tuple(system.glayout.sub_batch_shape(g))
-            if u_sub or g_sub:
-                bad = f"{u!r} (sub_batch {u_sub})" if u_sub else f"{g!r} (sub_batch {g_sub})"
+            if not (u_sub or g_sub):
+                continue
+            bad = f"{u!r} (sub_batch {u_sub})" if u_sub else f"{g!r} (sub_batch {g_sub})"
+            if "block" in (_structure_of(system.ulayout, u), _structure_of(system.glayout, g)):
                 raise NotImplementedError(
                     f"neml2-compile: derivative ({u}, {g}) of implicit model involves the "
-                    f"sub-batched variable {bad}; compiled Jacobian/JVP for sub-batched "
-                    f"(per-grain) implicit variables is not yet supported. Request only "
-                    f"non-sub-batched output:input pairs (e.g. a global-to-global "
-                    f"derivative), or use eager mode for the per-grain sensitivities."
+                    f"sub-batched variable {bad} in a BLOCK-structured equation-system group; "
+                    f"compiled input derivatives through a sub-batched solve support DENSE "
+                    f"groups only (the default `structure`). Use a DENSE structure, or "
+                    f"request only pairs that avoid the BLOCK group."
                 )
+            if in_sens_iterative:
+                raise NotImplementedError(
+                    f"neml2-compile: derivative ({u}, {g}) of implicit model involves the "
+                    f"sub-batched variable {bad}; the iterative input-sensitivity solver "
+                    f"supports plain-batch pairs only. Use a direct input_sensitivity_solver "
+                    f"for derivatives through a sub-batched solve."
+                )
+
+    # The parameter-sensitivity graph is plain-batch only (as on eager).
+    if emit_pift:
+        sub_u = [u for u in system.unknown_names if tuple(system.ulayout.sub_batch_shape(u))]
+        if sub_u:
+            raise NotImplementedError(
+                f"neml2-compile: parameter derivatives ({sorted(selected_param_pairs)}) through "
+                f"an implicit model with sub-batched unknowns {sub_u} are not supported; "
+                f"parameter derivatives are plain-batch only."
+            )
 
     # Build per-variable example inputs at the user-declared natural
     # shapes first, then pack them into per-group tensors via
@@ -2335,8 +2447,8 @@ def _compile_implicit_segment(
     # IFT block is always batch-dependent (it is a function of the converged
     # solution + the residual Jacobians), so ``batch_independent`` is False -- no
     # eager probe is run (the IFT solve would be singular at the zero example
-    # point anyway). The sub-batch (BLOCK) guard above guarantees every emitted
-    # pair is plain-batch, so ``in_sub_batch_shape`` is empty.
+    # point anyway). Sub-batched (DENSE) blocks are ``"full"``, sites folded into
+    # storage.
     ift_jacobian_pairs: list[dict] | None = None
     if emit_ift:
         # Flat row (unknown) / col (given) offsets into the -A^{-1}B sensitivity
@@ -2345,14 +2457,16 @@ def _compile_implicit_segment(
         # ulayout flat; col order = glayout flat (= cat of the per-given-group B
         # blocks the C++ builds).
         u_off = _flat_var_offsets(system.ulayout)
-        g_off = _flat_var_offsets(system.glayout)
+        g_off = _flat_var_offsets(jacobian_given.b_layout)
         ift_jacobian_pairs = [
             {
                 "out_var": u,
                 "in_var": g,
                 "out_base_shape": [int(s) for s in system.ulayout.specs[u].BASE_SHAPE],
                 "in_base_shape": [int(s) for s in system.glayout.specs[g].BASE_SHAPE],
-                "in_sub_batch_shape": [],
+                "in_sub_batch_shape": [int(s) for s in system.glayout.sub_batch_shape(g)],
+                "out_sub_batch_shape": [int(s) for s in system.ulayout.sub_batch_shape(u)],
+                "form": "full",
                 "batch_independent": False,
                 "row_offset": u_off[u],
                 "col_offset": g_off[g],
@@ -2911,9 +3025,13 @@ def _prepare_export(
     # declaration exists for. Resolution still runs over ``input_spec`` -- the
     # unknown's own shape reaches the tracer through ``_seed_implicit_subbatch``
     # via its ``~1`` lag.
-    resolved_shapes = resolve_example_shapes(
-        model.input_spec, declared, model_variable_names(model)
-    )
+    all_vars = model_variable_names(model)
+    resolved_shapes = resolve_example_shapes(model.input_spec, declared, all_vars)
+    # A produced variable declared by name (e.g. a per-site given computed before
+    # a solve) sizes its segment boundary too. A uniform declaration does not.
+    produced = [n for n in declared if n != UNIFORM_KEY and n not in resolved_shapes]
+    if produced:
+        resolved_shapes.update(resolve_example_shapes(produced, declared, all_vars))
 
     # Validate / resolve promoted names against the live model BEFORE any
     # ComposedModel wrapping. Snapshot the initial values now too.
@@ -2937,6 +3055,9 @@ def _prepare_export(
         list(model.output_spec),
         structural_input_names,
         param_names=sorted(promoted_qnames),
+        sub_batched_inputs=[
+            n for n in structural_input_names if resolved_shapes.get(n, ((), ()))[1]
+        ],
     )
 
     # Validate + normalize boundary renames against the post-promotion namespaces.
@@ -3732,6 +3853,49 @@ def plan_output_sub_batch_shapes(
     return _master_output_sub_batch_shapes(prepared.model.output_spec, seg_metas)
 
 
+def _master_pair_forms(
+    pairs: Sequence[tuple[str, str]],
+    input_sub_batch_shapes: Mapping[str, Sequence[int]],
+    output_sub_batch_shapes: Mapping[str, Sequence[int]],
+    seg_metas: list[dict],
+) -> dict[tuple[str, str], str]:
+    """End-to-end block form of each master ``(out, in)`` pair.
+
+    A sub-batched input stays ``"paired"`` only through paired forward pairs; a
+    solve or a ``"full"`` pair makes it ``"full"``. Unreached pairs follow
+    :func:`~neml2.types._boundary.zero_pair_block_shape`.
+    """
+    forms: dict[tuple[str, str], str] = {}
+    for o, i in pairs:
+        in_sub = tuple(input_sub_batch_shapes.get(i, ()))
+        if not in_sub:
+            forms[(o, i)] = "plain"
+            continue
+        state: dict[str, str] = {i: "paired"}
+        for seg in seg_metas:
+            reached: dict[str, str] = {}
+            if seg.get("kind") == "implicit":
+                if any(gv["name"] in state for gv in seg.get("givens", [])):
+                    for uv in seg.get("unknowns", []):
+                        reached[uv["name"]] = "full"
+            else:
+                for pr in seg.get("jacobian_pairs") or []:
+                    src = state.get(pr["in_var"])
+                    if src is None:
+                        continue
+                    f = "paired" if src == "paired" and pr.get("form") == "paired" else "full"
+                    if reached.get(pr["out_var"]) != "full":
+                        reached[pr["out_var"]] = f
+            for name, f in reached.items():
+                state[name] = "full" if state.get(name) == "full" else f
+        if o in state and o != i:
+            forms[(o, i)] = state[o]
+        else:
+            out_sub = tuple(output_sub_batch_shapes.get(o, ()))
+            forms[(o, i)] = "paired" if out_sub == in_sub else "full"
+    return forms
+
+
 def _build_meta(
     prepared: _PreparedExport,
     seg_metas: list[dict],
@@ -3763,12 +3927,13 @@ def _build_meta(
     # Master (out, in) derivative pairs, in deterministic (output, input) order.
     out_order = {n: k for k, n in enumerate(model.output_spec)}
     in_order = {n: k for k, n in enumerate(prepared.structural_input_names)}
-    meta["derivatives"] = [
-        [o, i]
-        for (o, i) in sorted(
-            prepared.master_pairs, key=lambda p: (out_order.get(p[0], 0), in_order.get(p[1], 0))
-        )
-    ]
+    ordered_pairs = sorted(
+        prepared.master_pairs, key=lambda p: (out_order.get(p[0], 0), in_order.get(p[1], 0))
+    )
+    meta["derivatives"] = [[o, i] for (o, i) in ordered_pairs]
+    # End-to-end block form of each pair, aligned with "derivatives".
+    forms = _master_pair_forms(ordered_pairs, in_sb, out_sb, seg_metas)
+    meta["derivative_forms"] = [forms[p] for p in ordered_pairs]
     # Master (out, param) parameter-derivative pairs, in (output, param) order.
     meta["parameter_derivatives"] = [
         [o, p]
