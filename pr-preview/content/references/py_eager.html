@@ -470,7 +470,8 @@ tensors. <code class="docutils literal notranslate"><span class="pre">jvp</span>
 type; <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> returns the nested <code class="docutils literal notranslate"><span class="pre">{output:</span> <span class="pre">{input:</span> <span class="pre">block}}</span></code> map, each block a
 dynamic-base <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(*batch,</span> <span class="pre">*sub_batch,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code>.
 Sub-batch models (e.g. crystal plasticity) are supported — the per-site axis
-stays in the block’s sub-batch region. The reverse-mode parameter derivatives
+stays in the block’s sub-batch region. <code class="docutils literal notranslate"><span class="pre">jacobian(inputs,</span> <span class="pre">derivatives=[...])</span></code>
+takes <code class="docutils literal notranslate"><span class="pre">-d</span></code> specs (<a class="reference internal" href="sub_batch.html#sub-batch-derivatives"><span class="std std-ref">Derivatives</span></a>). The reverse-mode parameter derivatives
 <span class="math notranslate nohighlight">\(\partial(\text{output})/\partial(\text{parameter})\)</span> are a separate surface:
 <code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code>.</p>
 <p>Two lower-level paths remain for when you need them:</p>

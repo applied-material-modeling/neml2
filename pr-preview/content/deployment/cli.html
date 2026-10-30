@@ -846,7 +846,8 @@ into a frozen graph for performance.</p>
 </div>
 <p>Derivative graphs are opt-in: with no <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag only <code class="docutils literal notranslate"><span class="pre">forward</span></code> is
 compiled and <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> raise at runtime. Request the pairs you
-need with <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:IN</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">stress:strain</span></code>, or <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">:</span></code> for all).</p>
+need with <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:IN</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">stress:strain</span></code>, or <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">:</span></code> for all).
+Wildcards skip sub-batched inputs (<a class="reference internal" href="../references/sub_batch.html#sub-batch-derivatives"><span class="std std-ref">Derivatives</span></a>).</p>
 <section id="boundary-renaming">
 <h3>Boundary renaming<a class="headerlink" href="#boundary-renaming" title="Link to this heading">#</a></h3>
 <p>A downstream consumer may need the compiled model’s variables to carry its own

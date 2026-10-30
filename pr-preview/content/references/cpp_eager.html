@@ -580,17 +580,17 @@ boundary works in variables, not flattened group vectors.</p>
 </span><span data-line="7"><span class="c1">// (*B, *out_sub_batch, *out_base, *in_base) -- e.g. SR2-&gt;SR2 -&gt; (*B, 6, 6);</span>
 </span><span data-line="8"><span class="c1">// Scalar-&gt;SR2 -&gt; (*B, 6).</span>
 </span><span data-line="9"><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">out2</span><span class="p">,</span><span class="w"> </span><span class="n">J</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">);</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="c1">// Select pairs with -d specs; a sub-batched input is included only when named.</span>
+</span><span data-line="12"><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">out3</span><span class="p">,</span><span class="w"> </span><span class="n">J3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">"stress:"</span><span class="p">,</span><span class="w"> </span><span class="s">"stress:strain_per_grain"</span><span class="p">});</span>
 </span></pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><strong>Derivatives are with respect to plain-batch inputs.</strong> A sub-batched input
-(e.g. per-bin history <code class="docutils literal notranslate"><span class="pre">number_density~1</span></code>) is held fixed: <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> returns no
-column for it, as an AOTI artifact returns only the pairs it was compiled with,
-and <code class="docutils literal notranslate"><span class="pre">jvp</span></code> rejects a tangent for it. Rows for sub-batched outputs carry the
-output’s sub-batch axes. The parameter derivatives (<code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> /
-<code class="docutils literal notranslate"><span class="pre">param_vjp</span></code>) are plain-batch only and reject a call that carries a sub-batched
-variable.</p>
+<p><strong>Sub-batched inputs are opt-in.</strong> By default <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> has no column for a
+sub-batched input (e.g. <code class="docutils literal notranslate"><span class="pre">number_density~1</span></code>); name it in <code class="docutils literal notranslate"><span class="pre">derivatives</span></code>
+(<a class="reference internal" href="sub_batch.html#sub-batch-derivatives"><span class="std std-ref">Derivatives</span></a>). <code class="docutils literal notranslate"><span class="pre">jvp</span></code> rejects a sub-batched tangent, and the
+parameter derivatives are plain-batch only.</p>
 </div>
 </section>
 <section id="errors">

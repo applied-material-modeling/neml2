@@ -407,6 +407,7 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.aoti.Model"><code class="docutils literal notranslate"><span class="pre">Model</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.aoti.Model.derivative_forms"><code class="docutils literal notranslate"><span class="pre">Model.derivative_forms</span></code></a></li>
 <li><a class="reference internal" href="#neml2.aoti.Model.device"><code class="docutils literal notranslate"><span class="pre">Model.device</span></code></a></li>
 <li><a class="reference internal" href="#neml2.aoti.Model.dtype"><code class="docutils literal notranslate"><span class="pre">Model.dtype</span></code></a></li>
 <li><a class="reference internal" href="#neml2.aoti.Model.forward"><code class="docutils literal notranslate"><span class="pre">Model.forward()</span></code></a></li>
@@ -724,6 +725,17 @@ runtime <code class="docutils literal notranslate"><span class="pre">to()</span>
 compile time are reachable through <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> and may be
 mutated in-place (e.g. <code class="docutils literal notranslate"><span class="pre">model.named_parameters()['E'].fill_(210000.0)</span></code>).
 Everything else is baked into the graph as a constant.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="neml2.aoti.Model.derivative_forms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">derivative_forms</span></span><a class="headerlink" href="#neml2.aoti.Model.derivative_forms" title="Link to this definition">#</a></dt>
+<dd><p>‘plain’, ‘paired’ or ‘full’ (see the sub-batch reference).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Block layout of each compiled derivative pair, keyed [output][input]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="neml2.aoti.Model.device">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><a class="headerlink" href="#neml2.aoti.Model.device" title="Link to this definition">#</a></dt>

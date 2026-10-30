@@ -397,6 +397,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#what-the-declaration-is-for">What the declaration is for</a></li>
 <li><a class="reference internal" href="#consistency">Consistency</a></li>
 <li><a class="reference internal" href="#where-each-route-reads-it">Where each route reads it</a></li>
+<li><a class="reference internal" href="#derivatives">Derivatives</a></li>
 <li><a class="reference internal" href="#limits">Limits</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
@@ -570,13 +571,49 @@ every input by name, so it never has to invent a value and has nothing to size.
 A <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code> block in a <code class="docutils literal notranslate"><span class="pre">tests/models/</span></code> input is read but changes nothing
 there.</p>
 </section>
+<section id="derivatives">
+<span id="sub-batch-derivatives"></span><h2>Derivatives<a class="headerlink" href="#derivatives" title="Link to this heading">#</a></h2>
+<p>Derivatives pass through sub-batched variables (an implicit solve’s unknowns, a
+per-site given, a sum over sites) on every route. A derivative <em>with respect to</em>
+a sub-batched input has one column per site, so it is opt-in: wildcards
+(<code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">:</span></code>, <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:</span></code>, the eager <code class="docutils literal notranslate"><span class="pre">derivatives</span></code> argument) select plain inputs only;
+name the input to include it (<code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">y:z</span></code>). Every route lays the blocks out alike:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Form</p></th>
+<th class="head"><p>Input</p></th>
+<th class="head"><p>Block</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">plain</span></code></p></td>
+<td><p>plain-batch</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_sub,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">paired</span></code></p></td>
+<td><p>sub-batched, site-local</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*sub,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">full</span></code></p></td>
+<td><p>sub-batched, sites coupled (a sum, a solve)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_sub,</span> <span class="pre">*out_base,</span> <span class="pre">*in_sub,</span> <span class="pre">*in_base)</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The form is structural: any derivative through an implicit solve is <code class="docutils literal notranslate"><span class="pre">full</span></code>.
+Compiled runtimes report it through <code class="docutils literal notranslate"><span class="pre">derivative_forms()</span></code>. The eager embed bridge
+(<code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>) takes <code class="docutils literal notranslate"><span class="pre">jvp</span></code> tangents for plain-batch inputs only.</p>
+</section>
 <section id="limits">
 <h2>Limits<a class="headerlink" href="#limits" title="Link to this heading">#</a></h2>
 <p>The extent is a declaration, not an inference: it is not derived from the
 crystal geometry, the bin count, or any other data object in the file. State it
 explicitly.</p>
-<p><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> takes derivatives with respect to plain-batch inputs only, and its
-parameter derivatives are plain-batch only. See <a class="reference internal" href="cpp_eager.html#model-eager-cpp"><span class="std std-ref">cpp-eager — eager evaluation from C++</span></a>.</p>
+<p>Through an implicit solve, sub-batched derivatives need the DENSE structure (the
+default); BLOCK groups, an iterative <code class="docutils literal notranslate"><span class="pre">input_sensitivity_solver</span></code> and parameter
+derivatives are plain-batch only.</p>
 <p>The compiled artifact records the extent of every input and output in
 <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>, and the C++ model classes report them through
 <code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes()</span></code> / <code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code>. <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> reports

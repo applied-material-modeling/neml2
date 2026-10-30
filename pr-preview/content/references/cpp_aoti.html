@@ -454,10 +454,11 @@ and reads solver configuration directly from <code class="docutils literal notra
 </span><span data-line="8"><span class="c1">// (`neml2-compile -d OUT:IN`); they throw a FatalError if none were requested.</span>
 </span><span data-line="9"><span class="c1">// A batch-independent block (constant stiffness) is returned unbatched.</span>
 </span><span data-line="10"><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">outs</span><span class="p">,</span><span class="w"> </span><span class="n">J</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">jacobian</span><span class="p">({{</span><span class="s">"strain"</span><span class="p">,</span><span class="w"> </span><span class="n">strain_tensor</span><span class="p">}});</span>
-</span><span data-line="11">
-</span><span data-line="12"><span class="c1">// Promoted parameters are mutable in place. Names are fully qualified: a bare</span>
-</span><span data-line="13"><span class="c1">// leaf is wrapped at compile time, so `--model elasticity` exposes `elasticity.E`.</span>
-</span><span data-line="14"><span class="n">model</span><span class="p">.</span><span class="n">named_parameters</span><span class="p">().</span><span class="n">at</span><span class="p">(</span><span class="s">"elasticity.E"</span><span class="p">).</span><span class="n">fill_</span><span class="p">(</span><span class="mf">210000.0</span><span class="p">);</span>
+</span><span data-line="11"><span class="c1">// derivative_forms() gives each pair's block layout (see the sub-batch reference).</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="c1">// Promoted parameters are mutable in place. Names are fully qualified: a bare</span>
+</span><span data-line="14"><span class="c1">// leaf is wrapped at compile time, so `--model elasticity` exposes `elasticity.E`.</span>
+</span><span data-line="15"><span class="n">model</span><span class="p">.</span><span class="n">named_parameters</span><span class="p">().</span><span class="n">at</span><span class="p">(</span><span class="s">"elasticity.E"</span><span class="p">).</span><span class="n">fill_</span><span class="p">(</span><span class="mf">210000.0</span><span class="p">);</span>
 </span></pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">load_model</span></code> returns a <code class="docutils literal notranslate"><span class="pre">Model</span></code>-shaped handle. Passing an optional

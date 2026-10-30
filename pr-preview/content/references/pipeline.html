@@ -551,7 +551,8 @@ shape is only knowable from the example inputs.</p>
 shape — <code class="docutils literal notranslate"><span class="pre">--example-batch-shape</span></code> on the CLI, then
 <code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code> in the HIT file, then a small
 built-in default that’s correct for the bulk-constitutive case — and
-expands it over the model’s input spec. It then initializes every
+expands it over the model’s input spec and any produced variable declared
+by name. It then initializes every
 nested implicit equation system with zero-tensor stand-ins of the
 resolved shape, <em>without</em> running the Newton solver, so each
 system’s per-variable <code class="docutils literal notranslate"><span class="pre">sub_batch_shape</span></code> is committed before the
@@ -633,7 +634,8 @@ requested with <code class="docutils literal notranslate"><span class="pre">-d/-
 always lower a value graph and, when a requested pair runs through them, a
 per-variable-pair <code class="docutils literal notranslate"><span class="pre">jvp</span></code> graph emitting just the on-path blocks — a block
 that does not depend on the dynamic batch is traced, and returned,
-unbatched. <strong>Implicit segments</strong> lower a Newton residual plus the
+unbatched. A sub-batched input on a requested pair gets one direction per
+site; each block records its form (<a class="reference internal" href="sub_batch.html#sub-batch-derivatives"><span class="std std-ref">Derivatives</span></a>). <strong>Implicit segments</strong> lower a Newton residual plus the
 operators the linear solve needs (the solve is <strong>un-baked</strong> from the
 operator — the C++ runtime chains them per Newton iteration), and
 additionally an implicit-function-theorem sensitivity graph only when a

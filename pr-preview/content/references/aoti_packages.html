@@ -463,22 +463,18 @@ graph is compiled and the runtime <code class="docutils literal notranslate"><sp
 <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:IN</span></code> requests the Jacobian/JVP for that output-input pair; omit a
 side to select all on it (<code class="docutils literal notranslate"><span class="pre">stress:</span></code> = every input of <code class="docutils literal notranslate"><span class="pre">stress</span></code>, <code class="docutils literal notranslate"><span class="pre">:strain</span></code>
 = every output w.r.t. <code class="docutils literal notranslate"><span class="pre">strain</span></code>, <code class="docutils literal notranslate"><span class="pre">:</span></code> = all pairs). The requested master
-pairs are recorded in the metadata’s top-level <code class="docutils literal notranslate"><span class="pre">derivatives</span></code> array.</p>
+pairs are recorded in the metadata’s top-level <code class="docutils literal notranslate"><span class="pre">derivatives</span></code> array, their block
+forms in <code class="docutils literal notranslate"><span class="pre">derivative_forms</span></code>. Wildcards skip sub-batched inputs; name one to
+include it (<a class="reference internal" href="sub_batch.html#sub-batch-derivatives"><span class="std std-ref">Derivatives</span></a>).</p>
 <p>Each derivative is one per-variable-pair block. A block that does not
 depend on the dynamic batch (e.g. a constant stiffness tensor) is returned
 <strong>unbatched</strong> at its natural <code class="docutils literal notranslate"><span class="pre">(*out_base,</span> <span class="pre">*in_base)</span></code> shape.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For an <strong>implicit (Newton-solve) model with sub-batched (per-grain) state</strong>
-— e.g. crystal plasticity — a derivative of a <strong>non-sub-batched output
-w.r.t. a non-sub-batched input</strong> (e.g. a global stress w.r.t. a global
-strain) is supported: the IFT solve handles the internal per-grain coupling
-and the returned block has no grain axis. A derivative that <em>touches</em> a
-per-grain variable (a sub-batched output or input) is not yet implemented
-and fails fast at <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> with a clear “… involves the sub-batched
-variable …” error; use eager mode (<code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code>) for per-grain
-sensitivities. Forward evaluation of such models, and all plain-batch /
-forward derivatives, are fully supported.</p>
+<p><strong>Sub-batched variables.</strong> Block forms and selection: <a class="reference internal" href="sub_batch.html#sub-batch-derivatives"><span class="std std-ref">Derivatives</span></a>.
+Through a sub-batched implicit solve, a BLOCK-structured group, an iterative
+<code class="docutils literal notranslate"><span class="pre">input_sensitivity_solver</span></code> and a parameter derivative fail fast at
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -678,7 +674,7 @@ not mirrored field-by-field here. The metadata carries an integer
 refuses any non-matching version with a clear “regenerate via
 <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>” message; the only remediation is a re-compile.</p>
 <!-- dependencies: aoti.schema_version -->
-<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">15</span></code>.</p>
+<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">16</span></code>.</p>
 </section>
 <section id="segment-kinds">
 <h3>Segment kinds<a class="headerlink" href="#segment-kinds" title="Link to this heading">#</a></h3>
