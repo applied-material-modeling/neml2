@@ -185,5 +185,10 @@ def _reverse_blocks(
             i_base = tuple(int(s) for s in model.input_spec[i].BASE_SHAPE)
             # (*batch, n_out, *in_base) -> (*batch, *out_base, *in_base)
             stacked = torch.stack(cols[i], dim=len(batch))
-            blocks[(o_name, i)] = stacked.reshape(*batch, *o_base, *i_base).contiguous()
+            # NB: pass shape as a single list, not unpacked positional args --
+            # when all three shape lists are empty (the 0-D scalar-to-scalar
+            # case that a transient driver's step-0 history state hits),
+            # ``reshape()`` with zero args errors. ``reshape([])`` correctly
+            # collapses to a 0-D tensor.
+            blocks[(o_name, i)] = stacked.reshape([*batch, *o_base, *i_base]).contiguous()
     return tuple(detached), blocks
