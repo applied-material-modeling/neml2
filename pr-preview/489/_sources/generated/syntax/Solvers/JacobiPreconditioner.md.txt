@@ -1,8 +1,0 @@
-(solvers-JacobiPreconditioner)=
-# JacobiPreconditioner
-
-**Source:** `solvers/preconditioners.py`
-
-Point-Jacobi: ``M = diag(A)`` (elementwise scaling).
-
-*This type has no documented options.*
