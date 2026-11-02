@@ -1,0 +1,41 @@
+(models-BrooksCoreyCapillaryPressure)=
+# BrooksCoreyCapillaryPressure
+
+**Source:** `models/porous_flow/BrooksCoreyCapillaryPressure.py`
+
+Define the Brooks-Corey correlation for capillary pressure
+$P_c = P_t S_e^{-\frac{1}{p}}$. Here $S_e$ is the effective
+saturation, $P_t$ is the threshold pressure at zero saturation, and
+$p$ is the shape parameter. Optionally, a logarithmic extension is
+applied below a user-supplied transition saturation $S_p$ to keep the
+pressure finite as $S_e \to 0$.
+
+## Inputs
+
+`effective_saturation` &mdash; `input` &middot; `Scalar` &middot; **required**
+: The effective saturation
+
+
+## Outputs
+
+`capillary_pressure` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Capillary pressure.
+
+
+## Parameters
+
+`threshold_pressure` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The threshold entry pressure
+
+`exponent` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The shape parameter p
+
+
+## Other options
+
+`log_extension` &mdash; `bool` &middot; default `False`
+: Whether to apply logarithmic extension
+
+`transition_saturation` &mdash; `float` &middot; default `0.0`
+: The transition value of the effective saturation below which to apply the logarithmic extension
+
