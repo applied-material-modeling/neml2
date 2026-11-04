@@ -92,6 +92,8 @@ class ViscousDamageUpdate(Model, ABC):
         # d < d_old). With a strict gt(d_trial, d_old), d_trial == d_old -- the state
         # at the start of every rate-independent step -- drops the softening tangent
         # and Newton converges only linearly.
+        # This switch affects only the derivatives (tangent); damage values are
+        # unchanged, so existing regression golds remain valid.
         frozen = lt(d_trial, d_old)
         d_target = where(frozen, d_old, d_trial)
         alpha, dalpha_dt = self._coefficient(t - t_old, eta, gt(eta, 0.0), one, zero)

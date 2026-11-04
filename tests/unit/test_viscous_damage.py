@@ -105,9 +105,11 @@ def test_zero_viscosity_equal_damage_keeps_loading_tangent():
         ],
         additional_outputs=["damage"],
     )
-    old_damage = (
-        1.0 * (_scalar(0.5) - _scalar(0.1)) / (_scalar(0.5) * (_scalar(1.0) - _scalar(0.1)))
-    )
+    s = _scalar(0.5).data
+    delta_c = _scalar(0.1).data
+    delta_f = _scalar(1.0).data
+    expected_damage = delta_f * (s - delta_c) / (s * (delta_f - delta_c))
+    old_damage = Scalar(expected_damage.clone())
     inputs = {
         "effective_separation": _scalar(0.5),
         "damage~1": old_damage,
@@ -123,10 +125,6 @@ def test_zero_viscosity_equal_damage_keeps_loading_tangent():
     ddamage_ds = derivatives["damage"].data
     dtraction_ds = derivatives["traction"].data[0]
 
-    s = inputs["effective_separation"].data
-    delta_c = _scalar(0.1).data
-    delta_f = _scalar(1.0).data
-    expected_damage = delta_f * (s - delta_c) / (s * (delta_f - delta_c))
     expected_ddamage_ds = delta_f * delta_c / (s.square() * (delta_f - delta_c))
     expected_traction = (1.0 - expected_damage) * s
     expected_dtraction_ds = 1.0 - expected_damage - s * expected_ddamage_ds
