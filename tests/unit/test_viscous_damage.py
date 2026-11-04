@@ -34,8 +34,11 @@ import pytest
 import torch
 
 from neml2.factory import _NativeInputFile
+from neml2.models.common import ComposedModel
 from neml2.models.solid_mechanics.traction_separation_law import (
     BackwardEulerViscousDamage,
+    BilinearDamage,
+    BilinearTraction,
     ExponentialViscousDamage,
 )
 from neml2.types import Scalar
@@ -88,6 +91,61 @@ def test_zero_dt_freezes_viscous_damage(model_type):
 def test_negative_viscosity_is_rejected(model_type):
     with pytest.raises(ValueError, match="viscosity must be non-negative"):
         model_type(viscosity="-1.0")
+
+
+def test_zero_viscosity_equal_damage_keeps_loading_tangent():
+    model = ComposedModel(
+        [
+            BilinearDamage(critical_separation="0.1", full_separation="1.0"),
+            BackwardEulerViscousDamage(viscosity="0.0"),
+            BilinearTraction(
+                penalty_stiffness="1.0",
+                normal_separation="effective_separation",
+            ),
+        ],
+        additional_outputs=["damage"],
+    )
+    old_damage = (
+        1.0 * (_scalar(0.5) - _scalar(0.1)) / (_scalar(0.5) * (_scalar(1.0) - _scalar(0.1)))
+    )
+    inputs = {
+        "effective_separation": _scalar(0.5),
+        "damage~1": old_damage,
+        "t": _scalar(1.0),
+        "t~1": _scalar(0.0),
+        "tangential_separation_1": _scalar(0.0),
+        "tangential_separation_2": _scalar(0.0),
+    }
+
+    outputs, derivatives = model.jvp(inputs, {"effective_separation": _scalar(1.0)})
+    damage = outputs["damage"].data
+    traction = outputs["traction"].data[0]
+    ddamage_ds = derivatives["damage"].data
+    dtraction_ds = derivatives["traction"].data[0]
+
+    s = inputs["effective_separation"].data
+    delta_c = _scalar(0.1).data
+    delta_f = _scalar(1.0).data
+    expected_damage = delta_f * (s - delta_c) / (s * (delta_f - delta_c))
+    expected_ddamage_ds = delta_f * delta_c / (s.square() * (delta_f - delta_c))
+    expected_traction = (1.0 - expected_damage) * s
+    expected_dtraction_ds = 1.0 - expected_damage - s * expected_ddamage_ds
+
+    torch.testing.assert_close(damage, expected_damage)
+    torch.testing.assert_close(traction, expected_traction)
+    torch.testing.assert_close(
+        torch.stack((ddamage_ds, dtraction_ds)),
+        torch.stack((expected_ddamage_ds, expected_dtraction_ds)),
+    )
+
+    h = 1.0e-7
+    perturbed = dict(inputs)
+    perturbed["effective_separation"] = _scalar(s.item() + h)
+    perturbed_outputs = model.jvp(perturbed, {})[0]
+    fd_ddamage_ds = (perturbed_outputs["damage"].data - damage) / h
+    fd_dtraction_ds = (perturbed_outputs["traction"].data[0] - traction) / h
+    torch.testing.assert_close(ddamage_ds, fd_ddamage_ds, rtol=1.0e-6, atol=1.0e-8)
+    torch.testing.assert_close(dtraction_ds, fd_dtraction_ds, rtol=1.0e-6, atol=1.0e-8)
 
 
 def test_negative_viscosity_is_rejected_through_hit():

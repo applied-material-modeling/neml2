@@ -29,7 +29,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from ....schema import HitSchema, derived_input, input, output, parameter
-from ....types import Scalar, gt, where
+from ....types import Scalar, gt, lt, where
 from ...chain_rule import ChainRuleDict
 from ...model import Model
 
@@ -88,8 +88,11 @@ class ViscousDamageUpdate(Model, ABC):
         eta = self._get_param("eta", promoted_params, Scalar)
         one = Scalar.from_value(1.0, like=d_trial)
         zero = Scalar.from_value(0.0, like=d_trial)
-        advance = gt(d_trial, d_old)
-        d_target = where(advance, d_trial, d_old)
+        # Frozen only when the trial damage falls below the old value (as MOOSE: d < d_old). With a strict
+        # gt(d_trial, d_old), d_trial == d_old -- the state at the start of every rate-independent step --
+        # drops the softening tangent and Newton converges only linearly.
+        frozen = lt(d_trial, d_old)
+        d_target = where(frozen, d_old, d_trial)
         alpha, dalpha_dt = self._coefficient(t - t_old, eta, gt(eta, 0.0), one, zero)
         d = d_old + alpha * (d_target - d_old)
         if v is None:
@@ -98,10 +101,10 @@ class ViscousDamageUpdate(Model, ABC):
         gap = d_target - d_old
 
         def trial_action(V: Scalar) -> Scalar:
-            return alpha * where(advance, V, Scalar.zeros_like(V))
+            return alpha * where(frozen, Scalar.zeros_like(V), V)
 
         def old_action(V: Scalar) -> Scalar:
-            return (one - alpha) * V + alpha * where(advance, Scalar.zeros_like(V), V)
+            return (one - alpha) * V + alpha * where(frozen, V, Scalar.zeros_like(V))
 
         def time_action(V: Scalar) -> Scalar:
             return dalpha_dt * gap * V
