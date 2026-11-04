@@ -88,9 +88,10 @@ class ViscousDamageUpdate(Model, ABC):
         eta = self._get_param("eta", promoted_params, Scalar)
         one = Scalar.from_value(1.0, like=d_trial)
         zero = Scalar.from_value(0.0, like=d_trial)
-        # Frozen only when the trial damage falls below the old value (as MOOSE: d < d_old). With a strict
-        # gt(d_trial, d_old), d_trial == d_old -- the state at the start of every rate-independent step --
-        # drops the softening tangent and Newton converges only linearly.
+        # Frozen only when the trial damage falls below the old value (as MOOSE:
+        # d < d_old). With a strict gt(d_trial, d_old), d_trial == d_old -- the state
+        # at the start of every rate-independent step -- drops the softening tangent
+        # and Newton converges only linearly.
         frozen = lt(d_trial, d_old)
         d_target = where(frozen, d_old, d_trial)
         alpha, dalpha_dt = self._coefficient(t - t_old, eta, gt(eta, 0.0), one, zero)
