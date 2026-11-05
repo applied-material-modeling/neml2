@@ -819,51 +819,28 @@ def mean(view: DynamicBatchView[_TW] | SubBatchView[_TW], dim: int = 0) -> _TW:
     ``sub_batch_ndim`` by 1. Returns the same wrapper type as the view's
     underlying wrapper.
 
-    Like :func:`sum`, materialises any ``"broadcast"`` sub-batch axis
-    before reducing so the per-site mean counts every site.
+    Implemented as :func:`sum` over the axis divided by the axis's logical
+    extent, so all sub-batch-state / K-pairing / broadcast-expose bookkeeping
+    is shared with ``sum`` rather than reimplemented (a divergent second copy
+    is exactly what let a reduced sibling ``broadcast`` axis lose its logical
+    extent). The logical extent is read from the view *before* reducing.
     """
     w, start, end = _reduce_view_bounds(view, "mean")
     d = _normalize_dim(dim, start, end)
-    # Expose path: K-paired-broadcast sub axis -> sum_sub_batch then /N.
+    # Logical extent of the reduced axis (its broadcast meta when stored
+    # broadcast, else the stored size). Captured before the sum collapses it.
     if isinstance(view, SubBatchView):
         sb_start = w.data.ndim - w.BASE_NDIM - w.sub_batch_ndim
         axis = d - sb_start
-        if w.k_pairing and any(
-            p == axis and w.k_state[i] == "broadcast" for i, p in enumerate(w.k_pairing)
-        ):
-            # Logical extent N from the paired sub axis (broadcast meta).
-            N = (
-                int(w.sub_batch_meta[axis])
-                if w.sub_batch_state and w.sub_batch_state[axis] == "broadcast"
-                else int(w.data.shape[d])
-            )
-            summed = cast(_TW, sum_sub_batch(w, axis))
-            return summed._rewrap(
-                summed.data / N,
-                sub_batch_ndim=summed.sub_batch_ndim,
-            )
-    if isinstance(view, SubBatchView) and w.sub_batch_state:
-        sb_start = w.data.ndim - w.BASE_NDIM - w.sub_batch_ndim
-        rel = d - sb_start
-        if w.sub_batch_state[rel] == "broadcast":
-            w = w.materialize()
-    new_sb = w.sub_batch_ndim - (1 if isinstance(view, SubBatchView) else 0)
-    # K_pairing renumber for sub axis drop (analogous to sum's path).
-    new_k_pairing = w.k_pairing
-    if isinstance(view, SubBatchView):
-        sb_start = w.data.ndim - w.BASE_NDIM - w.sub_batch_ndim
-        dropped_rel = d - sb_start
-        new_k_pairing = tuple(
-            None if (p is None or p == dropped_rel) else (p - 1 if p > dropped_rel else p)
-            for p in w.k_pairing
+        n = (
+            int(w.sub_batch_meta[axis])
+            if w.sub_batch_state and w.sub_batch_state[axis] == "broadcast"
+            else int(w.data.shape[d])
         )
-    return w._rewrap(
-        torch.mean(w.data, dim=d),
-        sub_batch_ndim=new_sb,
-        k_ndim=w.k_ndim,
-        k_state=w.k_state,
-        k_pairing=new_k_pairing,
-    )
+    else:
+        n = int(w.data.shape[d])
+    summed = sum(view, dim)
+    return summed._rewrap(summed.data / n, sub_batch_ndim=summed.sub_batch_ndim)
 
 
 def diff(view: DynamicBatchView[_TW] | SubBatchView[_TW], n: int = 1, dim: int = 0) -> _TW:

@@ -31,7 +31,7 @@ import pytest
 import torch
 
 from neml2.types import R2, SR2, SSR4, Scalar, Vec
-from neml2.types.functions import cat
+from neml2.types.functions import cat, mean, sum
 
 # ---------- region shape introspection ----------
 
@@ -462,3 +462,39 @@ def test_batch_set_is_functional_slice_assignment():
     # functional: the source is untouched
     assert torch.equal(t.data, torch.zeros(5, 2, 3, dtype=torch.float64))
     assert out.data is not t.data
+
+
+# ---------- mean over a sub-batch axis preserves other axes' state ----------
+
+
+def test_mean_preserves_other_broadcast_sub_axis_state():
+    """Reducing one sub axis must keep a sibling ``broadcast`` axis's logical
+    extent, exactly as ``sum`` does. Regression for a mean/sum metadata
+    divergence that dropped the broadcast state and under-counted a later
+    reduction over the surviving axis.
+    """
+    # sub-batch (a=3 full, b=4 broadcast stored as size 1).
+    x = Scalar(
+        torch.arange(3.0).reshape(3, 1),
+        sub_batch_ndim=2,
+        sub_batch_state=("full", "broadcast"),
+        sub_batch_meta=(3, 4),
+    )
+    y = mean(x.sub_batch, 0)  # reduce axis a -> surviving axis b
+    assert y.sub_batch_ndim == 1
+    assert tuple(y.sub_batch_shape) == (4,)  # logical extent of b preserved
+    # Value matches the dense reference: mean over a, then sum over b == 4 * 1.0.
+    assert float(sum(y.sub_batch, 0).data) == pytest.approx(4.0)
+
+
+def test_mean_matches_dense_reference_with_broadcast_axis():
+    x = Scalar(
+        torch.arange(3.0).reshape(3, 1),
+        sub_batch_ndim=2,
+        sub_batch_state=("full", "broadcast"),
+        sub_batch_meta=(3, 4),
+    )
+    got = mean(x.sub_batch, 0)
+    ref = mean(x.materialize().sub_batch, 0)
+    assert tuple(got.sub_batch_shape) == tuple(ref.sub_batch_shape)
+    torch.testing.assert_close(got.materialize().data, ref.data)
