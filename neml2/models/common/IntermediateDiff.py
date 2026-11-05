@@ -45,10 +45,7 @@ class SR2IntermediateDiff(Model):
     shrinks by ``n``; ``sub_batch_ndim`` is preserved (this is a per-axis
     differencing operator, not a reduction).
 
-    The ``reduces`` HIT parameter names the sub-batch label of the
-    differencing axis -- the chain rule on that label is structurally
-    non-diagonal (each output site depends on several input sites
-    along the label).
+    Sub-batch axes are positional; ``dim`` selects the differencing axis.
     """
 
     hit = HitSchema(
@@ -61,11 +58,9 @@ class SR2IntermediateDiff(Model):
             attr="_dim",
         ),
         option("n", int, "Order of the differentiation", default=1, attr="_n"),
-        option("reduces", str, "Sub-batch label of the differencing axis.", attr="_reduces"),
     )
     _dim: int
     _n: int
-    _reduces: str
 
     def forward(  # type: ignore[override]
         self,

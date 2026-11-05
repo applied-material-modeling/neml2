@@ -238,7 +238,6 @@
     type = SR2IntermediateMean
     from = 'cauchy_stress'
     to = 'mean_cauchy_stress'
-    reduces = 'grain'
   []
   [match_mean_cauchy_stress]
     type = SR2LinearCombination
