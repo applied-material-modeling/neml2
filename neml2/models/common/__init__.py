@@ -87,8 +87,12 @@ from .InputParameter import (
 )
 from .IntermediateDiff import SR2IntermediateDiff
 from .IntermediateLinearContraction import IntermediateLinearContraction
-from .IntermediateMean import SR2IntermediateMean
-from .IntermediateSum import SR2IntermediateSum
+from .IntermediateReduce import (
+    ScalarIntermediateMean,
+    ScalarIntermediateSum,
+    SR2IntermediateMean,
+    SR2IntermediateSum,
+)
 from .Interpolation import Interpolation
 from .IrreversibleScalar import IrreversibleScalar
 from .LinearCombination import R2LinearCombination, ScalarLinearCombination, SR2LinearCombination
@@ -209,7 +213,9 @@ __all__ = [
     "Interpolation",
     "Reduction",
     "SR2IntermediateMean",
+    "ScalarIntermediateMean",
     "SR2IntermediateSum",
+    "ScalarIntermediateSum",
     "SR2ToR2",
     "SR2VariableRate",
     "R2VariableRate",

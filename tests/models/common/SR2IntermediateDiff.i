@@ -52,7 +52,6 @@
     from = 'S'
     to = 'S_diff'
     dim = -1
-    reduces = ''  # unlabelled sub-batch in this fixture
     n = 1
   []
 []
