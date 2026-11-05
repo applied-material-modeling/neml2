@@ -290,7 +290,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 15;
+  static constexpr int kSupportedSchemaVersion = 16;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -437,13 +437,23 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // the metadata's (output-order, input-order) so the public maps iterate
   // rows/cols consistently.
   if (meta.contains("derivatives"))
+  {
+    const bool has_forms = meta.contains("derivative_forms");
+    std::size_t k = 0;
     for (const auto & pr : meta["derivatives"])
     {
       auto o = pr.at(0).get<std::string>();
       auto i = pr.at(1).get<std::string>();
+      _deriv_form[o][i] = has_forms ? meta["derivative_forms"].at(k).get<std::string>() : "plain";
+      const auto oe = _out_orig2ext.find(o);
+      const auto ie = _in_orig2ext.find(i);
+      _ext_deriv_form[oe == _out_orig2ext.end() ? o : oe->second]
+                     [ie == _in_orig2ext.end() ? i : ie->second] = _deriv_form[o][i];
       _deriv_by_out[o].push_back(i);
       _derivatives.emplace_back(std::move(o), std::move(i));
+      ++k;
     }
+  }
 
   // Master (out, param) parameter-derivative pairs the artifact supports.
   // Absent / empty => no parameter-Jacobian graph; param_jacobian() / param_vjp()
@@ -471,10 +481,14 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
       if (!seen[j])
       {
         seen[j] = 1;
+        // A sub-batched input has one column per (site, base component).
+        int64_t sub_total = 1;
+        for (auto sz : _input_sub_batch_shapes[j])
+          sub_total *= sz;
         _req_input_offset[i] = _req_total_size;
-        _req_input_size[i] = _input_sizes[j];
+        _req_input_size[i] = sub_total * _input_sizes[j];
         _req_inputs.push_back(i);
-        _req_total_size += _input_sizes[j];
+        _req_total_size += sub_total * _input_sizes[j];
       }
     }
   }
@@ -647,6 +661,9 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
             pi.in_base_shape = p["in_base_shape"].get<std::vector<int64_t>>();
           if (p.contains("in_sub_batch_shape"))
             pi.in_sub_batch_shape = p["in_sub_batch_shape"].get<std::vector<int64_t>>();
+          if (p.contains("out_sub_batch_shape"))
+            pi.out_sub_batch_shape = p["out_sub_batch_shape"].get<std::vector<int64_t>>();
+          pi.form = p.value("form", std::string("plain"));
           pi.batch_independent = p.value("batch_independent", false);
           pi.row_offset = p.value("row_offset", static_cast<int64_t>(0));
           pi.col_offset = p.value("col_offset", static_cast<int64_t>(0));
@@ -776,6 +793,9 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
             pi.in_base_shape = p["in_base_shape"].get<std::vector<int64_t>>();
           if (p.contains("in_sub_batch_shape"))
             pi.in_sub_batch_shape = p["in_sub_batch_shape"].get<std::vector<int64_t>>();
+          if (p.contains("out_sub_batch_shape"))
+            pi.out_sub_batch_shape = p["out_sub_batch_shape"].get<std::vector<int64_t>>();
+          pi.form = p.value("form", std::string("plain"));
           pi.batch_independent = p.value("batch_independent", false);
           pi.row_offset = p.value("row_offset", static_cast<int64_t>(0));
           pi.col_offset = p.value("col_offset", static_cast<int64_t>(0));
@@ -962,6 +982,12 @@ const std::vector<std::vector<int64_t>> &
 Model::output_sub_batch_shapes() const noexcept
 {
   return _impl->output_sub_batch_shapes();
+}
+
+const std::map<std::string, std::map<std::string, std::string>> &
+Model::derivative_forms() const noexcept
+{
+  return _impl->ext_derivative_forms();
 }
 
 // The ops run through `_guarded` so every exception leaving the public surface

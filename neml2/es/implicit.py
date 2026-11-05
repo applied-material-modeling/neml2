@@ -83,6 +83,7 @@ per-group conversion happens twice per solve (once at solve start to pack
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from math import prod
 
 import torch
@@ -679,10 +680,23 @@ class JacobianGiven(_SystemModule):
     the stored scalar (constant across the input Jacobian).
     """
 
+    def __init__(
+        self,
+        system: ModelNonlinearSystem,
+        param_names: tuple[str, ...] = (),
+        given_names: Sequence[str] | None = None,
+    ) -> None:
+        super().__init__(system, param_names)
+        # Columns only for the givens a requested derivative needs.
+        self.b_layout = (
+            self.glayout if given_names is None else self.glayout.restricted(given_names)
+        )
+        self.b_given_names = self.b_layout.vars()
+
     def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
         state = self._state_from_per_group_args(args)
-        output_state, v_out = self._call_model_from_state(state, self.given_names)
-        B = self._assembled_matrix(self.glayout, v_out, output_state)
+        output_state, v_out = self._call_model_from_state(state, self.b_given_names)
+        B = self._assembled_matrix(self.b_layout, v_out, output_state)
         return _matrix_to_per_block_raws(B)
 
 
@@ -706,20 +720,28 @@ class LinearSolveIFT(_SystemModule):
         linear_solver,
         selected_pairs: set[tuple[str, str]] | None = None,
         param_names: tuple[str, ...] = (),
+        given_names: Sequence[str] | None = None,
     ) -> None:
         super().__init__(system, param_names)
         self._linear_solver = linear_solver
         # Local (unknown, given) pairs to emit; ``None`` = all.
         self._selected_pairs = selected_pairs
+        # B's columns, as built by ``JacobianGiven(given_names=...)``.
+        self.b_layout = (
+            self.glayout if given_names is None else self.glayout.restricted(given_names)
+        )
         self._n_r = len(self.residual_groups)
         self._n_u = len(self.unknown_groups)
-        self._n_g = len(self.given_groups)
+        self._n_g = self.b_layout.ngroup
         self._a_sub: list[list[int]] = [
             [group_block_sub_batch_ndim(self.blayout, i, self.ulayout, j) for j in range(self._n_u)]
             for i in range(self._n_r)
         ]
         self._b_sub: list[list[int]] = [
-            [group_block_sub_batch_ndim(self.blayout, i, self.glayout, j) for j in range(self._n_g)]
+            [
+                group_block_sub_batch_ndim(self.blayout, i, self.b_layout, j)
+                for j in range(self._n_g)
+            ]
             for i in range(self._n_r)
         ]
 
@@ -728,7 +750,7 @@ class LinearSolveIFT(_SystemModule):
         return [
             (u, g)
             for u in self.unknown_names
-            for g in self.given_names
+            for g in self.b_layout.vars()
             if self._selected_pairs is None or (u, g) in self._selected_pairs
         ]
 
@@ -750,7 +772,7 @@ class LinearSolveIFT(_SystemModule):
         )
         B = AssembledMatrix(
             self.blayout,
-            self.glayout,
+            self.b_layout,
             [
                 [
                     wrap_block_raw(b_raws[i * self._n_g + j], self._b_sub[i][j])

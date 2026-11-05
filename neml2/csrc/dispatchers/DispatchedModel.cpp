@@ -208,17 +208,36 @@ struct DispatchedModel::Impl
     // rather than concatenated across chunks. Build name -> base-ndim maps from
     // the active model's declared layout.
     std::map<std::string, int64_t> out_base_ndim, in_base_ndim;
+    // Site axes of a sub-batched input's block: the input's ("paired"), or the
+    // output's and the input's ("full").
+    std::map<std::string, std::map<std::string, int64_t>> pair_extra_ndim;
     {
       const auto & onames = _active->output_names();
       const auto & oshapes = _active->output_base_shapes();
+      const auto & osub = _active->output_sub_batch_shapes();
+      std::map<std::string, int64_t> out_sub_ndim, in_sub_ndim;
       for (std::size_t k = 0; k < onames.size(); ++k)
+      {
         out_base_ndim[onames[k]] = static_cast<int64_t>(oshapes[k].size());
+        out_sub_ndim[onames[k]] = static_cast<int64_t>(osub[k].size());
+      }
       const auto & inames = _active->input_names();
       const auto & ishapes = _active->input_base_shapes();
+      const auto & isub = _active->input_sub_batch_shapes();
       for (std::size_t k = 0; k < inames.size(); ++k)
+      {
         in_base_ndim[inames[k]] = static_cast<int64_t>(ishapes[k].size());
+        in_sub_ndim[inames[k]] = static_cast<int64_t>(isub[k].size());
+      }
+      for (const auto & [o, row] : _active->derivative_forms())
+        for (const auto & [i, form] : row)
+          if (form == "paired")
+            pair_extra_ndim[o][i] = in_sub_ndim.at(i);
+          else if (form == "full")
+            pair_extra_ndim[o][i] = out_sub_ndim.at(o) + in_sub_ndim.at(i);
     }
-    return {cat_batch(outs), cat_batch_nested(jparts, out_base_ndim, in_base_ndim)};
+    return {cat_batch(outs),
+            cat_batch_nested(jparts, out_base_ndim, in_base_ndim, pair_extra_ndim)};
   }
 
   std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
@@ -777,6 +796,12 @@ const std::vector<std::vector<int64_t>> &
 DispatchedModel::output_sub_batch_shapes() const noexcept
 {
   return _impl->active()->output_sub_batch_shapes();
+}
+
+const std::map<std::string, std::map<std::string, std::string>> &
+DispatchedModel::derivative_forms() const noexcept
+{
+  return _impl->active()->derivative_forms();
 }
 
 const std::map<std::string, std::vector<int64_t>> &

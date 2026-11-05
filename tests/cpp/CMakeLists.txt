@@ -246,6 +246,53 @@ set_tests_properties(test_input_broadcast PROPERTIES
       ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
 )
 
+# --- Sub-batched derivatives (plain / paired / full blocks), cpp-aoti + cpp-dispatch.
+set(_sbj_dir ${CMAKE_CURRENT_BINARY_DIR}/sub_batch_jacobian_fixture)
+add_test(
+      NAME sub_batch_jacobian_fixture_compile
+      COMMAND ${Python3_EXECUTABLE} -m neml2.cli.aoti_compile
+              ${NEML2_SOURCE_DIR}/tests/aoti/implicit_sub_batch_ift_reduce/model.i
+              --model model --device ${_fixture_devices} --dtype float64
+              -d vf:s -d x:s -d x:x~1 -d vf:x~1 -d y:z
+              --output-dir ${_sbj_dir}
+      WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
+)
+neml2_inductor_cache_dir(_sbj_cache sub_batch_jacobian_fixture ${_sbj_dir})
+set_tests_properties(sub_batch_jacobian_fixture_compile PROPERTIES
+      FIXTURES_SETUP sub_batch_jacobian_artifact
+      LABELS "dispatcher"
+      TIMEOUT 600
+      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_sbj_cache}"
+)
+set(_sbp_dir ${CMAKE_CURRENT_BINARY_DIR}/sub_batch_paired_fixture)
+add_test(
+      NAME sub_batch_paired_fixture_compile
+      COMMAND ${Python3_EXECUTABLE} -m neml2.cli.aoti_compile
+              ${NEML2_SOURCE_DIR}/tests/aoti/forward_sub_batch/model.i
+              --model model --device ${_fixture_devices} --dtype float64
+              -d stress:strain
+              --output-dir ${_sbp_dir}
+      WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
+)
+neml2_inductor_cache_dir(_sbp_cache sub_batch_paired_fixture ${_sbp_dir})
+set_tests_properties(sub_batch_paired_fixture_compile PROPERTIES
+      FIXTURES_SETUP sub_batch_paired_artifact
+      LABELS "dispatcher"
+      TIMEOUT 600
+      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_sbp_cache}"
+)
+add_executable(test_jacobian_sub_batch test_jacobian_sub_batch.cpp)
+target_link_libraries(test_jacobian_sub_batch PRIVATE aoti)
+neml2_add_test_warning_flags(test_jacobian_sub_batch)
+set_target_properties(test_jacobian_sub_batch PROPERTIES BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
+add_test(NAME test_jacobian_sub_batch COMMAND test_jacobian_sub_batch ${_sbj_dir} ${_sbp_dir})
+set_tests_properties(test_jacobian_sub_batch PROPERTIES
+      FIXTURES_REQUIRED "sub_batch_jacobian_artifact;sub_batch_paired_artifact"
+      LABELS "dispatcher"
+      TIMEOUT 300
+      ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
+)
+
 # --- Eager embed test: links libneml2_eager, embeds a CPython interpreter, and
 # runs a model straight from the original .i (no compile fixture needed). New
 # "eager" label so it runs independently of the AOTI dispatcher tests.
@@ -299,7 +346,8 @@ add_test(NAME test_eager
             ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_model.py
             ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_ctor_model.i
             ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_ctor_model.py
-            ${NEML2_SOURCE_DIR}/tests/aoti/implicit_cross_group_sub_batch/model.i)
+            ${NEML2_SOURCE_DIR}/tests/aoti/implicit_cross_group_sub_batch/model.i
+            ${NEML2_SOURCE_DIR}/tests/aoti/implicit_sub_batch_ift_reduce/model.i)
 # The embedded interpreter must find the stdlib (PYTHONHOME) + the neml2 source
 # package (PYTHONPATH); torch/lib stays on LD_LIBRARY_PATH for the transitive
 # libtorch resolution the existing tests also rely on.

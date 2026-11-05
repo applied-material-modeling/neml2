@@ -183,6 +183,13 @@ public:
   /// Parallel to `input_names()`, same indices.
   const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
 
+  /// Block layout of each compiled derivative pair, keyed `[output][input]`:
+  /// `"plain"` (plain-batch input) `(*B, *out_sub, *out_base, *in_base)`; for a
+  /// sub-batched input, `"paired"` (site-local) `(*B, *sub, *out_base, *in_base)`
+  /// or `"full"` (sites coupled) `(*B, *out_sub, *out_base, *in_sub, *in_base)`.
+  const std::map<std::string, std::map<std::string, std::string>> &
+  derivative_forms() const noexcept;
+
   /// Per-output sub-batch shape, the output-side counterpart of
   /// `input_sub_batch_shapes()`. Parallel to `output_names()`, same indices;
   /// output `i` is returned at

@@ -28,23 +28,19 @@ graph is compiled and the runtime `jvp` / `jacobian` raise. Each
 `-d OUT:IN` requests the Jacobian/JVP for that output-input pair; omit a
 side to select all on it (`stress:` = every input of `stress`, `:strain`
 = every output w.r.t. `strain`, `:` = all pairs). The requested master
-pairs are recorded in the metadata's top-level `derivatives` array.
+pairs are recorded in the metadata's top-level `derivatives` array, their block
+forms in `derivative_forms`. Wildcards skip sub-batched inputs; name one to
+include it ([](sub-batch-derivatives)).
 
 Each derivative is one per-variable-pair block. A block that does not
 depend on the dynamic batch (e.g. a constant stiffness tensor) is returned
 **unbatched** at its natural `(*out_base, *in_base)` shape.
 
 ```{note}
-For an **implicit (Newton-solve) model with sub-batched (per-grain) state**
-— e.g. crystal plasticity — a derivative of a **non-sub-batched output
-w.r.t. a non-sub-batched input** (e.g. a global stress w.r.t. a global
-strain) is supported: the IFT solve handles the internal per-grain coupling
-and the returned block has no grain axis. A derivative that *touches* a
-per-grain variable (a sub-batched output or input) is not yet implemented
-and fails fast at `neml2-compile` with a clear "… involves the sub-batched
-variable …" error; use eager mode (`torch.autograd`) for per-grain
-sensitivities. Forward evaluation of such models, and all plain-batch /
-forward derivatives, are fully supported.
+**Sub-batched variables.** Block forms and selection: [](sub-batch-derivatives).
+Through a sub-batched implicit solve, a BLOCK-structured group, an iterative
+`input_sensitivity_solver` and a parameter derivative fail fast at
+`neml2-compile`.
 ```
 
 ```{note}
@@ -210,7 +206,7 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `15`.
+The current schema version is `16`.
 
 ### Segment kinds
 

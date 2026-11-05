@@ -154,6 +154,11 @@ struct Model::Impl
   {
     return _output_sub_batch_shapes;
   }
+  const std::map<std::string, std::map<std::string, std::string>> &
+  ext_derivative_forms() const noexcept
+  {
+    return _ext_deriv_form;
+  }
   std::map<std::string, at::Tensor> & named_parameters() noexcept { return _named_parameters; }
   const std::map<std::string, at::Tensor> & named_parameters() const noexcept
   {
@@ -327,6 +332,10 @@ struct Model::Impl
       std::vector<int64_t> out_base_shape;
       std::vector<int64_t> in_base_shape;
       std::vector<int64_t> in_sub_batch_shape;
+      std::vector<int64_t> out_sub_batch_shape;
+      /// Block layout, see `Model::derivative_forms`. An IFT block is `"full"`,
+      /// already folded: `(*dyn, out_storage, in_storage)`.
+      std::string form = "plain";
       /// True when this block does not depend on the dynamic batch (e.g. a
       /// constant stiffness tensor). The compiled graph emits it with a static
       /// size-1 leading dynamic-batch axis; the single-forward-segment Jacobian
@@ -561,19 +570,23 @@ struct Model::Impl
   /// ``seg.jacobian_pairs`` order, the disassemble of the IFT matrix), and
   /// accumulate each block's matmul against ``dstate[given]`` into the
   /// ``dstate[unknown]`` slot -- the same per-pair Jacobian composition a
-  /// forward segment uses. (BLOCK / per-grain unknowns are rejected with a
-  /// clear "not yet implemented" error pending the sub-batch IFT path.)
+  /// forward segment uses.
   void _run_implicit_segment_jacobian(const Segment & seg,
                                       const std::vector<at::Tensor> & u_solved_groups,
                                       const std::vector<at::Tensor> & g_groups,
                                       std::map<std::string, at::Tensor> & dstate) const;
 
-  /// Initialize `dstate` with identity columns for each master input.
-  /// `dstate[_input_names[k]]` is `(*B, s_k, M)` with the `(s_k, s_k)`
-  /// identity placed at columns `[c_k, c_k + s_k)` and zeros elsewhere.
+  /// Initialize `dstate[input]` as `(*dyn_batch, folded, M)`, `folded =
+  /// prod(sub) * prod(base)`, with an identity at each requested input's columns.
   void _init_dstate(const at::TensorOptions & options,
-                    at::IntArrayRef batch_shape,
+                    at::IntArrayRef dyn_batch,
                     std::map<std::string, at::Tensor> & dstate) const;
+
+  /// Reshape a pair's column band of `dstate[out]` to its public block; a
+  /// `"paired"` pair keeps the site diagonal.
+  at::Tensor _public_pair_block(const at::Tensor & band,
+                                const std::string & out_name,
+                                const std::string & in_name) const;
 
   /// Reject a non-canonical input: the tensor's trailing axes must equal the
   /// declared `base_shape` for `name` (so a Scalar is `(*B,)`, an SR2 `(*B,6)`).
@@ -668,6 +681,10 @@ struct Model::Impl
   // mapping each covered output to its requested inputs for O(1) assembly.
   std::vector<std::pair<std::string, std::string>> _derivatives;
   std::map<std::string, std::vector<std::string>> _deriv_by_out;
+  /// Block layout of each master pair, keyed `[out][in]`.
+  std::map<std::string, std::map<std::string, std::string>> _deriv_form;
+  /// `_deriv_form` keyed by boundary (renamed) names.
+  std::map<std::string, std::map<std::string, std::string>> _ext_deriv_form;
 
   // Master (out, param) parameter-derivative pairs the artifact supports (schema
   // v7), in metadata order. Empty => no parameter-Jacobian graph; param_jacobian

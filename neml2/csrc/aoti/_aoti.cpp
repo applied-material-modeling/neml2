@@ -206,6 +206,11 @@ Everything else is baked into the graph as a constant.
           "so each batch entry is a contiguous block of prod(sub) * prod(base) "
           "values.")
       .def_property_readonly(
+          "derivative_forms",
+          &Model::derivative_forms,
+          "Block layout of each compiled derivative pair, keyed [output][input]: "
+          "'plain', 'paired' or 'full' (see the sub-batch reference).")
+      .def_property_readonly(
           "output_sub_batch_shapes",
           &Model::output_sub_batch_shapes,
           "Per-output sub-batch shape; [] for a plain-batch output. Parallel to "

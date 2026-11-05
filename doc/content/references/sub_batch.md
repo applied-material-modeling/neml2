@@ -138,14 +138,34 @@ every input by name, so it never has to invent a value and has nothing to size.
 A `[Settings]` block in a `tests/models/` input is read but changes nothing
 there.
 
+(sub-batch-derivatives)=
+## Derivatives
+
+Derivatives pass through sub-batched variables (an implicit solve's unknowns, a
+per-site given, a sum over sites) on every route. A derivative *with respect to*
+a sub-batched input has one column per site, so it is opt-in: wildcards
+(`-d :`, `-d OUT:`, the eager `derivatives` argument) select plain inputs only;
+name the input to include it (`-d y:z`). Every route lays the blocks out alike:
+
+| Form | Input | Block |
+| --- | --- | --- |
+| `plain` | plain-batch | `(*B, *out_sub, *out_base, *in_base)` |
+| `paired` | sub-batched, site-local | `(*B, *sub, *out_base, *in_base)` |
+| `full` | sub-batched, sites coupled (a sum, a solve) | `(*B, *out_sub, *out_base, *in_sub, *in_base)` |
+
+The form is structural: any derivative through an implicit solve is `full`.
+Compiled runtimes report it through `derivative_forms()`. The eager embed bridge
+(`cpp-eager`) takes `jvp` tangents for plain-batch inputs only.
+
 ## Limits
 
 The extent is a declaration, not an inference: it is not derived from the
 crystal geometry, the bin count, or any other data object in the file. State it
 explicitly.
 
-`cpp-eager` takes derivatives with respect to plain-batch inputs only, and its
-parameter derivatives are plain-batch only. See [](model-eager-cpp).
+Through an implicit solve, sub-batched derivatives need the DENSE structure (the
+default); BLOCK groups, an iterative `input_sensitivity_solver` and parameter
+derivatives are plain-batch only.
 
 The compiled artifact records the extent of every input and output in
 `metadata.json`, and the C++ model classes report them through

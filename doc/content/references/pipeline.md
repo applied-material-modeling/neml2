@@ -123,7 +123,8 @@ The exporter resolves a per-input `(dynamic, sub-batch)` example
 shape — `--example-batch-shape` on the CLI, then
 `[Settings]/example_batch_shape` in the HIT file, then a small
 built-in default that's correct for the bulk-constitutive case — and
-expands it over the model's input spec. It then initializes every
+expands it over the model's input spec and any produced variable declared
+by name. It then initializes every
 nested implicit equation system with zero-tensor stand-ins of the
 resolved shape, *without* running the Newton solver, so each
 system's per-variable `sub_batch_shape` is committed before the
@@ -213,7 +214,8 @@ requested with `-d/--derivative` (none by default). **Forward segments**
 always lower a value graph and, when a requested pair runs through them, a
 per-variable-pair `jvp` graph emitting just the on-path blocks — a block
 that does not depend on the dynamic batch is traced, and returned,
-unbatched. **Implicit segments** lower a Newton residual plus the
+unbatched. A sub-batched input on a requested pair gets one direction per
+site; each block records its form ([](sub-batch-derivatives)). **Implicit segments** lower a Newton residual plus the
 operators the linear solve needs (the solve is **un-baked** from the
 operator — the C++ runtime chains them per Newton iteration), and
 additionally an implicit-function-theorem sensitivity graph only when a

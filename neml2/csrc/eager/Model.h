@@ -192,13 +192,19 @@ public:
 
   /// Evaluate + full Jacobian as unflattened variable-pair blocks. Returns
   /// `{outputs, J}` where `J[out_name][in_name]` is
-  /// `(*B, *out_sub_batch, *out_base, *in_base)` (see
+  /// `(*B, *out_sub_batch, *out_base, *in_base)` for a plain-batch input (see
   /// @ref neml2::aoti::VariablePairJacobian), matching
-  /// @ref neml2::aoti::Model::jacobian. Columns are the plain-batch inputs only:
-  /// a sub-batched input has no column, as an AOTI artifact returns only the
-  /// pairs it was compiled with. Acquires the GIL.
+  /// @ref neml2::aoti::Model::jacobian.
+  ///
+  /// `derivatives` takes `neml2-compile -d` specs; empty selects every output
+  /// against the plain-batch inputs. A sub-batched input is included only when
+  /// named; its block is `(*B, *sub_batch, *out_base, *in_base)` when site-local,
+  /// else `(*B, *out_sub_batch, *out_base, *in_sub_batch, *in_base)` (the
+  /// "paired" / "full" forms of @ref neml2::aoti::Model::derivative_forms).
+  /// Acquires the GIL.
   std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
-  jacobian(const std::map<std::string, at::Tensor> & inputs) const;
+  jacobian(const std::map<std::string, at::Tensor> & inputs,
+           const std::vector<std::string> & derivatives = {}) const;
 
   /// Per-calibration-parameter natural base shape, keyed by qualified name
   /// (e.g. `"elasticity.E"` -> `{}` for a Scalar, `{6}` for an SR2) -- the

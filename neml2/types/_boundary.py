@@ -46,6 +46,7 @@ into typed wrappers immediately after these helpers run.
 from __future__ import annotations
 
 import dataclasses
+from collections.abc import Collection, Mapping
 from typing import TYPE_CHECKING, Any, cast
 
 import torch
@@ -362,6 +363,128 @@ def assemble_jvp_outputs(
     return out
 
 
+# ---------------------------------------------------------------------------
+# Derivatives with respect to a sub-batched input, shared by every route.
+#
+# The seed carries one direction per site, kept compact (K axes paired with the
+# sub-batch axes). The chain rule keeps the pairing while ops act site by site
+# and expands it once sites couple. The block form follows:
+#
+# - ``"plain"``  -- plain input: ``(*B, *out_sub, *out_base, *in_base)``.
+# - ``"paired"`` -- site-local: ``(*B, *sub, *out_base, *in_base)``.
+# - ``"full"``   -- sites coupled: ``(*B, *out_sub, *out_base, *in_sub, *in_base)``.
+# ---------------------------------------------------------------------------
+
+
+def sub_batched_identity_seed(
+    type_cls: type[TensorWrapper],
+    batch_shape: tuple[int, ...] | torch.Size,
+    sub_batch_shape: tuple[int, ...] | torch.Size,
+    *,
+    dtype: torch.dtype,
+    device: torch.device,
+) -> TensorWrapper:
+    """Per-site identity seed (:func:`neml2.es._helpers._expanded_identity_seed`)
+    at the plain batch *batch_shape*."""
+    from ..es._helpers import _expanded_identity_seed  # noqa: PLC0415 -- es imports types
+
+    primal = type_cls(
+        torch.zeros(
+            *batch_shape, *sub_batch_shape, *type_cls.BASE_SHAPE, dtype=dtype, device=device
+        ),
+        sub_batch_ndim=len(sub_batch_shape),
+    )
+    return _expanded_identity_seed(primal)
+
+
+def _seed_has_base_axis(type_cls: type[TensorWrapper]) -> bool:
+    # As in ``_expanded_identity_seed``: no base K axis for a Scalar.
+    n = 1
+    for s in type_cls.BASE_SHAPE:
+        n *= int(s)
+    return type_cls.BASE_NDIM > 0 or n > 1
+
+
+def sub_batched_pair_block(
+    block: TensorWrapper,
+    in_type: type[TensorWrapper],
+    in_sub_batch_shape: tuple[int, ...],
+) -> tuple[torch.Tensor, str, int, int]:
+    """Public block of an output seeded by :func:`sub_batched_identity_seed`.
+
+    Returns ``(data, form, batch_ndim, sub_batch_ndim)``; *form* is ``"paired"``
+    or ``"full"``.
+    """
+    n_sub = len(in_sub_batch_shape)
+    has_kb = _seed_has_base_axis(in_type)
+    in_base = tuple(int(s) for s in in_type.BASE_SHAPE)
+    if block.k_ndim != n_sub + int(has_kb):
+        raise ValueError(
+            f"sub_batched_pair_block: expected {n_sub + int(has_kb)} derivative axes for a "
+            f"{in_type.__name__} input with sub-batch {tuple(in_sub_batch_shape)}, got "
+            f"k_ndim={block.k_ndim}."
+        )
+    site_local = (
+        all(block.k_state[i] == "broadcast" and block.k_pairing[i] == i for i in range(n_sub))
+        and block.sub_batch_ndim == n_sub
+        and tuple(int(s) for s in block.sub_batch_shape) == tuple(in_sub_batch_shape)
+    )
+    if site_local:
+        b = block.materialize()
+        data = b.data
+        # (1 x n_sub, [K_base], *B, *sub, *out_base) -> (*B, *sub, *out_base, *in_base)
+        data = data.reshape(data.shape[n_sub:])
+        if has_kb:
+            data = data.movedim(0, -1)
+            data = data.reshape(*data.shape[:-1], *in_base)
+        out_sub_ndim = n_sub
+        form = "paired"
+    else:
+        from .functions import fullify  # noqa: PLC0415
+
+        b = fullify(block).materialize()
+        data = b.data
+        k_shape = tuple(int(s) for s in data.shape[: b.k_ndim])
+        if k_shape[:n_sub] != tuple(in_sub_batch_shape):
+            raise ValueError(
+                f"sub_batched_pair_block: expanded derivative axes {k_shape} do not match "
+                f"the input sub-batch {tuple(in_sub_batch_shape)}."
+            )
+        # (*in_sub, [K_base], *B, *out_sub, *out_base) -> (..., *in_sub, *in_base)
+        k_ndim = b.k_ndim
+        perm = (*range(k_ndim, data.ndim), *range(k_ndim))
+        data = data.permute(perm)
+        if has_kb:
+            data = data.reshape(*data.shape[:-1], *in_base)
+        out_sub_ndim = b.sub_batch_ndim
+        form = "full"
+    out_base_ndim = type(block).BASE_NDIM
+    trailing = out_sub_ndim + out_base_ndim + (n_sub if form == "full" else 0) + len(in_base)
+    return data.contiguous(), form, data.ndim - trailing, out_sub_ndim
+
+
+def zero_pair_block_shape(
+    batch_shape: tuple[int, ...],
+    out_sub_batch_shape: tuple[int, ...],
+    out_base_shape: tuple[int, ...],
+    in_sub_batch_shape: tuple[int, ...],
+    in_base_shape: tuple[int, ...],
+) -> tuple[tuple[int, ...], str]:
+    """Shape and form of a structural zero block: ``"plain"`` for a plain input,
+    ``"paired"`` if the input's sub-batch equals the output's, else ``"full"``."""
+    if not in_sub_batch_shape:
+        return (*batch_shape, *out_sub_batch_shape, *out_base_shape, *in_base_shape), "plain"
+    if tuple(out_sub_batch_shape) == tuple(in_sub_batch_shape):
+        return (*batch_shape, *out_sub_batch_shape, *out_base_shape, *in_base_shape), "paired"
+    return (
+        *batch_shape,
+        *out_sub_batch_shape,
+        *out_base_shape,
+        *in_sub_batch_shape,
+        *in_base_shape,
+    ), "full"
+
+
 def assemble_jacobian(
     v_out: dict,
     typed_outputs: tuple[TensorWrapper, ...],
@@ -370,6 +493,8 @@ def assemble_jacobian(
     input_names: list[str],
     input_spec: dict[str, type[TensorWrapper]],
     call_batch: tuple[int, ...] | torch.Size | None = None,
+    input_sub_batch_shapes: Mapping[str, tuple[int, ...]] | None = None,
+    pairs: Collection[tuple[str, str]] | None = None,
 ) -> dict[str, dict[str, torch.Tensor]]:
     """Assemble per-(out, in) chain-rule blocks into the nested variable-pair Jacobian.
 
@@ -380,6 +505,10 @@ def assemble_jacobian(
     matching the C++ ``neml2::aoti::Model::jacobian`` contract (rows in
     ``output_spec`` order, cols in ``input_spec`` order). A constant ``(out, in)``
     pair (absent from ``v_out``) is an explicit zero block of the same shape.
+
+    Inputs in *input_sub_batch_shapes* were seeded by
+    :func:`sub_batched_identity_seed` (see :func:`sub_batched_pair_block`).
+    *pairs*, when given, restricts the result to those ``(out, in)`` pairs.
 
     *call_batch* is the batch the identity seeds were built at. Every chain-rule
     block of a row carries it broadcast with that output's own batch, so a zero
@@ -395,6 +524,8 @@ def assemble_jacobian(
     """
     from ..cli.aoti_export import _leading_k_block_to_per_pair
 
+    sub_shapes = dict(input_sub_batch_shapes or {})
+    wanted = None if pairs is None else set(pairs)
     jac: dict[str, dict[str, torch.Tensor]] = {}
     for typed_out, o_name in zip(typed_outputs, output_names, strict=True):
         o_base = tuple(output_spec[o_name].BASE_SHAPE)
@@ -408,15 +539,22 @@ def assemble_jacobian(
         opts = {"dtype": typed_out.dtype, "device": typed_out.device}
         row: dict[str, torch.Tensor] = {}
         for i_name in input_names:
+            if wanted is not None and (o_name, i_name) not in wanted:
+                continue
             i_base = tuple(input_spec[i_name].BASE_SHAPE)
+            i_sub = tuple(sub_shapes.get(i_name, ()))
             block = v_out.get(o_name, {}).get(i_name)
             if block is None:
                 # Constant (out, in) pair: a structural zero block.
-                row[i_name] = torch.zeros(*o_batch, *o_sub, *o_base, *i_base, **opts)
+                shape, _ = zero_pair_block_shape(o_batch, o_sub, o_base, i_sub, i_base)
+                row[i_name] = torch.zeros(shape, **opts)
+            elif i_sub:
+                row[i_name] = sub_batched_pair_block(block, input_spec[i_name], i_sub)[0]
             else:
                 # (*batch, *out_sub_batch, *out_base, *in_base).
                 row[i_name] = _leading_k_block_to_per_pair(block, input_spec[i_name]).contiguous()
-        jac[o_name] = row
+        if row or wanted is None:
+            jac[o_name] = row
     return jac
 
 
@@ -510,8 +648,13 @@ def assemble_jacobian_typed(
     output_spec: dict[str, type[TensorWrapper]],
     input_names: list[str],
     input_spec: dict[str, type[TensorWrapper]],
+    input_sub_batch_shapes: Mapping[str, tuple[int, ...]] | None = None,
+    pairs: Collection[tuple[str, str]] | None = None,
 ) -> dict[str, dict[str, Tensor]]:
     """Typed counterpart of :func:`assemble_jacobian`.
+
+    *input_sub_batch_shapes* and *pairs* as in :func:`assemble_jacobian`. A
+    ``"full"`` block keeps the input's sub-batch in its base region.
 
     Returns the nested ``{out_name: {in_name: block}}`` where each block is a
     dynamic-base :class:`~neml2.types.tensor.Tensor` of shape
@@ -525,6 +668,8 @@ def assemble_jacobian_typed(
     """
     from .tensor import Tensor  # noqa: PLC0415 — same-package, avoid import cycle
 
+    sub_shapes = dict(input_sub_batch_shapes or {})
+    wanted = None if pairs is None else set(pairs)
     jac: dict[str, dict[str, Tensor]] = {}
     for typed_out, o_name in zip(typed_outputs, output_names, strict=True):
         o_base = tuple(output_spec[o_name].BASE_SHAPE)
@@ -541,8 +686,22 @@ def assemble_jacobian_typed(
         opts = {"dtype": typed_out.dtype, "device": typed_out.device}
         row: dict[str, Tensor] = {}
         for i_name in input_names:
+            if wanted is not None and (o_name, i_name) not in wanted:
+                continue
             i_base = tuple(input_spec[i_name].BASE_SHAPE)
+            i_sub = tuple(sub_shapes.get(i_name, ()))
             block = v_out.get(o_name, {}).get(i_name)
+            if i_sub:
+                if block is None:
+                    shape, _ = zero_pair_block_shape(batch, sub, o_base, i_sub, i_base)
+                    data = torch.zeros(shape, **opts)
+                    blk_bnd, blk_sub = bnd, len(sub)
+                else:
+                    data, _, blk_bnd, blk_sub = sub_batched_pair_block(
+                        block, input_spec[i_name], i_sub
+                    )
+                row[i_name] = Tensor(data, batch_ndim=blk_bnd, sub_batch_ndim=blk_sub)
+                continue
             if block is None:
                 # Constant (out, in) pair: a structural zero block at the
                 # value output's batch + sub-batch, with (out_base, in_base).
@@ -564,5 +723,6 @@ def assemble_jacobian_typed(
                 sub_batch_state=typed_out.sub_batch_state,
                 sub_batch_meta=typed_out.sub_batch_meta,
             )
-        jac[o_name] = row
+        if row or wanted is None:
+            jac[o_name] = row
     return jac
