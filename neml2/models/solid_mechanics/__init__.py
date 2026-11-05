@@ -27,6 +27,7 @@
 
 from . import (
     crystal_plasticity,
+    damage,
     elasticity,
     kinematics,
     plasticity,
@@ -37,6 +38,7 @@ from .TwoStageThermalAnnealing import ScalarTwoStageThermalAnnealing, SR2TwoStag
 
 __all__ = [
     "crystal_plasticity",
+    "damage",
     "elasticity",
     "kinematics",
     "plasticity",
