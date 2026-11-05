@@ -246,6 +246,8 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarIntermediateMean.html">ScalarIntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarIntermediateSum.html">ScalarIntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
@@ -589,79 +591,78 @@ integration of each grain’s elastic strain, orientation, and slip hardening. T
 </span><span data-line="122">    <span class="nb">type</span> <span class="o">=</span> <span class="n">SR2IntermediateMean</span>
 </span><span data-line="123">    <span class="kn">from</span><span class="w"> </span><span class="o">=</span> <span class="s1">'cauchy_stress'</span>
 </span><span data-line="124">    <span class="n">to</span> <span class="o">=</span> <span class="s1">'mean_cauchy_stress'</span>
-</span><span data-line="125">    <span class="n">reduces</span> <span class="o">=</span> <span class="s1">'grain'</span>
-</span><span data-line="126">  <span class="p">[]</span>
-</span><span data-line="127">  <span class="p">[</span><span class="n">match_mean_cauchy_stress</span><span class="p">]</span>
-</span><span data-line="128">    <span class="nb">type</span> <span class="o">=</span> <span class="n">SR2LinearCombination</span>
-</span><span data-line="129">    <span class="kn">from</span><span class="w"> </span><span class="o">=</span> <span class="s1">'target_cauchy_stress mean_cauchy_stress'</span>
-</span><span data-line="130">    <span class="n">to</span> <span class="o">=</span> <span class="s1">'target_cauchy_stress_residual'</span>
-</span><span data-line="131">    <span class="n">weights</span> <span class="o">=</span> <span class="s1">'1 -1'</span>
-</span><span data-line="132">  <span class="p">[]</span>
-</span><span data-line="133">  <span class="p">[</span><span class="n">global_constraint</span><span class="p">]</span>
-</span><span data-line="134">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ComposedModel</span>
-</span><span data-line="135">    <span class="n">models</span> <span class="o">=</span> <span class="s1">'mean_stress match_mean_cauchy_stress'</span>
-</span><span data-line="136">  <span class="p">[]</span>
-</span><span data-line="137">
-</span><span data-line="138">  <span class="c1"># Full implicit model</span>
-</span><span data-line="139">  <span class="p">[</span><span class="n">implicit_model</span><span class="p">]</span>
-</span><span data-line="140">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ComposedModel</span>
-</span><span data-line="141">    <span class="n">models</span> <span class="o">=</span> <span class="s1">'mixed_control y_constraint per_crystal_update global_constraint'</span>
-</span><span data-line="142">  <span class="p">[]</span>
-</span><span data-line="143"><span class="p">[]</span>
-</span><span data-line="144">
-</span><span data-line="145"><span class="p">[</span><span class="n">EquationSystems</span><span class="p">]</span>
-</span><span data-line="146">  <span class="p">[</span><span class="n">eq_sys</span><span class="p">]</span>
-</span><span data-line="147">    <span class="nb">type</span> <span class="o">=</span> <span class="n">NonlinearSystem</span>
-</span><span data-line="148">    <span class="n">model</span> <span class="o">=</span> <span class="s1">'implicit_model'</span>
-</span><span data-line="149">    <span class="n">unknowns</span> <span class="o">=</span> <span class="s1">'elastic_strain orientation slip_hardening; deformation_rate target_cauchy_stress'</span>
-</span><span data-line="150">    <span class="n">residuals</span> <span class="o">=</span> <span class="s1">'elastic_strain_residual orientation_residual slip_hardening_residual; y_residual target_cauchy_stress_residual'</span>
-</span><span data-line="151">    <span class="n">structure</span> <span class="o">=</span> <span class="s1">'block dense'</span>
-</span><span data-line="152">  <span class="p">[]</span>
-</span><span data-line="153"><span class="p">[]</span>
-</span><span data-line="154">
-</span><span data-line="155"><span class="p">[</span><span class="n">Solvers</span><span class="p">]</span>
-</span><span data-line="156">  <span class="p">[</span><span class="n">newton</span><span class="p">]</span>
-</span><span data-line="157">    <span class="nb">type</span> <span class="o">=</span> <span class="n">NewtonWithLineSearch</span>
-</span><span data-line="158">    <span class="n">max_linesearch_iterations</span> <span class="o">=</span> <span class="mi">5</span>
-</span><span data-line="159">    <span class="n">linear_solver</span> <span class="o">=</span> <span class="s1">'schur'</span>
-</span><span data-line="160">  <span class="p">[]</span>
-</span><span data-line="161">  <span class="p">[</span><span class="n">lu</span><span class="p">]</span>
-</span><span data-line="162">    <span class="nb">type</span> <span class="o">=</span> <span class="n">DenseLU</span>
-</span><span data-line="163">  <span class="p">[]</span>
-</span><span data-line="164">  <span class="p">[</span><span class="n">schur</span><span class="p">]</span>
-</span><span data-line="165">    <span class="nb">type</span> <span class="o">=</span> <span class="n">SchurComplement</span>
-</span><span data-line="166">    <span class="n">residual_primary_group</span> <span class="o">=</span> <span class="s1">'0'</span>
-</span><span data-line="167">    <span class="n">unknown_primary_group</span> <span class="o">=</span> <span class="s1">'0'</span>
-</span><span data-line="168">    <span class="n">primary_solver</span> <span class="o">=</span> <span class="s1">'lu'</span>
-</span><span data-line="169">    <span class="n">schur_solver</span> <span class="o">=</span> <span class="s1">'lu'</span>
-</span><span data-line="170">  <span class="p">[]</span>
-</span><span data-line="171"><span class="p">[]</span>
-</span><span data-line="172">
-</span><span data-line="173"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
-</span><span data-line="174">  <span class="p">[</span><span class="n">predictor</span><span class="p">]</span>
-</span><span data-line="175">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ConstantExtrapolationPredictor</span>
-</span><span data-line="176">    <span class="n">unknowns_SR2</span> <span class="o">=</span> <span class="s1">'elastic_strain deformation_rate target_cauchy_stress'</span>
-</span><span data-line="177">    <span class="n">unknowns_MRP</span> <span class="o">=</span> <span class="s1">'orientation'</span>
-</span><span data-line="178">    <span class="n">unknowns_Scalar</span> <span class="o">=</span> <span class="s1">'slip_hardening'</span>
-</span><span data-line="179">  <span class="p">[]</span>
-</span><span data-line="180">  <span class="p">[</span><span class="n">model_bare</span><span class="p">]</span>
-</span><span data-line="181">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ImplicitUpdate</span>
-</span><span data-line="182">    <span class="n">equation_system</span> <span class="o">=</span> <span class="s1">'eq_sys'</span>
-</span><span data-line="183">    <span class="n">solver</span> <span class="o">=</span> <span class="s1">'newton'</span>
-</span><span data-line="184">    <span class="n">predictor</span> <span class="o">=</span> <span class="s1">'predictor'</span>
-</span><span data-line="185">  <span class="p">[]</span>
-</span><span data-line="186">  <span class="p">[</span><span class="n">compute_mixed_state</span><span class="p">]</span>
-</span><span data-line="187">    <span class="nb">type</span> <span class="o">=</span> <span class="n">MixedControlSetup</span>
-</span><span data-line="188">    <span class="n">x_above</span> <span class="o">=</span> <span class="s1">'deformation_rate'</span>
-</span><span data-line="189">    <span class="n">x_below</span> <span class="o">=</span> <span class="s1">'target_cauchy_stress'</span>
-</span><span data-line="190">    <span class="n">y</span> <span class="o">=</span> <span class="s1">'mixed_state'</span>
-</span><span data-line="191">  <span class="p">[]</span>
-</span><span data-line="192">  <span class="p">[</span><span class="n">model</span><span class="p">]</span>
-</span><span data-line="193">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ComposedModel</span>
-</span><span data-line="194">    <span class="n">models</span> <span class="o">=</span> <span class="s1">'model_bare compute_mixed_state'</span>
-</span><span data-line="195">    <span class="n">additional_outputs</span> <span class="o">=</span> <span class="s1">'mixed_state'</span>
-</span><span data-line="196">  <span class="p">[]</span>
-</span><span data-line="197"><span class="p">[]</span>
+</span><span data-line="125">  <span class="p">[]</span>
+</span><span data-line="126">  <span class="p">[</span><span class="n">match_mean_cauchy_stress</span><span class="p">]</span>
+</span><span data-line="127">    <span class="nb">type</span> <span class="o">=</span> <span class="n">SR2LinearCombination</span>
+</span><span data-line="128">    <span class="kn">from</span><span class="w"> </span><span class="o">=</span> <span class="s1">'target_cauchy_stress mean_cauchy_stress'</span>
+</span><span data-line="129">    <span class="n">to</span> <span class="o">=</span> <span class="s1">'target_cauchy_stress_residual'</span>
+</span><span data-line="130">    <span class="n">weights</span> <span class="o">=</span> <span class="s1">'1 -1'</span>
+</span><span data-line="131">  <span class="p">[]</span>
+</span><span data-line="132">  <span class="p">[</span><span class="n">global_constraint</span><span class="p">]</span>
+</span><span data-line="133">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ComposedModel</span>
+</span><span data-line="134">    <span class="n">models</span> <span class="o">=</span> <span class="s1">'mean_stress match_mean_cauchy_stress'</span>
+</span><span data-line="135">  <span class="p">[]</span>
+</span><span data-line="136">
+</span><span data-line="137">  <span class="c1"># Full implicit model</span>
+</span><span data-line="138">  <span class="p">[</span><span class="n">implicit_model</span><span class="p">]</span>
+</span><span data-line="139">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ComposedModel</span>
+</span><span data-line="140">    <span class="n">models</span> <span class="o">=</span> <span class="s1">'mixed_control y_constraint per_crystal_update global_constraint'</span>
+</span><span data-line="141">  <span class="p">[]</span>
+</span><span data-line="142"><span class="p">[]</span>
+</span><span data-line="143">
+</span><span data-line="144"><span class="p">[</span><span class="n">EquationSystems</span><span class="p">]</span>
+</span><span data-line="145">  <span class="p">[</span><span class="n">eq_sys</span><span class="p">]</span>
+</span><span data-line="146">    <span class="nb">type</span> <span class="o">=</span> <span class="n">NonlinearSystem</span>
+</span><span data-line="147">    <span class="n">model</span> <span class="o">=</span> <span class="s1">'implicit_model'</span>
+</span><span data-line="148">    <span class="n">unknowns</span> <span class="o">=</span> <span class="s1">'elastic_strain orientation slip_hardening; deformation_rate target_cauchy_stress'</span>
+</span><span data-line="149">    <span class="n">residuals</span> <span class="o">=</span> <span class="s1">'elastic_strain_residual orientation_residual slip_hardening_residual; y_residual target_cauchy_stress_residual'</span>
+</span><span data-line="150">    <span class="n">structure</span> <span class="o">=</span> <span class="s1">'block dense'</span>
+</span><span data-line="151">  <span class="p">[]</span>
+</span><span data-line="152"><span class="p">[]</span>
+</span><span data-line="153">
+</span><span data-line="154"><span class="p">[</span><span class="n">Solvers</span><span class="p">]</span>
+</span><span data-line="155">  <span class="p">[</span><span class="n">newton</span><span class="p">]</span>
+</span><span data-line="156">    <span class="nb">type</span> <span class="o">=</span> <span class="n">NewtonWithLineSearch</span>
+</span><span data-line="157">    <span class="n">max_linesearch_iterations</span> <span class="o">=</span> <span class="mi">5</span>
+</span><span data-line="158">    <span class="n">linear_solver</span> <span class="o">=</span> <span class="s1">'schur'</span>
+</span><span data-line="159">  <span class="p">[]</span>
+</span><span data-line="160">  <span class="p">[</span><span class="n">lu</span><span class="p">]</span>
+</span><span data-line="161">    <span class="nb">type</span> <span class="o">=</span> <span class="n">DenseLU</span>
+</span><span data-line="162">  <span class="p">[]</span>
+</span><span data-line="163">  <span class="p">[</span><span class="n">schur</span><span class="p">]</span>
+</span><span data-line="164">    <span class="nb">type</span> <span class="o">=</span> <span class="n">SchurComplement</span>
+</span><span data-line="165">    <span class="n">residual_primary_group</span> <span class="o">=</span> <span class="s1">'0'</span>
+</span><span data-line="166">    <span class="n">unknown_primary_group</span> <span class="o">=</span> <span class="s1">'0'</span>
+</span><span data-line="167">    <span class="n">primary_solver</span> <span class="o">=</span> <span class="s1">'lu'</span>
+</span><span data-line="168">    <span class="n">schur_solver</span> <span class="o">=</span> <span class="s1">'lu'</span>
+</span><span data-line="169">  <span class="p">[]</span>
+</span><span data-line="170"><span class="p">[]</span>
+</span><span data-line="171">
+</span><span data-line="172"><span class="p">[</span><span class="n">Models</span><span class="p">]</span>
+</span><span data-line="173">  <span class="p">[</span><span class="n">predictor</span><span class="p">]</span>
+</span><span data-line="174">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ConstantExtrapolationPredictor</span>
+</span><span data-line="175">    <span class="n">unknowns_SR2</span> <span class="o">=</span> <span class="s1">'elastic_strain deformation_rate target_cauchy_stress'</span>
+</span><span data-line="176">    <span class="n">unknowns_MRP</span> <span class="o">=</span> <span class="s1">'orientation'</span>
+</span><span data-line="177">    <span class="n">unknowns_Scalar</span> <span class="o">=</span> <span class="s1">'slip_hardening'</span>
+</span><span data-line="178">  <span class="p">[]</span>
+</span><span data-line="179">  <span class="p">[</span><span class="n">model_bare</span><span class="p">]</span>
+</span><span data-line="180">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ImplicitUpdate</span>
+</span><span data-line="181">    <span class="n">equation_system</span> <span class="o">=</span> <span class="s1">'eq_sys'</span>
+</span><span data-line="182">    <span class="n">solver</span> <span class="o">=</span> <span class="s1">'newton'</span>
+</span><span data-line="183">    <span class="n">predictor</span> <span class="o">=</span> <span class="s1">'predictor'</span>
+</span><span data-line="184">  <span class="p">[]</span>
+</span><span data-line="185">  <span class="p">[</span><span class="n">compute_mixed_state</span><span class="p">]</span>
+</span><span data-line="186">    <span class="nb">type</span> <span class="o">=</span> <span class="n">MixedControlSetup</span>
+</span><span data-line="187">    <span class="n">x_above</span> <span class="o">=</span> <span class="s1">'deformation_rate'</span>
+</span><span data-line="188">    <span class="n">x_below</span> <span class="o">=</span> <span class="s1">'target_cauchy_stress'</span>
+</span><span data-line="189">    <span class="n">y</span> <span class="o">=</span> <span class="s1">'mixed_state'</span>
+</span><span data-line="190">  <span class="p">[]</span>
+</span><span data-line="191">  <span class="p">[</span><span class="n">model</span><span class="p">]</span>
+</span><span data-line="192">    <span class="nb">type</span> <span class="o">=</span> <span class="n">ComposedModel</span>
+</span><span data-line="193">    <span class="n">models</span> <span class="o">=</span> <span class="s1">'model_bare compute_mixed_state'</span>
+</span><span data-line="194">    <span class="n">additional_outputs</span> <span class="o">=</span> <span class="s1">'mixed_state'</span>
+</span><span data-line="195">  <span class="p">[]</span>
+</span><span data-line="196"><span class="p">[]</span>
 </span></pre></div>
 </div>
 </div>

@@ -10,10 +10,7 @@ difference along the selected sub-batch axis. The selected axis length
 shrinks by ``n``; ``sub_batch_ndim`` is preserved (this is a per-axis
 differencing operator, not a reduction).
 
-The ``reduces`` HIT parameter names the sub-batch label of the
-differencing axis -- the chain rule on that label is structurally
-non-diagonal (each output site depends on several input sites
-along the label).
+Sub-batch axes are positional; ``dim`` selects the differencing axis.
 
 ## Inputs
 
@@ -34,7 +31,4 @@ along the label).
 
 `n` &mdash; `int` &middot; default `1`
 : Order of the differentiation
-
-`reduces` &mdash; `str` &middot; **required**
-: Sub-batch label of the differencing axis.
 

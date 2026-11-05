@@ -246,6 +246,8 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="ScalarConstantParameter.html">ScalarConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ScalarIntermediateMean.html">ScalarIntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ScalarIntermediateSum.html">ScalarIntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarMultiplication.html">ScalarMultiplication</a></li>
@@ -440,14 +442,10 @@ data-aria-dark="Switch to auto color mode">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="sr2intermediatemean">
 <span id="models-sr2intermediatemean"></span><h1>SR2IntermediateMean<a class="headerlink" href="#sr2intermediatemean" title="Link to this heading">#</a></h1>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/common/IntermediateMean.py</span></code></p>
-<p><code class="docutils literal notranslate"><span class="pre">to</span> <span class="pre">=</span> <span class="pre">mean(from,</span> <span class="pre">dim=trailing_sub_batch_axis)</span></code>; reduces sub_batch_ndim by 1.</p>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/common/IntermediateReduce.py</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">to</span> <span class="pre">=</span> <span class="pre">mean(from,</span> <span class="pre">dim=sub_batch_axis)</span></code>; reduces sub_batch_ndim by 1.</p>
 <p>Mirrors C++ <code class="docutils literal notranslate"><span class="pre">IntermediateMean&lt;SR2&gt;</span></code>. Used in CP to average per-crystal
 cauchy stress into a mean over crystals (taylor-style homogenisation).</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">reduces</span></code> HIT parameter names the sub-batch label this
-reducer collapses (e.g. <code class="docutils literal notranslate"><span class="pre">reduces</span> <span class="pre">=</span> <span class="pre">'grain'</span></code> for the CP
-polycrystal mean). The composed-model propagator uses it to track
-per-label structural state through the chain.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
@@ -465,7 +463,7 @@ per-label structural state through the chain.</p>
 <section id="other-options">
 <h2>Other options<a class="headerlink" href="#other-options" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">reduces</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · <strong>required</strong></dt><dd><p>Sub-batch label this reducer collapses.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dim</span></code> — <code class="docutils literal notranslate"><span class="pre">int</span></code> · default <code class="docutils literal notranslate"><span class="pre">-1</span></code></dt><dd><p>Sub-batch dimension to average</p>
 </dd>
 </dl>
 </section>

@@ -246,6 +246,8 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarIntermediateMean.html">ScalarIntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarIntermediateSum.html">ScalarIntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
@@ -481,9 +483,9 @@ log-linear extension below a transition saturation <span class="math notranslate
 <p>Permeability <span class="math notranslate nohighlight">\(K\)</span> is a function of porosity <span class="math notranslate nohighlight">\(\varphi\)</span> (not
 saturation), and three closures are provided. With reference values
 <span class="math notranslate nohighlight">\((\varphi_0, K_0)\)</span> they are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-79a55463-c595-4338-8565-55d217955a80">
-<div class="amsmath math notranslate nohighlight" id="equation-79a55463-c595-4338-8565-55d217955a80">
-<span class="eqno">(10)<a class="headerlink" href="#equation-79a55463-c595-4338-8565-55d217955a80" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-97c6a4ac-3c80-403c-b632-87031755c367">
+<div class="amsmath math notranslate nohighlight" id="equation-97c6a4ac-3c80-403c-b632-87031755c367">
+<span class="eqno">(10)<a class="headerlink" href="#equation-97c6a4ac-3c80-403c-b632-87031755c367" title="Permalink to this equation">#</a></span>\[\begin{align}
 K^{\mathrm{pow}}(\varphi) &amp;= K_0 \left( \frac{\varphi}{\varphi_0} \right)^p, \\
 K^{\mathrm{exp}}(\varphi) &amp;= K_0 \exp\!\left[ -a\,(\varphi - \varphi_0) \right], \\
 K^{\mathrm{KC}}(\varphi)  &amp;= K_0 \, \frac{(\varphi / (1 - \varphi))^n}{(\varphi_0 / (1 - \varphi_0))^m}.

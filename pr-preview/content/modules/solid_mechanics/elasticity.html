@@ -246,6 +246,8 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarIntermediateMean.html">ScalarIntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarIntermediateSum.html">ScalarIntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
@@ -506,9 +508,9 @@ and deviatoric projectors:</p>
 <p>Any pair drawn from <span class="math notranslate nohighlight">\(\{E,\,\nu,\,K,\,G,\,\lambda,\,M\}\)</span> converts to
 <span class="math notranslate nohighlight">\((K,\,G)\)</span> via the standard textbook relations; e.g. with
 <span class="math notranslate nohighlight">\(E,\,\nu\)</span> as inputs,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-bea6e12c-664d-4167-90e4-0da3ba412a58">
-<div class="amsmath math notranslate nohighlight" id="equation-bea6e12c-664d-4167-90e4-0da3ba412a58">
-<span class="eqno">(11)<a class="headerlink" href="#equation-bea6e12c-664d-4167-90e4-0da3ba412a58" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-8140bba3-dd57-4fcf-8c00-a6aaa5ac6614">
+<div class="amsmath math notranslate nohighlight" id="equation-8140bba3-dd57-4fcf-8c00-a6aaa5ac6614">
+<span class="eqno">(11)<a class="headerlink" href="#equation-8140bba3-dd57-4fcf-8c00-a6aaa5ac6614" title="Permalink to this equation">#</a></span>\[\begin{align}
   K &amp;= \dfrac{E}{3(1 - 2\nu)}, \\
   G &amp;= \dfrac{E}{2(1 + \nu)}.
 \end{align}\]</div>
@@ -524,9 +526,9 @@ fourth-order stiffness onto three cubic-symmetry projectors
 \]</div>
 </div>
 <p>With <span class="math notranslate nohighlight">\((G,\,E,\,\nu)\)</span> as inputs, the canonical triple is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-d6a997ac-056f-4251-8d39-987edbce298f">
-<div class="amsmath math notranslate nohighlight" id="equation-d6a997ac-056f-4251-8d39-987edbce298f">
-<span class="eqno">(12)<a class="headerlink" href="#equation-d6a997ac-056f-4251-8d39-987edbce298f" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-d7608898-7b16-4a7a-93e5-a9619e4477f8">
+<div class="amsmath math notranslate nohighlight" id="equation-d7608898-7b16-4a7a-93e5-a9619e4477f8">
+<span class="eqno">(12)<a class="headerlink" href="#equation-d7608898-7b16-4a7a-93e5-a9619e4477f8" title="Permalink to this equation">#</a></span>\[\begin{align}
   C_1 &amp;= \dfrac{E\,(1 - \nu)}{(1 + \nu)(1 - 2\nu)}, \\
   C_2 &amp;= \dfrac{E\,\nu}{(1 + \nu)(1 - 2\nu)}, \\
   C_3 &amp;= 2G.

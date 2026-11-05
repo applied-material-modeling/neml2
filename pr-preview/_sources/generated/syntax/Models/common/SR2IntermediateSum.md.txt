@@ -1,16 +1,11 @@
 (models-SR2IntermediateSum)=
 # SR2IntermediateSum
 
-**Source:** `models/common/IntermediateSum.py`
+**Source:** `models/common/IntermediateReduce.py`
 
-Sum an intermediate dimension.
+``to = sum(from, dim=sub_batch_axis)``; reduces sub_batch_ndim by 1.
 
-Mirrors C++ ``IntermediateSum<SR2>``: reduces the trailing sub-batch axis
-by summing along it, dropping ``sub_batch_ndim`` by 1.
-
-The ``reduces`` HIT parameter names the sub-batch label this
-reducer collapses; the composed-model propagator uses it to track
-per-label structural state through the chain.
+Mirrors C++ ``IntermediateSum<SR2>``.
 
 ## Inputs
 
@@ -26,6 +21,6 @@ per-label structural state through the chain.
 
 ## Other options
 
-`reduces` &mdash; `str` &middot; **required**
-: Sub-batch label this reducer collapses.
+`dim` &mdash; `int` &middot; default `-1`
+: Sub-batch dimension to sum
 

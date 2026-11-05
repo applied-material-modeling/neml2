@@ -246,6 +246,8 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarIntermediateMean.html">ScalarIntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarIntermediateSum.html">ScalarIntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
@@ -3282,8 +3284,11 @@ by the endpoint views (see <a class="reference internal" href="#neml2.types.lins
 collapses the axis (no <code class="docutils literal notranslate"><span class="pre">keepdim</span></code>); reducing a sub-batch axis drops
 <code class="docutils literal notranslate"><span class="pre">sub_batch_ndim</span></code> by 1. Returns the same wrapper type as the view’s
 underlying wrapper.</p>
-<p>Like <a class="reference internal" href="#neml2.types.sum" title="neml2.types.sum"><code class="xref py py-func docutils literal notranslate"><span class="pre">sum()</span></code></a>, materialises any <code class="docutils literal notranslate"><span class="pre">&quot;broadcast&quot;</span></code> sub-batch axis
-before reducing so the per-site mean counts every site.</p>
+<p>Implemented as <a class="reference internal" href="#neml2.types.sum" title="neml2.types.sum"><code class="xref py py-func docutils literal notranslate"><span class="pre">sum()</span></code></a> over the axis divided by the axis’s logical
+extent, so all sub-batch-state / K-pairing / broadcast-expose bookkeeping
+is shared with <code class="docutils literal notranslate"><span class="pre">sum</span></code> rather than reimplemented (a divergent second copy
+is exactly what let a reduced sibling <code class="docutils literal notranslate"><span class="pre">broadcast</span></code> axis lose its logical
+extent). The logical extent is read from the view <em>before</em> reducing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
