@@ -1,0 +1,18 @@
+(models-MillerIndexParameterToVariable)=
+# MillerIndexParameterToVariable
+
+**Source:** `models/common/ParameterToVariable.py`
+
+MillerIndex parameter-to-variable. Mirrors ``ParameterToVariable<MillerIndex>``.
+
+## Outputs
+
+`to` &mdash; `output` &middot; `MillerIndex` &middot; **required**
+: The name of the variable
+
+
+## Parameters
+
+`from` &mdash; `parameter` &middot; `MillerIndex` &middot; **required**
+: The input parameter
+
