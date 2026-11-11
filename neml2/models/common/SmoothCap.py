@@ -27,7 +27,7 @@ from __future__ import annotations
 
 from ...factory import register_neml2_object
 from ...schema import HitSchema, input, option, output
-from ...types import Scalar, pow
+from ...types import Scalar, gt, pow, where
 from ..chain_rule import ChainRuleDict
 from ..model import Model
 
@@ -69,7 +69,15 @@ class SmoothCap(Model):
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         p = self._p
-        y = pow(pow(x, -p) + self._xmax ** (-p), -1.0 / p)
+        # Evaluate (x^-p + xmax^-p)^(-1/p) = lo * (1 + (lo/hi)^p)^(-1/p) with
+        # lo = min(x, xmax), hi = max(x, xmax). The ratio stays in (0, 1], so
+        # nothing overflows; the direct negative powers underflow to 0 (and
+        # the result to inf) for sharp exponents, e.g. 50^-200 in float64.
+        xmax = Scalar.from_value(self._xmax, like=x)
+        above = gt(x, xmax)
+        lo = where(above, xmax, x)
+        hi = where(above, x, xmax)
+        y = lo * pow(1.0 + pow(lo / hi, p), -1.0 / p)
 
         if v is None:
             return y
