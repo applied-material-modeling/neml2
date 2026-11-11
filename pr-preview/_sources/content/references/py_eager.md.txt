@@ -47,7 +47,8 @@ tensors. `jvp` returns each directional derivative as a wrapper of the output's
 type; `jacobian` returns the nested `{output: {input: block}}` map, each block a
 dynamic-base `Tensor` of shape `(*batch, *sub_batch, *out_base, *in_base)`.
 Sub-batch models (e.g. crystal plasticity) are supported — the per-site axis
-stays in the block's sub-batch region. The reverse-mode parameter derivatives
+stays in the block's sub-batch region. `jacobian(inputs, derivatives=[...])`
+takes `-d` specs ([](sub-batch-derivatives)). The reverse-mode parameter derivatives
 $\partial(\text{output})/\partial(\text{parameter})$ are a separate surface:
 `param_jacobian` / `param_vjp`.
 

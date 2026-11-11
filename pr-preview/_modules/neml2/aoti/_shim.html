@@ -93,7 +93,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/tensor_types/index.html">Tensor types</a><ul>
@@ -125,7 +124,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -336,7 +334,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/Python.html">Python</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -874,97 +871,98 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="427">
 </span><span data-line="428"><span class="sd">        ``inputs`` is a ``{variable_name: tensor}`` dict. Returns</span>
 </span><span data-line="429"><span class="sd">        ``(outputs, J)`` where ``J[out][in]`` is the block ``d(out)/d(in)``,</span>
-</span><span data-line="430"><span class="sd">        shaped ``(batch, *out_base, *in_base)``. Like :meth:`jvp`, needs an</span>
-</span><span data-line="431"><span class="sd">        artifact compiled with ``-d``.</span>
-</span><span data-line="432"><span class="sd">        """</span>
-</span><span data-line="433">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
+</span><span data-line="430"><span class="sd">        shaped ``(batch, *out_base, *in_base)`` for plain-batch variables, else</span>
+</span><span data-line="431"><span class="sd">        as its :attr:`neml2.aoti.Model.derivative_forms` entry. Like :meth:`jvp`,</span>
+</span><span data-line="432"><span class="sd">        needs an artifact compiled with ``-d``.</span>
+</span><span data-line="433"><span class="sd">        """</span>
+</span><span data-line="434">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
 
-</span><span data-line="434">
+</span><span data-line="435">
 <div class="viewcode-block" id="AOTIModel.param_jacobian">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.param_jacobian">[docs]</a>
-</span><span data-line="435">    <span class="k">def</span><span class="w"> </span><span class="nf">param_jacobian</span><span class="p">(</span>
-</span><span data-line="436">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="437">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="438">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="439">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
-</span><span data-line="440"><span class="w">        </span><span class="sd">"""Outputs + the per-(output, parameter) Jacobian blocks ``d(out)/d(param)``.</span>
-</span><span data-line="441">
-</span><span data-line="442"><span class="sd">        The reverse-mode parameter-derivative counterpart to :meth:`jacobian`</span>
-</span><span data-line="443"><span class="sd">        (mirrors :meth:`neml2.models.model.Model.param_jacobian` on the other</span>
-</span><span data-line="444"><span class="sd">        routes): ``inputs`` is a ``{variable_name: tensor}`` dict and the result</span>
-</span><span data-line="445"><span class="sd">        is ``(outputs, P)`` with ``P[out][param]`` the block ``d(out)/d(param)``,</span>
-</span><span data-line="446"><span class="sd">        keyed by qualified promoted-parameter name (see :meth:`named_parameters`).</span>
-</span><span data-line="447"><span class="sd">        Needs an artifact with the parameter promoted (``neml2-compile ... -p</span>
-</span><span data-line="448"><span class="sd">        NAME``) and its derivative graph (``-d``).</span>
-</span><span data-line="449"><span class="sd">        """</span>
-</span><span data-line="450">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">param_jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
+</span><span data-line="436">    <span class="k">def</span><span class="w"> </span><span class="nf">param_jacobian</span><span class="p">(</span>
+</span><span data-line="437">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="438">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="439">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="440">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
+</span><span data-line="441"><span class="w">        </span><span class="sd">"""Outputs + the per-(output, parameter) Jacobian blocks ``d(out)/d(param)``.</span>
+</span><span data-line="442">
+</span><span data-line="443"><span class="sd">        The reverse-mode parameter-derivative counterpart to :meth:`jacobian`</span>
+</span><span data-line="444"><span class="sd">        (mirrors :meth:`neml2.models.model.Model.param_jacobian` on the other</span>
+</span><span data-line="445"><span class="sd">        routes): ``inputs`` is a ``{variable_name: tensor}`` dict and the result</span>
+</span><span data-line="446"><span class="sd">        is ``(outputs, P)`` with ``P[out][param]`` the block ``d(out)/d(param)``,</span>
+</span><span data-line="447"><span class="sd">        keyed by qualified promoted-parameter name (see :meth:`named_parameters`).</span>
+</span><span data-line="448"><span class="sd">        Needs an artifact with the parameter promoted (``neml2-compile ... -p</span>
+</span><span data-line="449"><span class="sd">        NAME``) and its derivative graph (``-d``).</span>
+</span><span data-line="450"><span class="sd">        """</span>
+</span><span data-line="451">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">param_jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
 
-</span><span data-line="451">
+</span><span data-line="452">
 <div class="viewcode-block" id="AOTIModel.param_vjp">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.param_vjp">[docs]</a>
-</span><span data-line="452">    <span class="k">def</span><span class="w"> </span><span class="nf">param_vjp</span><span class="p">(</span>
-</span><span data-line="453">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="454">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="455">        <span class="n">cotangents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="456">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="457">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-</span><span data-line="458"><span class="w">        </span><span class="sd">"""Reverse-mode parameter VJP -- ``cotangent`` contracted with ``d(out)/d(param)``.</span>
-</span><span data-line="459">
-</span><span data-line="460"><span class="sd">        The reverse-mode counterpart to :meth:`param_jacobian` (mirrors</span>
-</span><span data-line="461"><span class="sd">        :meth:`neml2.models.model.Model.param_vjp`): ``inputs`` is a</span>
-</span><span data-line="462"><span class="sd">        ``{variable_name: tensor}`` dict, ``cotangents`` is keyed by output name,</span>
-</span><span data-line="463"><span class="sd">        and the result is keyed by qualified promoted-parameter name. Needs a</span>
-</span><span data-line="464"><span class="sd">        ``-p`` / ``-d`` artifact.</span>
-</span><span data-line="465"><span class="sd">        """</span>
-</span><span data-line="466">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">param_vjp</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">cotangents</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
+</span><span data-line="453">    <span class="k">def</span><span class="w"> </span><span class="nf">param_vjp</span><span class="p">(</span>
+</span><span data-line="454">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="455">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="456">        <span class="n">cotangents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="457">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="458">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+</span><span data-line="459"><span class="w">        </span><span class="sd">"""Reverse-mode parameter VJP -- ``cotangent`` contracted with ``d(out)/d(param)``.</span>
+</span><span data-line="460">
+</span><span data-line="461"><span class="sd">        The reverse-mode counterpart to :meth:`param_jacobian` (mirrors</span>
+</span><span data-line="462"><span class="sd">        :meth:`neml2.models.model.Model.param_vjp`): ``inputs`` is a</span>
+</span><span data-line="463"><span class="sd">        ``{variable_name: tensor}`` dict, ``cotangents`` is keyed by output name,</span>
+</span><span data-line="464"><span class="sd">        and the result is keyed by qualified promoted-parameter name. Needs a</span>
+</span><span data-line="465"><span class="sd">        ``-p`` / ``-d`` artifact.</span>
+</span><span data-line="466"><span class="sd">        """</span>
+</span><span data-line="467">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">param_vjp</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">cotangents</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
 
-</span><span data-line="467">
+</span><span data-line="468">
 <div class="viewcode-block" id="AOTIModel.named_parameters">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.named_parameters">[docs]</a>
-</span><span data-line="468">    <span class="k">def</span><span class="w"> </span><span class="nf">named_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>  <span class="c1"># type: ignore[override]</span>
-</span><span data-line="469"><span class="w">        </span><span class="sd">"""The promoted parameters as a mutable ``{qualified_name: tensor}`` dict.</span>
-</span><span data-line="470">
-</span><span data-line="471"><span class="sd">        Overrides ``nn.Module.named_parameters`` -- whose ``(name, Parameter)``</span>
-</span><span data-line="472"><span class="sd">        iterator would be empty here, since the shim registers no</span>
-</span><span data-line="473"><span class="sd">        ``nn.Parameter``s of its own (the calibratable values live in the</span>
-</span><span data-line="474"><span class="sd">        compiled binding). This returns the binding's promoted-parameter surface,</span>
-</span><span data-line="475"><span class="sd">        the same dict the eager runtime and the C++ routes expose. Entries may be</span>
-</span><span data-line="476"><span class="sd">        mutated in place (``m.named_parameters()["elasticity.E"].fill_(...)``) or</span>
-</span><span data-line="477"><span class="sd">        replaced via :meth:`set_parameter`; the change is seen on the next call.</span>
-</span><span data-line="478"><span class="sd">        Only parameters promoted at compile time (``neml2-compile ... -p NAME``)</span>
-</span><span data-line="479"><span class="sd">        appear -- with none promoted the dict is empty.</span>
-</span><span data-line="480"><span class="sd">        """</span>
-</span><span data-line="481">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span></div>
+</span><span data-line="469">    <span class="k">def</span><span class="w"> </span><span class="nf">named_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>  <span class="c1"># type: ignore[override]</span>
+</span><span data-line="470"><span class="w">        </span><span class="sd">"""The promoted parameters as a mutable ``{qualified_name: tensor}`` dict.</span>
+</span><span data-line="471">
+</span><span data-line="472"><span class="sd">        Overrides ``nn.Module.named_parameters`` -- whose ``(name, Parameter)``</span>
+</span><span data-line="473"><span class="sd">        iterator would be empty here, since the shim registers no</span>
+</span><span data-line="474"><span class="sd">        ``nn.Parameter``s of its own (the calibratable values live in the</span>
+</span><span data-line="475"><span class="sd">        compiled binding). This returns the binding's promoted-parameter surface,</span>
+</span><span data-line="476"><span class="sd">        the same dict the eager runtime and the C++ routes expose. Entries may be</span>
+</span><span data-line="477"><span class="sd">        mutated in place (``m.named_parameters()["elasticity.E"].fill_(...)``) or</span>
+</span><span data-line="478"><span class="sd">        replaced via :meth:`set_parameter`; the change is seen on the next call.</span>
+</span><span data-line="479"><span class="sd">        Only parameters promoted at compile time (``neml2-compile ... -p NAME``)</span>
+</span><span data-line="480"><span class="sd">        appear -- with none promoted the dict is empty.</span>
+</span><span data-line="481"><span class="sd">        """</span>
+</span><span data-line="482">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span></div>
 
-</span><span data-line="482">
+</span><span data-line="483">
 <div class="viewcode-block" id="AOTIModel.set_parameter">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.set_parameter">[docs]</a>
-</span><span data-line="483">    <span class="k">def</span><span class="w"> </span><span class="nf">set_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="484"><span class="w">        </span><span class="sd">"""Replace a promoted parameter's value (forwarded to the binding).</span>
-</span><span data-line="485">
-</span><span data-line="486"><span class="sd">        ``name`` is a qualified promoted-parameter name (a key of</span>
-</span><span data-line="487"><span class="sd">        :meth:`named_parameters`); ``value`` must match the artifact's pinned</span>
-</span><span data-line="488"><span class="sd">        device/dtype. The new value is used on the next forward / derivative call.</span>
-</span><span data-line="489"><span class="sd">        """</span>
-</span><span data-line="490">        <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">set_parameter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+</span><span data-line="484">    <span class="k">def</span><span class="w"> </span><span class="nf">set_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="485"><span class="w">        </span><span class="sd">"""Replace a promoted parameter's value (forwarded to the binding).</span>
+</span><span data-line="486">
+</span><span data-line="487"><span class="sd">        ``name`` is a qualified promoted-parameter name (a key of</span>
+</span><span data-line="488"><span class="sd">        :meth:`named_parameters`); ``value`` must match the artifact's pinned</span>
+</span><span data-line="489"><span class="sd">        device/dtype. The new value is used on the next forward / derivative call.</span>
+</span><span data-line="490"><span class="sd">        """</span>
+</span><span data-line="491">        <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">set_parameter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
-</span><span data-line="491">
-</span><span data-line="492">    <span class="k">def</span><span class="w"> </span><span class="nf">_broadcast_to_common_batch</span><span class="p">(</span>
-</span><span data-line="493">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="494">        <span class="n">raw_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="495">        <span class="n">per_input_sub_ndim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-</span><span data-line="496">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">]:</span>
-</span><span data-line="497"><span class="w">        </span><span class="sd">"""Bring every input tensor to its declared ``(*dyn, *sub, *base)`` shape,</span>
-</span><span data-line="498"><span class="sd">        with the dynamic-batch axes broadcast to a single common shape.</span>
-</span><span data-line="499">
-</span><span data-line="500"><span class="sd">        Thin wrapper over the shared</span>
-</span><span data-line="501"><span class="sd">        :func:`neml2.types._boundary.broadcast_to_common_batch`; see there for</span>
-</span><span data-line="502"><span class="sd">        the (dyn, sub, base) per-input split rationale. The per-input</span>
-</span><span data-line="503"><span class="sd">        ``sub_batch_ndim`` is resolved from the caller's typed wrapper instance</span>
-</span><span data-line="504"><span class="sd">        (or the legacy metadata ``sub_batch_shape`` when the caller passes a</span>
-</span><span data-line="505"><span class="sd">        raw tensor) before this call.</span>
-</span><span data-line="506"><span class="sd">        """</span>
-</span><span data-line="507">        <span class="k">return</span> <span class="n">broadcast_to_common_batch</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">per_input_sub_ndim</span><span class="p">)</span></div>
+</span><span data-line="492">
+</span><span data-line="493">    <span class="k">def</span><span class="w"> </span><span class="nf">_broadcast_to_common_batch</span><span class="p">(</span>
+</span><span data-line="494">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="495">        <span class="n">raw_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="496">        <span class="n">per_input_sub_ndim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+</span><span data-line="497">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">]:</span>
+</span><span data-line="498"><span class="w">        </span><span class="sd">"""Bring every input tensor to its declared ``(*dyn, *sub, *base)`` shape,</span>
+</span><span data-line="499"><span class="sd">        with the dynamic-batch axes broadcast to a single common shape.</span>
+</span><span data-line="500">
+</span><span data-line="501"><span class="sd">        Thin wrapper over the shared</span>
+</span><span data-line="502"><span class="sd">        :func:`neml2.types._boundary.broadcast_to_common_batch`; see there for</span>
+</span><span data-line="503"><span class="sd">        the (dyn, sub, base) per-input split rationale. The per-input</span>
+</span><span data-line="504"><span class="sd">        ``sub_batch_ndim`` is resolved from the caller's typed wrapper instance</span>
+</span><span data-line="505"><span class="sd">        (or the legacy metadata ``sub_batch_shape`` when the caller passes a</span>
+</span><span data-line="506"><span class="sd">        raw tensor) before this call.</span>
+</span><span data-line="507"><span class="sd">        """</span>
+</span><span data-line="508">        <span class="k">return</span> <span class="n">broadcast_to_common_batch</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">per_input_sub_ndim</span><span class="p">)</span></div>
 
 </span></pre></div>
         </article><button class="back-to-top" type="button">

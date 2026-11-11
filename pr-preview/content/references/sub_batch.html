@@ -93,7 +93,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -125,7 +124,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -336,7 +334,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/Python.html">Python</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -403,6 +400,10 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#what-the-declaration-is-for">What the declaration is for</a></li>
 <li><a class="reference internal" href="#consistency">Consistency</a></li>
 <li><a class="reference internal" href="#where-each-route-reads-it">Where each route reads it</a></li>
+<li><a class="reference internal" href="#derivatives">Derivatives</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#limits">Limits</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
@@ -576,13 +577,82 @@ every input by name, so it never has to invent a value and has nothing to size.
 A <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code> block in a <code class="docutils literal notranslate"><span class="pre">tests/models/</span></code> input is read but changes nothing
 there.</p>
 </section>
+<section id="derivatives">
+<span id="sub-batch-derivatives"></span><h2>Derivatives<a class="headerlink" href="#derivatives" title="Link to this heading">#</a></h2>
+<p>Derivatives pass through sub-batched variables (an implicit solve’s unknowns, a
+per-site given, a sum over sites) on every route. A derivative <em>with respect to</em>
+a sub-batched input has one column per site, so it is opt-in: an empty <code class="docutils literal notranslate"><span class="pre">IN</span></code>
+(<code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">:</span></code>, <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:</span></code>, also in the eager <code class="docutils literal notranslate"><span class="pre">derivatives</span></code> argument) selects plain
+inputs only; name the input to include it (<code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">y:z</span></code>). Every route lays the blocks out alike:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Form</p></th>
+<th class="head"><p>Input</p></th>
+<th class="head"><p>Block</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">plain</span></code></p></td>
+<td><p>plain-batch</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_sub,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">paired</span></code></p></td>
+<td><p>sub-batched, site-local</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*sub,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">full</span></code></p></td>
+<td><p>sub-batched, sites coupled (a sum, a solve)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_sub,</span> <span class="pre">*out_base,</span> <span class="pre">*in_sub,</span> <span class="pre">*in_base)</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The form is structural: any derivative through an implicit solve is <code class="docutils literal notranslate"><span class="pre">full</span></code>.
+Compiled runtimes report it through <code class="docutils literal notranslate"><span class="pre">derivative_forms()</span></code>. The eager embed bridge
+(<code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>) takes <code class="docutils literal notranslate"><span class="pre">jvp</span></code> tangents for plain-batch inputs only.</p>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">tests/aoti/implicit_sub_batch_ift_reduce/model.i</span></code> solves for a four-site <code class="docutils literal notranslate"><span class="pre">x</span></code>,
+reduces it to the plain <code class="docutils literal notranslate"><span class="pre">vf</span></code>, and maps a four-site <code class="docutils literal notranslate"><span class="pre">z</span></code> site by site to <code class="docutils literal notranslate"><span class="pre">y</span></code>.
+One pair of each form:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">neml2-compile<span class="w"> </span>tests/aoti/implicit_sub_batch_ift_reduce/model.i<span class="w"> </span>--model<span class="w"> </span>model<span class="w"> </span><span class="se">\</span>
+</span><span data-line="2"><span class="w">  </span>--output-dir<span class="w"> </span>art<span class="w"> </span>-d<span class="w"> </span>vf:s<span class="w"> </span>-d<span class="w"> </span>y:z<span class="w"> </span>-d<span class="w"> </span>x:x~1
+</span></pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.aoti</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">torch</span><span class="o">.</span><span class="n">set_default_dtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>  <span class="c1"># the artifact's dtype</span>
+</span><span data-line="5"><span class="n">B</span> <span class="o">=</span> <span class="mi">3</span>
+</span><span data-line="6"><span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="7">    <span class="s2">"x"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>  <span class="c1"># initial guess</span>
+</span><span data-line="8">    <span class="s2">"x~1"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">B</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">),</span>
+</span><span data-line="9">    <span class="s2">"s"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">B</span><span class="p">,),</span> <span class="mf">0.2</span><span class="p">),</span>
+</span><span data-line="10">    <span class="s2">"t"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">B</span><span class="p">,),</span> <span class="mf">0.1</span><span class="p">),</span>
+</span><span data-line="11">    <span class="s2">"t~1"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">B</span><span class="p">),</span>
+</span><span data-line="12">    <span class="s2">"z"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+</span><span data-line="13"><span class="p">}</span>
+</span><span data-line="14"><span class="n">m</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">"art/model"</span><span class="p">)</span>
+</span><span data-line="15"><span class="n">outputs</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+</span><span data-line="16"><span class="n">m</span><span class="o">.</span><span class="n">derivative_forms</span>  <span class="c1"># {'vf': {'s': 'plain'}, 'x': {'x~1': 'full'}, 'y': {'z': 'paired'}}</span>
+</span><span data-line="17"><span class="n">J</span><span class="p">[</span><span class="s2">"vf"</span><span class="p">][</span><span class="s2">"s"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># (3,)</span>
+</span><span data-line="18"><span class="n">J</span><span class="p">[</span><span class="s2">"y"</span><span class="p">][</span><span class="s2">"z"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># (3, 4): site i against site i</span>
+</span><span data-line="19"><span class="n">J</span><span class="p">[</span><span class="s2">"x"</span><span class="p">][</span><span class="s2">"x~1"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># (3, 4, 4): output site i against input site j</span>
+</span></pre></div>
+</div>
+<p>On <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>, pass the four-site inputs typed (<code class="docutils literal notranslate"><span class="pre">Scalar(t,</span> <span class="pre">sub_batch_ndim=1)</span></code>)
+and the same selection: <code class="docutils literal notranslate"><span class="pre">model.jacobian(inputs,</span> <span class="pre">derivatives=[&quot;vf:s&quot;,</span> <span class="pre">&quot;y:z&quot;,</span> <span class="pre">&quot;x:x~1&quot;])</span></code>.</p>
+</section>
+</section>
 <section id="limits">
 <h2>Limits<a class="headerlink" href="#limits" title="Link to this heading">#</a></h2>
 <p>The extent is a declaration, not an inference: it is not derived from the
 crystal geometry, the bin count, or any other data object in the file. State it
 explicitly.</p>
-<p><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> takes derivatives with respect to plain-batch inputs only, and its
-parameter derivatives are plain-batch only. See <a class="reference internal" href="cpp_eager.html#model-eager-cpp"><span class="std std-ref">cpp-eager — eager evaluation from C++</span></a>.</p>
+<p>Through an implicit solve, sub-batched derivatives need the DENSE structure (the
+default); BLOCK groups, an iterative <code class="docutils literal notranslate"><span class="pre">input_sensitivity_solver</span></code> and parameter
+derivatives are plain-batch only.</p>
 <p>The compiled artifact records the extent of every input and output in
 <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>, and the C++ model classes report them through
 <code class="docutils literal notranslate"><span class="pre">input_sub_batch_shapes()</span></code> / <code class="docutils literal notranslate"><span class="pre">output_sub_batch_shapes()</span></code>. <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> reports

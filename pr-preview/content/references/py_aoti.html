@@ -93,7 +93,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -125,7 +124,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -336,7 +334,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/Python.html">Python</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -498,7 +495,7 @@ wholesale:</p>
 <td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">J</span> <span class="pre">&#64;</span> <span class="pre">v)</span></code> over the <strong>requested</strong> pairs. Missing tangent keys → zero.</p></td>
 </tr>
 <tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">jacobian(inputs)</span></code></p></td>
-<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">J)</span></code> with <code class="docutils literal notranslate"><span class="pre">J[out][in]</span></code> the block for each <strong>requested</strong> pair, <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code>.</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">J)</span></code> with <code class="docutils literal notranslate"><span class="pre">J[out][in]</span></code> the block for each <strong>requested</strong> pair, <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_sub,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code>; forms in <code class="docutils literal notranslate"><span class="pre">derivative_forms</span></code> (<a class="reference internal" href="sub_batch.html#sub-batch-derivatives"><span class="std std-ref">Derivatives</span></a>).</p></td>
 </tr>
 <tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">param_jacobian(inputs)</span></code></p></td>
 <td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">P)</span></code> with <code class="docutils literal notranslate"><span class="pre">P[out][param]</span></code> the block <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_base,</span> <span class="pre">*param_base)</span></code> for each <strong>requested</strong> <code class="docutils literal notranslate"><span class="pre">(output,</span> <span class="pre">promoted-parameter)</span></code> pair.</p></td>

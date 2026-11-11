@@ -93,7 +93,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -125,7 +124,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -336,7 +334,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/Python.html">Python</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -413,6 +410,7 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.aoti.Model"><code class="docutils literal notranslate"><span class="pre">Model</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.aoti.Model.derivative_forms"><code class="docutils literal notranslate"><span class="pre">Model.derivative_forms</span></code></a></li>
 <li><a class="reference internal" href="#neml2.aoti.Model.device"><code class="docutils literal notranslate"><span class="pre">Model.device</span></code></a></li>
 <li><a class="reference internal" href="#neml2.aoti.Model.dtype"><code class="docutils literal notranslate"><span class="pre">Model.dtype</span></code></a></li>
 <li><a class="reference internal" href="#neml2.aoti.Model.forward"><code class="docutils literal notranslate"><span class="pre">Model.forward()</span></code></a></li>
@@ -587,8 +585,9 @@ chain-rule protocol). Drivers that don’t need sensitivities – e.g.
 <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> graph.</p>
 <p><code class="docutils literal notranslate"><span class="pre">inputs</span></code> is a <code class="docutils literal notranslate"><span class="pre">{variable_name:</span> <span class="pre">tensor}</span></code> dict. Returns
 <code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">J)</span></code> where <code class="docutils literal notranslate"><span class="pre">J[out][in]</span></code> is the block <code class="docutils literal notranslate"><span class="pre">d(out)/d(in)</span></code>,
-shaped <code class="docutils literal notranslate"><span class="pre">(batch,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code>. Like <a class="reference internal" href="#neml2.aoti.AOTIModel.jvp" title="neml2.aoti.AOTIModel.jvp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">jvp()</span></code></a>, needs an
-artifact compiled with <code class="docutils literal notranslate"><span class="pre">-d</span></code>.</p>
+shaped <code class="docutils literal notranslate"><span class="pre">(batch,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code> for plain-batch variables, else
+as its <a class="reference internal" href="#neml2.aoti.Model.derivative_forms" title="neml2.aoti.Model.derivative_forms"><code class="xref py py-attr docutils literal notranslate"><span class="pre">neml2.aoti.Model.derivative_forms</span></code></a> entry. Like <a class="reference internal" href="#neml2.aoti.AOTIModel.jvp" title="neml2.aoti.AOTIModel.jvp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">jvp()</span></code></a>,
+needs an artifact compiled with <code class="docutils literal notranslate"><span class="pre">-d</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -731,6 +730,17 @@ compile time are reachable through <code class="docutils literal notranslate"><s
 mutated in-place (e.g. <code class="docutils literal notranslate"><span class="pre">model.named_parameters()['E'].fill_(210000.0)</span></code>).
 Everything else is baked into the graph as a constant.</p>
 <dl class="py property">
+<dt class="sig sig-object py" id="neml2.aoti.Model.derivative_forms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">derivative_forms</span></span><a class="headerlink" href="#neml2.aoti.Model.derivative_forms" title="Link to this definition">#</a></dt>
+<dd><p>‘plain’, ‘paired’ or ‘full’ (see the sub-batch reference).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Block layout of each compiled derivative pair, keyed [output][input]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="neml2.aoti.Model.device">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><a class="headerlink" href="#neml2.aoti.Model.device" title="Link to this definition">#</a></dt>
 <dd><p>Device the artifact was compiled for (immutable).</p>
@@ -777,9 +787,10 @@ promoted parameter’s value for this call only, without mutating
 <dd><p>Evaluate + full Jacobian as unflattened variable-pair blocks.</p>
 <p>Returns a 2-tuple <code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">J)</span></code> where <code class="docutils literal notranslate"><span class="pre">J</span></code> is a nested
 <code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">dict[str,</span> <span class="pre">Tensor]]</span></code>: <code class="docutils literal notranslate"><span class="pre">J[out_name][in_name]</span></code> is the block
-<code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_base_shape,</span> <span class="pre">*in_base_shape)</span></code> (e.g. SR2-&gt;SR2 -&gt; (<em>B, 6, 6);
-Scalar-&gt;SR2 -&gt; (*B, 6)) over the **structural*</em> inputs (promoted-parameter
-inputs are not exposed in J).</p>
+<code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_base_shape,</span> <span class="pre">*in_base_shape)</span></code> for plain-batch variables (e.g.
+SR2-&gt;SR2 -&gt; (<em>B, 6, 6); Scalar-&gt;SR2 -&gt; (*B, 6)), and with sub-batched variables
+the layout of its ``derivative_forms`` entry, over the **structural*</em> inputs
+(promoted-parameter inputs are not exposed in J).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -790,7 +801,7 @@ inputs are not exposed in J).</p>
 <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*sub_batch_shape,</span> <span class="pre">*base_shape)</span></code>; a missing tangent key defaults to zero. Returns a
 2-tuple <code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">jvp_outputs)</span></code> – both <code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">Tensor]</span></code> keyed by
 <code class="docutils literal notranslate"><span class="pre">output_names</span></code>; <code class="docutils literal notranslate"><span class="pre">jvp_outputs[name]</span></code> is the directional derivative at the
-output’s natural <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_base_shape)</span></code>.</p>
+output’s <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_sub_batch_shape,</span> <span class="pre">*out_base_shape)</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">

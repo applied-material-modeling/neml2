@@ -93,7 +93,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -125,7 +124,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -336,7 +334,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/Python.html">Python</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -476,7 +473,8 @@ tensors. <code class="docutils literal notranslate"><span class="pre">jvp</span>
 type; <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> returns the nested <code class="docutils literal notranslate"><span class="pre">{output:</span> <span class="pre">{input:</span> <span class="pre">block}}</span></code> map, each block a
 dynamic-base <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(*batch,</span> <span class="pre">*sub_batch,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code>.
 Sub-batch models (e.g. crystal plasticity) are supported — the per-site axis
-stays in the block’s sub-batch region. The reverse-mode parameter derivatives
+stays in the block’s sub-batch region. <code class="docutils literal notranslate"><span class="pre">jacobian(inputs,</span> <span class="pre">derivatives=[...])</span></code>
+takes <code class="docutils literal notranslate"><span class="pre">-d</span></code> specs (<a class="reference internal" href="sub_batch.html#sub-batch-derivatives"><span class="std std-ref">Derivatives</span></a>). The reverse-mode parameter derivatives
 <span class="math notranslate nohighlight">\(\partial(\text{output})/\partial(\text{parameter})\)</span> are a separate surface:
 <code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code>.</p>
 <p>Two lower-level paths remain for when you need them:</p>

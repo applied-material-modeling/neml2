@@ -93,7 +93,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -125,7 +124,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
@@ -336,7 +334,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/Python.html">Python</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -800,14 +797,16 @@ with it.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.models.model.Model.jacobian">
-<span class="sig-name descname"><span class="pre">jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#Model.jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.Model.jacobian" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivatives</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#Model.jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.Model.jacobian" title="Link to this definition">#</a></dt>
 <dd><p>Evaluate the model and its full Jacobian as typed variable-pair blocks.</p>
 <p>Returns <code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">J)</span></code> – <code class="docutils literal notranslate"><span class="pre">outputs</span></code> keyed by output name (typed) and
 <code class="docutils literal notranslate"><span class="pre">J</span></code> the nested <code class="docutils literal notranslate"><span class="pre">{out_name:</span> <span class="pre">{in_name:</span> <span class="pre">block}}</span></code> map (rows in
 <code class="docutils literal notranslate"><span class="pre">output_spec</span></code> order, cols in <code class="docutils literal notranslate"><span class="pre">input_spec</span></code> order). Each block is a
 dynamic-base <a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a> of shape
-<code class="docutils literal notranslate"><span class="pre">(*batch,</span> <span class="pre">*sub_batch,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code> – there is no single static
-wrapper for an arbitrary derivative pair. A constant <code class="docutils literal notranslate"><span class="pre">(out,</span> <span class="pre">in)</span></code> pair is
+<code class="docutils literal notranslate"><span class="pre">(*batch,</span> <span class="pre">*out_sub_batch,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code>; a named sub-batched
+input gets the <code class="docutils literal notranslate"><span class="pre">paired</span></code> or <code class="docutils literal notranslate"><span class="pre">full</span></code> form of
+<code class="xref py py-func docutils literal notranslate"><span class="pre">sub_batched_pair_block()</span></code>. There is no single
+static wrapper for an arbitrary derivative pair. A constant <code class="docutils literal notranslate"><span class="pre">(out,</span> <span class="pre">in)</span></code> pair is
 an explicit zero block.</p>
 <p>Built on the same <code class="docutils literal notranslate"><span class="pre">forward(v=)</span></code> chain rule as <a class="reference internal" href="#neml2.models.model.Model.jvp" title="neml2.models.model.Model.jvp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">jvp()</span></code></a>, seeding each
 input with a leading-K identity (one direction per input base component,
@@ -817,9 +816,16 @@ and reshaping the result into per-pair blocks. The seed batch is
 parameter is handled, matching <code class="docutils literal notranslate"><span class="pre">_EagerModel.jacobian</span></code>. The typed
 py-eager analogue of the (raw, name-keyed) <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> the compiled /
 embedded routes expose.</p>
+<p><em>derivatives</em> takes <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-d</span></code> specs; the default is every
+output against the plain-batch inputs. A sub-batched input is included
+only when named (block forms:
+<code class="xref py py-func docutils literal notranslate"><span class="pre">sub_batched_pair_block()</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>inputs</strong> (<em>Mapping</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper"><em>TensorWrapper</em></a><em> | </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>torch.Tensor</em></a><em>]</em>)</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>Mapping</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper"><em>TensorWrapper</em></a><em> | </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.15)"><em>torch.Tensor</em></a><em>]</em>)</p></li>
+<li><p><strong>derivatives</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper">TensorWrapper</a>], <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.Tensor">Tensor</a>]]]</p>

@@ -7,13 +7,10 @@
 
 CrystalPlasticityDeformationGradientPredictor
 CrystalPlasticityStrainPredictor
-DislocationInteractionStrengthMap
 DislocationObstacleStrengthMap
 ElasticStrainRate
 FixOrientation
 KocksMeckingDynamicRecovery
-LinearInteractionHardeningRule
-LinearInteractionStrengthMap
 LinearSingleSlipHardeningRule
 LumpedForestDislocationEvolution
 OrientationRate

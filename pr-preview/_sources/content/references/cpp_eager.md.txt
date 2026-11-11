@@ -148,16 +148,16 @@ auto [out, jvp_out] = m.jvp(inputs, tangents);   // tangents keyed + shaped like
 // (*B, *out_sub_batch, *out_base, *in_base) -- e.g. SR2->SR2 -> (*B, 6, 6);
 // Scalar->SR2 -> (*B, 6).
 auto [out2, J] = m.jacobian(inputs);
+
+// Select pairs with -d specs; a sub-batched input is included only when named.
+auto [out3, J3] = m.jacobian(inputs, {"stress:", "stress:strain_per_grain"});
 ```
 
 :::{note}
-**Derivatives are with respect to plain-batch inputs.** A sub-batched input
-(e.g. per-bin history `number_density~1`) is held fixed: `jacobian` returns no
-column for it, as an AOTI artifact returns only the pairs it was compiled with,
-and `jvp` rejects a tangent for it. Rows for sub-batched outputs carry the
-output's sub-batch axes. The parameter derivatives (`param_jacobian` /
-`param_vjp`) are plain-batch only and reject a call that carries a sub-batched
-variable.
+**Sub-batched inputs are opt-in.** By default `jacobian` has no column for a
+sub-batched input (e.g. `number_density~1`); name it in `derivatives`
+([](sub-batch-derivatives)). `jvp` rejects a sub-batched tangent, and the
+parameter derivatives are plain-batch only.
 :::
 
 ## Errors
