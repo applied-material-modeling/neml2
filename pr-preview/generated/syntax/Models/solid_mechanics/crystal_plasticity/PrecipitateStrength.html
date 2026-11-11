@@ -257,6 +257,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/SmoothCap.html">SmoothCap</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
@@ -450,11 +451,20 @@ data-aria-dark="Switch to auto color mode">
           <section class="tex2jax_ignore mathjax_ignore" id="precipitatestrength">
 <span id="models-precipitatestrength"></span><h1>PrecipitateStrength<a class="headerlink" href="#precipitatestrength" title="Link to this heading">#</a></h1>
 <p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/crystal_plasticity/PrecipitateStrength.py</span></code></p>
-<p>Strength contribution of a precipitate population, defined by
-<span class="math notranslate nohighlight">\(\tau = \alpha \dfrac{\mu b}{2 R N}\)</span>
+<p>Orowan (bypass) strength contribution of a precipitate population,
+defined by
+<span class="math notranslate nohighlight">\(\tau = \alpha \mu b \sqrt{2 R N}\)</span>
 where <span class="math notranslate nohighlight">\(R\)</span> is the mean precipitate radius, <span class="math notranslate nohighlight">\(N\)</span> is the precipitate
-number density, <span class="math notranslate nohighlight">\(\alpha\)</span> is an interaction coefficient, <span class="math notranslate nohighlight">\(\mu\)</span> is the
-shear modulus and <span class="math notranslate nohighlight">\(b\)</span> is the Burgers vector.</p>
+number density (per unit volume), <span class="math notranslate nohighlight">\(\alpha\)</span> is an interaction
+coefficient, <span class="math notranslate nohighlight">\(\mu\)</span> is the shear modulus and <span class="math notranslate nohighlight">\(b\)</span> is the Burgers vector.</p>
+<p>A slip plane intersects every precipitate whose center lies within <span class="math notranslate nohighlight">\(R\)</span>
+of it, so the number of obstacles per unit area of slip plane is
+<span class="math notranslate nohighlight">\(2 R N\)</span> and their spacing is <span class="math notranslate nohighlight">\(L = 1 / \sqrt{2 R N}\)</span>; the strength is
+the Orowan stress <span class="math notranslate nohighlight">\(\alpha \mu b / L\)</span>. At fixed volume fraction
+<span class="math notranslate nohighlight">\(f = \tfrac{4}{3} \pi R^3 N\)</span> this is <span class="math notranslate nohighlight">\(\tau \propto \sqrt{f} / R\)</span>, so the
+contribution falls as the population coarsens (overaging).</p>
+<p>Both <span class="math notranslate nohighlight">\(R\)</span> and <span class="math notranslate nohighlight">\(N\)</span> must be strictly positive: the derivatives of the square
+root are unbounded where <span class="math notranslate nohighlight">\(R N = 0\)</span>.</p>
 <p>The output is a single strength contribution, intended to be combined with
 the other contributions through a <code class="docutils literal notranslate"><span class="pre">ScalarLinearCombination</span></code>.</p>
 <section id="inputs">

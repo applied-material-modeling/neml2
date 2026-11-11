@@ -78,6 +78,7 @@ ScalarPNorm
 ScalarParameterToVariable
 ScalarToDiagonalSR2
 ScalarVariableRate
+SmoothCap
 SymmetricHermiteInterpolation
 VecBackwardEulerTimeIntegration
 VecBilinearInterpolation

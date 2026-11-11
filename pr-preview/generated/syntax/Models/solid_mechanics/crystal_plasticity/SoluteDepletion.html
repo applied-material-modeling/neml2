@@ -257,6 +257,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/SmoothCap.html">SmoothCap</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
@@ -452,23 +453,28 @@ data-aria-dark="Switch to auto color mode">
 <p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/crystal_plasticity/SoluteDepletion.py</span></code></p>
 <p>Depletion of a solid-solution strengthening species as it is taken out
 of the matrix by precipitation, defined by
-<span class="math notranslate nohighlight">\(\dot{c} = K \left\langle c_0 - c \right\rangle^{1/3} \left( c - c_{eq} \right)\)</span>
+<span class="math notranslate nohighlight">\(\dot{c} = -K \left( \left\langle c_0 - c \right\rangle + \delta \right)^{1/3}
+\left( c - c_{eq} \right)\)</span>
 where <span class="math notranslate nohighlight">\(c\)</span> is the matrix concentration, <span class="math notranslate nohighlight">\(c_0\)</span> is the initial
-concentration, <span class="math notranslate nohighlight">\(c_{eq}\)</span> is the equilibrium concentration and <span class="math notranslate nohighlight">\(K\)</span>
-is the depletion coefficient.</p>
-<p><span class="math notranslate nohighlight">\(K\)</span> and <span class="math notranslate nohighlight">\(c_{eq}\)</span> are promotable parameters, so either may be supplied
-as a constant or driven by another model – an <code class="docutils literal notranslate"><span class="pre">ArrheniusParameter</span></code> or an
-interpolation for the usual temperature dependence of <span class="math notranslate nohighlight">\(c_{eq}\)</span>.</p>
-<p>The Macaulay bracket on <span class="math notranslate nohighlight">\(c_0 - c\)</span> is a deliberate departure from the bare
-<span class="math notranslate nohighlight">\(\left( c_0 - c \right)^{1/3}\)</span> of the specification: it keeps the cube
-root on its real branch if the state overshoots <span class="math notranslate nohighlight">\(c_0\)</span>, which is
-reachable mid-Newton even when the converged solution satisfies
-<span class="math notranslate nohighlight">\(c \le c_0\)</span>. The two agree wherever <span class="math notranslate nohighlight">\(c \le c_0\)</span>.</p>
-<p>On that inactive branch, and at the endpoint <span class="math notranslate nohighlight">\(c = c_0\)</span>, both the rate
-and its derivative are taken to be zero. The true derivative is unbounded
-at the endpoint; the right-hand limit is used instead so that neither the
-forward pushforward nor reverse-mode differentiation of this model emits
-a <code class="docutils literal notranslate"><span class="pre">nan</span></code> into the Newton solve, and so that the two agree.</p>
+concentration, <span class="math notranslate nohighlight">\(c_{eq}\)</span> is the equilibrium concentration, <span class="math notranslate nohighlight">\(K\)</span> is the
+depletion coefficient and <span class="math notranslate nohighlight">\(\delta\)</span> is the seed concentration.</p>
+<p>Starting from <span class="math notranslate nohighlight">\(c = c_0 &gt; c_{eq}\)</span> the rate is negative, so the matrix
+drains monotonically toward <span class="math notranslate nohighlight">\(c_{eq}\)</span>, the only fixed point.</p>
+<p>The factor <span class="math notranslate nohighlight">\(\left( c_0 - c \right)^{1/3}\)</span> stands in for the precipitate
+radius: the solute removed from the matrix is proportional to the
+precipitate volume. Without a seed it vanishes at the physical initial
+condition <span class="math notranslate nohighlight">\(c = c_0\)</span>, which makes <span class="math notranslate nohighlight">\(c = c_0\)</span> a spurious (non-Lipschitz)
+fixed point – the integrator never leaves it. The seed <span class="math notranslate nohighlight">\(\delta &gt; 0\)</span> is
+the solute already held in precipitate nuclei at the start; it keeps the
+rate nonzero and its derivative finite at <span class="math notranslate nohighlight">\(c = c_0\)</span>. It must be
+strictly positive.</p>
+<p>The Macaulay bracket keeps the cube root on its real branch if the state
+overshoots <span class="math notranslate nohighlight">\(c_0\)</span>, which is reachable mid-Newton even though the solution
+itself satisfies <span class="math notranslate nohighlight">\(c \le c_0\)</span>.</p>
+<p><span class="math notranslate nohighlight">\(K\)</span>, <span class="math notranslate nohighlight">\(c_0\)</span>, <span class="math notranslate nohighlight">\(c_{eq}\)</span> and <span class="math notranslate nohighlight">\(\delta\)</span> are promotable parameters, so any may
+be supplied as a constant or driven by another model – an
+<code class="docutils literal notranslate"><span class="pre">ArrheniusParameter</span></code> or an interpolation for the usual temperature
+dependence of <span class="math notranslate nohighlight">\(K\)</span> and <span class="math notranslate nohighlight">\(c_{eq}\)</span>.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
@@ -491,6 +497,8 @@ a <code class="docutils literal notranslate"><span class="pre">nan</span></code>
 <dt><code class="docutils literal notranslate"><span class="pre">initial_concentration</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Initial concentration</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">equilibrium_concentration</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Equilibrium concentration, generally a function of temperature</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">seed_concentration</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Solute held in precipitate nuclei at the start; must be strictly positive</p>
 </dd>
 </dl>
 </section>

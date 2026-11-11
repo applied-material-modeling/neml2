@@ -257,6 +257,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SmoothCap.html">SmoothCap</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
@@ -558,11 +559,13 @@ instances based on whether all its children support v2.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.models.model.Model.apply_chain_rule">
-<span class="sig-name descname"><span class="pre">apply_chain_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actions</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#Model.apply_chain_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.Model.apply_chain_rule" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">apply_chain_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actions</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structural_zeros</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#Model.apply_chain_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.Model.apply_chain_rule" title="Link to this definition">#</a></dt>
 <dd><p>Apply local chain-rule actions and accumulate by seed leaf.</p>
 <p><code class="docutils literal notranslate"><span class="pre">actions</span></code> maps each input variable name to a function that transforms
 an incoming sensitivity block for that input into its contribution to
-<code class="docutils literal notranslate"><span class="pre">output_name</span></code>. Missing input/leaf sensitivities are structural zeros.</p>
+<code class="docutils literal notranslate"><span class="pre">output_name</span></code>. <code class="docutils literal notranslate"><span class="pre">structural_zeros</span></code> names inputs whose contribution to
+this output is intentionally zero. Other missing promoted-parameter
+actions remain errors when an incoming tangent is present.</p>
 <p>When two actions contribute to the same seed leaf but with different
 sub-batch structure — typical of a per-crystal output that mixes a
 global input (e.g. <code class="docutils literal notranslate"><span class="pre">d</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code>) and a per-crystal input (e.g. <code class="docutils literal notranslate"><span class="pre">dp</span></code>,
@@ -588,6 +591,7 @@ typed <code class="docutils literal notranslate"><span class="pre">+</span></cod
 <li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
 <li><p><strong>actions</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><em>Callable</em></a><em>[</em><em>[</em><em>...</em><em>]</em><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em>]</em><em>]</em>)</p></li>
 <li><p><strong>output</strong> (<a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>structural_zeros</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.15)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>

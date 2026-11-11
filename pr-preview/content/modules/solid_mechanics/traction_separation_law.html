@@ -257,6 +257,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SmoothCap.html">SmoothCap</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
@@ -590,9 +591,9 @@ effective scalar separation</p>
 a mixed-mode failure separation <span class="math notranslate nohighlight">\(\delta_f(\beta, \delta_c)\)</span>. Damage is
 then defined piecewise from the historical maximum effective
 separation <span class="math notranslate nohighlight">\(\bar{\delta}_m = \max_{t' \le t} \delta_m(t')\)</span>,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-a0a1e1d7-ac8c-459e-814c-11e25949debc">
-<div class="amsmath math notranslate nohighlight" id="equation-a0a1e1d7-ac8c-459e-814c-11e25949debc">
-<span class="eqno">(19)<a class="headerlink" href="#equation-a0a1e1d7-ac8c-459e-814c-11e25949debc" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-9774144b-0a83-48dc-953e-0f76cc795b51">
+<div class="amsmath math notranslate nohighlight" id="equation-9774144b-0a83-48dc-953e-0f76cc795b51">
+<span class="eqno">(19)<a class="headerlink" href="#equation-9774144b-0a83-48dc-953e-0f76cc795b51" title="Permalink to this equation">#</a></span>\[\begin{align}
 d(\bar{\delta}_m) &amp;= 0,
   &amp; \bar{\delta}_m &amp;\le \delta_c, \\
 d(\bar{\delta}_m) &amp;=
@@ -604,9 +605,9 @@ d(\bar{\delta}_m) &amp;= 1,
 \end{align}\]</div>
 </div>
 <p>so that the traction is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-d6488a56-f089-4efe-b76e-3ef33f84e451">
-<div class="amsmath math notranslate nohighlight" id="equation-d6488a56-f089-4efe-b76e-3ef33f84e451">
-<span class="eqno">(20)<a class="headerlink" href="#equation-d6488a56-f089-4efe-b76e-3ef33f84e451" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-2531c6cf-9104-4bf2-932f-4309111f90e8">
+<div class="amsmath math notranslate nohighlight" id="equation-2531c6cf-9104-4bf2-932f-4309111f90e8">
+<span class="eqno">(20)<a class="headerlink" href="#equation-2531c6cf-9104-4bf2-932f-4309111f90e8" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n   &amp;= K\,(1-d)\,\langle \delta_n \rangle_+ \;+\; K\,\langle \delta_n \rangle_-, \notag \\
 T_{si} &amp;= K\,(1-d)\,\delta_{si}, \quad i \in \{1, 2\},
 \end{align}\]</div>
@@ -940,9 +941,9 @@ part, and the spring acts on the elastic part only — the springs are
 in <strong>series</strong> with the dashpots. A parallel spring would carry load
 forever and the interface would never separate completely. Writing
 <span class="math notranslate nohighlight">\([\![u]\!]_n^v\)</span> for the smeared cavity volume above,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-27043fd1-2fe6-408f-a515-2202e93c6296">
-<div class="amsmath math notranslate nohighlight" id="equation-27043fd1-2fe6-408f-a515-2202e93c6296">
-<span class="eqno">(21)<a class="headerlink" href="#equation-27043fd1-2fe6-408f-a515-2202e93c6296" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-764efc89-8fa2-4a3f-9cda-8b00095981e9">
+<div class="amsmath math notranslate nohighlight" id="equation-764efc89-8fa2-4a3f-9cda-8b00095981e9">
+<span class="eqno">(21)<a class="headerlink" href="#equation-764efc89-8fa2-4a3f-9cda-8b00095981e9" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n &amp;= K_n\left([\![u]\!]_n - [\![u]\!]_n^v\right),
   &amp; [\![u]\!]_n &amp;\ge 0,\ f &lt; f_F, \notag \\
 T_n &amp;= K_p\,[\![u]\!]_n,

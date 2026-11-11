@@ -5,26 +5,32 @@
 
 Depletion of a solid-solution strengthening species as it is taken out
 of the matrix by precipitation, defined by
-$\dot{c} = K \left\langle c_0 - c \right\rangle^{1/3} \left( c - c_{eq} \right)$
+$\dot{c} = -K \left( \left\langle c_0 - c \right\rangle + \delta \right)^{1/3}
+\left( c - c_{eq} \right)$
 where $c$ is the matrix concentration, $c_0$ is the initial
-concentration, $c_{eq}$ is the equilibrium concentration and $K$
-is the depletion coefficient.
+concentration, $c_{eq}$ is the equilibrium concentration, $K$ is the
+depletion coefficient and $\delta$ is the seed concentration.
 
-$K$ and $c_{eq}$ are promotable parameters, so either may be supplied
-as a constant or driven by another model -- an ``ArrheniusParameter`` or an
-interpolation for the usual temperature dependence of $c_{eq}$.
+Starting from $c = c_0 > c_{eq}$ the rate is negative, so the matrix
+drains monotonically toward $c_{eq}$, the only fixed point.
 
-The Macaulay bracket on $c_0 - c$ is a deliberate departure from the bare
-$\left( c_0 - c \right)^{1/3}$ of the specification: it keeps the cube
-root on its real branch if the state overshoots $c_0$, which is
-reachable mid-Newton even when the converged solution satisfies
-$c \le c_0$. The two agree wherever $c \le c_0$.
+The factor $\left( c_0 - c \right)^{1/3}$ stands in for the precipitate
+radius: the solute removed from the matrix is proportional to the
+precipitate volume. Without a seed it vanishes at the physical initial
+condition $c = c_0$, which makes $c = c_0$ a spurious (non-Lipschitz)
+fixed point -- the integrator never leaves it. The seed $\delta > 0$ is
+the solute already held in precipitate nuclei at the start; it keeps the
+rate nonzero and its derivative finite at $c = c_0$. It must be
+strictly positive.
 
-On that inactive branch, and at the endpoint $c = c_0$, both the rate
-and its derivative are taken to be zero. The true derivative is unbounded
-at the endpoint; the right-hand limit is used instead so that neither the
-forward pushforward nor reverse-mode differentiation of this model emits
-a ``nan`` into the Newton solve, and so that the two agree.
+The Macaulay bracket keeps the cube root on its real branch if the state
+overshoots $c_0$, which is reachable mid-Newton even though the solution
+itself satisfies $c \le c_0$.
+
+$K$, $c_0$, $c_{eq}$ and $\delta$ are promotable parameters, so any may
+be supplied as a constant or driven by another model -- an
+``ArrheniusParameter`` or an interpolation for the usual temperature
+dependence of $K$ and $c_{eq}$.
 
 ## Inputs
 
@@ -48,4 +54,7 @@ a ``nan`` into the Newton solve, and so that the two agree.
 
 `equilibrium_concentration` &mdash; `parameter` &middot; `Scalar` &middot; **required**
 : Equilibrium concentration, generally a function of temperature
+
+`seed_concentration` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Solute held in precipitate nuclei at the start; must be strictly positive
 
