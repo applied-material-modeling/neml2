@@ -141,7 +141,11 @@ def _opaque_pow_impl(base: torch.Tensor, exponent: torch.Tensor) -> torch.Tensor
 
 
 def _opaque_pow_meta(base: torch.Tensor, exponent: torch.Tensor) -> torch.Tensor:
-    return torch.empty_like(base)
+    # The typed ``opaque_pow`` aligns a ``Scalar`` exponent's sub-batch axes
+    # with the base, so the two operands broadcast (e.g. a plain base against
+    # a sub-batched exponent): the output takes the broadcast shape, not the
+    # base's.
+    return base.new_empty(torch.broadcast_shapes(base.shape, exponent.shape))
 
 
 def _opaque_pow_setup_context(ctx, inputs, output) -> None:
@@ -154,12 +158,19 @@ def _opaque_pow_backward(ctx, grad):
     # in-process ``torch.compile`` Jacobian). Standard power-rule gradients
     # ``d(b^e)/db = e*b^(e-1)`` and ``d(b^e)/de = b^e*ln(b)``, computed only
     # for the inputs that require grad.
+    #
+    # The operands may broadcast against each other, so each gradient is
+    # reduced back to its input's shape. The exponent gradient uses the same
+    # base-zero mask as ``torch.pow``'s own backward: ``b^e ln(b)`` is
+    # ``0 * -inf = nan`` at ``b = 0`` while the limit (for ``e >= 0``) is 0.
     base, exponent = ctx.saved_tensors
     grad_base = grad_exponent = None
     if ctx.needs_input_grad[0]:
-        grad_base = grad * exponent * torch.pow(base, exponent - 1.0)
+        grad_base = (grad * exponent * torch.pow(base, exponent - 1.0)).sum_to_size(base.shape)
     if ctx.needs_input_grad[1]:
-        grad_exponent = grad * torch.pow(base, exponent) * torch.log(base)
+        d_exp = torch.pow(base, exponent) * torch.log(base)
+        d_exp = torch.where((base == 0) & (exponent >= 0), torch.zeros_like(d_exp), d_exp)
+        grad_exponent = (grad * d_exp).sum_to_size(exponent.shape)
     return grad_base, grad_exponent
 
 
