@@ -28,10 +28,10 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, output, parameter
-from ....types import Scalar
+from ....types import Scalar, gt, log, where
 from ....types import abs as tensor_abs
 from ....types import opaque_pow as tensor_pow
-from ...chain_rule import ChainRuleDict
+from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...model import Model
 
 
@@ -74,7 +74,8 @@ class PowerLawSlipRule(Model):
         # the pow stays as a single per-(B, slip) compute rather than
         # being inlined into the downstream K-batched per-slip reduction
         # kernel and recomputed K × n_comp times redundantly.
-        f = gamma0 * tensor_pow(abs_ratio, nv - 1.0)
+        pw = tensor_pow(abs_ratio, nv - 1.0)
+        f = gamma0 * pw
         g = f * ratio
         if v is None:
             return g
@@ -102,9 +103,22 @@ class PowerLawSlipRule(Model):
         def tau_action(V: Scalar, c: Scalar = dg_dtau) -> Scalar:
             return c * V
 
-        return g, self.apply_chain_rule(
-            v,
-            "slip_rates",
-            {"resolved_shears": rss_action, "slip_strengths": tau_action},
-            output=g,
-        )
+        actions: dict[str, ChainRuleAction] = {
+            "resolved_shears": rss_action,
+            "slip_strengths": tau_action,
+        }
+        promoted = self._promoted_params
+        if "gamma0" in promoted:
+            # dg/dgamma0 = |ratio|^(n-1) * ratio; product form, so gamma0 = 0
+            # stays finite (the quotient g / gamma0 would be 0/0).
+            actions[promoted["gamma0"].input_name] = lambda V, c=pw * ratio: c * V
+        if "n" in promoted:
+            # dg/dn = g * ln|ratio|. At ratio = 0 the limit is 0 (g vanishes
+            # faster than the log diverges for n > 1); feeding log a safe base
+            # of 1 there gives exactly that 0 instead of 0 * -inf = nan.
+            nonzero = gt(abs_ratio, 0.0)
+            safe_abs = where(nonzero, abs_ratio, Scalar.from_value(1.0, like=abs_ratio))
+            dg_dn = g * log(safe_abs)
+            actions[promoted["n"].input_name] = lambda V, c=dg_dn: c * V
+
+        return g, self.apply_chain_rule(v, "slip_rates", actions, output=g)

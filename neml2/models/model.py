@@ -1430,6 +1430,25 @@ class Model(nn.Module, ABC):
         renames = self.__dict__.get("_var_renames", {})
         ext_output = renames.get(output_name, output_name)
 
+        # A missing action is a structural zero for an ordinary input, but a
+        # promoted parameter is by construction used in ``forward``: a missing
+        # action for one that carries an incoming tangent silently drops its
+        # derivative contribution. Fail loudly instead.
+        promoted = self.__dict__.get("_promoted_params", {})
+        if promoted:
+            covered = set(actions) | {renames.get(k, k) for k in actions}
+            missing = sorted(
+                p.input_name
+                for p in promoted.values()
+                if v.get(p.input_name) and p.input_name not in covered
+            )
+            if missing:
+                raise NotImplementedError(
+                    f"{type(self).__name__}: no chain-rule action for promoted parameter "
+                    f"input(s) {missing} contributing to '{output_name}'. Add the "
+                    "derivative action for each promotable parameter in forward()."
+                )
+
         # Per-edge label-targeted promote (Phase D / D2). For each input
         # edge, look up this leaf's ``EdgeInfo`` and selectively
         # materialise only the V_in axes whose label is in
