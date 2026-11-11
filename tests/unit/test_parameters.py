@@ -45,9 +45,10 @@ from pathlib import Path
 import pytest
 import torch
 
+from neml2 import load_string
 from neml2.factory import load_input, load_model
 from neml2.models.common import ScalarLinearInterpolation
-from neml2.types import Scalar
+from neml2.types import SR2, Scalar
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -318,3 +319,44 @@ def test_unresolvable_string_without_factory_raises():
         # ScalarLinearInterpolation's parameters use allow_promotion=False;
         # without a factory there's no tensor or model lookup to fall back on.
         ScalarLinearInterpolation(abscissa="alpha_x", ordinate="alpha_y")
+
+
+@pytest.mark.parametrize(
+    ("model_type", "parameters"),
+    [
+        ("ZenerElement", ("equilibrium_modulus", "maxwell_modulus", "maxwell_viscosity")),
+        (
+            "BurgersElement",
+            ("maxwell_modulus", "maxwell_viscosity", "kelvin_modulus", "kelvin_viscosity"),
+        ),
+        (
+            "WiechertElement",
+            ("equilibrium_modulus", "modulus_1", "viscosity_1", "modulus_2", "viscosity_2"),
+        ),
+    ],
+)
+def test_multi_output_models_allow_promoted_parameter_structural_zeros(model_type, parameters):
+    parameter_lines = "\n".join(f"    {name} = '{name}_input'" for name in parameters)
+    model = load_string(
+        f"[Models]\n  [model]\n    type = {model_type}\n{parameter_lines}\n  []\n[]"
+    ).get_model("model")
+
+    promoted_names = {p.input_name for p in model._promoted_params.values()}
+    inputs = []
+    for value_type in model.input_spec.values():
+        if value_type is Scalar:
+            inputs.append(Scalar(torch.tensor(1.0, dtype=torch.float64)))
+        else:
+            assert value_type is SR2
+            inputs.append(SR2(torch.zeros(6, dtype=torch.float64)))
+    v = {
+        name: {name: Scalar(torch.ones(1, dtype=torch.float64))}
+        for name in promoted_names
+    }
+
+    result = model(*inputs, v=v)
+    v_out = result[-1]
+    assert set(v_out) == set(model.output_spec)
+
+    with pytest.raises(NotImplementedError, match="no chain-rule action for promoted parameter"):
+        model.apply_chain_rule(v, next(iter(model.output_spec)), {}, output=result[0])

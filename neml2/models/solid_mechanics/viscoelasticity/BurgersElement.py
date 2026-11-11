@@ -191,8 +191,36 @@ class BurgersElement(Model):
             name = self._promoted_params["etaK"].input_name
             EK_actions[name] = lambda V, c=-(S - EK_p * EK_var) / (etaK * etaK): c * V
 
-        v_S = self.apply_chain_rule(v, "stress", S_actions, output=S)
-        v_EvM = self.apply_chain_rule(v, self._EvM_rate, EvM_actions, output=EvM_dot)
-        v_EK = self.apply_chain_rule(v, self._EK_rate, EK_actions, output=EK_dot)
+        v_S = self.apply_chain_rule(
+            v,
+            "stress",
+            S_actions,
+            output=S,
+            structural_zeros=tuple(
+                self._promoted_params[p].input_name for p in ("etaM", "EK", "etaK")
+                if p in self._promoted_params
+            ),
+        )
+        v_EvM = self.apply_chain_rule(
+            v,
+            self._EvM_rate,
+            EvM_actions,
+            output=EvM_dot,
+            structural_zeros=tuple(
+                self._promoted_params[p].input_name for p in ("EK", "etaK")
+                if p in self._promoted_params
+            ),
+        )
+        v_EK = self.apply_chain_rule(
+            v,
+            self._EK_rate,
+            EK_actions,
+            output=EK_dot,
+            structural_zeros=(
+                self._promoted_params["etaM"].input_name,
+            )
+            if "etaM" in self._promoted_params
+            else (),
+        )
         # Merge per-output dicts (different outer keys).
         return S, EvM_dot, EK_dot, {**v_S, **v_EvM, **v_EK}
