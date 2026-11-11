@@ -235,6 +235,8 @@ struct DispatchedModel::Impl
             pair_extra_ndim[o][i] = in_sub_ndim.at(i);
           else if (form == "full")
             pair_extra_ndim[o][i] = out_sub_ndim.at(o) + in_sub_ndim.at(i);
+          else // "plain" (validated at load)
+            pair_extra_ndim[o][i] = 0;
     }
     return {cat_batch(outs),
             cat_batch_nested(jparts, out_base_ndim, in_base_ndim, pair_extra_ndim)};

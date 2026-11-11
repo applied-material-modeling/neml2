@@ -79,6 +79,27 @@ class NonlinearSystem;
 /// op (the Python package registers the same schema). Defined in `custom_ops.cpp`.
 void ensure_neml2_custom_ops_registered();
 
+/// Block layout of a derivative pair, see `Model::derivative_forms`.
+enum class BlockForm
+{
+  plain,
+  paired,
+  full
+};
+
+/// Parse a metadata form string; any other value means a corrupt artifact.
+inline BlockForm
+parse_block_form(const std::string & s)
+{
+  if (s == "plain")
+    return BlockForm::plain;
+  if (s == "paired")
+    return BlockForm::paired;
+  if (s == "full")
+    return BlockForm::full;
+  _throw("aoti::Model: unknown derivative block form '", s, "' in metadata.json.");
+}
+
 /// Opaque implementation of `Model`. Holds the per-segment AOTI graph state and
 /// all the value / Jacobian machinery; the public `Model` methods are one-line
 /// forwarders onto the identically-named members here.
@@ -333,9 +354,9 @@ struct Model::Impl
       std::vector<int64_t> in_base_shape;
       std::vector<int64_t> in_sub_batch_shape;
       std::vector<int64_t> out_sub_batch_shape;
-      /// Block layout, see `Model::derivative_forms`. An IFT block is `"full"`,
-      /// already folded: `(*dyn, out_storage, in_storage)`.
-      std::string form = "plain";
+      /// Block layout. An IFT block is `full`, already folded:
+      /// `(*dyn, out_storage, in_storage)`.
+      BlockForm form = BlockForm::plain;
       /// True when this block does not depend on the dynamic batch (e.g. a
       /// constant stiffness tensor). The compiled graph emits it with a static
       /// size-1 leading dynamic-batch axis; the single-forward-segment Jacobian
@@ -682,8 +703,8 @@ struct Model::Impl
   std::vector<std::pair<std::string, std::string>> _derivatives;
   std::map<std::string, std::vector<std::string>> _deriv_by_out;
   /// Block layout of each master pair, keyed `[out][in]`.
-  std::map<std::string, std::map<std::string, std::string>> _deriv_form;
-  /// `_deriv_form` keyed by boundary (renamed) names.
+  std::map<std::string, std::map<std::string, BlockForm>> _deriv_form;
+  /// `_deriv_form` as strings, keyed by boundary (renamed) names.
   std::map<std::string, std::map<std::string, std::string>> _ext_deriv_form;
 
   // Master (out, param) parameter-derivative pairs the artifact supports (schema

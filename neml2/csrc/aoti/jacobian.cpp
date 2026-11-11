@@ -114,7 +114,7 @@ Model::Impl::_forward_pair_blocks(const std::map<std::string, at::Tensor> & inpu
       // drop the leading size-1 axes so it is returned unbatched (broadcasts
       // against any runtime batch). The metadata flag gates this, so a
       // state-dependent block that happens to run at batch=1 is never squeezed.
-      const std::size_t out_sub = p.form == "full" ? p.out_sub_batch_shape.size() : 0;
+      const std::size_t out_sub = p.form == BlockForm::full ? p.out_sub_batch_shape.size() : 0;
       const int64_t trail = static_cast<int64_t>(out_sub + p.in_sub_batch_shape.size() +
                                                  p.out_base_shape.size() + p.in_base_shape.size());
       while (block.dim() > trail && block.size(0) == 1)
@@ -618,7 +618,7 @@ Model::Impl::_run_forward_segment_jacobian(const Segment & seg,
     };
 
     at::Tensor contrib;
-    if (pinfo.form == "paired")
+    if (pinfo.form == BlockForm::paired)
     {
       // Site by site: (*B, *sub, ib, M) -> (*B, *sub, ob, M).
       auto shape = lead_of(isub_nd + ob_nd + ib_nd);
@@ -634,11 +634,11 @@ Model::Impl::_run_forward_segment_jacobian(const Segment & seg,
     }
     else
     {
-      // One (out_sub*ob, in_sub*ib) matrix per batch entry ("plain": in_sub = 1).
-      const int64_t trailing =
-          pinfo.form == "full" ? osub_nd + ob_nd + isub_nd + ib_nd : osub_nd + ob_nd + ib_nd;
-      if (pinfo.form == "plain" &&
-          pair.dim() == static_cast<int64_t>(batch_shape.size()) + ob_nd + ib_nd && osub_nd > 0)
+      // One (out_sub*ob, in_sub*ib) matrix per batch entry (plain: in_sub = 1).
+      const bool full = pinfo.form == BlockForm::full;
+      const int64_t trailing = full ? osub_nd + ob_nd + isub_nd + ib_nd : osub_nd + ob_nd + ib_nd;
+      if (!full && pair.dim() == static_cast<int64_t>(batch_shape.size()) + ob_nd + ib_nd &&
+          osub_nd > 0)
         // The tangent never met the output's sites: same block for each site.
         for (int64_t d = 0; d < osub_nd; ++d)
           pair = pair.unsqueeze(static_cast<int64_t>(batch_shape.size()));
@@ -647,13 +647,13 @@ Model::Impl::_run_forward_segment_jacobian(const Segment & seg,
       target.insert(
           target.end(), pinfo.out_sub_batch_shape.begin(), pinfo.out_sub_batch_shape.end());
       target.insert(target.end(), pinfo.out_base_shape.begin(), pinfo.out_base_shape.end());
-      if (pinfo.form == "full")
+      if (full)
         target.insert(
             target.end(), pinfo.in_sub_batch_shape.begin(), pinfo.in_sub_batch_shape.end());
       target.insert(target.end(), pinfo.in_base_shape.begin(), pinfo.in_base_shape.end());
       std::vector<int64_t> mat = lead;
       mat.push_back(out_sub * ob);
-      mat.push_back((pinfo.form == "full" ? in_sub : 1) * ib);
+      mat.push_back((full ? in_sub : 1) * ib);
       contrib = at::matmul(pair.expand(target).reshape(mat), din);
     }
 

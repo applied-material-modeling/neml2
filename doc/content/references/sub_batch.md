@@ -157,6 +157,42 @@ The form is structural: any derivative through an implicit solve is `full`.
 Compiled runtimes report it through `derivative_forms()`. The eager embed bridge
 (`cpp-eager`) takes `jvp` tangents for plain-batch inputs only.
 
+### Example
+
+`tests/aoti/implicit_sub_batch_ift_reduce/model.i` solves for a four-site `x`,
+reduces it to the plain `vf`, and maps a four-site `z` site by site to `y`.
+One pair of each form:
+
+```bash
+neml2-compile tests/aoti/implicit_sub_batch_ift_reduce/model.i --model model \
+  --output-dir art -d vf:s -d y:z -d x:x~1
+```
+
+```python
+import torch
+from neml2.aoti import Model
+
+torch.set_default_dtype(torch.float64)  # the artifact's dtype
+B = 3
+inputs = {
+    "x": torch.ones(B, 4),  # initial guess
+    "x~1": torch.full((B, 4), 0.5),
+    "s": torch.full((B,), 0.2),
+    "t": torch.full((B,), 0.1),
+    "t~1": torch.zeros(B),
+    "z": torch.ones(B, 4),
+}
+m = Model("art/model")
+outputs, J = m.jacobian(inputs)
+m.derivative_forms  # {'vf': {'s': 'plain'}, 'x': {'x~1': 'full'}, 'y': {'z': 'paired'}}
+J["vf"]["s"].shape  # (3,)
+J["y"]["z"].shape  # (3, 4): site i against site i
+J["x"]["x~1"].shape  # (3, 4, 4): output site i against input site j
+```
+
+On `py-eager`, pass the four-site inputs typed (`Scalar(t, sub_batch_ndim=1)`)
+and the same selection: `model.jacobian(inputs, derivatives=["vf:s", "y:z", "x:x~1"])`.
+
 ## Limits
 
 The extent is a declaration, not an inference: it is not derived from the

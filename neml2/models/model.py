@@ -1208,8 +1208,10 @@ class Model(nn.Module, ABC):
         ``J`` the nested ``{out_name: {in_name: block}}`` map (rows in
         ``output_spec`` order, cols in ``input_spec`` order). Each block is a
         dynamic-base :class:`~neml2.types.Tensor` of shape
-        ``(*batch, *sub_batch, *out_base, *in_base)`` -- there is no single static
-        wrapper for an arbitrary derivative pair. A constant ``(out, in)`` pair is
+        ``(*batch, *out_sub_batch, *out_base, *in_base)``; a named sub-batched
+        input gets the ``paired`` or ``full`` form of
+        :func:`~neml2.types._boundary.sub_batched_pair_block`. There is no single
+        static wrapper for an arbitrary derivative pair. A constant ``(out, in)`` pair is
         an explicit zero block.
 
         Built on the same ``forward(v=)`` chain rule as :meth:`jvp`, seeding each

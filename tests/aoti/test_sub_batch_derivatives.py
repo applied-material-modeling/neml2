@@ -271,6 +271,30 @@ def test_wildcard_selects_plain_inputs_and_names_select_sub_batched(tmp_path):
     assert meta["derivative_forms"] == ["plain", "plain", "plain", "paired"]
 
 
+def test_invalid_derivative_forms_rejected_at_load(tmp_path):
+    import json
+    import shutil
+
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    hit = _SCN / "forward_sub_batch_reduce" / "model.i"
+    export_model_for_aoti(hit, "model", tmp_path / "ok", derivatives=["vf:x"])
+    for name, edit, match in [
+        ("bogus", lambda m: m.update(derivative_forms=["bogus"]), "unknown derivative block form"),
+        ("short", lambda m: m.update(derivative_forms=[]), "one form per"),
+        ("missing", lambda m: m.pop("derivative_forms"), "without 'derivative_forms'"),
+    ]:
+        art = tmp_path / name
+        shutil.copytree(tmp_path / "ok", art)
+        meta_path = next(art.rglob("metadata.json"))
+        meta = json.loads(meta_path.read_text())
+        edit(meta)
+        meta_path.write_text(json.dumps(meta))
+        with pytest.raises(RuntimeError, match=match):
+            AOTIModel(str(meta_path.parent))
+
+
 def test_eager_selection_matches_compile_selection():
     from neml2.eager import _EagerModel
 

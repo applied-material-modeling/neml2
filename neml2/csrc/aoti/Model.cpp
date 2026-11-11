@@ -438,17 +438,23 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // rows/cols consistently.
   if (meta.contains("derivatives"))
   {
-    const bool has_forms = meta.contains("derivative_forms");
+    _assert(meta.contains("derivative_forms"),
+            "aoti::Model: metadata.json lists 'derivatives' without 'derivative_forms'.");
+    const auto & forms = meta["derivative_forms"];
+    _assert(forms.is_array() && forms.size() == meta["derivatives"].size(),
+            "aoti::Model: metadata.json 'derivative_forms' must list one form per "
+            "'derivatives' entry.");
     std::size_t k = 0;
     for (const auto & pr : meta["derivatives"])
     {
       auto o = pr.at(0).get<std::string>();
       auto i = pr.at(1).get<std::string>();
-      _deriv_form[o][i] = has_forms ? meta["derivative_forms"].at(k).get<std::string>() : "plain";
+      const auto form = forms[k].get<std::string>();
+      _deriv_form[o][i] = parse_block_form(form);
       const auto oe = _out_orig2ext.find(o);
       const auto ie = _in_orig2ext.find(i);
       _ext_deriv_form[oe == _out_orig2ext.end() ? o : oe->second]
-                     [ie == _in_orig2ext.end() ? i : ie->second] = _deriv_form[o][i];
+                     [ie == _in_orig2ext.end() ? i : ie->second] = form;
       _deriv_by_out[o].push_back(i);
       _derivatives.emplace_back(std::move(o), std::move(i));
       ++k;
@@ -663,7 +669,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
             pi.in_sub_batch_shape = p["in_sub_batch_shape"].get<std::vector<int64_t>>();
           if (p.contains("out_sub_batch_shape"))
             pi.out_sub_batch_shape = p["out_sub_batch_shape"].get<std::vector<int64_t>>();
-          pi.form = p.value("form", std::string("plain"));
+          pi.form = parse_block_form(p.value("form", std::string("plain")));
           pi.batch_independent = p.value("batch_independent", false);
           pi.row_offset = p.value("row_offset", static_cast<int64_t>(0));
           pi.col_offset = p.value("col_offset", static_cast<int64_t>(0));
@@ -795,7 +801,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
             pi.in_sub_batch_shape = p["in_sub_batch_shape"].get<std::vector<int64_t>>();
           if (p.contains("out_sub_batch_shape"))
             pi.out_sub_batch_shape = p["out_sub_batch_shape"].get<std::vector<int64_t>>();
-          pi.form = p.value("form", std::string("plain"));
+          pi.form = parse_block_form(p.value("form", std::string("plain")));
           pi.batch_independent = p.value("batch_independent", false);
           pi.row_offset = p.value("row_offset", static_cast<int64_t>(0));
           pi.col_offset = p.value("col_offset", static_cast<int64_t>(0));

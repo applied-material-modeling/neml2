@@ -351,24 +351,32 @@ Model::Impl::_public_pair_block(const at::Tensor & band,
   std::vector<int64_t> dyn(band.sizes().begin(), band.sizes().end() - 2);
   const auto nd = static_cast<int64_t>(dyn.size());
   std::vector<int64_t> shape = dyn;
-  if (form == "paired")
+  switch (form)
   {
-    // Each site's output against the same site's input.
-    const int64_t S = prod(in_sub);
-    std::vector<int64_t> grid = dyn;
-    grid.insert(grid.end(), {S, prod(out_base), S, prod(in_base)});
-    auto diag = band.reshape(grid).diagonal(0, nd, nd + 2).movedim(-1, nd);
-    shape.insert(shape.end(), in_sub.begin(), in_sub.end());
-    shape.insert(shape.end(), out_base.begin(), out_base.end());
-    shape.insert(shape.end(), in_base.begin(), in_base.end());
-    return diag.reshape(shape);
+    case BlockForm::plain: // (*dyn, *out_sub, *out_base, *in_base)
+      shape.insert(shape.end(), out_sub.begin(), out_sub.end());
+      shape.insert(shape.end(), out_base.begin(), out_base.end());
+      shape.insert(shape.end(), in_base.begin(), in_base.end());
+      return band.reshape(shape);
+    case BlockForm::paired: // (*dyn, *sub, *out_base, *in_base): each site against itself
+    {
+      const int64_t S = prod(in_sub);
+      std::vector<int64_t> grid = dyn;
+      grid.insert(grid.end(), {S, prod(out_base), S, prod(in_base)});
+      auto diag = band.reshape(grid).diagonal(0, nd, nd + 2).movedim(-1, nd);
+      shape.insert(shape.end(), in_sub.begin(), in_sub.end());
+      shape.insert(shape.end(), out_base.begin(), out_base.end());
+      shape.insert(shape.end(), in_base.begin(), in_base.end());
+      return diag.reshape(shape);
+    }
+    case BlockForm::full: // (*dyn, *out_sub, *out_base, *in_sub, *in_base)
+      shape.insert(shape.end(), out_sub.begin(), out_sub.end());
+      shape.insert(shape.end(), out_base.begin(), out_base.end());
+      shape.insert(shape.end(), in_sub.begin(), in_sub.end());
+      shape.insert(shape.end(), in_base.begin(), in_base.end());
+      return band.reshape(shape);
   }
-  shape.insert(shape.end(), out_sub.begin(), out_sub.end());
-  shape.insert(shape.end(), out_base.begin(), out_base.end());
-  if (form == "full")
-    shape.insert(shape.end(), in_sub.begin(), in_sub.end());
-  shape.insert(shape.end(), in_base.begin(), in_base.end());
-  return band.reshape(shape);
+  _throw("aoti::Model: unhandled derivative block form.");
 }
 
 std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>

@@ -273,7 +273,7 @@ Evaluate + JVP.
 ``(*B, *sub_batch_shape, *base_shape)``; a missing tangent key defaults to zero. Returns a
 2-tuple ``(outputs, jvp_outputs)`` -- both ``dict[str, Tensor]`` keyed by
 ``output_names``; ``jvp_outputs[name]`` is the directional derivative at the
-output's natural ``(*B, *out_base_shape)``.
+output's ``(*B, *out_sub_batch_shape, *out_base_shape)``.
 )")
       .def("jacobian",
            &Model::jacobian,
@@ -284,9 +284,10 @@ Evaluate + full Jacobian as unflattened variable-pair blocks.
 
 Returns a 2-tuple ``(outputs, J)`` where ``J`` is a nested
 ``dict[str, dict[str, Tensor]]``: ``J[out_name][in_name]`` is the block
-``(*B, *out_base_shape, *in_base_shape)`` (e.g. SR2->SR2 -> (*B, 6, 6);
-Scalar->SR2 -> (*B, 6)) over the **structural** inputs (promoted-parameter
-inputs are not exposed in J).
+``(*B, *out_base_shape, *in_base_shape)`` for plain-batch variables (e.g.
+SR2->SR2 -> (*B, 6, 6); Scalar->SR2 -> (*B, 6)), and with sub-batched variables
+the layout of its ``derivative_forms`` entry, over the **structural** inputs
+(promoted-parameter inputs are not exposed in J).
 )")
       .def("param_jacobian",
            &Model::param_jacobian,

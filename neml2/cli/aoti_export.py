@@ -112,9 +112,9 @@ def _enumerate_group_infos(system) -> dict:
     """Canonical per-group metadata for nonlinear-system segments.
 
     Single source of truth for the iteration order in which group
-    tensors appear in RHS/NewtonStep/IFT forward signatures. The
-    matching reader side in :mod:`neml2.es.implicit` walks the same
-    order via :func:`~neml2.es.implicit.enumerate_group_var_names`.
+    tensors appear in RHS/NewtonStep/IFT (Implicit Function Theorem) forward
+    signatures. The matching reader side in :mod:`neml2.es.implicit` walks the
+    same order via :func:`~neml2.es.implicit.enumerate_group_var_names`.
 
     Returns a dict with:
 
@@ -1078,7 +1078,7 @@ class _ForwardJacobianModule(nn.Module):
         # Block form of each emitted pair, filled by the eager probe.
         self.pair_forms: list[str] = []
 
-    def _per_site_seed(self, in_name: str, sub_ndim: int) -> bool:
+    def _needs_per_site_tangent_seed(self, in_name: str, sub_ndim: int) -> bool:
         # Per-site seed for a sub-batched input on a selected pair; other inputs
         # keep the per-input seed.
         if sub_ndim == 0:
@@ -1108,7 +1108,7 @@ class _ForwardJacobianModule(nn.Module):
             full_batch = tuple(ti.batch_shape)
             sub_ndim = ti.sub_batch_ndim
             dyn_ndim = len(full_batch) - sub_ndim
-            if self._per_site_seed(name, sub_ndim):
+            if self._needs_per_site_tangent_seed(name, sub_ndim):
                 seed[name] = {
                     name: sub_batched_identity_seed(
                         self.in_types[i],
@@ -1151,7 +1151,7 @@ class _ForwardJacobianModule(nn.Module):
                 in_base = tuple(int(s) for s in in_type.BASE_SHAPE)
                 block = v_out.get(out_name, {}).get(in_name)
                 ti = typed_inputs[i]
-                if self._per_site_seed(in_name, ti.sub_batch_ndim):
+                if self._needs_per_site_tangent_seed(in_name, ti.sub_batch_ndim):
                     in_sub = tuple(int(s) for s in ti.sub_batch_shape)
                     if block is None:
                         shape, form = zero_pair_block_shape(
@@ -1469,6 +1469,7 @@ def _resolve_derivative_specs(
     inputs = list(structural_input_names)
     params = list(param_names)
     sub_batched = set(sub_batched_inputs)
+    # Inputs an empty IN selects (`-d :`, `-d OUT:`: the docs' wildcard).
     wildcard_inputs = [i for i in inputs if i not in sub_batched]
     struct_pairs: set[tuple[str, str]] = set()
     param_pairs: set[tuple[str, str]] = set()
@@ -2233,10 +2234,11 @@ def _compile_implicit_segment(
         assert setup_mod is not None and apply_mod is not None
         pc_setup = setup_mod.to(device)
         pc_apply = apply_mod.to(device)
-    # IFT (input-derivative) operators + solve: `jacobian` supplies A = ∂r/∂u;
-    # `jacobian_given` supplies B = ∂r/∂g; `solve_ift` applies A^{-1}B and emits
-    # per-(unknown, given) blocks. ParamIFT: `dr_dparam` emits the dense A + ∂r/∂θ
-    # (strict + reverse-AD); `solve_param` does the dense sensitivity solve.
+    # IFT (Implicit Function Theorem) input-derivative operators + solve:
+    # `jacobian` supplies A = ∂r/∂u; `jacobian_given` supplies B = ∂r/∂g;
+    # `solve_ift` applies A^{-1}B and emits per-(unknown, given) blocks.
+    # ParamIFT: `dr_dparam` emits the dense A + ∂r/∂θ (strict + reverse-AD);
+    # `solve_param` does the dense sensitivity solve.
     # B gets columns only for the givens of a selected pair: a per-site history
     # nobody differentiates against would otherwise add a column per site.
     ift_givens = (
