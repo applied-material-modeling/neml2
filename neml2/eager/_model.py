@@ -191,6 +191,9 @@ class _EagerModel:
         self.output_sub_batch_shapes: list[list[int]] = [
             list(planned.get(n, [])) for n in self.output_names
         ]
+        # Derivative block forms are planned on first `derivative_forms` access.
+        self._plan_source = (input_file, model_name) if declares_sub else None
+        self._derivative_forms: dict[str, dict[str, str]] | None = None
 
         # Calibration-parameter surface (d(output)/d(parameter), reverse-mode AD).
         # Parameters are addressed by their named_parameters() qualified name
@@ -217,6 +220,34 @@ class _EagerModel:
         self.parameter_base_shapes: dict[str, list[int]] = {
             q: list(b) for q, b in self._param_base_shape_map.items()
         }
+
+    @property
+    def derivative_forms(self) -> dict[str, dict[str, str]]:
+        """Block form of every ``(output, input)`` pair, keyed ``[output][input]``:
+        ``"plain"``, ``"paired"`` or ``"full"``, as ``neml2-compile`` would record
+        it (:func:`~neml2.cli.aoti_export.plan_derivative_forms`). Planned on first
+        access from the ``[Settings]`` declaration; without one every pair is
+        ``"plain"``."""
+        if self._derivative_forms is None:
+            forms = {o: dict.fromkeys(self.input_names, "plain") for o in self.output_names}
+            if self._plan_source is not None:
+                from ..cli.aoti_export import plan_derivative_forms
+
+                input_file, model_name = self._plan_source
+                try:
+                    planned = plan_derivative_forms(
+                        input_file, model_name, device=str(self._device)
+                    )
+                except Exception as err:
+                    raise RuntimeError(
+                        f"EagerModel: could not work out the derivative block forms for the "
+                        f"[Settings]/example_batch_shape declaration of model {model_name!r} "
+                        f"in '{input_file}' (the compile plan failed: "
+                        f"{type(err).__name__}: {err})."
+                    ) from err
+                forms = {o: {i: planned[o][i] for i in self.input_names} for o in self.output_names}
+            self._derivative_forms = forms
+        return self._derivative_forms
 
     @property
     def device(self) -> torch.device:

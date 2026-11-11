@@ -3854,6 +3854,72 @@ def plan_output_sub_batch_shapes(
     return _master_output_sub_batch_shapes(prepared.model.output_spec, seg_metas)
 
 
+def plan_derivative_forms(
+    hit_path: str | Path,
+    model_name: str,
+    *,
+    device: str = "cpu",
+    example_batch_shape: dict[str, str] | str | None = None,
+) -> dict[str, dict[str, str]]:
+    """Block form of every ``(output, input)`` pair a compile would record, without compiling.
+
+    Same plan as :func:`plan_output_sub_batch_shapes`. Each forward segment runs
+    the :class:`_ForwardJacobianModule` probe ``neml2-compile`` reads its pair
+    forms from, with every sub-batched input seeded per site; a pair through a
+    solve is ``"full"`` (:func:`_master_pair_forms`). Keyed ``[output][input]``
+    over all structural inputs, sub-batched ones included.
+    """
+    prepared = _prepare_export(
+        hit_path, model_name, device=device, example_batch_shape=example_batch_shape
+    )
+    shapes = {
+        n: (DEFAULT_EXAMPLE_SHAPE[0], sub) for n, (_dyn, sub) in prepared.resolved_shapes.items()
+    }
+    seg_metas: list[dict] = []
+    for plan in _plan_segments(prepared, model_name):
+        if plan.kind == "forward":
+            exportable = cast("Model", plan.seg_model).to(device)
+            example_inputs = _build_example_inputs(
+                exportable.input_spec, set(), {}, device, shapes=shapes
+            )
+            jvp_module = _ForwardJacobianModule(exportable).to(device)
+            with torch.no_grad():
+                probe = jvp_module(*example_inputs)
+            n_outs = len(jvp_module.output_names)
+            names = [(o, i) for o in jvp_module.output_names for i in jvp_module.input_names]
+            seg_metas.append(
+                {
+                    "kind": "forward",
+                    "output_sub_batch_shapes": _output_sub_batch_shapes(
+                        exportable.output_spec, probe[:n_outs]
+                    ),
+                    "jacobian_pairs": [
+                        {"out_var": o, "in_var": i, "form": f}
+                        for (o, i), f in zip(names, jvp_module.pair_forms, strict=True)
+                    ],
+                }
+            )
+        else:
+            impl = cast("ImplicitUpdate", plan.impl_model)
+            system = impl.system
+            # The flat givens a compile records, phantom ``X~1`` included.
+            givens = [*system.given_names, *(f"{x}~1" for x in impl.incremental_variables)]
+            seg_metas.append(
+                {
+                    "kind": "implicit",
+                    "unknown_group_infos": _enumerate_group_infos(system)["unknown_group_infos"],
+                    "unknowns": [{"name": n} for n in system.unknown_names],
+                    "givens": [{"name": n} for n in givens],
+                }
+            )
+    outputs = list(prepared.model.output_spec)
+    inputs = list(prepared.structural_input_names)
+    in_sb = {n: sub for n, (_, sub) in prepared.resolved_shapes.items() if sub}
+    out_sb = _master_output_sub_batch_shapes(prepared.model.output_spec, seg_metas)
+    forms = _master_pair_forms([(o, i) for o in outputs for i in inputs], in_sb, out_sb, seg_metas)
+    return {o: {i: forms[(o, i)] for i in inputs} for o in outputs}
+
+
 def _master_pair_forms(
     pairs: Sequence[tuple[str, str]],
     input_sub_batch_shapes: Mapping[str, Sequence[int]],

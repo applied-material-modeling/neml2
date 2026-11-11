@@ -71,9 +71,9 @@ namespace neml2::eager
  * **Sub-batch.** Variables are `(*B, *sub_batch_shape, *base_shape)`, as on
  * `aoti::Model`. The sub-batch extents come from the input file's
  * `[Settings]/example_batch_shape` (see @ref input_sub_batch_shapes); an
- * undeclared input is plain-batch. Derivatives (`jvp` / `jacobian`) are taken
- * with respect to plain-batch inputs only, and the parameter derivatives are
- * plain-batch only.
+ * undeclared input is plain-batch. `jvp` tangents and parameter derivatives are
+ * plain-batch only; `jacobian` takes a sub-batched input when named (see
+ * @ref derivative_forms).
  *
  * **PImpl + visibility.** Every implementation detail -- the embedded
  * interpreter handle and the `pybind11` adapter object -- lives behind an
@@ -170,6 +170,14 @@ public:
   /// treats an undeclared output as plain-batch and checks the shapes it gets
   /// on the first evaluation. Cached at load; no GIL.
   const std::vector<std::vector<int64_t>> & output_sub_batch_shapes() const noexcept;
+
+  /// Block form of each derivative pair, keyed `[output][input]`, as
+  /// @ref neml2::aoti::Model::derivative_forms, so a host sizes its storage the
+  /// same way on either runtime. Covers every (output, input) pair, sub-batched
+  /// inputs included, as `neml2-compile` would record it for the
+  /// `[Settings]/example_batch_shape` declaration; without one every pair is
+  /// `"plain"`. Planned on the first call (acquires the GIL), cached after.
+  const std::map<std::string, std::map<std::string, std::string>> & derivative_forms() const;
 
   /// Evaluate the model. `inputs` is keyed by the names returned by
   /// `input_names()` and shaped `(*B, *sub_batch_shape, *base_shape)` (see

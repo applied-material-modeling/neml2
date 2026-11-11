@@ -154,8 +154,10 @@ inputs only; name the input to include it (`-d y:z`). Every route lays the block
 | `full` | sub-batched, sites coupled (a sum, a solve) | `(*B, *out_sub, *out_base, *in_sub, *in_base)` |
 
 The form is structural: any derivative through an implicit solve is `full`.
-Compiled runtimes report it through `derivative_forms()`. The eager embed bridge
-(`cpp-eager`) takes `jvp` tangents for plain-batch inputs only.
+Every C++ runtime reports it through `derivative_forms()`, so a host can size
+its storage before the first call; `cpp-eager` reports every pair, a compiled
+artifact the pairs it was compiled with. The eager embed bridge (`cpp-eager`)
+takes `jvp` tangents for plain-batch inputs only.
 
 ### Example
 

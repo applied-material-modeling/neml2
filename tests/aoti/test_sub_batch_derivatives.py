@@ -199,6 +199,9 @@ def test_compiled_sub_batch_derivatives_match_eager_and_fd(tmp_path, scenario, s
     assert {(o, i): f for o, row in m.derivative_forms.items() for i, f in row.items()} == forms
 
     eager = _EagerModel(str(hit), "model")
+    # cpp-eager reports every pair; on the compiled ones it agrees with the artifact.
+    assert all(len(row) == len(eager.input_names) for row in eager.derivative_forms.values())
+    assert {(o, i): eager.derivative_forms[o][i] for o, i in forms} == forms
     raw = _inputs(eager)
     outc, Jc = m.jacobian(raw)
     oute, Je = eager.jacobian(raw, derivatives=specs)

@@ -27,6 +27,7 @@
 // interpreter, and forward() evaluates it. argv[1] is the path to
 // tests/aoti/forward_single/model.i (LinearIsotropicElasticity, strain->stress).
 
+#include <algorithm>
 #include <cmath>
 #include <map>
 #include <string>
@@ -87,6 +88,9 @@ main(int argc, char ** argv)
   // sub-batched model.)
   NEML2_CHECK(m.input_sub_batch_shapes() == std::vector<std::vector<int64_t>>{{}});
   NEML2_CHECK(m.output_sub_batch_shapes() == std::vector<std::vector<int64_t>>{{}});
+  // No declaration: every pair is "plain", without running the planner.
+  NEML2_CHECK(m.derivative_forms() == (std::map<std::string, std::map<std::string, std::string>>{
+                                          {"stress", {{"strain", "plain"}}}}));
   NEML2_CHECK(m.device().is_cpu());
   NEML2_CHECK(m.dtype() == at::kDouble);
 
@@ -483,6 +487,36 @@ main(int argc, char ** argv)
     NEML2_CHECK(at::allclose(J.at("x").at("x~1"), at::diag(dx_dxo).expand({rb, n, n})));
     NEML2_CHECK(at::allclose(J.at("vf").at("x~1"), (w * dx_dxo).expand({rb, n})));
     NEML2_CHECK(at::allclose(J.at("y").at("z"), R.expand({rb, n})));
+
+    // Every pair has a form (one of each here), and each block has its form's shape.
+    const auto & F = rm.derivative_forms();
+    NEML2_CHECK(F.size() == rm.output_names().size());
+    for (const auto & [o, row] : F)
+      NEML2_CHECK(row.size() == rm.input_names().size());
+    NEML2_CHECK(F.at("vf").at("s") == "plain" && F.at("y").at("z") == "paired" &&
+                F.at("x").at("x~1") == "full" && F.at("vf").at("x~1") == "full");
+    const auto at_name = [](const auto & names, const auto & shapes, const std::string & n)
+    {
+      const auto k = std::find(names.begin(), names.end(), n) - names.begin();
+      return shapes[static_cast<std::size_t>(k)];
+    };
+    for (const auto & [o, row] : J)
+      for (const auto & [i, blk] : row)
+      {
+        const auto & form = F.at(o).at(i);
+        std::vector<int64_t> want = {rb};
+        const auto osub = at_name(rm.output_names(), rm.output_sub_batch_shapes(), o);
+        const auto isub = at_name(rm.input_names(), rm.input_sub_batch_shapes(), i);
+        const auto & lead = form == "paired" ? isub : osub;
+        want.insert(want.end(), lead.begin(), lead.end());
+        const auto ob = at_name(rm.output_names(), rm.output_base_shapes(), o);
+        want.insert(want.end(), ob.begin(), ob.end());
+        if (form == "full")
+          want.insert(want.end(), isub.begin(), isub.end());
+        const auto ib = at_name(rm.input_names(), rm.input_base_shapes(), i);
+        want.insert(want.end(), ib.begin(), ib.end());
+        NEML2_CHECK(blk.sizes() == at::IntArrayRef(want));
+      }
   }
 
   return 0;

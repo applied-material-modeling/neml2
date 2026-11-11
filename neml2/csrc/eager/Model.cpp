@@ -254,6 +254,23 @@ Model::output_sub_batch_shapes() const noexcept
   return _impl->output_sub_batch_shapes;
 }
 
+const std::map<std::string, std::map<std::string, std::string>> &
+Model::derivative_forms() const
+{
+  // The GIL serializes the first fill. A planning failure is never recoverable.
+  return guarded(
+      "derivative_forms",
+      [&]() -> const std::map<std::string, std::map<std::string, std::string>> &
+      {
+        if (!_impl->derivative_forms)
+          _impl->derivative_forms =
+              _impl->adapter.attr("derivative_forms")
+                  .cast<std::map<std::string, std::map<std::string, std::string>>>();
+        return *_impl->derivative_forms;
+      },
+      RecoverablePolicy::Deny);
+}
+
 // NOTE on tensor lifetime: the tensors returned by forward / jvp / jacobian
 // originate in Python (the native model's outputs) and are handed back as
 // at::Tensor across the boundary. The caller destroys them later in C++ without

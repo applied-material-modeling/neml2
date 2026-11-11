@@ -1055,6 +1055,48 @@ def test_output_plan_failure_fails_load_with_context(monkeypatch):
     assert isinstance(err.value.__cause__, KeyError)
 
 
+def test_derivative_forms_cover_every_pair():
+    """Every (output, input) pair has a form, sub-batched inputs included, as the
+    compile plan records it."""
+    from neml2.cli.aoti_export import plan_derivative_forms
+
+    path = _REPO / "tests" / "aoti" / "implicit_cross_group_sub_batch" / "model.i"
+    m = _EagerModel(str(path), "model")
+    forms = m.derivative_forms
+    assert forms == plan_derivative_forms(str(path), "model")
+    assert set(forms) == set(m.output_names)
+    assert all(set(row) == set(m.input_names) for row in forms.values())
+    assert forms["u_glob"]["g_glob"] == "plain" and forms["u_per"]["g_per"] == "full"
+
+
+def test_derivative_forms_plain_model_skips_plan(monkeypatch):
+    """Without a sub-batch declaration every pair is plain and nothing is planned."""
+    import neml2.cli.aoti_export as aoti_export
+
+    def _boom(*args, **kwargs):
+        raise AssertionError("planned a model with no sub-batch declaration")
+
+    monkeypatch.setattr(aoti_export, "plan_derivative_forms", _boom)
+    m = _EagerModel(str(_REPO / "tests" / "aoti" / "forward_single" / "model.i"), "model")
+    assert m.derivative_forms == {"stress": {"strain": "plain"}}
+
+
+def test_derivative_forms_planned_on_first_access(monkeypatch):
+    """The load does not plan the forms; a planning failure surfaces on first
+    access, with context."""
+    import neml2.cli.aoti_export as aoti_export
+
+    def _boom(*args, **kwargs):
+        raise KeyError("segment probe failed")
+
+    monkeypatch.setattr(aoti_export, "plan_derivative_forms", _boom)
+    path = _REPO / "tests" / "aoti" / "forward_sub_batch" / "model.i"
+    m = _EagerModel(str(path), "model")
+    with pytest.raises(RuntimeError, match="derivative block forms") as err:
+        _ = m.derivative_forms
+    assert str(path) in str(err.value) and isinstance(err.value.__cause__, KeyError)
+
+
 # --- #3 convergence failure surfaces as the recoverable typed exception -------
 
 
