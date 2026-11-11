@@ -130,7 +130,7 @@ $\tau_a$. Three leaves produce the contributions:
 and three more evolve the microstructural state those strengths read:
 
 - [](models-SubgrainCoarsening) — $\dot{\lambda} = \mu b^3 K / (k T \lambda)$, thermally driven subgrain growth.
-- [](models-SimplePrecipitateGrowth) — $\dot{R} = K / (3R^2)$ and $\dot{N} = -K/R^3$, volume-conserving coarsening emitted as one leaf because both rates share $K$ and $R$.
+- [](models-SimplePrecipitateGrowth) — $\dot{R} = K / (3R^2)$ and $\dot{N} = -NK/R^3$, volume-conserving coarsening emitted as one leaf because both rates share $K$ and $R$.
 - [](models-SoluteDepletion) — $\dot{c} = K \left\langle c_0 - c \right\rangle^{1/3} (c - c_\text{eq})$, draining the matrix as precipitates form.
 
 Every coefficient on these leaves is a promotable parameter, so the usual
