@@ -38,9 +38,9 @@ from .DislocationInteractionStrengthMap import DislocationInteractionStrengthMap
 from .DislocationObstacleStrengthMap import DislocationObstacleStrengthMap
 from .ElasticStrainRate import ElasticStrainRate
 from .FixOrientation import FixOrientation
+from .KocksMeckingDynamicRecovery import KocksMeckingDynamicRecovery
 from .LinearInteractionHardeningRule import LinearInteractionHardeningRule
 from .LinearInteractionStrengthMap import LinearInteractionStrengthMap
-from .KocksMeckingDynamicRecovery import KocksMeckingDynamicRecovery
 from .LinearSingleSlipHardeningRule import LinearSingleSlipHardeningRule
 from .LumpedForestDislocationEvolution import LumpedForestDislocationEvolution
 from .OrientationRate import OrientationRate
@@ -71,9 +71,9 @@ __all__ = [
     "DislocationObstacleStrengthMap",
     "ElasticStrainRate",
     "FixOrientation",
+    "KocksMeckingDynamicRecovery",
     "LinearInteractionHardeningRule",
     "LinearInteractionStrengthMap",
-    "KocksMeckingDynamicRecovery",
     "LinearSingleSlipHardeningRule",
     "LumpedForestDislocationEvolution",
     "OrientationRate",
