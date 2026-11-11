@@ -116,3 +116,62 @@ def test_opaque_pow_autograd_one_sided_inputs():
     torch.ops.neml2.opaque_pow(base2, expo2).sum().backward()
     assert expo2.grad is not None
     assert torch.allclose(expo2.grad, (torch.pow(base2, 5.0) * torch.log(base2)).sum())
+
+
+class _BroadcastPow(torch.nn.Module):
+    def forward(self, base, expo):
+        return torch.ops.neml2.opaque_pow(base, expo)
+
+
+def test_opaque_pow_fake_infers_broadcast_shape():
+    """The typed wrapper can pass operands that broadcast against each other
+    (a plain-batch base ``(B, 1)`` against a sub-batched exponent ``(B, S)``),
+    so the fake impl -- what export / Inductor use for shape inference -- must
+    report the broadcast output shape, and the exported program must run."""
+    from torch._subclasses.fake_tensor import FakeTensorMode  # noqa: PLC0415
+
+    with FakeTensorMode():
+        fake = torch.ops.neml2.opaque_pow(
+            torch.empty(5, 1, dtype=torch.float64), torch.empty(5, 3, dtype=torch.float64)
+        )
+    assert tuple(fake.shape) == (5, 3)
+
+    base = torch.rand(5, 1, dtype=torch.float64) + 0.5
+    expo = torch.rand(5, 3, dtype=torch.float64) + 1.0
+    with ignore_warnings(TORCH_TREESPEC_LEAFSPEC):
+        ep = torch.export.export(_BroadcastPow(), (base, expo)).run_decompositions()
+    out = ep.module()(base, expo)
+    assert tuple(out.shape) == (5, 3)
+    assert torch.allclose(out, torch.pow(base, expo))
+
+
+def _grads(fn, base: torch.Tensor, expo: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    b = base.detach().clone().requires_grad_(True)
+    e = expo.detach().clone().requires_grad_(True)
+    fn(b, e).sum().backward()
+    gb, ge = b.grad, e.grad
+    assert gb is not None and ge is not None
+    return gb, ge
+
+
+def test_opaque_pow_autograd_reduces_broadcast_grads():
+    """Each gradient is reduced back to its own input's shape when the
+    operands broadcast, matching ``torch.pow``."""
+    base = torch.rand(5, 3, dtype=torch.float64) + 0.5
+    expo = torch.rand(5, 1, dtype=torch.float64) + 1.0
+    gb, ge = _grads(torch.ops.neml2.opaque_pow, base, expo)
+    gb_ref, ge_ref = _grads(torch.pow, base, expo)
+    assert gb.shape == base.shape and ge.shape == expo.shape
+    assert torch.allclose(gb, gb_ref)
+    assert torch.allclose(ge, ge_ref)
+
+
+def test_opaque_pow_exponent_grad_at_zero_base():
+    """``d(b^e)/de = b^e ln(b)`` is ``0 * -inf`` at ``b = 0``; the backward
+    must return the limit 0 (as ``torch.pow`` does), not nan."""
+    base = torch.tensor([0.0, 0.5, 2.0], dtype=torch.float64)
+    expo = torch.tensor(2.0, dtype=torch.float64)
+    _, ge = _grads(torch.ops.neml2.opaque_pow, base, expo)
+    _, ge_ref = _grads(torch.pow, base, expo)
+    assert torch.isfinite(ge)
+    assert torch.allclose(ge, ge_ref)
