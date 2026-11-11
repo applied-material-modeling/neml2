@@ -29,7 +29,7 @@ graph is compiled and the runtime `jvp` / `jacobian` raise. Each
 side to select all on it (`stress:` = every input of `stress`, `:strain`
 = every output w.r.t. `strain`, `:` = all pairs). The requested master
 pairs are recorded in the metadata's top-level `derivatives` array, their block
-forms in `derivative_forms`. Wildcards skip sub-batched inputs; name one to
+forms in `derivative_forms`. An empty `IN` skips sub-batched inputs; name one to
 include it ([](sub-batch-derivatives)).
 
 Each derivative is one per-variable-pair block. A block that does not

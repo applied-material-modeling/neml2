@@ -252,13 +252,13 @@ def test_reduction_through_solve_matches_closed_form(tmp_path):
     torch.testing.assert_close(J["vf"]["s"], exact.expand(B), rtol=1e-12, atol=1e-14)
 
 
-def test_wildcard_selects_plain_inputs_and_names_select_sub_batched(tmp_path):
+def test_empty_in_selects_plain_inputs_and_names_select_sub_batched(tmp_path):
     from neml2.cli.aoti_export import export_model_for_aoti
 
     hit = _SCN / "implicit_sub_batch_ift_reduce" / "model.i"
     meta = export_model_for_aoti(hit, "model", tmp_path / "a", derivatives=[":"])
     ins = {i for _, i in meta["derivatives"]}
-    assert ins == {"s", "t", "t~1"}, "a wildcard must skip the sub-batched x, x~1 and z"
+    assert ins == {"s", "t", "t~1"}, "an empty IN must skip the sub-batched x, x~1 and z"
     assert set(meta["derivative_forms"]) == {"plain"}
 
     meta = export_model_for_aoti(hit, "model", tmp_path / "b", derivatives=["y:", "y:z"])

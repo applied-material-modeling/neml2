@@ -1459,7 +1459,7 @@ def _resolve_derivative_specs(
     ``strain``; ``:`` is all structural pairs. An empty *specs* yields two empty
     sets -- no derivative graphs are compiled and ``jvp`` / ``jacobian`` raise.
 
-    A wildcard ``IN`` skips the *sub_batched_inputs*, which, like parameters,
+    An empty ``IN`` also skips the *sub_batched_inputs*, which, like parameters,
     are opt-in by name. The eager runtimes resolve their ``derivatives`` here too.
 
     Unknown output / input names raise ``ValueError`` listing both the structural
@@ -1469,8 +1469,7 @@ def _resolve_derivative_specs(
     inputs = list(structural_input_names)
     params = list(param_names)
     sub_batched = set(sub_batched_inputs)
-    # Inputs an empty IN selects (`-d :`, `-d OUT:`: the docs' wildcard).
-    wildcard_inputs = [i for i in inputs if i not in sub_batched]
+    inputs_selected_by_empty_spec = [i for i in inputs if i not in sub_batched]
     struct_pairs: set[tuple[str, str]] = set()
     param_pairs: set[tuple[str, str]] = set()
     for spec in specs:
@@ -1487,7 +1486,7 @@ def _resolve_derivative_specs(
             )
         if in_part == "":
             # Params and sub-batched inputs are opt-in by name.
-            sel_struct, sel_param = wildcard_inputs, []
+            sel_struct, sel_param = inputs_selected_by_empty_spec, []
         elif in_part in inputs:
             sel_struct, sel_param = [in_part], []
         elif in_part in params:

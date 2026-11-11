@@ -143,9 +143,9 @@ there.
 
 Derivatives pass through sub-batched variables (an implicit solve's unknowns, a
 per-site given, a sum over sites) on every route. A derivative *with respect to*
-a sub-batched input has one column per site, so it is opt-in: wildcards
-(`-d :`, `-d OUT:`, the eager `derivatives` argument) select plain inputs only;
-name the input to include it (`-d y:z`). Every route lays the blocks out alike:
+a sub-batched input has one column per site, so it is opt-in: an empty `IN`
+(`-d :`, `-d OUT:`, also in the eager `derivatives` argument) selects plain
+inputs only; name the input to include it (`-d y:z`). Every route lays the blocks out alike:
 
 | Form | Input | Block |
 | --- | --- | --- |
