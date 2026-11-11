@@ -153,3 +153,96 @@ def test_multigroup_adjoint_vs_fd(nchunk):
             f"param {n!r} (nchunk={nchunk}): adjoint={a.tolist()} "
             f"fd={f.tolist()} absdiff={(a - f).abs().max().item():.3e}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Temperature-dependent stiffness: CubicElasticityTensor(E, nu, G) with each
+# coefficient a ScalarLinearInterpolation table over temperature, feeding
+# GeneralElasticity's promoted ``elastic_stiffness_tensor``. Mirroring the E
+# table ordinate as a pyzag parameter exercises the promoted-stiffness
+# chain-rule action and the parameter adjoint through the interpolation
+# table end to end.
+# ---------------------------------------------------------------------------
+
+_TAYLOR_TEMPERATURE_MODEL = _TAYLOR_MODEL.parents[1] / "taylor_temperature" / "model.i"
+
+_TEMPERATURE_PARAMS = ["E_ordinate", "slip_strength_constant_strength"]
+
+
+def _build_temperature_problem(ntime=12, nbatch=3):
+    nsys = load_nonlinear_system(str(_TAYLOR_TEMPERATURE_MODEL), "eq_sys")
+    factory = NEML2PyzagModel(nsys, include_parameters=_TEMPERATURE_PARAMS)
+
+    ngrains = _ORIENTATIONS.shape[0]
+    dtype = torch.float64
+    ic_dict = {
+        "elastic_strain": torch.zeros(nbatch, ngrains, 6, dtype=dtype),
+        "orientation": _ORIENTATIONS.unsqueeze(0).expand(nbatch, ngrains, 3).contiguous(),
+        "slip_hardening": torch.zeros(nbatch, ngrains, dtype=dtype),
+        "deformation_rate": torch.zeros(nbatch, 6, dtype=dtype),
+        "target_cauchy_stress": torch.zeros(nbatch, 6, dtype=dtype),
+    }
+    y0 = factory.assemble_state(ic_dict, dynamic_dim=1)
+
+    control = torch.zeros(ntime, nbatch, 6, dtype=dtype)
+    control[..., 0] = 1.0
+    prescribed = torch.zeros(ntime, nbatch, 6, dtype=dtype)
+    prescribed[..., 0] = 1e-4
+    s = torch.linspace(0.0, 1.0, ntime, dtype=dtype).unsqueeze(-1)
+    times = (50.0 * s).expand(ntime, nbatch).contiguous()
+    # Distinct temperature ramps per batch column, spanning several table
+    # segments so more than one E ordinate receives a gradient.
+    t_start = torch.linspace(350.0, 950.0, nbatch, dtype=dtype)
+    temperature = t_start + 200.0 * s
+    forces_dict = {
+        "control": control,
+        "prescribed": prescribed,
+        "t": times,
+        "temperature": temperature,
+        "vorticity": torch.zeros(ntime, nbatch, 3, dtype=dtype),
+    }
+    forces = factory.assemble_forces(forces_dict, dynamic_dim=2)
+    return factory, y0, ntime, forces
+
+
+def _fd_grads_elementwise(factory, y0, nstep, forces, nchunk, eps=1e-6):
+    """Forward FD, perturbing one parameter element at a time
+    (``_fd_grads`` above perturbs every element of a parameter at once, which
+    is only valid for scalar parameters)."""
+    solver = _make_solver(factory, nchunk)
+    res = {}
+    with torch.no_grad():
+        val0 = torch.norm(nonlinear.solve(solver, y0, nstep, forces))
+        for n, p in solver.named_parameters():
+            p0 = p.clone()
+            g = torch.zeros_like(p0).reshape(-1)
+            for i in range(g.numel()):
+                pert = p0.clone().reshape(-1)
+                dx = max(abs(pert[i].item()) * eps, eps)
+                pert[i] += dx
+                p.data = pert.reshape(p0.shape)
+                g[i] = (torch.norm(nonlinear.solve(solver, y0, nstep, forces)) - val0) / dx
+            p.data = p0
+            res[n] = g.reshape(p0.shape)
+    return res
+
+
+@pytest.mark.parametrize("nchunk", [1, 3])
+def test_temperature_dependent_stiffness_adjoint_vs_fd(nchunk):
+    factory, y0, nstep, forces = _build_temperature_problem()
+
+    grads_adjoint = _adjoint_grads(factory, y0, nstep, forces, nchunk)
+    grads_fd = _fd_grads_elementwise(factory, y0, nstep, forces, nchunk)
+
+    assert grads_adjoint.keys() == grads_fd.keys()
+    for n in grads_adjoint:
+        a = grads_adjoint[n]
+        f = grads_fd[n]
+        assert torch.isfinite(a).all(), f"param {n!r}: non-finite adjoint gradient {a.tolist()}"
+        assert torch.allclose(a, f, atol=1e-8, rtol=1e-3), (
+            f"param {n!r} (nchunk={nchunk}): adjoint={a.tolist()} "
+            f"fd={f.tolist()} absdiff={(a - f).abs().max().item():.3e}"
+        )
+    # Every table segment touched by the temperature ramps contributes.
+    (gE,) = (g for n, g in grads_adjoint.items() if n.endswith("E_ordinate"))
+    assert (gE.abs() > 0).sum() >= 3
