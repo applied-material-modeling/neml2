@@ -28,18 +28,29 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, output, parameter
-from ....types import Scalar
+from ....types import Scalar, sqrt
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...model import Model
 
 
 @register_neml2_object("PrecipitateStrength")
 class PrecipitateStrength(Model):
-    r"""Strength contribution of a precipitate population, defined by
-    $\tau = \alpha \dfrac{\mu b}{2 R N}$
+    r"""Orowan (bypass) strength contribution of a precipitate population,
+    defined by
+    $\tau = \alpha \mu b \sqrt{2 R N}$
     where $R$ is the mean precipitate radius, $N$ is the precipitate
-    number density, $\alpha$ is an interaction coefficient, $\mu$ is the
-    shear modulus and $b$ is the Burgers vector.
+    number density (per unit volume), $\alpha$ is an interaction
+    coefficient, $\mu$ is the shear modulus and $b$ is the Burgers vector.
+
+    A slip plane intersects every precipitate whose center lies within $R$
+    of it, so the number of obstacles per unit area of slip plane is
+    $2 R N$ and their spacing is $L = 1 / \sqrt{2 R N}$; the strength is
+    the Orowan stress $\alpha \mu b / L$. At fixed volume fraction
+    $f = \tfrac{4}{3} \pi R^3 N$ this is $\tau \propto \sqrt{f} / R$, so the
+    contribution falls as the population coarsens (overaging).
+
+    Both $R$ and $N$ must be strictly positive: the derivatives of the square
+    root are unbounded where $R N = 0$.
 
     The output is a single strength contribution, intended to be combined with
     the other contributions through a ``ScalarLinearCombination``.
@@ -72,35 +83,37 @@ class PrecipitateStrength(Model):
         mu = self._get_param("shear_modulus", promoted_params, Scalar)
         b = self._get_param("burgers_vector", promoted_params, Scalar)
 
-        two_RN = 2.0 * R * N
-        tau = alpha * mu * b / two_RN
+        # Obstacle density per unit slip-plane area is 2 R N; its square root
+        # is the inverse obstacle spacing 1/L.
+        inv_L = sqrt(2.0 * R * N)
+        tau = alpha * mu * b * inv_L
 
         if v is None:
             return tau
 
         # Differential pushforward. Closed-form coefficients of typed Scalars.
-        #   d tau / d R     = -tau / R
-        #   d tau / d N     = -tau / N
-        #   d tau / d alpha =  mu b / (2 R N)
-        #   d tau / d mu    =  alpha b / (2 R N)
-        #   d tau / d b     =  alpha mu / (2 R N)
+        #   d tau / d R     = tau / (2 R)
+        #   d tau / d N     = tau / (2 N)
+        #   d tau / d alpha = mu b sqrt(2 R N)
+        #   d tau / d mu    = alpha b sqrt(2 R N)
+        #   d tau / d b     = alpha mu sqrt(2 R N)
         # The three parameter coefficients differentiate the product directly
         # rather than forming ``tau / <param>``: zeroing a coefficient is a
         # valid way to switch this contribution off, and the quotient form is
         # 0/0 there.
         actions: dict[str, ChainRuleAction] = {
-            "precipitate_radius": lambda V, c=-tau / R: c * V,
-            "precipitate_density": lambda V, c=-tau / N: c * V,
+            "precipitate_radius": lambda V, c=0.5 * tau / R: c * V,
+            "precipitate_density": lambda V, c=0.5 * tau / N: c * V,
         }
         if "alpha" in self._promoted_params:
-            actions[self._promoted_params["alpha"].input_name] = lambda V, c=mu * b / two_RN: c * V
+            actions[self._promoted_params["alpha"].input_name] = lambda V, c=mu * b * inv_L: c * V
         if "shear_modulus" in self._promoted_params:
             actions[self._promoted_params["shear_modulus"].input_name] = (
-                lambda V, c=alpha * b / two_RN: c * V
+                lambda V, c=alpha * b * inv_L: c * V
             )
         if "burgers_vector" in self._promoted_params:
             actions[self._promoted_params["burgers_vector"].input_name] = (
-                lambda V, c=alpha * mu / two_RN: c * V
+                lambda V, c=alpha * mu * inv_L: c * V
             )
 
         return tau, self.apply_chain_rule(v, "precipitate_strength", actions, output=tau)

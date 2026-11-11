@@ -125,7 +125,7 @@ $\tau_a$. Three leaves produce the contributions:
 
 - [](models-SolidSolutionStrength) — $\tau = \alpha \mu \varepsilon^{3/2} c^{1/2}$ from the matrix solute concentration.
 - [](models-SubgrainStrength) — $\tau = \alpha \mu b / \lambda$ from the subgrain size.
-- [](models-PrecipitateStrength) — $\tau = \alpha \mu b / (2 R N)$ from the precipitate radius and number density.
+- [](models-PrecipitateStrength) — $\tau = \alpha \mu b \sqrt{2 R N}$, the Orowan bypass stress for an obstacle spacing $1/\sqrt{2RN}$ set by the precipitate radius and number density.
 
 and three more evolve the microstructural state those strengths read:
 
