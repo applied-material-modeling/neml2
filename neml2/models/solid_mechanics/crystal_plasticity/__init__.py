@@ -37,6 +37,7 @@ from .CrystalPlasticityStrainPredictor import CrystalPlasticityStrainPredictor
 from .DislocationObstacleStrengthMap import DislocationObstacleStrengthMap
 from .ElasticStrainRate import ElasticStrainRate
 from .FixOrientation import FixOrientation
+from .KocksMeckingDynamicRecovery import KocksMeckingDynamicRecovery
 from .LinearSingleSlipHardeningRule import LinearSingleSlipHardeningRule
 from .LumpedForestDislocationEvolution import LumpedForestDislocationEvolution
 from .OrientationRate import OrientationRate
@@ -66,6 +67,7 @@ __all__ = [
     "DislocationObstacleStrengthMap",
     "ElasticStrainRate",
     "FixOrientation",
+    "KocksMeckingDynamicRecovery",
     "LinearSingleSlipHardeningRule",
     "LumpedForestDislocationEvolution",
     "OrientationRate",

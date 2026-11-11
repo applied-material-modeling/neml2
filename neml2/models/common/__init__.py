@@ -116,6 +116,7 @@ from .RotationMatrix import RotationMatrix
 from .ScalarMultiplication import ScalarMultiplication
 from .ScalarPNorm import ScalarPNorm
 from .ScalarToDiagonalSR2 import ScalarToDiagonalSR2
+from .SmoothCap import SmoothCap
 from .SR2Invariant import SR2Invariant
 from .SR2ToR2 import SR2ToR2
 from .SymmetricHermiteInterpolation import SymmetricHermiteInterpolation
@@ -192,6 +193,7 @@ __all__ = [
     "ScalarMultiplication",
     "ScalarPNorm",
     "ScalarToDiagonalSR2",
+    "SmoothCap",
     "SymmetricHermiteInterpolation",
     "WR2ExplicitExponentialTimeIntegration",
     "WR2ImplicitExponentialTimeIntegration",
