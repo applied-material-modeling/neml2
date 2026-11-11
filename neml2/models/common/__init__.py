@@ -87,8 +87,12 @@ from .InputParameter import (
 )
 from .IntermediateDiff import SR2IntermediateDiff
 from .IntermediateLinearContraction import IntermediateLinearContraction
-from .IntermediateMean import SR2IntermediateMean
-from .IntermediateSum import SR2IntermediateSum
+from .IntermediateReduce import (
+    ScalarIntermediateMean,
+    ScalarIntermediateSum,
+    SR2IntermediateMean,
+    SR2IntermediateSum,
+)
 from .Interpolation import Interpolation
 from .IrreversibleScalar import IrreversibleScalar
 from .LinearCombination import R2LinearCombination, ScalarLinearCombination, SR2LinearCombination
@@ -116,6 +120,7 @@ from .RotationMatrix import RotationMatrix
 from .ScalarMultiplication import ScalarMultiplication
 from .ScalarPNorm import ScalarPNorm
 from .ScalarToDiagonalSR2 import ScalarToDiagonalSR2
+from .SmoothCap import SmoothCap
 from .SR2Invariant import SR2Invariant
 from .SR2ToR2 import SR2ToR2
 from .SymmetricHermiteInterpolation import SymmetricHermiteInterpolation
@@ -192,6 +197,7 @@ __all__ = [
     "ScalarMultiplication",
     "ScalarPNorm",
     "ScalarToDiagonalSR2",
+    "SmoothCap",
     "SymmetricHermiteInterpolation",
     "WR2ExplicitExponentialTimeIntegration",
     "WR2ImplicitExponentialTimeIntegration",
@@ -209,7 +215,9 @@ __all__ = [
     "Interpolation",
     "Reduction",
     "SR2IntermediateMean",
+    "ScalarIntermediateMean",
     "SR2IntermediateSum",
+    "ScalarIntermediateSum",
     "SR2ToR2",
     "SR2VariableRate",
     "R2VariableRate",

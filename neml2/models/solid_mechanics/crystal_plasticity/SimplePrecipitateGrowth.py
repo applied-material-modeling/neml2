@@ -37,17 +37,20 @@ from ...model import Model
 class SimplePrecipitateGrowth(Model):
     r"""Simplified, volume-conserving coarsening of a precipitate population,
     defined by
-    $\dot{R} = \dfrac{K}{3 R^2}, \qquad \dot{N} = -\dfrac{K}{R^3}$
+    $\dot{R} = \dfrac{K}{3 R^2}, \qquad \dot{N} = -\dfrac{N K}{R^3}$
     where $R$ is the mean precipitate radius, $N$ is the precipitate
     number density and $K$ is the coarsening coefficient.
+
+    The radius follows the LSW cube law, $R^3 = R_0^3 + K t$. The density
+    rate is chosen so the total precipitate volume fraction, proportional
+    to $N R^3$, is conserved: $\dot{N} = -3 N \dot{R} / R$.
 
     $K$ is a promotable parameter, so it may be supplied as a constant or
     driven by another model -- an ``ArrheniusParameter`` for the usual
     thermally activated form.
 
-    Note $\dot{N}$ does not depend on $N$, following the issue
-    specification; the two rates are emitted by one leaf because they share
-    the single coefficient $K$ and the same $R$.
+    The two rates are emitted by one leaf because they share the single
+    coefficient $K$ and the same $R$.
     """
 
     hit = HitSchema(
@@ -75,7 +78,7 @@ class SimplePrecipitateGrowth(Model):
         R2 = R * R
         R3 = R2 * R
         R_dot = K / (3.0 * R2)
-        N_dot = -K / R3
+        N_dot = -N * K / R3
 
         if v is None:
             return R_dot, N_dot
@@ -84,23 +87,26 @@ class SimplePrecipitateGrowth(Model):
         # no Jacobian materialised.
         #   d R_dot / d R = -2 K / (3 R^3) = -2 R_dot / R
         #   d R_dot / d K =  1 / (3 R^2)
-        #   d N_dot / d R =  3 K / R^4     = -3 N_dot / R
-        #   d N_dot / d K = -1 / R^3
+        #   d N_dot / d R =  3 N K / R^4   = -3 N_dot / R
+        #   d N_dot / d N = -K / R^3
+        #   d N_dot / d K = -N / R^3
         # Both rates are linear in K, so the K coefficients are written as the
         # bare R terms rather than as ``<rate> / K``: zeroing K is a valid way
-        # to switch coarsening off, and the quotient form is 0/0 there.
-        # N appears in neither rate, so its action is a structural zero and no
-        # entry is registered for it.
+        # to switch coarsening off, and the quotient form is 0/0 there. Same
+        # for the N coefficient of N_dot (N = 0 is a valid state).
+        # N does not appear in R_dot, so that action is a structural zero and
+        # no entry is registered for it.
         actions_R: dict[str, ChainRuleAction] = {
             "precipitate_radius": lambda V, c=-2.0 * R_dot / R: c * V,
         }
         actions_N: dict[str, ChainRuleAction] = {
             "precipitate_radius": lambda V, c=-3.0 * N_dot / R: c * V,
+            "precipitate_density": lambda V, c=-K / R3: c * V,
         }
         if "coarsening_coefficient" in self._promoted_params:
             ext = self._promoted_params["coarsening_coefficient"].input_name
             actions_R[ext] = lambda V, c=1.0 / (3.0 * R2): c * V
-            actions_N[ext] = lambda V, c=-1.0 / R3: c * V
+            actions_N[ext] = lambda V, c=-N / R3: c * V
 
         # Both outputs are derived names with no ``_var_renames`` entry, so pass
         # the resolved external names directly (same convention as ZenerElement).

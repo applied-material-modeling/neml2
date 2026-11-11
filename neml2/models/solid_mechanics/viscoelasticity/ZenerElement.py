@@ -141,6 +141,22 @@ class ZenerElement(Model):
         # through ``_var_renames`` inside ``apply_chain_rule`` automatically;
         # the derived ``viscous_strain_rate`` output has no rename entry, so
         # pass the resolved external name (``self._Ev_dot``) directly.
-        v_S = self.apply_chain_rule(v, "stress", actions_S, output=S)
-        v_Ev_dot = self.apply_chain_rule(v, self._Ev_dot, actions_Ev_dot, output=Ev_dot)
+        v_S = self.apply_chain_rule(
+            v,
+            "stress",
+            actions_S,
+            output=S,
+            structural_zeros=(self._promoted_params["etaM"].input_name,)
+            if "etaM" in self._promoted_params
+            else (),
+        )
+        v_Ev_dot = self.apply_chain_rule(
+            v,
+            self._Ev_dot,
+            actions_Ev_dot,
+            output=Ev_dot,
+            structural_zeros=(self._promoted_params["Einf"].input_name,)
+            if "Einf" in self._promoted_params
+            else (),
+        )
         return S, Ev_dot, {**v_S, **v_Ev_dot}

@@ -32,6 +32,14 @@
 []
 
 [Models]
+  [K_shared]
+    type = ScalarConstantParameter
+    value = 1000.0
+  []
+  [S_shared]
+    type = ScalarConstantParameter
+    value = 10.0
+  []
   [decompose]
     type = VecComponents
     from = 'separation'
@@ -55,18 +63,18 @@
   [critical_separation]
     type = CamanhoDavilaCriticalSeparation
     mode_mixity = 'mode_mixity'
-    penalty_stiffness = 1000.0
+    penalty_stiffness = 'K_shared'
     normal_strength = 10.0
-    shear_strength = 10.0
+    shear_strength = 'S_shared'
   []
   [full_separation]
     type = BenzeggaghKenaneFullSeparation
     mode_mixity = 'mode_mixity'
     critical_separation = 'critical_separation'
-    penalty_stiffness = 1000.0
+    penalty_stiffness = 'K_shared'
     mode_I_fracture_toughness = 1.0
     mode_II_fracture_toughness = 1.0
-    shear_strength = 10.0
+    shear_strength = 'S_shared'
     eta = 2.0
   []
   [effective_separation]
@@ -75,16 +83,23 @@
     to = 'effective_separation'
     exponent = 2.0
   []
-  [traction]
-    type = BilinearTraction
+  [damage_envelope]
+    type = BilinearDamage
     critical_separation = 'critical_separation'
     full_separation = 'full_separation'
+  []
+  [damage_update]
+    type = BackwardEulerViscousDamage
+  []
+  [traction]
+    type = BilinearTraction
     normal_penetration = 'normal_penetration'
-    penalty_stiffness = 1000.0
+    penalty_stiffness = 'K_shared'
   []
   [model]
     type = ComposedModel
-    models = 'decompose tangential_separation macaulay_n effective_separation traction'
+    models = 'decompose tangential_separation macaulay_n effective_separation
+              damage_envelope damage_update traction'
     additional_outputs = 'damage'
   []
 []
