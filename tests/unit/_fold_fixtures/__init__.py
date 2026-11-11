@@ -25,13 +25,16 @@
 """Test-only Python-native models that trigger the dense sub-batch fold.
 
 ``DenseSubBatchMixing`` (``y_i = sum_r M_ir x_r``, a dense within-sub-batch Jacobian),
-``CommonToExtraOffset`` (a per-(common, extra) field coupled to a common-only unknown),
-and ``AddScalarToExtra`` (a per-(common, extra) field coupled to a global scalar unknown
+``CommonToExtraOffset`` (a per-(common, extra) field coupled to a common-only unknown), and
+``AddScalarToExtra`` (a per-(common, extra) field coupled to a global scalar unknown
 that lands in a dense column group) are physics-free fixtures whose sole purpose is to
-exercise the equation-system assembler's dense / row-extra / block-row-against-dense-column
-tangent-fold branches. They back ``tests/unit/test_dense_subbatch_fold.py``.
+exercise the equation-system assembler's dense / row-extra /
+block-row-against-dense-column tangent-fold branches. The dense-row-against-block-column
+branch is exercised with the shipped ``ScalarIntermediateSum`` / ``SR2IntermediateSum``
+reduction models directly (no fixture needed).
+They back ``tests/unit/test_dense_subbatch_fold.py``.
 
-Importing this package side-effect-registers both models with the native factory registry
+Importing this package side-effect-registers the models with the native factory registry
 via ``@register_neml2_object``. The package is named ``_fold_fixtures`` rather than
 ``_fixtures`` so it never shadows the regression suite's top-level ``_fixtures`` package
 when both test trees are collected in one run.

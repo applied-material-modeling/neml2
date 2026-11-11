@@ -330,17 +330,13 @@ def wrap_group_raw(
     if not group_names:
         return Tensor(raw, batch_ndim=raw.ndim, sub_batch_ndim=0)
     if structure == "block":
-        # (*dyn, *common_sub_batch, group_base_total): base_ndim=1. The
-        # intermediate axes are the group's COMMON sub-batch prefix; any extra
-        # per-variable sub-batch is folded into the group base. Using a single
-        # variable's full sub-batch
-        # here (as an earlier version did) over-counts the intmd axes for a
-        # partial-fold group and mis-tags the tensor -- mirror the common-prefix
-        # convention used by ``_split_group`` and ``AssembledVector.from_flat``.
-        sub_ndim = min(
-            (len(layout.sub_batch_shape(n)) for n in group_names),
-            default=0,
-        )
+        # (*dyn, *common_sub_batch, group_base_total), base_ndim=1. The intermediate
+        # axes are the group's COMMON sub-batch prefix; extra per-variable sub-batch is
+        # folded into the group base. Take the prefix from the layout so an explicit
+        # ``group_common`` override is honored, not re-derived from member ranks. Groups
+        # partition the axis variables, so the name tuple identifies its group.
+        gi = layout.groups.index(tuple(group_names))
+        sub_ndim = len(layout.group_common_sub_batch(gi))
         return Tensor(raw, batch_ndim=raw.ndim - sub_ndim - 1, sub_batch_ndim=sub_ndim)
     # DENSE: (*dyn, group_total); sub_batch folded into base.
     return Tensor(raw, batch_ndim=raw.ndim - 1, sub_batch_ndim=0)
@@ -1287,14 +1283,28 @@ def _convert_tangent_to_block(
                 row_extra=row_extra,
                 col_var_base=col_var_base,
             )
-        # Both sides carry the extra sub-batch axis. Two couplings:
-        #  - DIAGONAL (index i depends only on index i) -> the tangent's extra K is
-        #    paired/broadcast (no full K) -> block-diagonal expand.
-        #  - DENSE (index i depends on all indices r) -> the extra K is FULL -> fold
-        #    the extra axis into row/col storage.
-        # In the both-extra branch the col is the per-site state (base 1), so a full
-        # K can only come from the dense coupling.
-        if any(s == "full" for s in t_block.k_state):
+        # Both sides carry the extra sub-batch axis:
+        #  - DIAGONAL (index i depends only on i): extra K is paired/broadcast ->
+        #    block-diagonal expand.
+        #  - DENSE (index i depends on all r): extra K is FULL -> fold the extra axis
+        #    into row/col storage.
+        # Only the SOURCE-EXTRA K axes select the branch. k_state is ordered
+        # (col sub-batch..., col base...), so the extra region is
+        # ``k_state[len(common):len(col_sub_batch)]``; the trailing K_base axes (full for
+        # any non-scalar per-site state) are excluded -- base width is carried by
+        # ``col_var_base``.
+        # The slice is positional, so k_state must carry that ordering: one axis per col
+        # sub-batch plus one K_base axis for a non-scalar col. Fail loudly on a collapsed
+        # K rather than letting the slice empty and silently mis-route to the diagonal.
+        k_base_count = 1 if col_var_base > 1 else 0
+        if len(t_block.k_state) != len(_col_sb_t) + k_base_count:
+            raise ValueError(
+                "equation-system tangent fold (both-extra): k_state length "
+                f"{len(t_block.k_state)} != col sub-batch {len(_col_sb_t)} + base "
+                f"{k_base_count} (k_state={t_block.k_state}); cannot classify a "
+                "collapsed K by position."
+            )
+        if any(s == "full" for s in t_block.k_state[len(_common) : len(_col_sb_t)]):
             return _convert_tangent_to_paired_block_bothextra_dense(
                 t_block,
                 common=_common,
@@ -1370,6 +1380,27 @@ def _convert_tangent_to_block(
             batch_ndim=block.batch_ndim,
             sub_batch_ndim=block.sub_batch_ndim + len(col_intmd_shape),
         )
+        # Fold any COL extra sub-batch (beyond the group common prefix) into col storage,
+        # leaving only the common prefix as a column intermediate -- matching
+        # ``_zero_block`` / ``_var_storage`` so a common-only column in the same group
+        # concatenates. Mirror of the block-row extra fold below; col order preserved.
+        col_nc = len(col_layout.group_common_sub_batch(col_gi))
+        ne = len(col_intmd_shape) - col_nc
+        if ne > 0:
+            d = block.data
+            dyn = block.batch_ndim
+            sub = block.sub_batch_ndim
+            # axes: (*dyn, [*sub_row,] *col_common, *col_extra, row_storage, col_base);
+            # col_extra are the last ``ne`` sub-batch axes. Move them to just before
+            # col_base, then flatten (col_extra, col_base) into one col-storage axis.
+            ce = list(range(dyn + sub - ne, dyn + sub))
+            perm = [ax for ax in range(d.ndim) if ax not in ce]
+            insert_at = perm.index(d.ndim - 1)
+            for k, ax in enumerate(ce):
+                perm.insert(insert_at + k, ax)
+            d = d.permute(perm).contiguous()
+            lead = d.shape[: d.ndim - (ne + 1)]
+            block = Tensor(d.reshape(*lead, -1), batch_ndim=dyn, sub_batch_ndim=sub - ne)
 
     # Block row with an extra trailing sub-batch axis beyond the group common
     # (against a DENSE col): fold the extra axis into the row storage so the block
