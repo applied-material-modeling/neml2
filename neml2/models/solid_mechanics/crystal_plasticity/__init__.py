@@ -38,6 +38,7 @@ from .DislocationObstacleStrengthMap import DislocationObstacleStrengthMap
 from .ElasticStrainRate import ElasticStrainRate
 from .FixOrientation import FixOrientation
 from .LinearSingleSlipHardeningRule import LinearSingleSlipHardeningRule
+from .LumpedForestDislocationEvolution import LumpedForestDislocationEvolution
 from .OrientationRate import OrientationRate
 from .PerSlipForestDislocationEvolution import PerSlipForestDislocationEvolution
 from .PlasticDeformationRate import PlasticDeformationRate
@@ -66,6 +67,7 @@ __all__ = [
     "ElasticStrainRate",
     "FixOrientation",
     "LinearSingleSlipHardeningRule",
+    "LumpedForestDislocationEvolution",
     "OrientationRate",
     "PerSlipForestDislocationEvolution",
     "PlasticDeformationRate",
