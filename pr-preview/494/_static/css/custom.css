@@ -1,0 +1,152 @@
+/* Shibuya's `.math-wrapper { overflow-x: auto }` adds a horizontal
+   scrollbar whenever the rendered MathJax content slightly exceeds the
+   container width -- which it does on every numbered equation, because
+   our `tagSide: right` config pushes the equation tag past the right
+   edge by a few pixels. Drop the auto-scrollbar; wide equations on
+   mobile will fall back to MathJax 3's own responsive shrinking. */
+.yue .math-wrapper {
+  overflow-x: visible;
+}
+
+/* Color in-prose links so they're distinguishable from body text in
+   bullet lists. Shibuya's default sets the link color to
+   var(--yue-c-link-1) which resolves to var(--sy-c-text) -- the same
+   color as the surrounding body text. The only visual cue is a 1px
+   bottom border in the accent color, which gets visually swallowed
+   when line-spacing and a bullet glyph compete for the eye. Coloring
+   the link text to match the existing accent underline makes the link
+   visible at a glance; hover strengthens it via the existing rule
+   (border-bottom-width: 2px + var(--yue-c-link-2)). */
+.yue a {
+  color: var(--sy-c-link);
+}
+.yue a:hover {
+  color: var(--sy-c-link-hover);
+}
+
+/* Always show the breadcrumb trail. Shibuya hides `.sy-breadcrumbs` at
+   >=1280px (the bar doubles as the mobile menu host on narrow viewports),
+   so by default desktop readers get no breadcrumbs. Re-show it on wide
+   screens for orientation in the deeply-nested syntax catalog. The two
+   menu buttons inside the bar stay hidden by their own md:hidden /
+   xl:hidden utility classes, so only the trail renders. */
+@media (min-width: 1280px) {
+  .sy-breadcrumbs {
+    display: block;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Scheduler / dispatcher animations (doc/js/components/scheduler-demos.js)
+   Theme-aware palette: the SVG inherits `color` for text/strokes, and the
+   work-box / outline tones switch with shibuya's color mode. Device fill
+   colors are set inline by the script (mid-tone HSL, legible in both
+   themes). */
+:root {
+  --sd-work: #c9ccd1; /* neutral chunk body (light) */
+  --sd-outline: #b3b8c0; /* dashed batch outline (light) */
+  --sd-text: #20242b; /* labels + control glyphs (light) */
+}
+/* shibuya records the chosen mode on <html data-color-mode="auto|light|dark">.
+   Explicit dark uses the dark palette; auto / unset defers to the OS via the
+   media query below. */
+[data-color-mode="dark"] {
+  --sd-work: #4a4f57;
+  --sd-outline: #5a606a;
+  --sd-text: #d7dae0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-mode="light"]):not([data-color-mode="dark"]) {
+    --sd-work: #4a4f57;
+    --sd-outline: #5a606a;
+    --sd-text: #d7dae0;
+  }
+}
+
+.scheduler-demo .sd-figure {
+  margin: 1rem 0;
+}
+.scheduler-demo svg {
+  width: 100%;
+  height: auto;
+  color: var(--sd-text);
+  display: block;
+}
+.scheduler-demo .sd-controls {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+.scheduler-demo .sd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--sd-outline);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sd-text);
+  cursor: pointer;
+  line-height: 0;
+}
+.scheduler-demo .sd-btn:hover {
+  background: var(--sy-c-bg-secondary, rgba(127, 127, 127, 0.12));
+  border-color: var(--sy-c-link);
+  color: var(--sy-c-link);
+}
+.scheduler-demo .sd-btn:focus-visible {
+  outline: 2px solid var(--sy-c-link);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Multi-version "old / dev documentation" banner
+   (doc/js/components/version-banner.js). The script prepends a single
+   `.neml2-version-banner` (with `.is-dev` for the main-branch build) to
+   <body> when the URL's version segment is not the latest release. Same
+   theme-aware approach as the scheduler palette above: amber warning for a
+   stale release, blue info for the dev build, both legible in light/dark. */
+:root {
+  --vb-stale-bg: #fef3c7; /* amber-100 */
+  --vb-stale-fg: #713f12; /* amber-900 */
+  --vb-dev-bg: #dbeafe; /* blue-100  */
+  --vb-dev-fg: #1e3a8a; /* blue-900  */
+}
+[data-color-mode="dark"] {
+  --vb-stale-bg: #422006;
+  --vb-stale-fg: #fde68a;
+  --vb-dev-bg: #172554;
+  --vb-dev-fg: #bfdbfe;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-mode="light"]):not([data-color-mode="dark"]) {
+    --vb-stale-bg: #422006;
+    --vb-stale-fg: #fde68a;
+    --vb-dev-bg: #172554;
+    --vb-dev-fg: #bfdbfe;
+  }
+}
+
+.neml2-version-banner {
+  /* Pinned above the sticky shibuya header so it's seen before scrolling. */
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  background: var(--vb-stale-bg);
+  color: var(--vb-stale-fg);
+}
+.neml2-version-banner.is-dev {
+  background: var(--vb-dev-bg);
+  color: var(--vb-dev-fg);
+}
+.neml2-version-banner a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}

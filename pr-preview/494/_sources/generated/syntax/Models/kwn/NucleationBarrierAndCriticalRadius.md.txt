@@ -1,0 +1,40 @@
+(models-NucleationBarrierAndCriticalRadius)=
+# NucleationBarrierAndCriticalRadius
+
+**Source:** `models/kwn/NucleationBarrierAndCriticalRadius.py`
+
+Compute the nucleation critical radius and Gibbs free energy barrier.
+
+Mirrors the C++ ``NucleationBarrierAndCriticalRadius``:
+
+$$
+R_{\mathrm{crit}} = \dfrac{2\,\gamma\,V_m}{\Delta g_{\mathrm{total}}},
+\qquad
+\Delta g = \dfrac{16}{3}\,\pi\,\gamma^{3}\,V_m^{2}
+           \big/ \Delta g_{\mathrm{total}}^{2},
+$$
+
+where $\gamma$ is the surface energy of the precipitate,
+$V_m$ is the molar volume, and $\Delta g_{\mathrm{total}}$
+is the total Gibbs free energy difference driving nucleation.
+
+## Outputs
+
+`nucleation_barrier` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Gibbs free energy barrier for nucleation
+
+`critical_radius` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Critical radius for nucleation
+
+
+## Parameters
+
+`surface_energy` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Surface energy of the precipitate
+
+`total_gibbs_free_energy_difference` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Total Gibbs free energy difference driving nucleation
+
+`molar_volume` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Molar volume of the precipitate
+

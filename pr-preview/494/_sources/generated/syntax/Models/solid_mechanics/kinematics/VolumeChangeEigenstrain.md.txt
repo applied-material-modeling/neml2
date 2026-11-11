@@ -1,0 +1,27 @@
+(models-VolumeChangeEigenstrain)=
+# VolumeChangeEigenstrain
+
+**Source:** `models/solid_mechanics/kinematics/VolumeChangeEigenstrain.py`
+
+Define the (cumulative, as opposed to instantaneous) linear isotropic
+volume expansion eigenstrain, i.e.
+$\boldsymbol{\varepsilon}_V = (\frac{V}{V0})^(1/3)-1 \boldsymbol{I}$, where $V$ is the current
+volume, and $V0$ is the reference (initial) volume.
+
+## Inputs
+
+`volume` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Volume
+
+
+## Outputs
+
+`eigenstrain` &mdash; `output` &middot; `SR2` &middot; **required**
+: Eigenstrain
+
+
+## Parameters
+
+`reference_volume` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Reference (initial) volume
+
