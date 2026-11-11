@@ -67,7 +67,7 @@ class BenzeggaghKenaneFullSeparation(Model):
             attr="delta_c",
             allow_promotion=True,
         ),
-        parameter("penalty_stiffness", Scalar, "Penalty stiffness", attr="K"),
+        parameter("penalty_stiffness", Scalar, "Penalty stiffness", attr="K", allow_promotion=True),
         parameter(
             "mode_I_fracture_toughness",
             Scalar,
@@ -85,6 +85,7 @@ class BenzeggaghKenaneFullSeparation(Model):
             Scalar,
             "Shear strength (used in compression branch)",
             attr="S",
+            allow_promotion=True,
         ),
         parameter("eta", Scalar, "BK exponent", attr="eta"),
     )
@@ -105,9 +106,9 @@ class BenzeggaghKenaneFullSeparation(Model):
         *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        # ``beta`` and ``delta_c`` are promotion-capable; route through
-        # ``_get_param`` so the same code path works whether they remained
-        # static parameters or were promoted to runtime inputs.
+        # Route promotion-capable parameters through ``_get_param`` so the
+        # same code path works whether they remained static parameters or were
+        # promoted to runtime inputs.
         beta = self._get_param("beta", promoted_params, Scalar)
         delta_c = self._get_param("delta_c", promoted_params, Scalar)
         K = self._get_param("K", promoted_params, Scalar)
@@ -142,11 +143,10 @@ class BenzeggaghKenaneFullSeparation(Model):
         # -------- D-062 pushforward.
         #
         # The forward depends on ``normal_separation`` only through the
-        # detached branch mask, so its action is structural zero (omitted
-        # from ``actions`` -> ``apply_chain_rule`` treats it as zero). The
-        # two promotion-capable parameters ``beta`` and ``delta_c`` carry
-        # closed-form partials, emitted only when promoted to runtime
-        # inputs (mode 3/4).
+        # detached branch mask, so its action is structural zero. It is omitted
+        # from ``actions``, and ``apply_chain_rule`` therefore treats it as zero.
+        # Promotion-capable parameters receive closed-form partials below,
+        # emitted only when promoted to runtime inputs (mode 3/4).
         actions: dict[str, ChainRuleAction] = {}
 
         delta_c_nlp = self._promoted_params.get("delta_c")
@@ -174,6 +174,18 @@ class BenzeggaghKenaneFullSeparation(Model):
             )
             ddf_dbeta = where(pos_mask, ddf_dbeta_open, zero)
             actions[beta_nlp.input_name] = lambda V, c=ddf_dbeta: c * V
+
+        stiffness = self._promoted_params.get("K")
+        if stiffness is not None:
+            zero = Scalar.from_value(0.0, like=delta_f)
+            ddf_dK = where(pos_mask, -delta_final_open / K, zero)
+            actions[stiffness.input_name] = lambda V, c=ddf_dK: c * V
+
+        shear = self._promoted_params.get("S")
+        if shear is not None:
+            zero = Scalar.from_value(0.0, like=delta_f)
+            ddf_dS = where(pos_mask, zero, -delta_final_default / S)
+            actions[shear.input_name] = lambda V, c=ddf_dS: c * V
 
         return delta_f, self.apply_chain_rule(v, "full_separation", actions, output=delta_f)
 

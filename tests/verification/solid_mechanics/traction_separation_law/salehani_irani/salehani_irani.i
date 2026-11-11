@@ -34,28 +34,44 @@
     driver = 'driver'
     Vec_names = 'output.traction'
     Vec_values = 'tractions_ref'
-    # No internal state and no implicit solve -- the model evaluates the analytical exponential
-    # cohesive law in one shot. Tight tolerances catch any sign / factor / wiring regression.
+    # The rate-independent updater reproduces the analytical exponential cohesive law without
+    # an implicit solve. Tight tolerances catch any sign / factor / wiring regression.
     rtol = 1e-10
     atol = 1e-12
   []
 []
 
 [Models]
+  [delta_u0_n]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
+  [delta_u0_t]
+    type = ScalarConstantParameter
+    value = 1.0
+  []
   [decompose]
     type = VecComponents
     from = 'separation'
     to = 'normal_separation tangential_separation_1 tangential_separation_2'
   []
+  [damage_envelope]
+    type = SalehaniIraniDamage
+    normal_characteristic_length = 'delta_u0_n'
+    tangential_characteristic_length = 'delta_u0_t'
+  []
+  [damage_update]
+    type = BackwardEulerViscousDamage
+  []
   [traction]
     type = SalehaniIraniTraction
-    normal_characteristic_length = 1.0
-    tangential_characteristic_length = 1.0
+    normal_characteristic_length = 'delta_u0_n'
+    tangential_characteristic_length = 'delta_u0_t'
     normal_strength = 1.0
     shear_strength = 1.0
   []
   [model]
     type = ComposedModel
-    models = 'decompose traction'
+    models = 'decompose damage_envelope damage_update traction'
   []
 []

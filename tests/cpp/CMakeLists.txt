@@ -287,6 +287,8 @@ set_target_properties(test_eager PROPERTIES
 # argv[7]/argv[8]: an .i whose model __init__ raises torch.linalg.LinAlgError
 # + the module defining it, verifying the constructor-time guard keeps it FATAL
 # (no recoverable-promotion at construction).
+# argv[9]: a sub-batched implicit model whose [Settings] declares its extents,
+# exercising the sub-batch accessors, shapes and plain-input Jacobian columns.
 add_test(NAME test_eager
       COMMAND test_eager
             ${NEML2_SOURCE_DIR}/tests/aoti/forward_single/model.i
@@ -296,7 +298,8 @@ add_test(NAME test_eager
             ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_model.i
             ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_model.py
             ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_ctor_model.i
-            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_ctor_model.py)
+            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/linalg_error_ctor_model.py
+            ${NEML2_SOURCE_DIR}/tests/aoti/implicit_cross_group_sub_batch/model.i)
 # The embedded interpreter must find the stdlib (PYTHONHOME) + the neml2 source
 # package (PYTHONPATH); torch/lib stays on LD_LIBRARY_PATH for the transitive
 # libtorch resolution the existing tests also rely on.

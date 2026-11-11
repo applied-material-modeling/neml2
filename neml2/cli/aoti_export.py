@@ -75,6 +75,7 @@ from ..settings import DEFAULT_EXAMPLE_SHAPE, model_variable_names, resolve_exam
 from ..types import TensorWrapper
 
 if TYPE_CHECKING:
+    from ..models.common import ImplicitUpdate
     from ..models.model import Model
 
 # ---------------------------------------------------------------------------
@@ -180,8 +181,14 @@ def _leading_k_identity_seed(
     *,
     dtype: torch.dtype,
     device: torch.device,
+    sub_batch_ndim: int = 0,
 ) -> TensorWrapper:
-    """Identity seed for Phase-14 leading-K typed tangents."""
+    """Identity seed for Phase-14 leading-K typed tangents.
+
+    The trailing *sub_batch_ndim* axes of *batch_shape* are the input's sub-batch
+    region and are declared as such on the seed; without it a per-site axis would
+    read as plain batch and stop broadcasting against the input's own sub-batch.
+    """
     n = _var_size(type_cls)
     eye = torch.eye(n, dtype=dtype, device=device)
     mid = (1,) * len(batch_shape)
@@ -194,7 +201,9 @@ def _leading_k_identity_seed(
     # same downstream sum (e.g. a frozen flow_direction passed as a given to an
     # ImplicitUpdate solve). Establishing the K region at the seed keeps the
     # whole chain rule consistent.
-    return type_cls(data, k_ndim=1, k_state=("full",), k_pairing=(None,))
+    return type_cls(
+        data, sub_batch_ndim=sub_batch_ndim, k_ndim=1, k_state=("full",), k_pairing=(None,)
+    )
 
 
 def _leading_k_block_to_trailing_k(block: torch.Tensor | TensorWrapper) -> torch.Tensor:
@@ -1085,6 +1094,7 @@ class _ForwardJacobianModule(nn.Module):
                     seed_batch,
                     dtype=ti.dtype,
                     device=ti.device,
+                    sub_batch_ndim=sub_ndim,
                 )
             }
         result = self.model(*typed_inputs, v=seed)
@@ -3666,6 +3676,60 @@ def _master_output_sub_batch_shapes(output_spec, seg_metas: list[dict]) -> dict[
             for name, sb in (seg.get("output_sub_batch_shapes") or {}).items():
                 produced[name] = [int(s) for s in sb]
     return {n: produced[n] for n in output_spec if produced.get(n)}
+
+
+def plan_output_sub_batch_shapes(
+    hit_path: str | Path,
+    model_name: str,
+    *,
+    device: str = "cpu",
+    example_batch_shape: dict[str, str] | str | None = None,
+) -> dict[str, list[int]]:
+    """Per-output sub-batch extents a compile of *model_name* would record, without compiling.
+
+    Runs the same prelude and segment plan as ``neml2-compile`` and takes each
+    output's extent from the same two sources as the metadata (see
+    :func:`_master_output_sub_batch_shapes`): a forward segment's eager probe on
+    the example inputs, and an implicit segment's unknown layout. No Newton solve
+    runs -- a whole-model evaluation on zero inputs is not guaranteed to converge
+    -- and no ``.pt2`` is produced. The eager runtime calls this at load so it
+    reports the same output extents as the AOTI-compiled twin.
+
+    The model is loaded afresh from *hit_path*, because the prelude rewrites it
+    (parameters frozen to buffers, implicit layouts seeded). Plain-batch outputs
+    are omitted. *example_batch_shape* overrides the file's ``[Settings]``, as
+    ``neml2-compile --example-batch-shape`` does.
+    """
+    prepared = _prepare_export(
+        hit_path, model_name, device=device, example_batch_shape=example_batch_shape
+    )
+    # Only the sub-batch extents matter here, so every probe input gets the same
+    # dynamic batch: a declaration that sizes only the sub-batched variables
+    # leaves the others at the default, and mixed batches would not broadcast.
+    shapes = {
+        n: (DEFAULT_EXAMPLE_SHAPE[0], sub) for n, (_dyn, sub) in prepared.resolved_shapes.items()
+    }
+    seg_metas: list[dict] = []
+    for plan in _plan_segments(prepared, model_name):
+        if plan.kind == "forward":
+            exportable = cast("Model", plan.seg_model).to(device)
+            example_inputs = _build_example_inputs(
+                exportable.input_spec, set(), {}, device, shapes=shapes
+            )
+            seg_metas.append(
+                {
+                    "kind": "forward",
+                    "output_sub_batch_shapes": _probe_output_sub_batch_shapes(
+                        exportable, example_inputs
+                    ),
+                }
+            )
+        else:
+            group_meta = _enumerate_group_infos(cast("ImplicitUpdate", plan.impl_model).system)
+            seg_metas.append(
+                {"kind": "implicit", "unknown_group_infos": group_meta["unknown_group_infos"]}
+            )
+    return _master_output_sub_batch_shapes(prepared.model.output_spec, seg_metas)
 
 
 def _build_meta(

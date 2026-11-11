@@ -61,7 +61,7 @@
 <rect x="364" y="132" width="272" height="70" rx="10" class="bx"/>
 <text x="380" y="160" class="ttl mono" font-size="13" text-anchor="start" font-weight="700">cpp-eager</text>
 <text x="380" y="179" class="m mono" font-size="10.5" text-anchor="start">neml2::eager::Model</text>
-<text x="380" y="194" class="sub" font-size="9.5" text-anchor="start">embedded CPython · plain-batch only</text>
+<text x="380" y="194" class="sub" font-size="9.5" text-anchor="start">embedded CPython · sub-batch from [Settings]</text>
 
 <!-- row 2: torch.compile -->
 <rect x="104" y="210" width="248" height="70" rx="10" class="bx"/>
@@ -90,5 +90,5 @@
 
 <!-- footnote -->
 <text x="330" y="434" class="m" font-size="9.5" text-anchor="middle">All six routes share one forward / jvp / jacobian surface over the same authored model.</text>
-<text x="330" y="450" class="sub" font-size="9.5" text-anchor="middle">cpp-eager is plain-batch only; every other route supports sub-batch.</text>
+<text x="330" y="450" class="sub" font-size="9.5" text-anchor="middle">Every route supports sub-batch; cpp-eager reads the extents from [Settings].</text>
 </svg>

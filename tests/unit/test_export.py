@@ -30,6 +30,7 @@ AOTI packaging in this test covers the pure-forward (v=None) path.  The
 Jacobian pushforward path (v=...) is covered by the ComposedModel export tests.
 """
 
+import dataclasses
 from pathlib import Path
 
 import pytest
@@ -37,7 +38,8 @@ import torch
 
 from neml2.models.export import compile_model, load_package
 from neml2.models.solid_mechanics.elasticity import LinearIsotropicElasticity
-from neml2.types import SR2
+from neml2.types import SR2, Scalar
+from neml2.types._boundary import wrapper_metadata_to_restore
 
 E = 100.0
 NU = 0.3
@@ -107,3 +109,27 @@ def test_export_round_trip_matches_eager_cuda(tmp_path):
         out_loaded = loaded(strain)
         assert isinstance(out_loaded, SR2)
         assert torch.allclose(out_loaded.data, out_eager.data, rtol=1e-12, atol=1e-12)
+
+
+@dataclasses.dataclass
+class _NotAWrapper:
+    """A dataclass with a ``data`` field that is not a NEML2 TensorWrapper."""
+
+    data: torch.Tensor
+    sub_batch_ndim: int = 1
+
+
+def test_wrapper_metadata_to_restore_skips_non_wrappers():
+    """Only a TensorWrapper carries metadata to restore. Any other value --
+    including a dataclass that happens to look like one -- returns ``None``
+    instead of being introspected as a wrapper."""
+    t = torch.zeros(2, 3)
+    assert wrapper_metadata_to_restore(_NotAWrapper(t)) is None
+    assert wrapper_metadata_to_restore(t) is None
+    assert wrapper_metadata_to_restore(Scalar) is None
+    # A wrapper whose metadata matches a rebuild from ``data`` needs nothing...
+    assert wrapper_metadata_to_restore(Scalar(t)) is None
+    # ...while a sub-batched one does, which is the snapshot the gate exists for.
+    metadata = wrapper_metadata_to_restore(Scalar(t, sub_batch_ndim=1))
+    assert metadata is not None
+    assert metadata["sub_batch_ndim"] == 1
