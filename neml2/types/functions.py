@@ -1588,19 +1588,34 @@ def log10(s: Scalar) -> Scalar:
     return s._rewrap(torch.log10(s.data), sub_batch_ndim=s.sub_batch_ndim)
 
 
-def _broadcast_exponent(a: TensorWrapper, n: float | int | Scalar) -> torch.Tensor:
-    """Lift the exponent to a tensor right-aligned with ``a.data``."""
+def _apply_pow(a: _TW, n: float | int | Scalar, op) -> _TW:
+    """Apply an element-wise power ``op(base, exponent)`` with typed alignment.
+
+    A ``Scalar`` exponent is aligned with ``a`` exactly like the other
+    wrapper-vs-Scalar binary ops: sub-batch axes are padded to the common
+    count (so a plain-batch exponent broadcasts over ``a``'s sub-batch axes
+    instead of right-aligning against them), the exponent gets size-1 axes
+    for ``a``'s base, and sub-batch state / K metadata are combined.
+    """
     if isinstance(n, Scalar):
-        n_data = n.data
-        # Pad with trailing size-1 axes so n.data right-aligns with a.data
-        # through the typed-tensor base axes. Sub-batch left-alignment is
-        # implicit in torch's broadcast rules.
+        [aa, nn], sb = align_sub_batch(a, n)
+        n_data = nn.data
         for _ in range(a.BASE_NDIM):
             n_data = n_data.unsqueeze(-1)
-        return n_data
+        state, meta = combine_sub_batch_state(aa, nn)
+        _k_ndim, _k_state, _k_pairing = _combine_k_from_operands(aa, nn)
+        return aa._rewrap(
+            op(aa.data, n_data),
+            sub_batch_ndim=sb,
+            sub_batch_state=state,
+            sub_batch_meta=meta,
+            k_ndim=_k_ndim,
+            k_state=_k_state,
+            k_pairing=_k_pairing,
+        )
     # Python scalar exponent: lift to a 0-d tensor (cheap, no expand).
-    # ``torch.pow`` inside the op broadcasts the 0-d against any shape.
-    return a.data.new_full((), float(n))
+    # ``op`` broadcasts the 0-d against any shape.
+    return a._rewrap(op(a.data, a.data.new_full((), float(n))), sub_batch_ndim=a.sub_batch_ndim)
 
 
 def pow(a: _TW, n: float | int | Scalar) -> _TW:  # noqa: A001
@@ -1612,7 +1627,7 @@ def pow(a: _TW, n: float | int | Scalar) -> _TW:  # noqa: A001
     reduction kernel (Triton can do this even when the reduction itself
     looks small), switch the call site to :func:`opaque_pow` and re-time.
     """
-    return a._rewrap(torch.pow(a.data, _broadcast_exponent(a, n)), sub_batch_ndim=a.sub_batch_ndim)
+    return _apply_pow(a, n, torch.pow)
 
 
 def opaque_pow(a: _TW, n: float | int | Scalar) -> _TW:
@@ -1634,10 +1649,7 @@ def opaque_pow(a: _TW, n: float | int | Scalar) -> _TW:
     dominate. ``opaque_pow`` is leaf-specific opt-in: profile the leaf,
     pick whichever is faster on the batches you care about.
     """
-    return a._rewrap(
-        torch.ops.neml2.opaque_pow(a.data, _broadcast_exponent(a, n)),
-        sub_batch_ndim=a.sub_batch_ndim,
-    )
+    return _apply_pow(a, n, torch.ops.neml2.opaque_pow)
 
 
 # ---- Cross-type products on SR2 ----
