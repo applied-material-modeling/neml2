@@ -49,8 +49,9 @@ class GeneralElasticity(Model):
     via Euler-Rodrigues. Mirrors C++ ``GeneralElasticity`` in
     ``src/neml2/models/solid_mechanics/elasticity/GeneralElasticity.cxx``.
     $T$ is a parameter (HIT option ``elastic_stiffness_tensor``); declared
-    promotion-capable to mirror the C++ ``declare_parameter`` flag, but Taylor
-    uses it as a plain buffer.
+    promotion-capable, so it may be a literal buffer or wired to another
+    model's ``SSR4`` output (e.g. a temperature-dependent
+    ``CubicElasticityTensor``).
 
     Chain-rule actions cover ``strain``, ``orientation``, and the parameter
     $T$ (the last only when promoted to a runtime input).
@@ -93,6 +94,9 @@ class GeneralElasticity(Model):
         #                via the typed JVP primitives jvp_euler_rodrigues /
         #                jvp_rotate (which hide the only irreducible
         #                geometric contractions). No leaf-level Jacobian formed.
+        #   T (promoted): dσ = rotate(dT, R) : ε -- the stress is linear in T
+        #                and rotate is linear in its tensor argument, so the
+        #                SSR4 tangent (leading seed axis K) rotates directly.
         def strain_action(V: SR2) -> SR2:
             return T_rot @ V
 
@@ -101,4 +105,11 @@ class GeneralElasticity(Model):
             return jvp_rotate(T, R, dR) @ strain
 
         actions: dict = {"strain": strain_action, "orientation": orientation_action}
+        if "T" in self._promoted_params:
+
+            def stiffness_action(V: SSR4) -> SR2:
+                return rotate(V, R) @ strain
+
+            actions[self._promoted_params["T"].input_name] = stiffness_action
+
         return stress, self.apply_chain_rule(v, "stress", actions, output=stress)
