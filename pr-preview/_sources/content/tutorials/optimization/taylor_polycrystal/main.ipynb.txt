@@ -38,10 +38,10 @@
    "id": "c1",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:29:24.508045Z",
-     "iopub.status.busy": "2026-10-29T17:29:24.507607Z",
-     "iopub.status.idle": "2026-10-29T17:29:24.547027Z",
-     "shell.execute_reply": "2026-10-29T17:29:24.545413Z"
+     "iopub.execute_input": "2026-11-11T17:06:33.240337Z",
+     "iopub.status.busy": "2026-11-11T17:06:33.239850Z",
+     "iopub.status.idle": "2026-11-11T17:06:33.339170Z",
+     "shell.execute_reply": "2026-11-11T17:06:33.337345Z"
     }
    },
    "outputs": [],
@@ -78,10 +78,10 @@
    "id": "c3",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:29:24.551869Z",
-     "iopub.status.busy": "2026-10-29T17:29:24.551387Z",
-     "iopub.status.idle": "2026-10-29T17:29:24.577028Z",
-     "shell.execute_reply": "2026-10-29T17:29:24.575687Z"
+     "iopub.execute_input": "2026-11-11T17:06:33.344160Z",
+     "iopub.status.busy": "2026-11-11T17:06:33.343653Z",
+     "iopub.status.idle": "2026-11-11T17:06:33.392520Z",
+     "shell.execute_reply": "2026-11-11T17:06:33.390849Z"
     }
    },
    "outputs": [
@@ -89,7 +89,7 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Overwriting model.i\n"
+      "Writing model.i\n"
      ]
     }
    ],
@@ -229,7 +229,7 @@
     "    type = SR2IntermediateMean\n",
     "    from = 'cauchy_stress'\n",
     "    to = 'mean_cauchy_stress'\n",
-    "    reduces = 'grain'\n",
+    "    dim = -1  # average over the grain sub-batch axis\n",
     "  []\n",
     "  [match_mean_cauchy_stress]\n",
     "    type = SR2LinearCombination\n",
@@ -322,10 +322,10 @@
    "id": "c5",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:29:24.581256Z",
-     "iopub.status.busy": "2026-10-29T17:29:24.580861Z",
-     "iopub.status.idle": "2026-10-29T17:29:26.664610Z",
-     "shell.execute_reply": "2026-10-29T17:29:26.663022Z"
+     "iopub.execute_input": "2026-11-11T17:06:33.404849Z",
+     "iopub.status.busy": "2026-11-11T17:06:33.404111Z",
+     "iopub.status.idle": "2026-11-11T17:06:37.618911Z",
+     "shell.execute_reply": "2026-11-11T17:06:37.617180Z"
     }
    },
    "outputs": [],
@@ -393,10 +393,10 @@
    "id": "c7",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:29:26.669735Z",
-     "iopub.status.busy": "2026-10-29T17:29:26.669457Z",
-     "iopub.status.idle": "2026-10-29T17:29:26.936806Z",
-     "shell.execute_reply": "2026-10-29T17:29:26.935482Z"
+     "iopub.execute_input": "2026-11-11T17:06:37.630910Z",
+     "iopub.status.busy": "2026-11-11T17:06:37.630309Z",
+     "iopub.status.idle": "2026-11-11T17:06:39.824978Z",
+     "shell.execute_reply": "2026-11-11T17:06:39.823617Z"
     }
    },
    "outputs": [],
@@ -443,10 +443,10 @@
    "id": "c9",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:29:26.942073Z",
-     "iopub.status.busy": "2026-10-29T17:29:26.941915Z",
-     "iopub.status.idle": "2026-10-29T17:29:29.196488Z",
-     "shell.execute_reply": "2026-10-29T17:29:29.194686Z"
+     "iopub.execute_input": "2026-11-11T17:06:39.828135Z",
+     "iopub.status.busy": "2026-11-11T17:06:39.827955Z",
+     "iopub.status.idle": "2026-11-11T17:06:47.020500Z",
+     "shell.execute_reply": "2026-11-11T17:06:47.018660Z"
     }
    },
    "outputs": [
@@ -517,10 +517,10 @@
    "id": "c11",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:29:29.201940Z",
-     "iopub.status.busy": "2026-10-29T17:29:29.201102Z",
-     "iopub.status.idle": "2026-10-29T17:29:29.225206Z",
-     "shell.execute_reply": "2026-10-29T17:29:29.223850Z"
+     "iopub.execute_input": "2026-11-11T17:06:47.025786Z",
+     "iopub.status.busy": "2026-11-11T17:06:47.024722Z",
+     "iopub.status.idle": "2026-11-11T17:06:47.054988Z",
+     "shell.execute_reply": "2026-11-11T17:06:47.053565Z"
     }
    },
    "outputs": [],
@@ -606,10 +606,10 @@
    "id": "c13",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:29:29.229610Z",
-     "iopub.status.busy": "2026-10-29T17:29:29.229147Z",
-     "iopub.status.idle": "2026-10-29T17:29:45.092168Z",
-     "shell.execute_reply": "2026-10-29T17:29:45.090718Z"
+     "iopub.execute_input": "2026-11-11T17:06:47.058622Z",
+     "iopub.status.busy": "2026-11-11T17:06:47.058371Z",
+     "iopub.status.idle": "2026-11-11T17:07:11.434605Z",
+     "shell.execute_reply": "2026-11-11T17:07:11.433026Z"
     }
    },
    "outputs": [
@@ -741,10 +741,10 @@
    "id": "c15",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:29:45.096782Z",
-     "iopub.status.busy": "2026-10-29T17:29:45.096623Z",
-     "iopub.status.idle": "2026-10-29T17:31:43.391409Z",
-     "shell.execute_reply": "2026-10-29T17:31:43.390482Z"
+     "iopub.execute_input": "2026-11-11T17:07:11.439863Z",
+     "iopub.status.busy": "2026-11-11T17:07:11.439529Z",
+     "iopub.status.idle": "2026-11-11T17:09:38.090411Z",
+     "shell.execute_reply": "2026-11-11T17:09:38.087975Z"
     }
    },
    "outputs": [
@@ -752,7 +752,7 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "/home/tranh/.claude_tmp/ipykernel_795540/307224214.py:41: UserWarning: pyzag lowered torch._functorch.config.donated_buffer's default to False process-wide. AOTAutograd 'donated buffers' (torch>=2.12) are incompatible with pyzag's retain_graph=True adjoint over torch.compile'd models, which otherwise raises 'compiled with non-empty donated buffers'. To keep donated buffers enabled, restore torch._functorch.config._config['donated_buffer'].default = True -- compiled models differentiated through the adjoint will then error.\n",
+      "/home/tranh/.claude_tmp/ipykernel_4057488/307224214.py:41: UserWarning: pyzag lowered torch._functorch.config.donated_buffer's default to False process-wide. AOTAutograd 'donated buffers' (torch>=2.12) are incompatible with pyzag's retain_graph=True adjoint over torch.compile'd models, which otherwise raises 'compiled with non-empty donated buffers'. To keep donated buffers enabled, restore torch._functorch.config._config['donated_buffer'].default = True -- compiled models differentiated through the adjoint will then error.\n",
       "  return nonlinear.RecursiveNonlinearEquationSolver(\n"
      ]
     },
@@ -816,10 +816,10 @@
    "id": "c17",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:31:43.396450Z",
-     "iopub.status.busy": "2026-10-29T17:31:43.396313Z",
-     "iopub.status.idle": "2026-10-29T17:31:49.665211Z",
-     "shell.execute_reply": "2026-10-29T17:31:49.663660Z"
+     "iopub.execute_input": "2026-11-11T17:09:38.094832Z",
+     "iopub.status.busy": "2026-11-11T17:09:38.094649Z",
+     "iopub.status.idle": "2026-11-11T17:09:48.327675Z",
+     "shell.execute_reply": "2026-11-11T17:09:48.325457Z"
     }
    },
    "outputs": [
@@ -868,10 +868,10 @@
    "id": "c19",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:31:49.669303Z",
-     "iopub.status.busy": "2026-10-29T17:31:49.669150Z",
-     "iopub.status.idle": "2026-10-29T17:34:42.356031Z",
-     "shell.execute_reply": "2026-10-29T17:34:42.354789Z"
+     "iopub.execute_input": "2026-11-11T17:09:48.332893Z",
+     "iopub.status.busy": "2026-11-11T17:09:48.332263Z",
+     "iopub.status.idle": "2026-11-11T17:14:07.803233Z",
+     "shell.execute_reply": "2026-11-11T17:14:07.801710Z"
     }
    },
    "outputs": [
@@ -948,10 +948,10 @@
    "id": "c21",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-10-29T17:34:42.361146Z",
-     "iopub.status.busy": "2026-10-29T17:34:42.360997Z",
-     "iopub.status.idle": "2026-10-29T17:34:42.637046Z",
-     "shell.execute_reply": "2026-10-29T17:34:42.636092Z"
+     "iopub.execute_input": "2026-11-11T17:14:07.808344Z",
+     "iopub.status.busy": "2026-11-11T17:14:07.808068Z",
+     "iopub.status.idle": "2026-11-11T17:14:08.281611Z",
+     "shell.execute_reply": "2026-11-11T17:14:08.280611Z"
     }
    },
    "outputs": [

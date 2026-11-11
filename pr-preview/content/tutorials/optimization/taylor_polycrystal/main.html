@@ -627,7 +627,7 @@ latent ratio <span class="math notranslate nohighlight">\(q\)</span>, so a singl
 </span><span data-line="133">    <span class="nb">type</span> <span class="o">=</span> <span class="n">SR2IntermediateMean</span>
 </span><span data-line="134">    <span class="kn">from</span><span class="w"> </span><span class="o">=</span> <span class="s1">'cauchy_stress'</span>
 </span><span data-line="135">    <span class="n">to</span> <span class="o">=</span> <span class="s1">'mean_cauchy_stress'</span>
-</span><span data-line="136">    <span class="n">reduces</span> <span class="o">=</span> <span class="s1">'grain'</span>
+</span><span data-line="136">    <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># average over the grain sub-batch axis</span>
 </span><span data-line="137">  <span class="p">[]</span>
 </span><span data-line="138">  <span class="p">[</span><span class="n">match_mean_cauchy_stress</span><span class="p">]</span>
 </span><span data-line="139">    <span class="nb">type</span> <span class="o">=</span> <span class="n">SR2LinearCombination</span>
@@ -704,7 +704,7 @@ latent ratio <span class="math notranslate nohighlight">\(q\)</span>, so a singl
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">Overwriting model.i
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">Writing model.i
 </span></pre></div>
 </div>
 </div>
@@ -1072,7 +1072,7 @@ native implicit driver to solver tolerance — two routes to the same equations.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/tranh/.claude_tmp/ipykernel_795540/307224214.py:41: UserWarning: pyzag lowered torch._functorch.config.donated_buffer's default to False process-wide. AOTAutograd 'donated buffers' (torch&gt;=2.12) are incompatible with pyzag's retain_graph=True adjoint over torch.compile'd models, which otherwise raises 'compiled with non-empty donated buffers'. To keep donated buffers enabled, restore torch._functorch.config._config['donated_buffer'].default = True -- compiled models differentiated through the adjoint will then error.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/tranh/.claude_tmp/ipykernel_4057488/307224214.py:41: UserWarning: pyzag lowered torch._functorch.config.donated_buffer's default to False process-wide. AOTAutograd 'donated buffers' (torch&gt;=2.12) are incompatible with pyzag's retain_graph=True adjoint over torch.compile'd models, which otherwise raises 'compiled with non-empty donated buffers'. To keep donated buffers enabled, restore torch._functorch.config._config['donated_buffer'].default = True -- compiled models differentiated through the adjoint will then error.
 </span><span data-line="2">  return nonlinear.RecursiveNonlinearEquationSolver(
 </span></pre></div>
 </div>
