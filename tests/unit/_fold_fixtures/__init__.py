@@ -25,18 +25,16 @@
 """Test-only Python-native models that trigger the dense sub-batch fold.
 
 ``DenseSubBatchMixing`` (``y_i = sum_r M_ir x_r``, a dense within-sub-batch Jacobian),
-``CommonToExtraOffset`` (a per-(common, extra) field coupled to a common-only unknown),
+``CommonToExtraOffset`` (a per-(common, extra) field coupled to a common-only unknown), and
 ``AddScalarToExtra`` (a per-(common, extra) field coupled to a global scalar unknown
-that lands in a dense column group), and ``ReduceExtraAxis`` (``y_g = sum_i e_{g,i}``, a
-dense per-common residual reducing a block (common, extra) unknown), and
-``ReduceExtraAxisSR2`` (the same reduction on an SR2 field, so the reduced block column is
-non-scalar) are physics-free fixtures whose sole purpose is to exercise the
-equation-system assembler's
-dense / row-extra / block-row-against-dense-column / dense-row-against-block-column
-tangent-fold branches.
+that lands in a dense column group) are physics-free fixtures whose sole purpose is to
+exercise the equation-system assembler's dense / row-extra /
+block-row-against-dense-column tangent-fold branches. The dense-row-against-block-column
+branch is exercised with the shipped ``ScalarIntermediateSum`` / ``SR2IntermediateSum``
+reduction models directly (no fixture needed).
 They back ``tests/unit/test_dense_subbatch_fold.py``.
 
-Importing this package side-effect-registers both models with the native factory registry
+Importing this package side-effect-registers the models with the native factory registry
 via ``@register_neml2_object``. The package is named ``_fold_fixtures`` rather than
 ``_fixtures`` so it never shadows the regression suite's top-level ``_fixtures`` package
 when both test trees are collected in one run.
@@ -45,5 +43,3 @@ when both test trees are collected in one run.
 from . import AddScalarToExtra as _add_scalar_to_extra  # noqa: F401
 from . import CommonToExtraOffset as _common_to_extra_offset  # noqa: F401
 from . import DenseSubBatchMixing as _dense_sub_batch_mixing  # noqa: F401
-from . import ReduceExtraAxis as _reduce_extra_axis  # noqa: F401
-from . import ReduceExtraAxisSR2 as _reduce_extra_axis_sr2  # noqa: F401

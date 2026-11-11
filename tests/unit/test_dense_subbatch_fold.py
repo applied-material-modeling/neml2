@@ -164,7 +164,7 @@ def _solve(model, g_common: torch.Tensor, g_extra: torch.Tensor):
 
 def _closed_form_extra(m: torch.Tensor, g_extra: torch.Tensor) -> torch.Tensor:
     """Per-(batch, common) solution ``u = M^{-1} g_extra``."""
-    nb, n_common, n_extra = g_extra.shape
+    nb, n_common, _ = g_extra.shape
     minv = torch.linalg.inv(m)
     return torch.stack(
         [torch.stack([minv @ g_extra[b, g] for g in range(n_common)]) for b in range(nb)]
@@ -689,9 +689,9 @@ def _dense_reduces_block_extra_model():
             weights = '1 -1'
           []
           [sumex]
-            type = ReduceExtraAxis
-            e = 'u_extra'
-            y = 'u_extra_sum'
+            type = ScalarIntermediateSum
+            from = 'u_extra'
+            to = 'u_extra_sum'
           []
           [r_p]
             type = ScalarLinearCombination
@@ -769,9 +769,9 @@ def _dense_reduces_block_extra_sr2_model():
             weights = '1 -1'
           []
           [sumex]
-            type = ReduceExtraAxisSR2
-            e = 'u_extra'
-            y = 'u_extra_sum'
+            type = SR2IntermediateSum
+            from = 'u_extra'
+            to = 'u_extra_sum'
           []
           [r_p]
             type = SR2LinearCombination
