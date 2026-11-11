@@ -1,0 +1,49 @@
+(models-CavityVolumeOpening)=
+# CavityVolumeOpening
+
+**Source:** `models/solid_mechanics/traction_separation_law/CavityVolumeOpening.py`
+
+The viscous (cavitation) part of the normal jump, which is the smeared
+cavity volume measured from the initial state,
+
+$$
+[\![u]\!]_n^v = N V(f, N) - N_0 V_0, \qquad
+N V(f, N) = \frac{4h}{3\sqrt{\pi}} \frac{f^{3/2}}{N^{1/2}}.
+$$
+
+$N_0$ and $f_0$ are the initial cavity density and area fraction, so a
+pristine boundary opens by zero. Both must be strictly positive: $f_0 = 0$
+is the singular point of the damage law.
+
+Differentiating this expression in time reproduces the Sham-Needleman
+viscous opening rate term by term, so the algebraic form is carried here
+rather than a rate; the time integration of $f$ and $N$ then supplies the
+rate implicitly and the identity holds exactly at every converged step
+instead of only to integration order.
+
+## Inputs
+
+`cavity_fraction` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Physical cavitated area fraction
+
+`cavity_density` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Cavity number density per unit boundary area
+
+
+## Outputs
+
+`viscous_normal_opening` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Viscous part of the normal jump, i.e. the smeared cavity volume
+
+
+## Parameters
+
+`cavity_shape_factor` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Cavity shape factor h(psi); h is about 0.61 at a tip angle of 75 degrees
+
+`initial_cavity_fraction` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Initial cavitated area fraction f_0, strictly positive
+
+`initial_cavity_density` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Initial cavity number density N_0, strictly positive
+

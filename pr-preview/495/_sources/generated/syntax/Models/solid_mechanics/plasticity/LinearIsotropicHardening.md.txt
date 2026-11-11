@@ -1,0 +1,26 @@
+(models-LinearIsotropicHardening)=
+# LinearIsotropicHardening
+
+**Source:** `models/solid_mechanics/plasticity/LinearIsotropicHardening.py`
+
+Map equivalent plastic strain to isotropic hardening following a linear
+relationship, i.e., $h = K \bar{\varepsilon}_p$ where $K$ is
+the hardening modulus.
+
+## Inputs
+
+`equivalent_plastic_strain` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Equivalent plastic strain
+
+
+## Outputs
+
+`isotropic_hardening` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Isotropic hardening
+
+
+## Parameters
+
+`hardening_modulus` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Hardening modulus
+

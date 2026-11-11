@@ -1,0 +1,29 @@
+(models-ThermalDeformationJacobian)=
+# ThermalDeformationJacobian
+
+**Source:** `models/solid_mechanics/kinematics/ThermalDeformationJacobian.py`
+
+Define the linear isotropic thermal deformation Jacobian, i.e. $J = 1 + \alpha (T - T_0)$,
+where $\alpha$ is the coefficient of thermal expansion (CTE), $T$ is
+the temperature, and $T_0$ is the reference (stress-free) temperature.
+
+## Inputs
+
+`temperature` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Temperature
+
+
+## Outputs
+
+`jacobian` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Thermal deformation Jacobian
+
+
+## Parameters
+
+`reference_temperature` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Reference (stress-free) temperature
+
+`CTE` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Coefficient of thermal expansion
+

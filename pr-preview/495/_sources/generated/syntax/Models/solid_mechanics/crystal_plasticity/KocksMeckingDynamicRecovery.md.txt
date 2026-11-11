@@ -1,0 +1,55 @@
+(models-KocksMeckingDynamicRecovery)=
+# KocksMeckingDynamicRecovery
+
+**Source:** `models/solid_mechanics/crystal_plasticity/KocksMeckingDynamicRecovery.py`
+
+Kocks-Mecking rate- and temperature-dependent dynamic recovery
+coefficient,
+$k_2 = k_{2,0} \left( \dfrac{\max(\dot{\gamma}_\Sigma, \dot{\gamma}_{min})}{\dot{\gamma}_0} \right)^{-1/n}$
+where $\dot{\gamma}_\Sigma$ is the sum of the absolute slip rates,
+$\dot{\gamma}_{min}$ is a rate floor, $\dot{\gamma}_0$ is a reference
+rate, $k_{2,0}$ is the reference recovery coefficient and $n$ is the
+rate sensitivity.
+
+Recovery weakens as the slip rate rises and strengthens with
+temperature. Feed $n$ from ``KocksMeckingRateSensitivity`` (with $A < 0$,
+so $n > 0$) and $\dot{\gamma}_\Sigma$ from ``SumSlipRates``; the output is
+meant to drive the promoted ``k2`` of ``LumpedForestDislocationEvolution``.
+Use the physical (uncapped) $n$ here: a cap meant to protect a power-law
+slip rule would bias recovery at low temperature. Because
+$\dot{\gamma}_\Sigma$ sums over slip systems, $\dot{\gamma}_0$ is a
+reference slip-rate sum, larger than a macroscopic strain rate by roughly
+the Taylor factor.
+
+The floor keeps the logarithm finite when nothing slips; below it $k_2$
+is constant in the slip rate.
+
+## Inputs
+
+`sum_slip_rates` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Sum of the absolute values of the slip rates
+
+`rate_sensitivity` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Rate sensitivity n; must be strictly positive
+
+
+## Outputs
+
+`k2` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Dynamic recovery coefficient
+
+
+## Parameters
+
+`k20` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Reference dynamic recovery coefficient
+
+`gamma0` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Reference slip-rate sum
+
+
+## Other options
+
+`rate_floor` &mdash; `float` &middot; default `1e-10`
+: Slip-rate sum below which the rate dependence is frozen
+
