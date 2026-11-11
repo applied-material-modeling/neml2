@@ -246,6 +246,8 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="ScalarConstantParameter.html">ScalarConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ScalarIntermediateMean.html">ScalarIntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ScalarIntermediateSum.html">ScalarIntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarMultiplication.html">ScalarMultiplication</a></li>
@@ -253,6 +255,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="SmoothCap.html">SmoothCap</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
@@ -446,10 +449,7 @@ data-aria-dark="Switch to auto color mode">
 difference along the selected sub-batch axis. The selected axis length
 shrinks by <code class="docutils literal notranslate"><span class="pre">n</span></code>; <code class="docutils literal notranslate"><span class="pre">sub_batch_ndim</span></code> is preserved (this is a per-axis
 differencing operator, not a reduction).</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">reduces</span></code> HIT parameter names the sub-batch label of the
-differencing axis – the chain rule on that label is structurally
-non-diagonal (each output site depends on several input sites
-along the label).</p>
+<p>Sub-batch axes are positional; <code class="docutils literal notranslate"><span class="pre">dim</span></code> selects the differencing axis.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
@@ -470,8 +470,6 @@ along the label).</p>
 <dt><code class="docutils literal notranslate"><span class="pre">dim</span></code> — <code class="docutils literal notranslate"><span class="pre">int</span></code> · <strong>required</strong></dt><dd><p>Intermediate dimension to take the finite difference</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">n</span></code> — <code class="docutils literal notranslate"><span class="pre">int</span></code> · default <code class="docutils literal notranslate"><span class="pre">1</span></code></dt><dd><p>Order of the differentiation</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">reduces</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · <strong>required</strong></dt><dd><p>Sub-batch label of the differencing axis.</p>
 </dd>
 </dl>
 </section>

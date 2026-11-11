@@ -69,6 +69,8 @@ ScalarBilinearInterpolation
 ScalarConstantParameter
 ScalarForwardEulerTimeIntegration
 ScalarInputParameter
+ScalarIntermediateMean
+ScalarIntermediateSum
 ScalarLinearCombination
 ScalarLinearInterpolation
 ScalarMultiplication
@@ -76,6 +78,7 @@ ScalarPNorm
 ScalarParameterToVariable
 ScalarToDiagonalSR2
 ScalarVariableRate
+SmoothCap
 SymmetricHermiteInterpolation
 VecBackwardEulerTimeIntegration
 VecBilinearInterpolation

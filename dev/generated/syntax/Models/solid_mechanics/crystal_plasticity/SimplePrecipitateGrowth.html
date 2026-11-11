@@ -246,6 +246,8 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/ScalarIntermediateMean.html">ScalarIntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/ScalarIntermediateSum.html">ScalarIntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarMultiplication.html">ScalarMultiplication</a></li>
@@ -253,6 +255,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/SmoothCap.html">SmoothCap</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
@@ -447,15 +450,17 @@ data-aria-dark="Switch to auto color mode">
 <p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/crystal_plasticity/SimplePrecipitateGrowth.py</span></code></p>
 <p>Simplified, volume-conserving coarsening of a precipitate population,
 defined by
-<span class="math notranslate nohighlight">\(\dot{R} = \dfrac{K}{3 R^2}, \qquad \dot{N} = -\dfrac{K}{R^3}\)</span>
+<span class="math notranslate nohighlight">\(\dot{R} = \dfrac{K}{3 R^2}, \qquad \dot{N} = -\dfrac{N K}{R^3}\)</span>
 where <span class="math notranslate nohighlight">\(R\)</span> is the mean precipitate radius, <span class="math notranslate nohighlight">\(N\)</span> is the precipitate
 number density and <span class="math notranslate nohighlight">\(K\)</span> is the coarsening coefficient.</p>
+<p>The radius follows the LSW cube law, <span class="math notranslate nohighlight">\(R^3 = R_0^3 + K t\)</span>. The density
+rate is chosen so the total precipitate volume fraction, proportional
+to <span class="math notranslate nohighlight">\(N R^3\)</span>, is conserved: <span class="math notranslate nohighlight">\(\dot{N} = -3 N \dot{R} / R\)</span>.</p>
 <p><span class="math notranslate nohighlight">\(K\)</span> is a promotable parameter, so it may be supplied as a constant or
 driven by another model – an <code class="docutils literal notranslate"><span class="pre">ArrheniusParameter</span></code> for the usual
 thermally activated form.</p>
-<p>Note <span class="math notranslate nohighlight">\(\dot{N}\)</span> does not depend on <span class="math notranslate nohighlight">\(N\)</span>, following the issue
-specification; the two rates are emitted by one leaf because they share
-the single coefficient <span class="math notranslate nohighlight">\(K\)</span> and the same <span class="math notranslate nohighlight">\(R\)</span>.</p>
+<p>The two rates are emitted by one leaf because they share the single
+coefficient <span class="math notranslate nohighlight">\(K\)</span> and the same <span class="math notranslate nohighlight">\(R\)</span>.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">

@@ -1,0 +1,24 @@
+(models-ScalarIntermediateMean)=
+# ScalarIntermediateMean
+
+**Source:** `models/common/IntermediateReduce.py`
+
+Scalar variant of `SR2IntermediateMean`.
+
+## Inputs
+
+`from` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Input scalar to average
+
+
+## Outputs
+
+`to` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Averaged scalar
+
+
+## Other options
+
+`dim` &mdash; `int` &middot; default `-1`
+: Sub-batch dimension to average
+

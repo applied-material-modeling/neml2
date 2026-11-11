@@ -246,6 +246,8 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarIntermediateMean.html">ScalarIntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarIntermediateSum.html">ScalarIntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
@@ -253,6 +255,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SmoothCap.html">SmoothCap</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
@@ -1874,306 +1877,329 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1397">        <span class="n">actions</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ChainRuleAction</span><span class="p">],</span>
 </span><span data-line="1398">        <span class="o">*</span><span class="p">,</span>
 </span><span data-line="1399">        <span class="n">output</span><span class="p">:</span> <span class="n">TensorWrapper</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="1400">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChainRuleDict</span><span class="p">:</span>
-</span><span data-line="1401"><span class="w">        </span><span class="sd">"""Apply local chain-rule actions and accumulate by seed leaf.</span>
-</span><span data-line="1402">
-</span><span data-line="1403"><span class="sd">        ``actions`` maps each input variable name to a function that transforms</span>
-</span><span data-line="1404"><span class="sd">        an incoming sensitivity block for that input into its contribution to</span>
-</span><span data-line="1405"><span class="sd">        ``output_name``. Missing input/leaf sensitivities are structural zeros.</span>
-</span><span data-line="1406">
-</span><span data-line="1407"><span class="sd">        When two actions contribute to the same seed leaf but with different</span>
-</span><span data-line="1408"><span class="sd">        sub-batch structure — typical of a per-crystal output that mixes a</span>
-</span><span data-line="1409"><span class="sd">        global input (e.g. ``d``, ``w``) and a per-crystal input (e.g. ``dp``,</span>
-</span><span data-line="1410"><span class="sd">        ``e``) — the accumulator pads the lower-ndim contribution with</span>
-</span><span data-line="1411"><span class="sd">        singleton axes at the start of its sub-batch region so the sum</span>
-</span><span data-line="1412"><span class="sd">        broadcasts correctly. This mirrors the C++ ``chain_rule`` helper's</span>
-</span><span data-line="1413"><span class="sd">        ``du_dx_f.intmd_unsqueeze(...)`` step</span>
-</span><span data-line="1414"><span class="sd">        (``src/neml2/tensors/functions/chain_rule.cxx``).</span>
-</span><span data-line="1415">
-</span><span data-line="1416"><span class="sd">        When ``output`` (the leaf's forward result wrapper) is supplied, each</span>
-</span><span data-line="1417"><span class="sd">        accumulated contribution is retagged with ``output.sub_batch_ndim`` so</span>
-</span><span data-line="1418"><span class="sd">        the action body never has to declare sub-batch metadata explicitly.</span>
-</span><span data-line="1419"><span class="sd">        This is the foundational-op equivalent of the C++ side encoding</span>
-</span><span data-line="1420"><span class="sd">        sub-batch entirely in ``data.shape`` — the leaf does math, the</span>
-</span><span data-line="1421"><span class="sd">        accumulator owns the metadata.</span>
-</span><span data-line="1422">
-</span><span data-line="1423"><span class="sd">        tangents are ordinary typed wrappers with K as the</span>
-</span><span data-line="1424"><span class="sd">        leading batch dim. Seeds that arrive as raw tensors (tests / export</span>
-</span><span data-line="1425"><span class="sd">        seeding) are wrapped as the input variable's type. Accumulation is plain</span>
-</span><span data-line="1426"><span class="sd">        typed ``+`` (``align_sub_batch`` under the hood).</span>
-</span><span data-line="1427"><span class="sd">        """</span>
-</span><span data-line="1428">        <span class="c1"># Translate option-name keys to the externally-visible (resolved)</span>
-</span><span data-line="1429">        <span class="c1"># names a caller's tangent dict carries. Empty when no rename.</span>
-</span><span data-line="1430">        <span class="n">renames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"_var_renames"</span><span class="p">,</span> <span class="p">{})</span>
-</span><span data-line="1431">        <span class="n">ext_output</span> <span class="o">=</span> <span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="n">output_name</span><span class="p">)</span>
-</span><span data-line="1432">
-</span><span data-line="1433">        <span class="c1"># Per-edge label-targeted promote (Phase D / D2). For each input</span>
-</span><span data-line="1434">        <span class="c1"># edge, look up this leaf's ``EdgeInfo`` and selectively</span>
-</span><span data-line="1435">        <span class="c1"># materialise only the V_in axes whose label is in</span>
-</span><span data-line="1436">        <span class="c1"># ``reduces | introduces``. ``reduces`` is the obvious case (the</span>
-</span><span data-line="1437">        <span class="c1"># leaf collapses that axis and needs the per-site directions</span>
-</span><span data-line="1438">        <span class="c1"># enumerated in K). ``introduces`` is included because a leaf</span>
-</span><span data-line="1439">        <span class="c1"># that adds a new labelled axis (e.g. ResolvedShear introducing</span>
-</span><span data-line="1440">        <span class="c1"># ``"slip"`` from per-grain stress) needs the input's other</span>
-</span><span data-line="1441">        <span class="c1"># labelled axes materialised too.</span>
-</span><span data-line="1442">        <span class="c1">#</span>
-</span><span data-line="1443">        <span class="c1"># When the edge declares non-empty labels but V_in's labels</span>
-</span><span data-line="1444">        <span class="c1"># don't match (legacy / anonymous-data path), fall back to the</span>
-</span><span data-line="1445">        <span class="c1"># all-axes :func:`promote_broadcast_tangent`. This preserves</span>
-</span><span data-line="1446">        <span class="c1"># the pre-Phase-D contract for HIT fixtures that haven't</span>
-</span><span data-line="1447">        <span class="c1"># labelled their ICs yet -- the perf win is conditional on</span>
-</span><span data-line="1448">        <span class="c1"># labels, but correctness is not.</span>
-</span><span data-line="1449">        <span class="n">per_leaf</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="1450">        <span class="k">for</span> <span class="n">input_name</span><span class="p">,</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">actions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="1451">            <span class="n">ext_input</span> <span class="o">=</span> <span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">input_name</span><span class="p">)</span>
-</span><span data-line="1452">            <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">V_in</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext_input</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="1453">                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">V_in</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-</span><span data-line="1454">                    <span class="n">V_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">[</span><span class="n">ext_input</span><span class="p">](</span><span class="n">V_in</span><span class="p">)</span>
-</span><span data-line="1455">                <span class="c1"># v2-parity: label-driven promote machinery removed. Leaves</span>
-</span><span data-line="1456">                <span class="c1"># that need to materialise paired-broadcast K axes (cross-mix</span>
-</span><span data-line="1457">                <span class="c1"># contractions) call ``fullify`` explicitly inside their</span>
-</span><span data-line="1458">                <span class="c1"># action; the chain rule itself ships K state through.</span>
-</span><span data-line="1459">                <span class="n">contribution</span> <span class="o">=</span> <span class="n">action</span><span class="p">(</span><span class="n">V_in</span><span class="p">)</span>
-</span><span data-line="1460">                <span class="k">if</span> <span class="n">output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="1461">                    <span class="n">contribution</span> <span class="o">=</span> <span class="n">_retag_to_output</span><span class="p">(</span><span class="n">contribution</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
-</span><span data-line="1462">                <span class="n">per_leaf</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">contribution</span><span class="p">)</span>
-</span><span data-line="1463">
-</span><span data-line="1464">        <span class="kn">from</span><span class="w"> </span><span class="nn">..types._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">align_k</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="1465">        <span class="kn">from</span><span class="w"> </span><span class="nn">.chain_rule</span><span class="w"> </span><span class="kn">import</span> <span class="n">equalize_tangent_K</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="1466">
-</span><span data-line="1467">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="1468">        <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">contribs</span> <span class="ow">in</span> <span class="n">per_leaf</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="1469">            <span class="c1"># Align k_ndim across contributions so the per-axis K combine has</span>
-</span><span data-line="1470">            <span class="c1"># consistent shapes; then tile-equalize K storage sizes; then sum.</span>
-</span><span data-line="1471">            <span class="n">k_aligned</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">align_k</span><span class="p">(</span><span class="o">*</span><span class="n">contribs</span><span class="p">)</span>
-</span><span data-line="1472">            <span class="n">equalized</span> <span class="o">=</span> <span class="n">equalize_tangent_K</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">k_aligned</span><span class="p">))</span>
-</span><span data-line="1473">            <span class="n">summed</span> <span class="o">=</span> <span class="n">equalized</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span data-line="1474">            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">equalized</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-</span><span data-line="1475">                <span class="n">summed</span> <span class="o">=</span> <span class="n">summed</span> <span class="o">+</span> <span class="n">c</span>
-</span><span data-line="1476">            <span class="n">out</span><span class="p">[</span><span class="n">leaf</span><span class="p">]</span> <span class="o">=</span> <span class="n">summed</span>
-</span><span data-line="1477">        <span class="k">return</span> <span class="p">{</span><span class="n">ext_output</span><span class="p">:</span> <span class="n">out</span><span class="p">}</span></div>
+</span><span data-line="1400">        <span class="n">structural_zeros</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="1401">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChainRuleDict</span><span class="p">:</span>
+</span><span data-line="1402"><span class="w">        </span><span class="sd">"""Apply local chain-rule actions and accumulate by seed leaf.</span>
+</span><span data-line="1403">
+</span><span data-line="1404"><span class="sd">        ``actions`` maps each input variable name to a function that transforms</span>
+</span><span data-line="1405"><span class="sd">        an incoming sensitivity block for that input into its contribution to</span>
+</span><span data-line="1406"><span class="sd">        ``output_name``. ``structural_zeros`` names inputs whose contribution to</span>
+</span><span data-line="1407"><span class="sd">        this output is intentionally zero. Other missing promoted-parameter</span>
+</span><span data-line="1408"><span class="sd">        actions remain errors when an incoming tangent is present.</span>
+</span><span data-line="1409">
+</span><span data-line="1410"><span class="sd">        When two actions contribute to the same seed leaf but with different</span>
+</span><span data-line="1411"><span class="sd">        sub-batch structure — typical of a per-crystal output that mixes a</span>
+</span><span data-line="1412"><span class="sd">        global input (e.g. ``d``, ``w``) and a per-crystal input (e.g. ``dp``,</span>
+</span><span data-line="1413"><span class="sd">        ``e``) — the accumulator pads the lower-ndim contribution with</span>
+</span><span data-line="1414"><span class="sd">        singleton axes at the start of its sub-batch region so the sum</span>
+</span><span data-line="1415"><span class="sd">        broadcasts correctly. This mirrors the C++ ``chain_rule`` helper's</span>
+</span><span data-line="1416"><span class="sd">        ``du_dx_f.intmd_unsqueeze(...)`` step</span>
+</span><span data-line="1417"><span class="sd">        (``src/neml2/tensors/functions/chain_rule.cxx``).</span>
+</span><span data-line="1418">
+</span><span data-line="1419"><span class="sd">        When ``output`` (the leaf's forward result wrapper) is supplied, each</span>
+</span><span data-line="1420"><span class="sd">        accumulated contribution is retagged with ``output.sub_batch_ndim`` so</span>
+</span><span data-line="1421"><span class="sd">        the action body never has to declare sub-batch metadata explicitly.</span>
+</span><span data-line="1422"><span class="sd">        This is the foundational-op equivalent of the C++ side encoding</span>
+</span><span data-line="1423"><span class="sd">        sub-batch entirely in ``data.shape`` — the leaf does math, the</span>
+</span><span data-line="1424"><span class="sd">        accumulator owns the metadata.</span>
+</span><span data-line="1425">
+</span><span data-line="1426"><span class="sd">        tangents are ordinary typed wrappers with K as the</span>
+</span><span data-line="1427"><span class="sd">        leading batch dim. Seeds that arrive as raw tensors (tests / export</span>
+</span><span data-line="1428"><span class="sd">        seeding) are wrapped as the input variable's type. Accumulation is plain</span>
+</span><span data-line="1429"><span class="sd">        typed ``+`` (``align_sub_batch`` under the hood).</span>
+</span><span data-line="1430"><span class="sd">        """</span>
+</span><span data-line="1431">        <span class="c1"># Translate option-name keys to the externally-visible (resolved)</span>
+</span><span data-line="1432">        <span class="c1"># names a caller's tangent dict carries. Empty when no rename.</span>
+</span><span data-line="1433">        <span class="n">renames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"_var_renames"</span><span class="p">,</span> <span class="p">{})</span>
+</span><span data-line="1434">        <span class="n">ext_output</span> <span class="o">=</span> <span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="n">output_name</span><span class="p">)</span>
+</span><span data-line="1435">
+</span><span data-line="1436">        <span class="c1"># A missing action is a structural zero for an ordinary input, but a</span>
+</span><span data-line="1437">        <span class="c1"># promoted parameter is by construction used in ``forward``. Require an</span>
+</span><span data-line="1438">        <span class="c1"># action unless this output explicitly declares the contribution zero.</span>
+</span><span data-line="1439">        <span class="n">promoted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"_promoted_params"</span><span class="p">,</span> <span class="p">{})</span>
+</span><span data-line="1440">        <span class="k">if</span> <span class="n">promoted</span><span class="p">:</span>
+</span><span data-line="1441">            <span class="n">covered</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span> <span class="o">|</span> <span class="p">{</span><span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">}</span>
+</span><span data-line="1442">            <span class="n">covered</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">structural_zeros</span><span class="p">)</span>
+</span><span data-line="1443">            <span class="n">covered</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">structural_zeros</span><span class="p">)</span>
+</span><span data-line="1444">            <span class="n">missing</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+</span><span data-line="1445">                <span class="n">p</span><span class="o">.</span><span class="n">input_name</span>
+</span><span data-line="1446">                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">promoted</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+</span><span data-line="1447">                <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">input_name</span><span class="p">)</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">input_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">covered</span>
+</span><span data-line="1448">            <span class="p">)</span>
+</span><span data-line="1449">            <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+</span><span data-line="1450">                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+</span><span data-line="1451">                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: no chain-rule action for promoted parameter "</span>
+</span><span data-line="1452">                    <span class="sa">f</span><span class="s2">"input(s) </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2"> contributing to '</span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">'. Add the "</span>
+</span><span data-line="1453">                    <span class="s2">"derivative action for each promotable parameter in forward()."</span>
+</span><span data-line="1454">                <span class="p">)</span>
+</span><span data-line="1455">
+</span><span data-line="1456">        <span class="c1"># Per-edge label-targeted promote (Phase D / D2). For each input</span>
+</span><span data-line="1457">        <span class="c1"># edge, look up this leaf's ``EdgeInfo`` and selectively</span>
+</span><span data-line="1458">        <span class="c1"># materialise only the V_in axes whose label is in</span>
+</span><span data-line="1459">        <span class="c1"># ``reduces | introduces``. ``reduces`` is the obvious case (the</span>
+</span><span data-line="1460">        <span class="c1"># leaf collapses that axis and needs the per-site directions</span>
+</span><span data-line="1461">        <span class="c1"># enumerated in K). ``introduces`` is included because a leaf</span>
+</span><span data-line="1462">        <span class="c1"># that adds a new labelled axis (e.g. ResolvedShear introducing</span>
+</span><span data-line="1463">        <span class="c1"># ``"slip"`` from per-grain stress) needs the input's other</span>
+</span><span data-line="1464">        <span class="c1"># labelled axes materialised too.</span>
+</span><span data-line="1465">        <span class="c1">#</span>
+</span><span data-line="1466">        <span class="c1"># When the edge declares non-empty labels but V_in's labels</span>
+</span><span data-line="1467">        <span class="c1"># don't match (legacy / anonymous-data path), fall back to the</span>
+</span><span data-line="1468">        <span class="c1"># all-axes :func:`promote_broadcast_tangent`. This preserves</span>
+</span><span data-line="1469">        <span class="c1"># the pre-Phase-D contract for HIT fixtures that haven't</span>
+</span><span data-line="1470">        <span class="c1"># labelled their ICs yet -- the perf win is conditional on</span>
+</span><span data-line="1471">        <span class="c1"># labels, but correctness is not.</span>
+</span><span data-line="1472">        <span class="n">per_leaf</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="1473">        <span class="k">for</span> <span class="n">input_name</span><span class="p">,</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">actions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="1474">            <span class="n">ext_input</span> <span class="o">=</span> <span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">input_name</span><span class="p">)</span>
+</span><span data-line="1475">            <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">V_in</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext_input</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="1476">                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">V_in</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+</span><span data-line="1477">                    <span class="n">V_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">[</span><span class="n">ext_input</span><span class="p">](</span><span class="n">V_in</span><span class="p">)</span>
+</span><span data-line="1478">                <span class="c1"># v2-parity: label-driven promote machinery removed. Leaves</span>
+</span><span data-line="1479">                <span class="c1"># that need to materialise paired-broadcast K axes (cross-mix</span>
+</span><span data-line="1480">                <span class="c1"># contractions) call ``fullify`` explicitly inside their</span>
+</span><span data-line="1481">                <span class="c1"># action; the chain rule itself ships K state through.</span>
+</span><span data-line="1482">                <span class="n">contribution</span> <span class="o">=</span> <span class="n">action</span><span class="p">(</span><span class="n">V_in</span><span class="p">)</span>
+</span><span data-line="1483">                <span class="k">if</span> <span class="n">output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="1484">                    <span class="n">contribution</span> <span class="o">=</span> <span class="n">_retag_to_output</span><span class="p">(</span><span class="n">contribution</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+</span><span data-line="1485">                <span class="n">per_leaf</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">contribution</span><span class="p">)</span>
+</span><span data-line="1486">
+</span><span data-line="1487">        <span class="kn">from</span><span class="w"> </span><span class="nn">..types._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">align_k</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="1488">        <span class="kn">from</span><span class="w"> </span><span class="nn">.chain_rule</span><span class="w"> </span><span class="kn">import</span> <span class="n">equalize_tangent_K</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="1489">
+</span><span data-line="1490">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="1491">        <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">contribs</span> <span class="ow">in</span> <span class="n">per_leaf</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="1492">            <span class="c1"># Align k_ndim across contributions so the per-axis K combine has</span>
+</span><span data-line="1493">            <span class="c1"># consistent shapes; then tile-equalize K storage sizes; then sum.</span>
+</span><span data-line="1494">            <span class="n">k_aligned</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">align_k</span><span class="p">(</span><span class="o">*</span><span class="n">contribs</span><span class="p">)</span>
+</span><span data-line="1495">            <span class="n">equalized</span> <span class="o">=</span> <span class="n">equalize_tangent_K</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">k_aligned</span><span class="p">))</span>
+</span><span data-line="1496">            <span class="n">summed</span> <span class="o">=</span> <span class="n">equalized</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="1497">            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">equalized</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+</span><span data-line="1498">                <span class="n">summed</span> <span class="o">=</span> <span class="n">summed</span> <span class="o">+</span> <span class="n">c</span>
+</span><span data-line="1499">            <span class="n">out</span><span class="p">[</span><span class="n">leaf</span><span class="p">]</span> <span class="o">=</span> <span class="n">summed</span>
+</span><span data-line="1500">        <span class="k">return</span> <span class="p">{</span><span class="n">ext_output</span><span class="p">:</span> <span class="n">out</span><span class="p">}</span></div>
 
-</span><span data-line="1478">
+</span><span data-line="1501">
 <div class="viewcode-block" id="Model.apply_chain_rule_2">
 <a class="viewcode-back" href="../../../content/python_api/neml2.models.model.html#neml2.models.model.Model.apply_chain_rule_2">[docs]</a>
-</span><span data-line="1479">    <span class="k">def</span><span class="w"> </span><span class="nf">apply_chain_rule_2</span><span class="p">(</span>
-</span><span data-line="1480">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="1481">        <span class="n">v</span><span class="p">:</span> <span class="n">ChainRuleDict</span><span class="p">,</span>
-</span><span data-line="1482">        <span class="n">v2</span><span class="p">:</span> <span class="n">SecondOrderChainRuleDict</span><span class="p">,</span>
-</span><span data-line="1483">        <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="1484">        <span class="n">actions_1</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ChainRuleAction</span><span class="p">],</span>
-</span><span data-line="1485">        <span class="n">actions_2</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">SecondOrderChainRuleAction</span><span class="p">],</span>
-</span><span data-line="1486">        <span class="n">vh</span><span class="p">:</span> <span class="n">ChainRuleDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="1487">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SecondOrderChainRuleDict</span><span class="p">:</span>
-</span><span data-line="1488"><span class="w">        </span><span class="sd">"""Propagate a second-order JVP through this leaf's local Jacobian.</span>
-</span><span data-line="1489">
-</span><span data-line="1490"><span class="sd">        Implements $(g∘f)''[a, b] = g''(f) · (f'[a], f'[b]) + g' · f''[a, b]$:</span>
-</span><span data-line="1491">
-</span><span data-line="1492"><span class="sd">        * The ``g''`` term iterates input pairs ``(i, j)`` and combines incoming</span>
-</span><span data-line="1493"><span class="sd">          first-order tangents ``v[i][a]`` (slot 1) and ``vh[j][b]`` (slot 2)</span>
-</span><span data-line="1494"><span class="sd">          into a two-leading-axis typed output tangent via ``actions_2[(i, j)]``.</span>
-</span><span data-line="1495"><span class="sd">          When ``vh`` is None it defaults to ``v`` (the original symmetric</span>
-</span><span data-line="1496"><span class="sd">          all-pairs behaviour). When ``vh`` is provided, only ``(v[i] × vh[j])``</span>
-</span><span data-line="1497"><span class="sd">          pairs are iterated — used by Normality to compute</span>
-</span><span data-line="1498"><span class="sd">          Hessian-applied-to-outer directly without materialising the full Hessian.</span>
-</span><span data-line="1499"><span class="sd">        * The ``g'`` term applies the existing first-order action to incoming</span>
-</span><span data-line="1500"><span class="sd">          second-order tangents ``v2[i][a][b]``. Re-uses ``actions_1`` so the</span>
-</span><span data-line="1501"><span class="sd">          inner-input → outer-seed contraction matches the first-order path</span>
-</span><span data-line="1502"><span class="sd">          exactly.</span>
-</span><span data-line="1503">
-</span><span data-line="1504"><span class="sd">        Missing input pairs in ``actions_2`` are treated as ``f''=0``; missing</span>
-</span><span data-line="1505"><span class="sd">        entries in ``v`` / ``vh`` / ``v2`` are structural zeros. The resulting</span>
-</span><span data-line="1506"><span class="sd">        dict carries one outer key (``output_name``).</span>
-</span><span data-line="1507"><span class="sd">        """</span>
-</span><span data-line="1508">        <span class="n">accum</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="1509">
-</span><span data-line="1510">        <span class="n">v_slot_b</span> <span class="o">=</span> <span class="n">vh</span> <span class="k">if</span> <span class="n">vh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">v</span>
-</span><span data-line="1511">        <span class="n">renames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"_var_renames"</span><span class="p">,</span> <span class="p">{})</span>
-</span><span data-line="1512">        <span class="n">ext_output</span> <span class="o">=</span> <span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="n">output_name</span><span class="p">)</span>
-</span><span data-line="1513">
-</span><span data-line="1514">        <span class="k">def</span><span class="w"> </span><span class="nf">_add</span><span class="p">(</span><span class="n">bucket</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span> <span class="n">b</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contribution</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="1515">            <span class="n">bucket</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">contribution</span> <span class="k">if</span> <span class="n">b</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">bucket</span> <span class="k">else</span> <span class="n">bucket</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">+</span> <span class="n">contribution</span>
-</span><span data-line="1516">
-</span><span data-line="1517">        <span class="c1"># g'' · (f'[a], f'[b]) — Hessian action on incoming first-order tangents.</span>
-</span><span data-line="1518">        <span class="c1"># the framework now iterates over each</span>
-</span><span data-line="1519">        <span class="c1"># incoming tangent's leading seed axis (N_a, N_b indices) and hands the</span>
-</span><span data-line="1520">        <span class="c1"># leaf ``action_2`` a single ``(Va_one, Vb_one)`` pair shaped like the</span>
-</span><span data-line="1521">        <span class="c1"># primal (no leading seed dim), so the bilinear can be written in pure</span>
-</span><span data-line="1522">        <span class="c1"># typed-wrapper algebra. The framework restacks the K_a × K_b results</span>
-</span><span data-line="1523">        <span class="c1"># into a single ``(N_a, N_b, *dyn, *sub, *base)`` tangent — this is the</span>
-</span><span data-line="1524">        <span class="c1"># only place that materializes the seed-pair outer; leaves never see it.</span>
-</span><span data-line="1525">        <span class="k">for</span> <span class="p">(</span><span class="n">input_i</span><span class="p">,</span> <span class="n">input_j</span><span class="p">),</span> <span class="n">action_2</span> <span class="ow">in</span> <span class="n">actions_2</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="1526">            <span class="n">v_i</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">input_i</span><span class="p">,</span> <span class="n">input_i</span><span class="p">),</span> <span class="p">{})</span>
-</span><span data-line="1527">            <span class="n">v_j</span> <span class="o">=</span> <span class="n">v_slot_b</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">input_j</span><span class="p">,</span> <span class="n">input_j</span><span class="p">),</span> <span class="p">{})</span>
-</span><span data-line="1528">            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">Va</span> <span class="ow">in</span> <span class="n">v_i</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="1529">                <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">Vb</span> <span class="ow">in</span> <span class="n">v_j</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="1530">                    <span class="n">_add</span><span class="p">(</span><span class="n">accum</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">b</span><span class="p">,</span> <span class="n">_apply_action_2</span><span class="p">(</span><span class="n">action_2</span><span class="p">,</span> <span class="n">Va</span><span class="p">,</span> <span class="n">Vb</span><span class="p">))</span>
-</span><span data-line="1531">
-</span><span data-line="1532">        <span class="c1"># g' · f''[a, b] — apply the linear first-order action to incoming v2.</span>
-</span><span data-line="1533">        <span class="c1"># Typed-wrapper algebra broadcasts over arbitrary leading seed axes, so</span>
-</span><span data-line="1534">        <span class="c1"># the same action used for first-order tangents also applies directly</span>
-</span><span data-line="1535">        <span class="c1"># to the two-leading-axis second-order wrapper.</span>
-</span><span data-line="1536">        <span class="k">for</span> <span class="n">input_name</span><span class="p">,</span> <span class="n">action_1</span> <span class="ow">in</span> <span class="n">actions_1</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="1537">            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">inner</span> <span class="ow">in</span> <span class="n">v2</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">input_name</span><span class="p">),</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="1538">                <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">V2_in</span> <span class="ow">in</span> <span class="n">inner</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="1539">                    <span class="n">_add</span><span class="p">(</span><span class="n">accum</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">b</span><span class="p">,</span> <span class="n">action_1</span><span class="p">(</span><span class="n">V2_in</span><span class="p">))</span>
-</span><span data-line="1540">
-</span><span data-line="1541">        <span class="k">return</span> <span class="p">{</span><span class="n">ext_output</span><span class="p">:</span> <span class="n">accum</span><span class="p">}</span></div>
+</span><span data-line="1502">    <span class="k">def</span><span class="w"> </span><span class="nf">apply_chain_rule_2</span><span class="p">(</span>
+</span><span data-line="1503">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="1504">        <span class="n">v</span><span class="p">:</span> <span class="n">ChainRuleDict</span><span class="p">,</span>
+</span><span data-line="1505">        <span class="n">v2</span><span class="p">:</span> <span class="n">SecondOrderChainRuleDict</span><span class="p">,</span>
+</span><span data-line="1506">        <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="1507">        <span class="n">actions_1</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ChainRuleAction</span><span class="p">],</span>
+</span><span data-line="1508">        <span class="n">actions_2</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">SecondOrderChainRuleAction</span><span class="p">],</span>
+</span><span data-line="1509">        <span class="n">vh</span><span class="p">:</span> <span class="n">ChainRuleDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="1510">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SecondOrderChainRuleDict</span><span class="p">:</span>
+</span><span data-line="1511"><span class="w">        </span><span class="sd">"""Propagate a second-order JVP through this leaf's local Jacobian.</span>
+</span><span data-line="1512">
+</span><span data-line="1513"><span class="sd">        Implements $(g∘f)''[a, b] = g''(f) · (f'[a], f'[b]) + g' · f''[a, b]$:</span>
+</span><span data-line="1514">
+</span><span data-line="1515"><span class="sd">        * The ``g''`` term iterates input pairs ``(i, j)`` and combines incoming</span>
+</span><span data-line="1516"><span class="sd">          first-order tangents ``v[i][a]`` (slot 1) and ``vh[j][b]`` (slot 2)</span>
+</span><span data-line="1517"><span class="sd">          into a two-leading-axis typed output tangent via ``actions_2[(i, j)]``.</span>
+</span><span data-line="1518"><span class="sd">          When ``vh`` is None it defaults to ``v`` (the original symmetric</span>
+</span><span data-line="1519"><span class="sd">          all-pairs behaviour). When ``vh`` is provided, only ``(v[i] × vh[j])``</span>
+</span><span data-line="1520"><span class="sd">          pairs are iterated — used by Normality to compute</span>
+</span><span data-line="1521"><span class="sd">          Hessian-applied-to-outer directly without materialising the full Hessian.</span>
+</span><span data-line="1522"><span class="sd">        * The ``g'`` term applies the existing first-order action to incoming</span>
+</span><span data-line="1523"><span class="sd">          second-order tangents ``v2[i][a][b]``. Re-uses ``actions_1`` so the</span>
+</span><span data-line="1524"><span class="sd">          inner-input → outer-seed contraction matches the first-order path</span>
+</span><span data-line="1525"><span class="sd">          exactly.</span>
+</span><span data-line="1526">
+</span><span data-line="1527"><span class="sd">        Missing input pairs in ``actions_2`` are treated as ``f''=0``; missing</span>
+</span><span data-line="1528"><span class="sd">        entries in ``v`` / ``vh`` / ``v2`` are structural zeros. The resulting</span>
+</span><span data-line="1529"><span class="sd">        dict carries one outer key (``output_name``).</span>
+</span><span data-line="1530"><span class="sd">        """</span>
+</span><span data-line="1531">        <span class="n">accum</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="1532">
+</span><span data-line="1533">        <span class="n">v_slot_b</span> <span class="o">=</span> <span class="n">vh</span> <span class="k">if</span> <span class="n">vh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">v</span>
+</span><span data-line="1534">        <span class="n">renames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"_var_renames"</span><span class="p">,</span> <span class="p">{})</span>
+</span><span data-line="1535">        <span class="n">ext_output</span> <span class="o">=</span> <span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="n">output_name</span><span class="p">)</span>
+</span><span data-line="1536">
+</span><span data-line="1537">        <span class="k">def</span><span class="w"> </span><span class="nf">_add</span><span class="p">(</span><span class="n">bucket</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span> <span class="n">b</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contribution</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="1538">            <span class="n">bucket</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">contribution</span> <span class="k">if</span> <span class="n">b</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">bucket</span> <span class="k">else</span> <span class="n">bucket</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">+</span> <span class="n">contribution</span>
+</span><span data-line="1539">
+</span><span data-line="1540">        <span class="c1"># g'' · (f'[a], f'[b]) — Hessian action on incoming first-order tangents.</span>
+</span><span data-line="1541">        <span class="c1"># the framework now iterates over each</span>
+</span><span data-line="1542">        <span class="c1"># incoming tangent's leading seed axis (N_a, N_b indices) and hands the</span>
+</span><span data-line="1543">        <span class="c1"># leaf ``action_2`` a single ``(Va_one, Vb_one)`` pair shaped like the</span>
+</span><span data-line="1544">        <span class="c1"># primal (no leading seed dim), so the bilinear can be written in pure</span>
+</span><span data-line="1545">        <span class="c1"># typed-wrapper algebra. The framework restacks the K_a × K_b results</span>
+</span><span data-line="1546">        <span class="c1"># into a single ``(N_a, N_b, *dyn, *sub, *base)`` tangent — this is the</span>
+</span><span data-line="1547">        <span class="c1"># only place that materializes the seed-pair outer; leaves never see it.</span>
+</span><span data-line="1548">        <span class="k">for</span> <span class="p">(</span><span class="n">input_i</span><span class="p">,</span> <span class="n">input_j</span><span class="p">),</span> <span class="n">action_2</span> <span class="ow">in</span> <span class="n">actions_2</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="1549">            <span class="n">v_i</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">input_i</span><span class="p">,</span> <span class="n">input_i</span><span class="p">),</span> <span class="p">{})</span>
+</span><span data-line="1550">            <span class="n">v_j</span> <span class="o">=</span> <span class="n">v_slot_b</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">input_j</span><span class="p">,</span> <span class="n">input_j</span><span class="p">),</span> <span class="p">{})</span>
+</span><span data-line="1551">            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">Va</span> <span class="ow">in</span> <span class="n">v_i</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="1552">                <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">Vb</span> <span class="ow">in</span> <span class="n">v_j</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="1553">                    <span class="n">_add</span><span class="p">(</span><span class="n">accum</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">b</span><span class="p">,</span> <span class="n">_apply_action_2</span><span class="p">(</span><span class="n">action_2</span><span class="p">,</span> <span class="n">Va</span><span class="p">,</span> <span class="n">Vb</span><span class="p">))</span>
+</span><span data-line="1554">
+</span><span data-line="1555">        <span class="c1"># g' · f''[a, b] — apply the linear first-order action to incoming v2.</span>
+</span><span data-line="1556">        <span class="c1"># Typed-wrapper algebra broadcasts over arbitrary leading seed axes, so</span>
+</span><span data-line="1557">        <span class="c1"># the same action used for first-order tangents also applies directly</span>
+</span><span data-line="1558">        <span class="c1"># to the two-leading-axis second-order wrapper.</span>
+</span><span data-line="1559">        <span class="k">for</span> <span class="n">input_name</span><span class="p">,</span> <span class="n">action_1</span> <span class="ow">in</span> <span class="n">actions_1</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="1560">            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">inner</span> <span class="ow">in</span> <span class="n">v2</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">renames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">input_name</span><span class="p">),</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="1561">                <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">V2_in</span> <span class="ow">in</span> <span class="n">inner</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="1562">                    <span class="n">_add</span><span class="p">(</span><span class="n">accum</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">b</span><span class="p">,</span> <span class="n">action_1</span><span class="p">(</span><span class="n">V2_in</span><span class="p">))</span>
+</span><span data-line="1563">
+</span><span data-line="1564">        <span class="k">return</span> <span class="p">{</span><span class="n">ext_output</span><span class="p">:</span> <span class="n">accum</span><span class="p">}</span></div>
 
-</span><span data-line="1542">
+</span><span data-line="1565">
 <div class="viewcode-block" id="Model.propagate_tangents">
 <a class="viewcode-back" href="../../../content/python_api/neml2.models.model.html#neml2.models.model.Model.propagate_tangents">[docs]</a>
-</span><span data-line="1543">    <span class="k">def</span><span class="w"> </span><span class="nf">propagate_tangents</span><span class="p">(</span>
-</span><span data-line="1544">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="1545">        <span class="n">v</span><span class="p">:</span> <span class="n">ChainRuleDict</span><span class="p">,</span>
-</span><span data-line="1546">        <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="1547">        <span class="n">actions_1</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ChainRuleAction</span><span class="p">],</span>
-</span><span data-line="1548">        <span class="o">*</span><span class="p">,</span>
-</span><span data-line="1549">        <span class="n">output</span><span class="p">:</span> <span class="n">TensorWrapper</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="1550">        <span class="n">v2</span><span class="p">:</span> <span class="n">SecondOrderChainRuleDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="1551">        <span class="n">actions_2</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">SecondOrderChainRuleAction</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="1552">        <span class="n">vh</span><span class="p">:</span> <span class="n">ChainRuleDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="1553">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-</span><span data-line="1554"><span class="w">        </span><span class="sd">"""Dispatch ``v`` / ``v2`` / ``vh`` through the local chain-rule actions.</span>
-</span><span data-line="1555">
-</span><span data-line="1556"><span class="sd">        Wraps the boilerplate every second-order-aware leaf otherwise has to</span>
-</span><span data-line="1557"><span class="sd">        spell out: call :meth:`apply_chain_rule` for ``v`` (always),</span>
-</span><span data-line="1558"><span class="sd">        :meth:`apply_chain_rule_2` for ``v2`` / ``vh`` (when requested), and</span>
-</span><span data-line="1559"><span class="sd">        return the right-length tuple. The return shape mirrors what the leaf</span>
-</span><span data-line="1560"><span class="sd">        was asked for:</span>
-</span><span data-line="1561">
-</span><span data-line="1562"><span class="sd">        * ``v2 is None and vh is None`` → ``(v_out,)``</span>
-</span><span data-line="1563"><span class="sd">        * ``v2 is set, vh is None`` → ``(v_out, v2_out)``</span>
-</span><span data-line="1564"><span class="sd">        * ``vh is set`` (``v2`` may be ``None``, treated as ``{}``)</span>
-</span><span data-line="1565"><span class="sd">          → ``(v_out, v2_out, vh_out)``</span>
-</span><span data-line="1566">
-</span><span data-line="1567"><span class="sd">        Linear leaves (LinearCombination, YieldFunction, …) call this with</span>
-</span><span data-line="1568"><span class="sd">        no ``actions_2`` — the second-order pass collapses to applying</span>
-</span><span data-line="1569"><span class="sd">        ``actions_1`` to ``v2`` entries (``g'' = 0``). Non-linear leaves</span>
-</span><span data-line="1570"><span class="sd">        (SR2Invariant, …) pass an explicit ``actions_2`` map.</span>
-</span><span data-line="1571">
-</span><span data-line="1572"><span class="sd">        Usage::</span>
-</span><span data-line="1573">
-</span><span data-line="1574"><span class="sd">            return out, *self.propagate_tangents(</span>
-</span><span data-line="1575"><span class="sd">                v, self._to, actions_1, output=out, v2=v2, vh=vh</span>
-</span><span data-line="1576"><span class="sd">            )</span>
-</span><span data-line="1577"><span class="sd">        """</span>
-</span><span data-line="1578">        <span class="n">v_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_chain_rule</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">)</span>
-</span><span data-line="1579">        <span class="k">if</span> <span class="n">v2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">vh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="1580">            <span class="k">return</span> <span class="p">(</span><span class="n">v_out</span><span class="p">,)</span>
-</span><span data-line="1581">        <span class="k">if</span> <span class="n">v2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="1582">            <span class="n">v2</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="1583">        <span class="n">v2_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_chain_rule_2</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">,</span> <span class="n">actions_2</span> <span class="ow">or</span> <span class="p">{},</span> <span class="n">vh</span><span class="o">=</span><span class="n">vh</span><span class="p">)</span>
-</span><span data-line="1584">        <span class="k">if</span> <span class="n">vh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="1585">            <span class="k">return</span> <span class="p">(</span><span class="n">v_out</span><span class="p">,</span> <span class="n">v2_out</span><span class="p">)</span>
-</span><span data-line="1586">        <span class="n">vh_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_chain_rule</span><span class="p">(</span><span class="n">vh</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">)</span>
-</span><span data-line="1587">        <span class="k">return</span> <span class="p">(</span><span class="n">v_out</span><span class="p">,</span> <span class="n">v2_out</span><span class="p">,</span> <span class="n">vh_out</span><span class="p">)</span></div>
+</span><span data-line="1566">    <span class="k">def</span><span class="w"> </span><span class="nf">propagate_tangents</span><span class="p">(</span>
+</span><span data-line="1567">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="1568">        <span class="n">v</span><span class="p">:</span> <span class="n">ChainRuleDict</span><span class="p">,</span>
+</span><span data-line="1569">        <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="1570">        <span class="n">actions_1</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ChainRuleAction</span><span class="p">],</span>
+</span><span data-line="1571">        <span class="o">*</span><span class="p">,</span>
+</span><span data-line="1572">        <span class="n">output</span><span class="p">:</span> <span class="n">TensorWrapper</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="1573">        <span class="n">v2</span><span class="p">:</span> <span class="n">SecondOrderChainRuleDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="1574">        <span class="n">actions_2</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">SecondOrderChainRuleAction</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="1575">        <span class="n">vh</span><span class="p">:</span> <span class="n">ChainRuleDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="1576">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+</span><span data-line="1577"><span class="w">        </span><span class="sd">"""Dispatch ``v`` / ``v2`` / ``vh`` through the local chain-rule actions.</span>
+</span><span data-line="1578">
+</span><span data-line="1579"><span class="sd">        Wraps the boilerplate every second-order-aware leaf otherwise has to</span>
+</span><span data-line="1580"><span class="sd">        spell out: call :meth:`apply_chain_rule` for ``v`` (always),</span>
+</span><span data-line="1581"><span class="sd">        :meth:`apply_chain_rule_2` for ``v2`` / ``vh`` (when requested), and</span>
+</span><span data-line="1582"><span class="sd">        return the right-length tuple. The return shape mirrors what the leaf</span>
+</span><span data-line="1583"><span class="sd">        was asked for:</span>
+</span><span data-line="1584">
+</span><span data-line="1585"><span class="sd">        * ``v2 is None and vh is None`` → ``(v_out,)``</span>
+</span><span data-line="1586"><span class="sd">        * ``v2 is set, vh is None`` → ``(v_out, v2_out)``</span>
+</span><span data-line="1587"><span class="sd">        * ``vh is set`` (``v2`` may be ``None``, treated as ``{}``)</span>
+</span><span data-line="1588"><span class="sd">          → ``(v_out, v2_out, vh_out)``</span>
+</span><span data-line="1589">
+</span><span data-line="1590"><span class="sd">        Linear leaves (LinearCombination, YieldFunction, …) call this with</span>
+</span><span data-line="1591"><span class="sd">        no ``actions_2`` — the second-order pass collapses to applying</span>
+</span><span data-line="1592"><span class="sd">        ``actions_1`` to ``v2`` entries (``g'' = 0``). Non-linear leaves</span>
+</span><span data-line="1593"><span class="sd">        (SR2Invariant, …) pass an explicit ``actions_2`` map.</span>
+</span><span data-line="1594">
+</span><span data-line="1595"><span class="sd">        Usage::</span>
+</span><span data-line="1596">
+</span><span data-line="1597"><span class="sd">            return out, *self.propagate_tangents(</span>
+</span><span data-line="1598"><span class="sd">                v, self._to, actions_1, output=out, v2=v2, vh=vh</span>
+</span><span data-line="1599"><span class="sd">            )</span>
+</span><span data-line="1600"><span class="sd">        """</span>
+</span><span data-line="1601">        <span class="n">v_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_chain_rule</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">)</span>
+</span><span data-line="1602">        <span class="k">if</span> <span class="n">v2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">vh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="1603">            <span class="k">return</span> <span class="p">(</span><span class="n">v_out</span><span class="p">,)</span>
+</span><span data-line="1604">        <span class="k">if</span> <span class="n">v2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="1605">            <span class="n">v2</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="1606">        <span class="n">v2_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_chain_rule_2</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">,</span> <span class="n">actions_2</span> <span class="ow">or</span> <span class="p">{},</span> <span class="n">vh</span><span class="o">=</span><span class="n">vh</span><span class="p">)</span>
+</span><span data-line="1607">        <span class="k">if</span> <span class="n">vh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="1608">            <span class="k">return</span> <span class="p">(</span><span class="n">v_out</span><span class="p">,</span> <span class="n">v2_out</span><span class="p">)</span>
+</span><span data-line="1609">        <span class="n">vh_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_chain_rule</span><span class="p">(</span><span class="n">vh</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">)</span>
+</span><span data-line="1610">        <span class="k">return</span> <span class="p">(</span><span class="n">v_out</span><span class="p">,</span> <span class="n">v2_out</span><span class="p">,</span> <span class="n">vh_out</span><span class="p">)</span></div>
 </div>
 
-</span><span data-line="1588">
-</span><span data-line="1589">
-</span><span data-line="1590"><span class="k">def</span><span class="w"> </span><span class="nf">_apply_action_2</span><span class="p">(</span>
-</span><span data-line="1591">    <span class="n">action_2</span><span class="p">:</span> <span class="n">SecondOrderChainRuleAction</span><span class="p">,</span>
-</span><span data-line="1592">    <span class="n">Va</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
-</span><span data-line="1593">    <span class="n">Vb</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
-</span><span data-line="1594"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="1595"><span class="w">    </span><span class="sd">"""Evaluate the leaf's bilinear ``action_2`` over every (k_a, k_b) seed pair.</span>
-</span><span data-line="1596">
-</span><span data-line="1597"><span class="sd">    The leaf-side ``action_2(Va_one, Vb_one)``</span>
-</span><span data-line="1598"><span class="sd">    receives a single tangent slice per slot — both shaped like the primal</span>
-</span><span data-line="1599"><span class="sd">    (no leading seed dim) — and returns a single typed-wrapper bilinear of</span>
-</span><span data-line="1600"><span class="sd">    the same primal shape. This helper handles the framework side: iterates</span>
-</span><span data-line="1601"><span class="sd">    the ``(N_a, N_b)`` seed-index outer, stitches the results back into the</span>
-</span><span data-line="1602"><span class="sd">    single ``(N_a, N_b, *dyn, *sub, *base)`` typed-wrapper tangent the</span>
-</span><span data-line="1603"><span class="sd">    chain-rule machinery expects.</span>
-</span><span data-line="1604">
-</span><span data-line="1605"><span class="sd">    Concentrating the seed-outer here is the entire point of the refactor:</span>
-</span><span data-line="1606"><span class="sd">    leaves no longer reach into ``.data`` to unsqueeze + broadcast two</span>
-</span><span data-line="1607"><span class="sd">    differently-sized leading axes, so ``action_2`` bodies stay in pure</span>
-</span><span data-line="1608"><span class="sd">    typed-wrapper algebra (``2 * Va * Vb``, ``inner(Va, dev(Vb))``, …).</span>
-</span><span data-line="1609"><span class="sd">    """</span>
-</span><span data-line="1610">    <span class="n">N_a</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Va</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span><span data-line="1611">    <span class="n">N_b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Vb</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span><span data-line="1612">    <span class="n">Va_type</span><span class="p">,</span> <span class="n">Vb_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">Va</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">Vb</span><span class="p">)</span>
-</span><span data-line="1613">    <span class="n">sb_a</span><span class="p">,</span> <span class="n">sb_b</span> <span class="o">=</span> <span class="n">Va</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">,</span> <span class="n">Vb</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="1614">    <span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="1615">    <span class="k">for</span> <span class="n">ka</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_a</span><span class="p">):</span>
-</span><span data-line="1616">        <span class="n">Va_one</span> <span class="o">=</span> <span class="n">Va_type</span><span class="p">(</span><span class="n">Va</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">ka</span><span class="p">],</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sb_a</span><span class="p">)</span>
-</span><span data-line="1617">        <span class="k">for</span> <span class="n">kb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_b</span><span class="p">):</span>
-</span><span data-line="1618">            <span class="n">Vb_one</span> <span class="o">=</span> <span class="n">Vb_type</span><span class="p">(</span><span class="n">Vb</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">kb</span><span class="p">],</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sb_b</span><span class="p">)</span>
-</span><span data-line="1619">            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action_2</span><span class="p">(</span><span class="n">Va_one</span><span class="p">,</span> <span class="n">Vb_one</span><span class="p">))</span>
-</span><span data-line="1620">    <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="p">:</span>  <span class="c1"># defensive — N_a or N_b == 0</span>
-</span><span data-line="1621">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"action_2 evaluated with empty seed axis"</span><span class="p">)</span>
-</span><span data-line="1622">    <span class="n">first</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span data-line="1623">    <span class="n">out_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">first</span><span class="p">)</span>
-</span><span data-line="1624">    <span class="n">out_sb</span> <span class="o">=</span> <span class="n">first</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="1625">    <span class="n">stacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">r</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span><span data-line="1626">    <span class="n">stacked</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_a</span><span class="p">,</span> <span class="n">N_b</span><span class="p">,</span> <span class="o">*</span><span class="n">first</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</span><span data-line="1627">    <span class="k">return</span> <span class="n">out_type</span><span class="p">(</span><span class="n">stacked</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">out_sb</span><span class="p">)</span>
-</span><span data-line="1628">
-</span><span data-line="1629">
-</span><span data-line="1630"><span class="k">def</span><span class="w"> </span><span class="nf">_retag_to_output</span><span class="p">(</span><span class="n">contribution</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="1631"><span class="w">    </span><span class="sd">"""Normalize a first-order chain-rule contribution to the output variable's</span>
-</span><span data-line="1632"><span class="sd">    canonical sub-batch layout.</span>
-</span><span data-line="1633">
-</span><span data-line="1634"><span class="sd">    The contribution is a typed wrapper of the output type with K as the leading</span>
-</span><span data-line="1635"><span class="sd">    batch dim. We force ``contribution.sub_batch_ndim ==</span>
-</span><span data-line="1636"><span class="sd">    output.sub_batch_ndim`` so the next leaf model that consumes this tangent</span>
-</span><span data-line="1637"><span class="sd">    as one of its actions' inputs sees a wrapper whose sub-batch structure</span>
-</span><span data-line="1638"><span class="sd">    matches the value's structure -- otherwise downstream leaf algebra</span>
-</span><span data-line="1639"><span class="sd">    (matmul, exp_map, jvp_*) would interpret some leading sub_batch dim as</span>
-</span><span data-line="1640"><span class="sd">    a base/batch dim and fold it incorrectly into the output, surfacing as</span>
-</span><span data-line="1641"><span class="sd">    cat-shape mismatches at the assembly boundary.</span>
-</span><span data-line="1642">
-</span><span data-line="1643"><span class="sd">    Two cases:</span>
-</span><span data-line="1644">
-</span><span data-line="1645"><span class="sd">    * ``contribution.sub_batch_ndim &gt; output.sub_batch_ndim``: collapse the</span>
-</span><span data-line="1646"><span class="sd">      extra leading sub_batch axes by retagging them back into the dynamic</span>
-</span><span data-line="1647"><span class="sd">      batch region (pure metadata move). Used when an action computes more</span>
-</span><span data-line="1648"><span class="sd">      sub_batch than the output declares.</span>
-</span><span data-line="1649"><span class="sd">    * ``contribution.sub_batch_ndim &lt; output.sub_batch_ndim``: prepend</span>
-</span><span data-line="1650"><span class="sd">      size-1 axes at the start of the sub_batch region (one ``unsqueeze``</span>
-</span><span data-line="1651"><span class="sd">      per missing axis) and retag with the new ndim. The new axes are</span>
-</span><span data-line="1652"><span class="sd">      broadcast-friendly -- subsequent leaf algebra that combines this</span>
-</span><span data-line="1653"><span class="sd">      tangent with per-site wrappers will broadcast them up to the right</span>
-</span><span data-line="1654"><span class="sd">      extent. This fixes the case where an action returns ``V`` unchanged</span>
-</span><span data-line="1655"><span class="sd">      (e.g. ``w_action(V) = V`` in :class:`OrientationRate`) but the</span>
-</span><span data-line="1656"><span class="sd">      output has higher sub_batch from a sibling broadcast like</span>
-</span><span data-line="1657"><span class="sd">      ``out = w - wp + twist``.</span>
-</span><span data-line="1658"><span class="sd">    """</span>
-</span><span data-line="1659">    <span class="c1"># V2P-3: labels removed; retag is now purely a sub_batch_ndim</span>
-</span><span data-line="1660">    <span class="c1"># adjustment with no label threading.</span>
-</span><span data-line="1661">    <span class="k">if</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">:</span>
-</span><span data-line="1662">        <span class="k">return</span> <span class="n">contribution</span>
-</span><span data-line="1663">    <span class="k">if</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">:</span>
-</span><span data-line="1664">        <span class="k">return</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">retag</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="1665">    <span class="c1"># Expand: insert size-1 axes at the head of the sub_batch region.</span>
-</span><span data-line="1666">    <span class="c1"># Tag the new axes as ``"broadcast"`` with meta from the output's</span>
-</span><span data-line="1667">    <span class="c1"># declared sub_batch_shape so a later</span>
-</span><span data-line="1668">    <span class="c1"># :meth:`TensorWrapper.materialize` call (e.g. inside the assembly</span>
-</span><span data-line="1669">    <span class="c1"># pipeline at :func:`_tangent_block_to_trailing_k`) can expand the</span>
-</span><span data-line="1670">    <span class="c1"># size-1 axis to the output's true extent. Without the tag the</span>
-</span><span data-line="1671">    <span class="c1"># downstream :meth:`flatten_sub_batch_into_first_base_axis` would</span>
-</span><span data-line="1672">    <span class="c1"># fold the size-1 storage into row_base verbatim and the assembled</span>
-</span><span data-line="1673">    <span class="c1"># row would lose a factor of ``N``, surfacing as a downstream solve</span>
-</span><span data-line="1674">    <span class="c1"># shape mismatch.</span>
-</span><span data-line="1675">    <span class="n">n_to_add</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">-</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="1676">    <span class="n">new_data</span> <span class="o">=</span> <span class="n">contribution</span><span class="o">.</span><span class="n">data</span>
-</span><span data-line="1677">    <span class="n">insert_pos</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="nb">type</span><span class="p">(</span><span class="n">contribution</span><span class="p">)</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="1678">    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_to_add</span><span class="p">):</span>
-</span><span data-line="1679">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">insert_pos</span><span class="p">)</span>
-</span><span data-line="1680">    <span class="n">new_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
-</span><span data-line="1681">        <span class="s2">"tuple[SubBatchStateFlag, ...]"</span><span class="p">,</span>
-</span><span data-line="1682">        <span class="p">(</span><span class="s2">"broadcast"</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_to_add</span> <span class="o">+</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="p">,</span>
-</span><span data-line="1683">    <span class="p">)</span>
-</span><span data-line="1684">    <span class="n">out_sb_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">)</span>
-</span><span data-line="1685">    <span class="n">new_meta</span> <span class="o">=</span> <span class="n">out_sb_shape</span><span class="p">[:</span><span class="n">n_to_add</span><span class="p">]</span> <span class="o">+</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_meta</span>
-</span><span data-line="1686">    <span class="k">return</span> <span class="n">contribution</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span>
-</span><span data-line="1687">        <span class="n">new_data</span><span class="p">,</span>
-</span><span data-line="1688">        <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">,</span>
-</span><span data-line="1689">        <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">new_state</span><span class="p">,</span>
-</span><span data-line="1690">        <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">new_meta</span><span class="p">,</span>
-</span><span data-line="1691">    <span class="p">)</span>
+</span><span data-line="1611">
+</span><span data-line="1612">
+</span><span data-line="1613"><span class="k">def</span><span class="w"> </span><span class="nf">_apply_action_2</span><span class="p">(</span>
+</span><span data-line="1614">    <span class="n">action_2</span><span class="p">:</span> <span class="n">SecondOrderChainRuleAction</span><span class="p">,</span>
+</span><span data-line="1615">    <span class="n">Va</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
+</span><span data-line="1616">    <span class="n">Vb</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
+</span><span data-line="1617"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="1618"><span class="w">    </span><span class="sd">"""Evaluate the leaf's bilinear ``action_2`` over every (k_a, k_b) seed pair.</span>
+</span><span data-line="1619">
+</span><span data-line="1620"><span class="sd">    The leaf-side ``action_2(Va_one, Vb_one)``</span>
+</span><span data-line="1621"><span class="sd">    receives a single tangent slice per slot — both shaped like the primal</span>
+</span><span data-line="1622"><span class="sd">    (no leading seed dim) — and returns a single typed-wrapper bilinear of</span>
+</span><span data-line="1623"><span class="sd">    the same primal shape. This helper handles the framework side: iterates</span>
+</span><span data-line="1624"><span class="sd">    the ``(N_a, N_b)`` seed-index outer, stitches the results back into the</span>
+</span><span data-line="1625"><span class="sd">    single ``(N_a, N_b, *dyn, *sub, *base)`` typed-wrapper tangent the</span>
+</span><span data-line="1626"><span class="sd">    chain-rule machinery expects.</span>
+</span><span data-line="1627">
+</span><span data-line="1628"><span class="sd">    Concentrating the seed-outer here is the entire point of the refactor:</span>
+</span><span data-line="1629"><span class="sd">    leaves no longer reach into ``.data`` to unsqueeze + broadcast two</span>
+</span><span data-line="1630"><span class="sd">    differently-sized leading axes, so ``action_2`` bodies stay in pure</span>
+</span><span data-line="1631"><span class="sd">    typed-wrapper algebra (``2 * Va * Vb``, ``inner(Va, dev(Vb))``, …).</span>
+</span><span data-line="1632"><span class="sd">    """</span>
+</span><span data-line="1633">    <span class="n">N_a</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Va</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span data-line="1634">    <span class="n">N_b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Vb</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span data-line="1635">    <span class="n">Va_type</span><span class="p">,</span> <span class="n">Vb_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">Va</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">Vb</span><span class="p">)</span>
+</span><span data-line="1636">    <span class="n">sb_a</span><span class="p">,</span> <span class="n">sb_b</span> <span class="o">=</span> <span class="n">Va</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">,</span> <span class="n">Vb</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="1637">    <span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="1638">    <span class="k">for</span> <span class="n">ka</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_a</span><span class="p">):</span>
+</span><span data-line="1639">        <span class="n">Va_one</span> <span class="o">=</span> <span class="n">Va_type</span><span class="p">(</span><span class="n">Va</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">ka</span><span class="p">],</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sb_a</span><span class="p">)</span>
+</span><span data-line="1640">        <span class="k">for</span> <span class="n">kb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_b</span><span class="p">):</span>
+</span><span data-line="1641">            <span class="n">Vb_one</span> <span class="o">=</span> <span class="n">Vb_type</span><span class="p">(</span><span class="n">Vb</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">kb</span><span class="p">],</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sb_b</span><span class="p">)</span>
+</span><span data-line="1642">            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action_2</span><span class="p">(</span><span class="n">Va_one</span><span class="p">,</span> <span class="n">Vb_one</span><span class="p">))</span>
+</span><span data-line="1643">    <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="p">:</span>  <span class="c1"># defensive — N_a or N_b == 0</span>
+</span><span data-line="1644">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"action_2 evaluated with empty seed axis"</span><span class="p">)</span>
+</span><span data-line="1645">    <span class="n">first</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="1646">    <span class="n">out_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">first</span><span class="p">)</span>
+</span><span data-line="1647">    <span class="n">out_sb</span> <span class="o">=</span> <span class="n">first</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="1648">    <span class="n">stacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">r</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span data-line="1649">    <span class="n">stacked</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_a</span><span class="p">,</span> <span class="n">N_b</span><span class="p">,</span> <span class="o">*</span><span class="n">first</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span><span data-line="1650">    <span class="k">return</span> <span class="n">out_type</span><span class="p">(</span><span class="n">stacked</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">out_sb</span><span class="p">)</span>
+</span><span data-line="1651">
+</span><span data-line="1652">
+</span><span data-line="1653"><span class="k">def</span><span class="w"> </span><span class="nf">_retag_to_output</span><span class="p">(</span><span class="n">contribution</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="1654"><span class="w">    </span><span class="sd">"""Normalize a first-order chain-rule contribution to the output variable's</span>
+</span><span data-line="1655"><span class="sd">    canonical sub-batch layout.</span>
+</span><span data-line="1656">
+</span><span data-line="1657"><span class="sd">    The contribution is a typed wrapper of the output type with K as the leading</span>
+</span><span data-line="1658"><span class="sd">    batch dim. We force ``contribution.sub_batch_ndim ==</span>
+</span><span data-line="1659"><span class="sd">    output.sub_batch_ndim`` so the next leaf model that consumes this tangent</span>
+</span><span data-line="1660"><span class="sd">    as one of its actions' inputs sees a wrapper whose sub-batch structure</span>
+</span><span data-line="1661"><span class="sd">    matches the value's structure -- otherwise downstream leaf algebra</span>
+</span><span data-line="1662"><span class="sd">    (matmul, exp_map, jvp_*) would interpret some leading sub_batch dim as</span>
+</span><span data-line="1663"><span class="sd">    a base/batch dim and fold it incorrectly into the output, surfacing as</span>
+</span><span data-line="1664"><span class="sd">    cat-shape mismatches at the assembly boundary.</span>
+</span><span data-line="1665">
+</span><span data-line="1666"><span class="sd">    Two cases:</span>
+</span><span data-line="1667">
+</span><span data-line="1668"><span class="sd">    * ``contribution.sub_batch_ndim &gt; output.sub_batch_ndim``: collapse the</span>
+</span><span data-line="1669"><span class="sd">      extra leading sub_batch axes by retagging them back into the dynamic</span>
+</span><span data-line="1670"><span class="sd">      batch region (pure metadata move). Used when an action computes more</span>
+</span><span data-line="1671"><span class="sd">      sub_batch than the output declares.</span>
+</span><span data-line="1672"><span class="sd">    * ``contribution.sub_batch_ndim &lt; output.sub_batch_ndim``: prepend</span>
+</span><span data-line="1673"><span class="sd">      size-1 axes at the start of the sub_batch region (one ``unsqueeze``</span>
+</span><span data-line="1674"><span class="sd">      per missing axis) and retag with the new ndim. The new axes are</span>
+</span><span data-line="1675"><span class="sd">      broadcast-friendly -- subsequent leaf algebra that combines this</span>
+</span><span data-line="1676"><span class="sd">      tangent with per-site wrappers will broadcast them up to the right</span>
+</span><span data-line="1677"><span class="sd">      extent. This fixes the case where an action returns ``V`` unchanged</span>
+</span><span data-line="1678"><span class="sd">      (e.g. ``w_action(V) = V`` in :class:`OrientationRate`) but the</span>
+</span><span data-line="1679"><span class="sd">      output has higher sub_batch from a sibling broadcast like</span>
+</span><span data-line="1680"><span class="sd">      ``out = w - wp + twist``.</span>
+</span><span data-line="1681"><span class="sd">    """</span>
+</span><span data-line="1682">    <span class="c1"># V2P-3: labels removed; retag is now purely a sub_batch_ndim</span>
+</span><span data-line="1683">    <span class="c1"># adjustment with no label threading.</span>
+</span><span data-line="1684">    <span class="k">if</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">:</span>
+</span><span data-line="1685">        <span class="k">return</span> <span class="n">contribution</span>
+</span><span data-line="1686">    <span class="k">if</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">:</span>
+</span><span data-line="1687">        <span class="k">return</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">retag</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="1688">    <span class="c1"># Expand: insert size-1 axes at the head of the sub_batch region.</span>
+</span><span data-line="1689">    <span class="c1"># Tag the new axes as ``"broadcast"`` with meta from the output's</span>
+</span><span data-line="1690">    <span class="c1"># declared sub_batch_shape so a later</span>
+</span><span data-line="1691">    <span class="c1"># :meth:`TensorWrapper.materialize` call (e.g. inside the assembly</span>
+</span><span data-line="1692">    <span class="c1"># pipeline at :func:`_tangent_block_to_trailing_k`) can expand the</span>
+</span><span data-line="1693">    <span class="c1"># size-1 axis to the output's true extent. Without the tag the</span>
+</span><span data-line="1694">    <span class="c1"># downstream :meth:`flatten_sub_batch_into_first_base_axis` would</span>
+</span><span data-line="1695">    <span class="c1"># fold the size-1 storage into row_base verbatim and the assembled</span>
+</span><span data-line="1696">    <span class="c1"># row would lose a factor of ``N``, surfacing as a downstream solve</span>
+</span><span data-line="1697">    <span class="c1"># shape mismatch.</span>
+</span><span data-line="1698">    <span class="n">n_to_add</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">-</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="1699">    <span class="n">new_data</span> <span class="o">=</span> <span class="n">contribution</span><span class="o">.</span><span class="n">data</span>
+</span><span data-line="1700">    <span class="n">insert_pos</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="nb">type</span><span class="p">(</span><span class="n">contribution</span><span class="p">)</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="1701">    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_to_add</span><span class="p">):</span>
+</span><span data-line="1702">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">insert_pos</span><span class="p">)</span>
+</span><span data-line="1703">    <span class="n">new_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
+</span><span data-line="1704">        <span class="s2">"tuple[SubBatchStateFlag, ...]"</span><span class="p">,</span>
+</span><span data-line="1705">        <span class="p">(</span><span class="s2">"broadcast"</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_to_add</span> <span class="o">+</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="p">,</span>
+</span><span data-line="1706">    <span class="p">)</span>
+</span><span data-line="1707">    <span class="n">out_sb_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">)</span>
+</span><span data-line="1708">    <span class="n">new_meta</span> <span class="o">=</span> <span class="n">out_sb_shape</span><span class="p">[:</span><span class="n">n_to_add</span><span class="p">]</span> <span class="o">+</span> <span class="n">contribution</span><span class="o">.</span><span class="n">sub_batch_meta</span>
+</span><span data-line="1709">    <span class="k">return</span> <span class="n">contribution</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span>
+</span><span data-line="1710">        <span class="n">new_data</span><span class="p">,</span>
+</span><span data-line="1711">        <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">,</span>
+</span><span data-line="1712">        <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">new_state</span><span class="p">,</span>
+</span><span data-line="1713">        <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">new_meta</span><span class="p">,</span>
+</span><span data-line="1714">    <span class="p">)</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

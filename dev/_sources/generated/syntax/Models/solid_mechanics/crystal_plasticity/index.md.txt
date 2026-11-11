@@ -10,7 +10,9 @@ CrystalPlasticityStrainPredictor
 DislocationObstacleStrengthMap
 ElasticStrainRate
 FixOrientation
+KocksMeckingDynamicRecovery
 LinearSingleSlipHardeningRule
+LumpedForestDislocationEvolution
 OrientationRate
 PerSlipForestDislocationEvolution
 PlasticDeformationRate
