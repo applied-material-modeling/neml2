@@ -3,14 +3,14 @@
 #
 # The batch sweeps a zero through each coefficient in turn. A zero coefficient
 # is a valid way to switch this contribution off, and the derivative stays
-# finite there: d(tau)/d(alpha) = mu*b/(2*R*N) is 12.5 in the first entry even
+# finite there: d(tau)/d(alpha) = mu*b*sqrt(2*R*N) is 800 in the first entry even
 # though tau itself is 0.
 #
-# tau = alpha*mu*b/(2*R*N) with R = 2 and N = 4, computed by hand:
-#   0.0 * 100 * 2 / 16 = 0
-#   0.4 *   0 * 2 / 16 = 0
-#   0.4 * 100 * 0 / 16 = 0
-#   0.4 * 100 * 2 / 16 = 5
+# tau = alpha*mu*b*sqrt(2*R*N) with R = 2 and N = 4 (sqrt(16) = 4), by hand:
+#   0.0 * 100 * 2 * 4 = 0
+#   0.4 *   0 * 2 * 4 = 0
+#   0.4 * 100 * 0 * 4 = 0
+#   0.4 * 100 * 2 * 4 = 320
 [Drivers]
   [unit]
     type = ModelUnitTest
@@ -54,6 +54,6 @@
   []
   [tau_correct]
     type = Python
-    expr = "Scalar(torch.tensor([0.0, 0.0, 0.0, 5.0], dtype=torch.float64))"
+    expr = "Scalar(torch.tensor([0.0, 0.0, 0.0, 320.0], dtype=torch.float64))"
   []
 []

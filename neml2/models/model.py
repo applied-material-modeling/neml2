@@ -1397,12 +1397,15 @@ class Model(nn.Module, ABC):
         actions: Mapping[str, ChainRuleAction],
         *,
         output: TensorWrapper | None = None,
+        structural_zeros: Sequence[str] = (),
     ) -> ChainRuleDict:
         """Apply local chain-rule actions and accumulate by seed leaf.
 
         ``actions`` maps each input variable name to a function that transforms
         an incoming sensitivity block for that input into its contribution to
-        ``output_name``. Missing input/leaf sensitivities are structural zeros.
+        ``output_name``. ``structural_zeros`` names inputs whose contribution to
+        this output is intentionally zero. Other missing promoted-parameter
+        actions remain errors when an incoming tangent is present.
 
         When two actions contribute to the same seed leaf but with different
         sub-batch structure — typical of a per-crystal output that mixes a
@@ -1429,6 +1432,26 @@ class Model(nn.Module, ABC):
         # names a caller's tangent dict carries. Empty when no rename.
         renames = self.__dict__.get("_var_renames", {})
         ext_output = renames.get(output_name, output_name)
+
+        # A missing action is a structural zero for an ordinary input, but a
+        # promoted parameter is by construction used in ``forward``. Require an
+        # action unless this output explicitly declares the contribution zero.
+        promoted = self.__dict__.get("_promoted_params", {})
+        if promoted:
+            covered = set(actions) | {renames.get(k, k) for k in actions}
+            covered.update(structural_zeros)
+            covered.update(renames.get(k, k) for k in structural_zeros)
+            missing = sorted(
+                p.input_name
+                for p in promoted.values()
+                if v.get(p.input_name) and p.input_name not in covered
+            )
+            if missing:
+                raise NotImplementedError(
+                    f"{type(self).__name__}: no chain-rule action for promoted parameter "
+                    f"input(s) {missing} contributing to '{output_name}'. Add the "
+                    "derivative action for each promotable parameter in forward()."
+                )
 
         # Per-edge label-targeted promote (Phase D / D2). For each input
         # edge, look up this leaf's ``EdgeInfo`` and selectively

@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, derived_output, input, parameter
-from ....types import Scalar, gt, macaulay, pow, where
+from ....types import Scalar, heaviside, macaulay, pow
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...model import Model
 
@@ -37,26 +37,32 @@ from ...model import Model
 class SoluteDepletion(Model):
     r"""Depletion of a solid-solution strengthening species as it is taken out
     of the matrix by precipitation, defined by
-    $\dot{c} = K \left\langle c_0 - c \right\rangle^{1/3} \left( c - c_{eq} \right)$
+    $\dot{c} = -K \left( \left\langle c_0 - c \right\rangle + \delta \right)^{1/3}
+    \left( c - c_{eq} \right)$
     where $c$ is the matrix concentration, $c_0$ is the initial
-    concentration, $c_{eq}$ is the equilibrium concentration and $K$
-    is the depletion coefficient.
+    concentration, $c_{eq}$ is the equilibrium concentration, $K$ is the
+    depletion coefficient and $\delta$ is the seed concentration.
 
-    $K$ and $c_{eq}$ are promotable parameters, so either may be supplied
-    as a constant or driven by another model -- an ``ArrheniusParameter`` or an
-    interpolation for the usual temperature dependence of $c_{eq}$.
+    Starting from $c = c_0 > c_{eq}$ the rate is negative, so the matrix
+    drains monotonically toward $c_{eq}$, the only fixed point.
 
-    The Macaulay bracket on $c_0 - c$ is a deliberate departure from the bare
-    $\left( c_0 - c \right)^{1/3}$ of the specification: it keeps the cube
-    root on its real branch if the state overshoots $c_0$, which is
-    reachable mid-Newton even when the converged solution satisfies
-    $c \le c_0$. The two agree wherever $c \le c_0$.
+    The factor $\left( c_0 - c \right)^{1/3}$ stands in for the precipitate
+    radius: the solute removed from the matrix is proportional to the
+    precipitate volume. Without a seed it vanishes at the physical initial
+    condition $c = c_0$, which makes $c = c_0$ a spurious (non-Lipschitz)
+    fixed point -- the integrator never leaves it. The seed $\delta > 0$ is
+    the solute already held in precipitate nuclei at the start; it keeps the
+    rate nonzero and its derivative finite at $c = c_0$. It must be
+    strictly positive.
 
-    On that inactive branch, and at the endpoint $c = c_0$, both the rate
-    and its derivative are taken to be zero. The true derivative is unbounded
-    at the endpoint; the right-hand limit is used instead so that neither the
-    forward pushforward nor reverse-mode differentiation of this model emits
-    a ``nan`` into the Newton solve, and so that the two agree.
+    The Macaulay bracket keeps the cube root on its real branch if the state
+    overshoots $c_0$, which is reachable mid-Newton even though the solution
+    itself satisfies $c \le c_0$.
+
+    $K$, $c_0$, $c_{eq}$ and $\delta$ are promotable parameters, so any may
+    be supplied as a constant or driven by another model -- an
+    ``ArrheniusParameter`` or an interpolation for the usual temperature
+    dependence of $K$ and $c_{eq}$.
     """
 
     hit = HitSchema(
@@ -70,13 +76,20 @@ class SoluteDepletion(Model):
             "Equilibrium concentration, generally a function of temperature",
             allow_promotion=True,
         ),
+        parameter(
+            "seed_concentration",
+            Scalar,
+            "Solute held in precipitate nuclei at the start; must be strictly positive",
+            allow_promotion=True,
+        ),
     )
 
-    # ``from_hit`` auto-declares the three parameters and the derived
+    # ``from_hit`` auto-declares the four parameters and the derived
     # ``solute_concentration_rate`` output name (stored on ``self._c_rate``).
     depletion_coefficient: Scalar
     initial_concentration: Scalar
     equilibrium_concentration: Scalar
+    seed_concentration: Scalar
     _c_rate: str
 
     def forward(  # type: ignore[override]
@@ -88,35 +101,16 @@ class SoluteDepletion(Model):
         K = self._get_param("depletion_coefficient", promoted_params, Scalar)
         c0 = self._get_param("initial_concentration", promoted_params, Scalar)
         ceq = self._get_param("equilibrium_concentration", promoted_params, Scalar)
+        delta = self._get_param("seed_concentration", promoted_params, Scalar)
 
+        # The seed keeps the base >= delta > 0, so the cube root and its
+        # derivative are finite everywhere (including c >= c0) and no
+        # branch masking is needed for either forward or reverse mode.
         raw_gap = c0 - c
-        gap = macaulay(raw_gap)
-
-        # On the inactive branch (c >= c0) the bracket is exactly zero, and
-        # ``pow``'s backward at a zero base with a fractional exponent is
-        # infinite. Multiplied by the bracket's own zero derivative that is a
-        # nan, so the guard has to sit in the PRIMAL -- ``param_jacobian`` and
-        # ``param_vjp`` in ``models/param_ad.py`` differentiate the primal with
-        # autograd and never see ``v``, so a guard applied only to the
-        # handwritten pushforward below would leave them broken.
-        #
-        # The fix is the double-``where``: feed ``pow`` a base of 1.0 wherever
-        # the branch is inactive, so its local derivative stays finite, then
-        # mask the result to zero. The value is unchanged (the bracket is zero
-        # there anyway) and the gradient is a clean zero in both modes.
-        #
-        # The mask is strict (``c0 - c > 0``), which fixes the policy at the
-        # endpoint ``c == c0``: value zero, derivative zero, forward and
-        # reverse agreeing. The true derivative is unbounded at that single
-        # point; taking the right-hand limit keeps a nan out of the Newton
-        # solve, and the inactive branch is in any case only reachable by an
-        # intermediate iterate.
-        active = gt(raw_gap, 0.0)
-        zero = gap * 0.0
-        safe_gap = where(active, gap, zero + 1.0)
-        cube_root = where(active, pow(safe_gap, 1.0 / 3.0), zero)
+        base = macaulay(raw_gap) + delta
+        cube_root = pow(base, 1.0 / 3.0)
         driving = c - ceq
-        c_dot = K * cube_root * driving
+        c_dot = -K * cube_root * driving
 
         if v is None:
             return c_dot
@@ -124,34 +118,38 @@ class SoluteDepletion(Model):
         # Differential pushforward. Closed-form coefficients of typed Scalars;
         # no Jacobian materialised.
         #
-        # Write g = <c0 - c>, so dg/dc = -1 and dg/dc0 = +1 on the active
-        # branch and both vanish off it. Then with u = g^(1/3),
-        #   du/dg = 1/3 g^(-2/3)
-        # and
-        #   d c_dot / d c   = K * (u - driving * du/dg)
-        #   d c_dot / d c0  = K * driving * du/dg
-        #   d c_dot / d ceq = -K * u
-        #   d c_dot / d K   = u * driving
-        #
-        # ``du/dg`` reuses the same ``safe_gap`` / ``active`` pair as the
-        # primal, so the pushforward agrees with what autograd produces from
-        # the primal on both branches and at the endpoint.
-        dcube = where(active, pow(safe_gap, -2.0 / 3.0) / 3.0, zero)
+        # Write b = <c0 - c> + delta and u = b^(1/3), so du/db = 1/3 b^(-2/3)
+        # and db/dc = -H, db/dc0 = H, db/ddelta = 1 with H = H(c0 - c). H uses
+        # the same (sign + 1)/2 convention as ``macaulay``, so H = 1/2 at the
+        # kink c = c0 and the pushforward matches autograd of the primal there.
+        # Then
+        #   d c_dot / d c     = -K * (u - driving * du/db * H)
+        #   d c_dot / d c0    = -K * driving * du/db * H
+        #   d c_dot / d delta = -K * driving * du/db
+        #   d c_dot / d ceq   =  K * u
+        #   d c_dot / d K     = -u * driving
+        H = heaviside(raw_gap)
+        du = pow(base, -2.0 / 3.0) / 3.0
 
         actions: dict[str, ChainRuleAction] = {
-            "solute_concentration": lambda V, c_=K * (cube_root - driving * dcube): c_ * V,
+            "solute_concentration": lambda V, k=-K * (cube_root - driving * du * H): k * V,
         }
-        if "depletion_coefficient" in self._promoted_params:
-            actions[self._promoted_params["depletion_coefficient"].input_name] = (
-                lambda V, c_=cube_root * driving: c_ * V
+        promoted = self._promoted_params
+        if "depletion_coefficient" in promoted:
+            actions[promoted["depletion_coefficient"].input_name] = (
+                lambda V, k=-cube_root * driving: k * V
             )
-        if "initial_concentration" in self._promoted_params:
-            actions[self._promoted_params["initial_concentration"].input_name] = (
-                lambda V, c_=K * driving * dcube: c_ * V
+        if "initial_concentration" in promoted:
+            actions[promoted["initial_concentration"].input_name] = (
+                lambda V, k=-K * driving * du * H: k * V
             )
-        if "equilibrium_concentration" in self._promoted_params:
-            actions[self._promoted_params["equilibrium_concentration"].input_name] = (
-                lambda V, c_=-K * cube_root: c_ * V
+        if "equilibrium_concentration" in promoted:
+            actions[promoted["equilibrium_concentration"].input_name] = lambda V, k=K * cube_root: (
+                k * V
+            )
+        if "seed_concentration" in promoted:
+            actions[promoted["seed_concentration"].input_name] = lambda V, k=-K * driving * du: (
+                k * V
             )
 
         return c_dot, self.apply_chain_rule(v, self._c_rate, actions, output=c_dot)

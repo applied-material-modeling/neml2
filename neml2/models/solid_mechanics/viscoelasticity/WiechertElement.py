@@ -196,8 +196,38 @@ class WiechertElement(Model):
             name = self._promoted_params["eta2"].input_name
             Ev2_actions[name] = lambda V, c=-S2 / (eta2 * eta2): c * V
 
-        v_S = self.apply_chain_rule(v, "stress", S_actions, output=S)
-        v_Ev1 = self.apply_chain_rule(v, self._Ev1_rate, Ev1_actions, output=Ev1_dot)
-        v_Ev2 = self.apply_chain_rule(v, self._Ev2_rate, Ev2_actions, output=Ev2_dot)
+        v_S = self.apply_chain_rule(
+            v,
+            "stress",
+            S_actions,
+            output=S,
+            structural_zeros=tuple(
+                self._promoted_params[p].input_name
+                for p in ("eta1", "eta2")
+                if p in self._promoted_params
+            ),
+        )
+        v_Ev1 = self.apply_chain_rule(
+            v,
+            self._Ev1_rate,
+            Ev1_actions,
+            output=Ev1_dot,
+            structural_zeros=tuple(
+                self._promoted_params[p].input_name
+                for p in ("Einf", "E2", "eta2")
+                if p in self._promoted_params
+            ),
+        )
+        v_Ev2 = self.apply_chain_rule(
+            v,
+            self._Ev2_rate,
+            Ev2_actions,
+            output=Ev2_dot,
+            structural_zeros=tuple(
+                self._promoted_params[p].input_name
+                for p in ("Einf", "E1", "eta1")
+                if p in self._promoted_params
+            ),
+        )
         # Merge per-output dicts (different outer keys).
         return S, Ev1_dot, Ev2_dot, {**v_S, **v_Ev1, **v_Ev2}
