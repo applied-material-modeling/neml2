@@ -146,9 +146,7 @@ class ZenerElement(Model):
             "stress",
             actions_S,
             output=S,
-            structural_zeros=(
-                self._promoted_params["etaM"].input_name,
-            )
+            structural_zeros=(self._promoted_params["etaM"].input_name,)
             if "etaM" in self._promoted_params
             else (),
         )
@@ -157,9 +155,7 @@ class ZenerElement(Model):
             self._Ev_dot,
             actions_Ev_dot,
             output=Ev_dot,
-            structural_zeros=(
-                self._promoted_params["Einf"].input_name,
-            )
+            structural_zeros=(self._promoted_params["Einf"].input_name,)
             if "Einf" in self._promoted_params
             else (),
         )

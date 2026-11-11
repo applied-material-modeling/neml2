@@ -197,7 +197,8 @@ class BurgersElement(Model):
             S_actions,
             output=S,
             structural_zeros=tuple(
-                self._promoted_params[p].input_name for p in ("etaM", "EK", "etaK")
+                self._promoted_params[p].input_name
+                for p in ("etaM", "EK", "etaK")
                 if p in self._promoted_params
             ),
         )
@@ -207,7 +208,8 @@ class BurgersElement(Model):
             EvM_actions,
             output=EvM_dot,
             structural_zeros=tuple(
-                self._promoted_params[p].input_name for p in ("EK", "etaK")
+                self._promoted_params[p].input_name
+                for p in ("EK", "etaK")
                 if p in self._promoted_params
             ),
         )
@@ -216,9 +218,7 @@ class BurgersElement(Model):
             self._EK_rate,
             EK_actions,
             output=EK_dot,
-            structural_zeros=(
-                self._promoted_params["etaM"].input_name,
-            )
+            structural_zeros=(self._promoted_params["etaM"].input_name,)
             if "etaM" in self._promoted_params
             else (),
         )

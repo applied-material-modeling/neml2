@@ -349,10 +349,7 @@ def test_multi_output_models_allow_promoted_parameter_structural_zeros(model_typ
         else:
             assert value_type is SR2
             inputs.append(SR2(torch.zeros(6, dtype=torch.float64)))
-    v = {
-        name: {name: Scalar(torch.ones(1, dtype=torch.float64))}
-        for name in promoted_names
-    }
+    v = {name: {name: Scalar(torch.ones(1, dtype=torch.float64))} for name in promoted_names}
 
     result = model(*inputs, v=v)
     v_out = result[-1]

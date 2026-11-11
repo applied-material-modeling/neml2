@@ -202,7 +202,8 @@ class WiechertElement(Model):
             S_actions,
             output=S,
             structural_zeros=tuple(
-                self._promoted_params[p].input_name for p in ("eta1", "eta2")
+                self._promoted_params[p].input_name
+                for p in ("eta1", "eta2")
                 if p in self._promoted_params
             ),
         )
@@ -212,7 +213,8 @@ class WiechertElement(Model):
             Ev1_actions,
             output=Ev1_dot,
             structural_zeros=tuple(
-                self._promoted_params[p].input_name for p in ("Einf", "E2", "eta2")
+                self._promoted_params[p].input_name
+                for p in ("Einf", "E2", "eta2")
                 if p in self._promoted_params
             ),
         )
@@ -222,7 +224,8 @@ class WiechertElement(Model):
             Ev2_actions,
             output=Ev2_dot,
             structural_zeros=tuple(
-                self._promoted_params[p].input_name for p in ("Einf", "E1", "eta1")
+                self._promoted_params[p].input_name
+                for p in ("Einf", "E1", "eta1")
                 if p in self._promoted_params
             ),
         )
