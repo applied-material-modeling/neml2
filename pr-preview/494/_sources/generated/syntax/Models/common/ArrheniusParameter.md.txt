@@ -1,0 +1,36 @@
+(models-ArrheniusParameter)=
+# ArrheniusParameter
+
+**Source:** `models/common/ArrheniusParameter.py`
+
+Define the variable as a function of temperature according to the
+Arrhenius law $p = p_0 \exp \left( -\frac{Q}{RT} \right)$, where
+$p_0$ is the reference value, $Q$ is the activation energy,
+$R$ is the ideal gas constant, and $T$ is the temperature.
+
+## Inputs
+
+`temperature` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Temperature
+
+
+## Outputs
+
+`parameter` &mdash; `output` &middot; `Scalar`
+: The output parameter. If not specified, the object name will be used.
+
+
+## Parameters
+
+`reference_value` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Reference value
+
+`activation_energy` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Activation energy
+
+
+## Other options
+
+`ideal_gas_constant` &mdash; `float` &middot; **required**
+: The ideal gas constant
+

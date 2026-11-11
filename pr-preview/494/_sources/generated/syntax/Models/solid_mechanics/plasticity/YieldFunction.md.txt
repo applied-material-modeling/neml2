@@ -1,0 +1,31 @@
+(models-YieldFunction)=
+# YieldFunction
+
+**Source:** `models/solid_mechanics/plasticity/YieldFunction.py`
+
+Classical macroscale plasticity yield function,
+$f = \bar{\sigma} - \sigma_y - h$, where $\bar{\sigma}$ is the
+effective stress, $\sigma_y$ is the yield stress, and $h$ is the
+isotropic hardening (optional: omit the ``isotropic_hardening`` HIT option
+to drop the $- h$ term entirely).
+
+## Inputs
+
+`effective_stress` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Effective stress
+
+`isotropic_hardening` &mdash; `input` &middot; `Scalar`
+: Isotropic hardening
+
+
+## Outputs
+
+`yield_function` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Yield function
+
+
+## Parameters
+
+`yield_stress` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Yield stress
+

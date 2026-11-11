@@ -1,0 +1,15 @@
+(solvers-DenseLU)=
+# DenseLU
+
+**Source:** `solvers/dense_lu.py`
+
+Dense LU linear solver. Assembles the (possibly) sparse matrix into a
+dense one and uses a standard LU decomposition.
+
+The dense-vs-block-diagonal dispatch is implicit in the wrapped
+`Tensor` operand: ``Tensor.solve`` forwards to
+``torch.linalg.solve`` on the trailing matrix dims, so leading
+sub-batch axes (if any) batch naturally as independent LUs per site
+-- no special-case code at this layer.
+
+*This type has no documented options.*
