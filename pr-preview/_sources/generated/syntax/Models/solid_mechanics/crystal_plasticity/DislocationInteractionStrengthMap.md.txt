@@ -1,0 +1,65 @@
+(models-DislocationInteractionStrengthMap)=
+# DislocationInteractionStrengthMap
+
+**Source:** `models/solid_mechanics/crystal_plasticity/DislocationInteractionStrengthMap.py`
+
+Dislocation density to strength with a slip-system interaction matrix,
+
+$\tau_i = \tau_{const} + \alpha \mu b \sqrt{\sum_r h_{ir} \rho_r}$.
+
+This generalizes `DislocationObstacleStrengthMap` (which is the
+diagonal, self-hardening special case $h = I$) by letting the forest density
+seen by slip system $i$ be a weighted sum over all systems -- classical
+latent hardening, where dislocations on system $r$ obstruct system $i$
+through the interaction matrix $h_{ir}$.
+
+The interaction matrix ``interaction_matrix`` is a **parameter**: a
+`Scalar` carried on two sub-batch axes
+``(n_slip, n_slip)`` -- the same representation
+`SlipSystemElasticInteraction` uses for a slip-system matrix. As a
+parameter it is model-agnostic in how it is supplied (a ``[Tensors]``
+constant, a promoted/calibratable value, or another ``[Models]`` output such
+as a junction-category classifier) and general in ``n_slip``. With $h = I$
+the map reduces exactly to `DislocationObstacleStrengthMap`.
+
+The scalar coefficients ``constant_strength``, ``alpha``, ``mu`` and ``b``
+are shared across slip systems. All parameters are promotable/calibratable;
+for the interaction matrix, a chain-rule action is registered only when it is
+promoted (calibrated) -- when it is a static material property it carries no
+sensitivity, so no derivative is assembled for it.
+
+Non-negativity: the forest sum $\sum_r h_{ir}\rho_r$ must be $\ge 0$ for every
+system (the sqrt and its derivative $\propto 1/\sqrt{\cdot}$ are real only then).
+This holds automatically for $\rho \ge 0$ and a non-negative $h$ (e.g.
+$h = I + q(1-I)$ with $q \ge 0$); a general/calibrated $h$ must be constrained to
+keep it non-negative, else the value and gradient are NaN.
+
+## Inputs
+
+`dislocation_density` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Per-slip dislocation density
+
+
+## Outputs
+
+`slip_strengths` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Name of the slip system strengths
+
+
+## Parameters
+
+`constant_strength` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Constant strength offset
+
+`alpha` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Interaction coefficient
+
+`mu` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Shear modulus
+
+`b` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Burgers vector
+
+`interaction_matrix` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Slip-system interaction (latent-hardening) matrix, sub-batched over (n_slip, n_slip)
+

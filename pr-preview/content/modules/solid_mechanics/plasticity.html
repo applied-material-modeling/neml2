@@ -93,6 +93,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/taylor_polycrystal/main.html">A Taylor polycrystal: calibrating slip anisotropy with reorientation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../tensor_types/index.html">Tensor types</a><ul>
@@ -124,6 +125,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="crystal_plasticity/index.html">Crystal plasticity</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="crystal_plasticity/slip_anisotropy.html">Slip anisotropy: specifying the interaction matrix three ways</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="traction_separation_law.html">Traction–separation laws</a></li>
@@ -333,6 +335,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/Python.html">Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/SquareMatrix.html">SquareMatrix</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
@@ -560,9 +563,9 @@ power-law overstress relation,</p>
 <h3>Effective stress and yield function<a class="headerlink" href="#effective-stress-and-yield-function" title="Link to this heading">#</a></h3>
 <p>For classical <span class="math notranslate nohighlight">\(J_2\)</span> plasticity the effective stress is the von Mises norm of
 the deviatoric (over-)stress,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-94cd8ad1-5714-4ca5-a421-83ddf2b12fda">
-<div class="amsmath math notranslate nohighlight" id="equation-94cd8ad1-5714-4ca5-a421-83ddf2b12fda">
-<span class="eqno">(16)<a class="headerlink" href="#equation-94cd8ad1-5714-4ca5-a421-83ddf2b12fda" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-1faab92a-c7dc-4261-9810-93873c15e07f">
+<div class="amsmath math notranslate nohighlight" id="equation-1faab92a-c7dc-4261-9810-93873c15e07f">
+<span class="eqno">(16)<a class="headerlink" href="#equation-1faab92a-c7dc-4261-9810-93873c15e07f" title="Permalink to this equation">#</a></span>\[\begin{align}
   \bar{\sigma} &amp;= \sqrt{3 J_2},                                                \\
   J_2          &amp;= \tfrac{1}{2}\,\mathrm{dev}\,\boldsymbol{\Xi}\,:\,
                   \mathrm{dev}\,\boldsymbol{\Xi},                              \\
@@ -583,9 +586,9 @@ f^p = \bar{\sigma} - \sigma_y - k(\bar{\varepsilon}^p).
 <h3>Associative flow<a class="headerlink" href="#associative-flow" title="Link to this heading">#</a></h3>
 <p>Associative flow rules derive the rates of the plastic strain and internal
 variables from the maximum-dissipation principle,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-5659d7e0-b7e5-4b81-8610-69f8653e89b5">
-<div class="amsmath math notranslate nohighlight" id="equation-5659d7e0-b7e5-4b81-8610-69f8653e89b5">
-<span class="eqno">(17)<a class="headerlink" href="#equation-5659d7e0-b7e5-4b81-8610-69f8653e89b5" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-af66535f-11e8-4046-801a-d0b9c4fd3a93">
+<div class="amsmath math notranslate nohighlight" id="equation-af66535f-11e8-4046-801a-d0b9c4fd3a93">
+<span class="eqno">(17)<a class="headerlink" href="#equation-af66535f-11e8-4046-801a-d0b9c4fd3a93" title="Permalink to this equation">#</a></span>\[\begin{align}
   \dot{\boldsymbol{\varepsilon}}^p &amp;= \dot{\gamma}\,
         \frac{\partial f^p}{\partial \boldsymbol{\sigma}},                     \\
   \dot{\bar{\varepsilon}}^p        &amp;= -\dot{\gamma}\,
