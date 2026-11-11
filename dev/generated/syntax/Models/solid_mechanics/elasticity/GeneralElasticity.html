@@ -453,8 +453,9 @@ data-aria-dark="Switch to auto color mode">
 via Euler-Rodrigues. Mirrors C++ <code class="docutils literal notranslate"><span class="pre">GeneralElasticity</span></code> in
 <code class="docutils literal notranslate"><span class="pre">src/neml2/models/solid_mechanics/elasticity/GeneralElasticity.cxx</span></code>.
 <span class="math notranslate nohighlight">\(T\)</span> is a parameter (HIT option <code class="docutils literal notranslate"><span class="pre">elastic_stiffness_tensor</span></code>); declared
-promotion-capable to mirror the C++ <code class="docutils literal notranslate"><span class="pre">declare_parameter</span></code> flag, but Taylor
-uses it as a plain buffer.</p>
+promotion-capable, so it may be a literal buffer or wired to another
+model’s <code class="docutils literal notranslate"><span class="pre">SSR4</span></code> output (e.g. a temperature-dependent
+<code class="docutils literal notranslate"><span class="pre">CubicElasticityTensor</span></code>).</p>
 <p>Chain-rule actions cover <code class="docutils literal notranslate"><span class="pre">strain</span></code>, <code class="docutils literal notranslate"><span class="pre">orientation</span></code>, and the parameter
 <span class="math notranslate nohighlight">\(T\)</span> (the last only when promoted to a runtime input).</p>
 <section id="inputs">
