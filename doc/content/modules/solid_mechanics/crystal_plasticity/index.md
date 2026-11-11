@@ -131,7 +131,7 @@ and three more evolve the microstructural state those strengths read:
 
 - [](models-SubgrainCoarsening) — $\dot{\lambda} = \mu b^3 K / (k T \lambda)$, thermally driven subgrain growth.
 - [](models-SimplePrecipitateGrowth) — $\dot{R} = K / (3R^2)$ and $\dot{N} = -NK/R^3$, volume-conserving coarsening emitted as one leaf because both rates share $K$ and $R$.
-- [](models-SoluteDepletion) — $\dot{c} = K \left\langle c_0 - c \right\rangle^{1/3} (c - c_\text{eq})$, draining the matrix as precipitates form.
+- [](models-SoluteDepletion) — $\dot{c} = -K \left( \left\langle c_0 - c \right\rangle + \delta \right)^{1/3} (c - c_\text{eq})$, draining the matrix toward $c_\text{eq}$ as precipitates form; the seed $\delta > 0$ lets it start from $c = c_0$.
 
 Every coefficient on these leaves is a promotable parameter, so the usual
 temperature dependence comes from driving it with an [](models-ArrheniusParameter)
