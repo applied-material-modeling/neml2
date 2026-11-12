@@ -30,6 +30,7 @@ auto outputs = model.forward({{"strain", strain_tensor}});
 // (`neml2-compile -d OUT:IN`); they throw a FatalError if none were requested.
 // A batch-independent block (constant stiffness) is returned unbatched.
 auto [outs, J] = model.jacobian({{"strain", strain_tensor}});
+// derivative_forms() gives each pair's block layout (see the sub-batch reference).
 
 // Promoted parameters are mutable in place. Names are fully qualified: a bare
 // leaf is wrapped at compile time, so `--model elasticity` exposes `elasticity.E`.

@@ -76,8 +76,10 @@ struct SolverConfig
 };
 
 /// A variable-pair Jacobian: `J[out_name][in_name]` is the unflattened block
-/// `(*B, *out_base_shape, *in_base_shape)` (e.g. SR2->SR2 -> `(*B,6,6)`;
-/// Scalar->SR2 -> `(*B,6)`; R2->R2 -> `(*B,3,3,3,3)`). Outer keys are the
+/// `(*B, *out_base_shape, *in_base_shape)` for plain-batch variables (e.g.
+/// SR2->SR2 -> `(*B,6,6)`; Scalar->SR2 -> `(*B,6)`; R2->R2 -> `(*B,3,3,3,3)`);
+/// with sub-batched variables, the layout of its `Model::derivative_forms`
+/// entry. Outer keys are the
 /// `output_names()`, inner keys the `input_names()`. A constant (out, in) pair
 /// is present with an all-zero block.
 using VariablePairJacobian = std::map<std::string, std::map<std::string, at::Tensor>>;
@@ -183,6 +185,13 @@ public:
   /// Parallel to `input_names()`, same indices.
   const std::vector<std::vector<int64_t>> & input_sub_batch_shapes() const noexcept;
 
+  /// Block layout of each compiled derivative pair, keyed `[output][input]`:
+  /// `"plain"` (plain-batch input) `(*B, *out_sub, *out_base, *in_base)`; for a
+  /// sub-batched input, `"paired"` (site-local) `(*B, *sub, *out_base, *in_base)`
+  /// or `"full"` (sites coupled) `(*B, *out_sub, *out_base, *in_sub, *in_base)`.
+  const std::map<std::string, std::map<std::string, std::string>> &
+  derivative_forms() const noexcept;
+
   /// Per-output sub-batch shape, the output-side counterpart of
   /// `input_sub_batch_shapes()`. Parallel to `output_names()`, same indices;
   /// output `i` is returned at
@@ -218,10 +227,11 @@ public:
   forward(const std::map<std::string, at::Tensor> & inputs,
           const std::map<std::string, at::Tensor> & param_overrides = {}) const;
 
-  /// Evaluate + JVP. `tangents` shares its keys + `(*B, *in_base)` shapes with
-  /// `inputs`; a missing key defaults to zero. Returns `{outputs, jvp_outputs}`
-  /// -- both maps keyed by `output_names()`; `jvp_outputs[name]` is the
-  /// directional derivative at the output's natural `(*B, *out_base_shape)`.
+  /// Evaluate + JVP. `tangents` shares its keys + `(*B, *sub_batch, *in_base)`
+  /// shapes with `inputs`; a missing key defaults to zero. Returns
+  /// `{outputs, jvp_outputs}` -- both maps keyed by `output_names()`;
+  /// `jvp_outputs[name]` is the directional derivative at the output's
+  /// `(*B, *out_sub_batch, *out_base_shape)`.
   /// See `forward` for `param_overrides`.
   std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
   jvp(const std::map<std::string, at::Tensor> & inputs,
@@ -229,8 +239,8 @@ public:
       const std::map<std::string, at::Tensor> & param_overrides = {}) const;
 
   /// Evaluate + full Jacobian as unflattened variable-pair blocks. Returns
-  /// `{outputs, J}` where `J[out_name][in_name]` is `(*B, *out_base, *in_base)`
-  /// (see @ref VariablePairJacobian). Composed across forward segments and
+  /// `{outputs, J}` with `J[out_name][in_name]` laid out as its
+  /// `derivative_forms` entry (see @ref VariablePairJacobian). Composed across forward segments and
   /// threaded through IFT blocks for implicit segments. See `forward` for
   /// `param_overrides`.
   std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>

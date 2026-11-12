@@ -254,6 +254,23 @@ Model::output_sub_batch_shapes() const noexcept
   return _impl->output_sub_batch_shapes;
 }
 
+const std::map<std::string, std::map<std::string, std::string>> &
+Model::derivative_forms() const
+{
+  // The GIL serializes the first fill. A planning failure is never recoverable.
+  return guarded(
+      "derivative_forms",
+      [&]() -> const std::map<std::string, std::map<std::string, std::string>> &
+      {
+        if (!_impl->derivative_forms)
+          _impl->derivative_forms =
+              _impl->adapter.attr("derivative_forms")
+                  .cast<std::map<std::string, std::map<std::string, std::string>>>();
+        return *_impl->derivative_forms;
+      },
+      RecoverablePolicy::Deny);
+}
+
 // NOTE on tensor lifetime: the tensors returned by forward / jvp / jacobian
 // originate in Python (the native model's outputs) and are handed back as
 // at::Tensor across the boundary. The caller destroys them later in C++ without
@@ -290,7 +307,8 @@ Model::jvp(const std::map<std::string, at::Tensor> & inputs,
 }
 
 std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
-Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
+Model::jacobian(const std::map<std::string, at::Tensor> & inputs,
+                const std::vector<std::string> & derivatives) const
 {
   using Ret = std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>;
   return guarded("jacobian",
@@ -298,8 +316,11 @@ Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
                  {
                    // The adapter returns (outputs, J) -- a dict[str, Tensor] and
                    // the nested dict[str, dict[str, Tensor]] of variable-pair
-                   // blocks (*B, *out_base, *in_base).
-                   py::object out = _impl->adapter.attr("jacobian")(inputs);
+                   // blocks.
+                   py::object out = derivatives.empty()
+                                        ? _impl->adapter.attr("jacobian")(inputs)
+                                        : _impl->adapter.attr("jacobian")(
+                                              inputs, py::arg("derivatives") = derivatives);
                    return out.cast<Ret>();
                  });
 }

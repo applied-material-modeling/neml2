@@ -56,6 +56,7 @@ group order). Defaults to all ``"dense"`` when omitted.
 
 from __future__ import annotations
 
+from collections.abc import Collection
 from dataclasses import dataclass
 from math import prod
 from typing import Literal, TypeAlias
@@ -141,6 +142,22 @@ class AxisLayout:
         """Return a new layout with updated sub-batch shapes (frozen replacement)."""
         return AxisLayout(
             self.groups, self.specs, sub_batch_shapes, self.structure, self.group_common
+        )
+
+    def restricted(self, names: Collection[str]) -> AxisLayout:
+        """Layout over *names* only, in this layout's order; emptied groups drop out."""
+        keep = set(names)
+        kept = [
+            (tuple(n for n in group if n in keep), k)
+            for k, group in enumerate(self.groups)
+            if any(n in keep for n in group)
+        ]
+        return AxisLayout(
+            [list(group) for group, _ in kept],
+            {n: self.specs[n] for group, _ in kept for n in group},
+            {n: self.sub_batch_shapes[n] for group, _ in kept for n in group},
+            [self.structure[k] for _, k in kept],
+            [self.group_common[k] for _, k in kept],
         )
 
     def sub_layout(self, index: int) -> AxisLayout:
