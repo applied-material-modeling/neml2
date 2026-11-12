@@ -9,8 +9,9 @@ $R$ is the orientation matrix derived from the input ``orientation : MRP``
 via Euler-Rodrigues. Mirrors C++ ``GeneralElasticity`` in
 ``src/neml2/models/solid_mechanics/elasticity/GeneralElasticity.cxx``.
 $T$ is a parameter (HIT option ``elastic_stiffness_tensor``); declared
-promotion-capable to mirror the C++ ``declare_parameter`` flag, but Taylor
-uses it as a plain buffer.
+promotion-capable, so it may be a literal buffer or wired to another
+model's ``SSR4`` output (e.g. a temperature-dependent
+``CubicElasticityTensor``).
 
 Chain-rule actions cover ``strain``, ``orientation``, and the parameter
 $T$ (the last only when promoted to a runtime input).

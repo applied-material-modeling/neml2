@@ -609,8 +609,10 @@ inputs only; name the input to include it (<code class="docutils literal notrans
 </table>
 </div>
 <p>The form is structural: any derivative through an implicit solve is <code class="docutils literal notranslate"><span class="pre">full</span></code>.
-Compiled runtimes report it through <code class="docutils literal notranslate"><span class="pre">derivative_forms()</span></code>. The eager embed bridge
-(<code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>) takes <code class="docutils literal notranslate"><span class="pre">jvp</span></code> tangents for plain-batch inputs only.</p>
+Every C++ runtime reports it through <code class="docutils literal notranslate"><span class="pre">derivative_forms()</span></code>, so a host can size
+its storage before the first call; <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> reports every pair, a compiled
+artifact the pairs it was compiled with. The eager embed bridge (<code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>)
+takes <code class="docutils literal notranslate"><span class="pre">jvp</span></code> tangents for plain-batch inputs only.</p>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">tests/aoti/implicit_sub_batch_ift_reduce/model.i</span></code> solves for a four-site <code class="docutils literal notranslate"><span class="pre">x</span></code>,

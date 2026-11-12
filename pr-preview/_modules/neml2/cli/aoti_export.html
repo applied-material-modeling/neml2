@@ -4285,498 +4285,564 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="3854">    <span class="k">return</span> <span class="n">_master_output_sub_batch_shapes</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">seg_metas</span><span class="p">)</span>
 </span><span data-line="3855">
 </span><span data-line="3856">
-</span><span data-line="3857"><span class="k">def</span><span class="w"> </span><span class="nf">_master_pair_forms</span><span class="p">(</span>
-</span><span data-line="3858">    <span class="n">pairs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
-</span><span data-line="3859">    <span class="n">input_sub_batch_shapes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
-</span><span data-line="3860">    <span class="n">output_sub_batch_shapes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
-</span><span data-line="3861">    <span class="n">seg_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
-</span><span data-line="3862"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]:</span>
-</span><span data-line="3863"><span class="w">    </span><span class="sd">"""End-to-end block form of each master ``(out, in)`` pair.</span>
-</span><span data-line="3864">
-</span><span data-line="3865"><span class="sd">    A sub-batched input stays ``"paired"`` only through paired forward pairs; a</span>
-</span><span data-line="3866"><span class="sd">    solve or a ``"full"`` pair makes it ``"full"``. Unreached pairs follow</span>
-</span><span data-line="3867"><span class="sd">    :func:`~neml2.types._boundary.zero_pair_block_shape`.</span>
-</span><span data-line="3868"><span class="sd">    """</span>
-</span><span data-line="3869">    <span class="n">forms</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="3870">    <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
-</span><span data-line="3871">        <span class="n">in_sub</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">input_sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="3872">        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_sub</span><span class="p">:</span>
-</span><span data-line="3873">            <span class="n">forms</span><span class="p">[(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">"plain"</span>
-</span><span data-line="3874">            <span class="k">continue</span>
-</span><span data-line="3875">        <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="s2">"paired"</span><span class="p">}</span>
-</span><span data-line="3876">        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">seg_metas</span><span class="p">:</span>
-</span><span data-line="3877">            <span class="n">reached</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="3878">            <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"kind"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"implicit"</span><span class="p">:</span>
-</span><span data-line="3879">                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">gv</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">state</span> <span class="k">for</span> <span class="n">gv</span> <span class="ow">in</span> <span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"givens"</span><span class="p">,</span> <span class="p">[])):</span>
-</span><span data-line="3880">                    <span class="k">for</span> <span class="n">uv</span> <span class="ow">in</span> <span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"unknowns"</span><span class="p">,</span> <span class="p">[]):</span>
-</span><span data-line="3881">                        <span class="n">reached</span><span class="p">[</span><span class="n">uv</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]]</span> <span class="o">=</span> <span class="s2">"full"</span>
-</span><span data-line="3882">            <span class="k">else</span><span class="p">:</span>
-</span><span data-line="3883">                <span class="k">for</span> <span class="n">pr</span> <span class="ow">in</span> <span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"jacobian_pairs"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]:</span>
-</span><span data-line="3884">                    <span class="n">src</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pr</span><span class="p">[</span><span class="s2">"in_var"</span><span class="p">])</span>
-</span><span data-line="3885">                    <span class="k">if</span> <span class="n">src</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="3886">                        <span class="k">continue</span>
-</span><span data-line="3887">                    <span class="n">f</span> <span class="o">=</span> <span class="s2">"paired"</span> <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="s2">"paired"</span> <span class="ow">and</span> <span class="n">pr</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"form"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"paired"</span> <span class="k">else</span> <span class="s2">"full"</span>
-</span><span data-line="3888">                    <span class="k">if</span> <span class="n">reached</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pr</span><span class="p">[</span><span class="s2">"out_var"</span><span class="p">])</span> <span class="o">!=</span> <span class="s2">"full"</span><span class="p">:</span>
-</span><span data-line="3889">                        <span class="n">reached</span><span class="p">[</span><span class="n">pr</span><span class="p">[</span><span class="s2">"out_var"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">f</span>
-</span><span data-line="3890">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">reached</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="3891">                <span class="n">state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"full"</span> <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"full"</span> <span class="k">else</span> <span class="n">f</span>
-</span><span data-line="3892">        <span class="k">if</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">state</span> <span class="ow">and</span> <span class="n">o</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span>
-</span><span data-line="3893">            <span class="n">forms</span><span class="p">[(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">o</span><span class="p">]</span>
-</span><span data-line="3894">        <span class="k">else</span><span class="p">:</span>
-</span><span data-line="3895">            <span class="n">out_sub</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">output_sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="3896">            <span class="n">forms</span><span class="p">[(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">"paired"</span> <span class="k">if</span> <span class="n">out_sub</span> <span class="o">==</span> <span class="n">in_sub</span> <span class="k">else</span> <span class="s2">"full"</span>
-</span><span data-line="3897">    <span class="k">return</span> <span class="n">forms</span>
-</span><span data-line="3898">
-</span><span data-line="3899">
-</span><span data-line="3900"><span class="k">def</span><span class="w"> </span><span class="nf">_build_meta</span><span class="p">(</span>
-</span><span data-line="3901">    <span class="n">prepared</span><span class="p">:</span> <span class="n">_PreparedExport</span><span class="p">,</span>
-</span><span data-line="3902">    <span class="n">seg_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
-</span><span data-line="3903"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span data-line="3904"><span class="w">    </span><span class="sd">"""Assemble the shared, device/dtype-independent ``metadata.json`` envelope.</span>
-</span><span data-line="3905">
-</span><span data-line="3906"><span class="sd">    One metadata file backs every ``&lt;device&gt;/&lt;dtype&gt;/`` artifact, so no</span>
-</span><span data-line="3907"><span class="sd">    device/dtype (nor per-parameter device) is recorded -- the loader derives them</span>
-</span><span data-line="3908"><span class="sd">    from the folder path. Promoted-parameter ``values`` are stored dtype-neutral</span>
-</span><span data-line="3909"><span class="sd">    (float64) and materialized on the leaf at load. Solver config (implicit models)</span>
-</span><span data-line="3910"><span class="sd">    rides along so the C++ runtime is configured without a stub ``[Solvers]`` block.</span>
-</span><span data-line="3911"><span class="sd">    The envelope is fully device-independent, so the multi-device path can build it</span>
-</span><span data-line="3912"><span class="sd">    once from a single cpu-side *prepared*.</span>
-</span><span data-line="3913"><span class="sd">    """</span>
-</span><span data-line="3914">    <span class="n">model</span> <span class="o">=</span> <span class="n">prepared</span><span class="o">.</span><span class="n">model</span>
-</span><span data-line="3915">    <span class="n">structural_in</span> <span class="o">=</span> <span class="n">_structural_inputs</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">prepared</span><span class="o">.</span><span class="n">promoted_qnames</span><span class="p">)</span>
-</span><span data-line="3916">    <span class="n">in_sb</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">sub</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">sub</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">resolved_shapes</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">sub</span><span class="p">}</span>
-</span><span data-line="3917">    <span class="n">out_sb</span> <span class="o">=</span> <span class="n">_master_output_sub_batch_shapes</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">seg_metas</span><span class="p">)</span>
-</span><span data-line="3918">    <span class="n">meta</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="3919">        <span class="s2">"schema_version"</span><span class="p">:</span> <span class="n">AOTI_META_SCHEMA_VERSION</span><span class="p">,</span>
-</span><span data-line="3920">        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"composed"</span><span class="p">,</span>
-</span><span data-line="3921">        <span class="s2">"inputs"</span><span class="p">:</span> <span class="n">_var_infos</span><span class="p">(</span><span class="n">structural_in</span><span class="p">,</span> <span class="n">sub_batch_shapes</span><span class="o">=</span><span class="n">in_sb</span><span class="p">),</span>
-</span><span data-line="3922">        <span class="s2">"outputs"</span><span class="p">:</span> <span class="n">_var_infos</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">sub_batch_shapes</span><span class="o">=</span><span class="n">out_sb</span><span class="p">),</span>
-</span><span data-line="3923">        <span class="s2">"segments"</span><span class="p">:</span> <span class="n">seg_metas</span><span class="p">,</span>
-</span><span data-line="3924">    <span class="p">}</span>
-</span><span data-line="3925">    <span class="n">meta</span><span class="p">[</span><span class="s2">"parameters"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_parameter_infos</span><span class="p">(</span>
-</span><span data-line="3926">        <span class="n">prepared</span><span class="o">.</span><span class="n">promoted_snapshots</span><span class="p">,</span> <span class="n">prepared</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">prepared</span><span class="o">.</span><span class="n">promoted_base_shapes</span>
-</span><span data-line="3927">    <span class="p">)</span>
-</span><span data-line="3928">    <span class="c1"># Master (out, in) derivative pairs, in deterministic (output, input) order.</span>
-</span><span data-line="3929">    <span class="n">out_order</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">)}</span>
-</span><span data-line="3930">    <span class="n">in_order</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">structural_input_names</span><span class="p">)}</span>
-</span><span data-line="3931">    <span class="n">ordered_pairs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
-</span><span data-line="3932">        <span class="n">prepared</span><span class="o">.</span><span class="n">master_pairs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="p">(</span><span class="n">out_order</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">in_order</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
-</span><span data-line="3933">    <span class="p">)</span>
-</span><span data-line="3934">    <span class="n">meta</span><span class="p">[</span><span class="s2">"derivatives"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="ow">in</span> <span class="n">ordered_pairs</span><span class="p">]</span>
-</span><span data-line="3935">    <span class="c1"># End-to-end block form of each pair, aligned with "derivatives".</span>
-</span><span data-line="3936">    <span class="n">forms</span> <span class="o">=</span> <span class="n">_master_pair_forms</span><span class="p">(</span><span class="n">ordered_pairs</span><span class="p">,</span> <span class="n">in_sb</span><span class="p">,</span> <span class="n">out_sb</span><span class="p">,</span> <span class="n">seg_metas</span><span class="p">)</span>
-</span><span data-line="3937">    <span class="n">meta</span><span class="p">[</span><span class="s2">"derivative_forms"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">forms</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ordered_pairs</span><span class="p">]</span>
-</span><span data-line="3938">    <span class="c1"># Master (out, param) parameter-derivative pairs, in (output, param) order.</span>
-</span><span data-line="3939">    <span class="n">meta</span><span class="p">[</span><span class="s2">"parameter_derivatives"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="3940">        <span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span>
-</span><span data-line="3941">        <span class="k">for</span> <span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">param_pairs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">out_order</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-</span><span data-line="3942">    <span class="p">]</span>
-</span><span data-line="3943">    <span class="c1"># Boundary renames (shallow): only namespaces with an actual rename are written.</span>
-</span><span data-line="3944">    <span class="n">active_aliases</span> <span class="o">=</span> <span class="p">{</span><span class="n">ns</span><span class="p">:</span> <span class="n">m</span> <span class="k">for</span> <span class="n">ns</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">prepared</span><span class="o">.</span><span class="n">boundary_aliases</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">m</span><span class="p">}</span>
-</span><span data-line="3945">    <span class="k">if</span> <span class="n">active_aliases</span><span class="p">:</span>
-</span><span data-line="3946">        <span class="n">meta</span><span class="p">[</span><span class="s2">"boundary_aliases"</span><span class="p">]</span> <span class="o">=</span> <span class="n">active_aliases</span>
-</span><span data-line="3947">    <span class="c1"># Solver config (implicit models only) -- single source of truth for the</span>
-</span><span data-line="3948">    <span class="c1"># Python-free C++ runtime. See _extract_solver_config.</span>
-</span><span data-line="3949">    <span class="n">solver_config</span> <span class="o">=</span> <span class="n">_extract_solver_config</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-</span><span data-line="3950">    <span class="k">if</span> <span class="n">solver_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="3951">        <span class="n">meta</span><span class="p">[</span><span class="s2">"solver_config"</span><span class="p">]</span> <span class="o">=</span> <span class="n">solver_config</span>
-</span><span data-line="3952">    <span class="k">return</span> <span class="n">meta</span>
-</span><span data-line="3953">
-</span><span data-line="3954">
-</span><span data-line="3955"><span class="k">def</span><span class="w"> </span><span class="nf">_compile_grid_worker</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
-</span><span data-line="3956"><span class="w">    </span><span class="sd">"""Worker for the multi-device grid: compile ONE ``(device, segment)`` cell.</span>
-</span><span data-line="3957">
-</span><span data-line="3958"><span class="sd">    Like :func:`_compile_segment_worker` but keyed by device -- it writes to that</span>
-</span><span data-line="3959"><span class="sd">    device's artifact subfolder and tags its progress events with the device so</span>
-</span><span data-line="3960"><span class="sd">    the parent can distinguish the same segment across devices. Everything in</span>
-</span><span data-line="3961"><span class="sd">    *args* is picklable; the worker re-derives its segment from the input file.</span>
-</span><span data-line="3962"><span class="sd">    """</span>
-</span><span data-line="3963">    <span class="n">hit_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">export_opts</span><span class="p">,</span> <span class="n">seg_index</span> <span class="o">=</span> <span class="n">args</span>
-</span><span data-line="3964">    <span class="n">export_opts</span> <span class="o">=</span> <span class="n">_prepare_opts_in_worker</span><span class="p">(</span><span class="n">export_opts</span><span class="p">)</span>
-</span><span data-line="3965">    <span class="n">prepared</span> <span class="o">=</span> <span class="n">_prepare_export</span><span class="p">(</span><span class="n">hit_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="o">**</span><span class="n">export_opts</span><span class="p">)</span>
-</span><span data-line="3966">    <span class="n">plans</span> <span class="o">=</span> <span class="n">_plan_segments</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
-</span><span data-line="3967">    <span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="p">[</span><span class="n">seg_index</span><span class="p">]</span>
-</span><span data-line="3968">    <span class="n">queue</span> <span class="o">=</span> <span class="n">_worker_progress_queue</span>
-</span><span data-line="3969">    <span class="n">cb</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">))</span> <span class="k">if</span> <span class="n">queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
-</span><span data-line="3970">    <span class="n">seg_meta</span> <span class="o">=</span> <span class="n">_execute_segment_plan</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">prepared</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_dir</span><span class="p">),</span> <span class="n">device</span><span class="p">,</span> <span class="n">progress_cb</span><span class="o">=</span><span class="n">cb</span><span class="p">)</span>
-</span><span data-line="3971">    <span class="k">return</span> <span class="n">device</span><span class="p">,</span> <span class="n">seg_index</span><span class="p">,</span> <span class="n">seg_meta</span>
-</span><span data-line="3972">
-</span><span data-line="3973">
-</span><span data-line="3974"><span class="k">def</span><span class="w"> </span><span class="nf">_run_grid_pool</span><span class="p">(</span>
-</span><span data-line="3975">    <span class="n">hit_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
-</span><span data-line="3976">    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="3977">    <span class="n">artifact_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
-</span><span data-line="3978">    <span class="n">devices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-</span><span data-line="3979">    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="3980">    <span class="n">n_segments</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-</span><span data-line="3981">    <span class="n">export_opts</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-</span><span data-line="3982">    <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-</span><span data-line="3983">    <span class="n">progress_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="3984"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]:</span>
-</span><span data-line="3985"><span class="w">    </span><span class="sd">"""Compile the full ``(device × segment)`` grid concurrently in a spawn pool.</span>
-</span><span data-line="3986">
-</span><span data-line="3987"><span class="sd">    Up to ``min(jobs, len(devices) * n_segments)`` workers run at once, so the two</span>
-</span><span data-line="3988"><span class="sd">    parallelism axes (devices and segments) are flattened into one pool -- e.g.</span>
-</span><span data-line="3989"><span class="sd">    two devices with two segments each fully use ``-j 4``. Returns</span>
-</span><span data-line="3990"><span class="sd">    ``{device: [seg_meta in segment order]}``; per-``.pt2`` progress (device-tagged)</span>
-</span><span data-line="3991"><span class="sd">    is forwarded to *progress_cb* by a drainer thread.</span>
-</span><span data-line="3992"><span class="sd">    """</span>
-</span><span data-line="3993">    <span class="kn">import</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cf</span>
-</span><span data-line="3994">    <span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
-</span><span data-line="3995">    <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
-</span><span data-line="3996">
-</span><span data-line="3997">    <span class="n">ctx</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="s2">"spawn"</span><span class="p">)</span>
-</span><span data-line="3998">    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[(</span><span class="n">device</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)]</span>
-</span><span data-line="3999">    <span class="n">workers</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">jobs</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)))</span>
-</span><span data-line="4000">
-</span><span data-line="4001">    <span class="n">manager</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="4002">    <span class="n">queue</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="4003">    <span class="n">drainer</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="4004">    <span class="n">initializer</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="4005">    <span class="n">initargs</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="4006">    <span class="k">if</span> <span class="n">progress_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="4007">        <span class="n">manager</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">Manager</span><span class="p">()</span>
-</span><span data-line="4008">        <span class="n">queue</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
-</span><span data-line="4009">        <span class="n">initializer</span> <span class="o">=</span> <span class="n">_worker_init</span>
-</span><span data-line="4010">        <span class="n">initargs</span> <span class="o">=</span> <span class="p">(</span><span class="n">queue</span><span class="p">,)</span>
-</span><span data-line="4011">
-</span><span data-line="4012">        <span class="k">def</span><span class="w"> </span><span class="nf">_drain</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="4013">            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-</span><span data-line="4014">                <span class="n">item</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-</span><span data-line="4015">                <span class="k">if</span> <span class="n">item</span> <span class="o">==</span> <span class="n">_PROGRESS_SENTINEL</span><span class="p">:</span>
-</span><span data-line="4016">                    <span class="k">break</span>
-</span><span data-line="4017">                <span class="n">progress_cb</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-</span><span data-line="4018">
-</span><span data-line="4019">        <span class="n">drainer</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_drain</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span data-line="4020">        <span class="n">drainer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span data-line="4021">
-</span><span data-line="4022">    <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="4023">    <span class="n">hit_s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">hit_path</span><span class="p">)</span>
-</span><span data-line="4024">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="4025">        <span class="k">with</span> <span class="n">cf</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span><span class="p">(</span>
-</span><span data-line="4026">            <span class="n">max_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span> <span class="n">mp_context</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">initializer</span><span class="p">,</span> <span class="n">initargs</span><span class="o">=</span><span class="n">initargs</span>
-</span><span data-line="4027">        <span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-</span><span data-line="4028">            <span class="n">futs</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="4029">            <span class="k">for</span> <span class="n">device</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
-</span><span data-line="4030">                <span class="n">out_s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">artifact_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">device</span> <span class="o">/</span> <span class="n">dtype</span><span class="p">)</span>
-</span><span data-line="4031">                <span class="n">futs</span><span class="p">[</span>
-</span><span data-line="4032">                    <span class="n">ex</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
-</span><span data-line="4033">                        <span class="n">_compile_grid_worker</span><span class="p">,</span>
-</span><span data-line="4034">                        <span class="p">(</span><span class="n">hit_s</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">out_s</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">export_opts</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span>
-</span><span data-line="4035">                    <span class="p">)</span>
-</span><span data-line="4036">                <span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-</span><span data-line="4037">            <span class="k">for</span> <span class="n">fut</span> <span class="ow">in</span> <span class="n">cf</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">futs</span><span class="p">):</span>
-</span><span data-line="4038">                <span class="n">device</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="n">futs</span><span class="p">[</span><span class="n">fut</span><span class="p">]</span>
-</span><span data-line="4039">                <span class="k">try</span><span class="p">:</span>
-</span><span data-line="4040">                    <span class="n">d</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">seg_meta</span> <span class="o">=</span> <span class="n">fut</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
-</span><span data-line="4041">                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># noqa: BLE001</span>
-</span><span data-line="4042">                    <span class="n">ex</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">cancel_futures</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span data-line="4043">                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span data-line="4044">                        <span class="sa">f</span><span class="s2">"neml2-compile: segment </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> on device </span><span class="si">{</span><span class="n">device</span><span class="si">!r}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span>
-</span><span data-line="4045">                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-</span><span data-line="4046">                <span class="n">results</span><span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">idx</span><span class="p">)]</span> <span class="o">=</span> <span class="n">seg_meta</span>
-</span><span data-line="4047">    <span class="k">finally</span><span class="p">:</span>
-</span><span data-line="4048">        <span class="k">if</span> <span class="n">queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="4049">            <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">_PROGRESS_SENTINEL</span><span class="p">)</span>
-</span><span data-line="4050">        <span class="k">if</span> <span class="n">drainer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="4051">            <span class="n">drainer</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
-</span><span data-line="4052">        <span class="k">if</span> <span class="n">manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="4053">            <span class="n">manager</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
-</span><span data-line="4054">
-</span><span data-line="4055">    <span class="k">return</span> <span class="p">{</span><span class="n">device</span><span class="p">:</span> <span class="p">[</span><span class="n">results</span><span class="p">[(</span><span class="n">device</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)]</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">}</span>
-</span><span data-line="4056">
-</span><span data-line="4057">
-</span><span data-line="4058"><span class="c1"># ---------------------------------------------------------------------------</span>
-</span><span data-line="4059"><span class="c1"># Public API</span>
-</span><span data-line="4060"><span class="c1"># ---------------------------------------------------------------------------</span>
-</span><span data-line="4061">
+</span><span data-line="3857"><span class="k">def</span><span class="w"> </span><span class="nf">plan_derivative_forms</span><span class="p">(</span>
+</span><span data-line="3858">    <span class="n">hit_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="3859">    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="3860">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="3861">    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
+</span><span data-line="3862">    <span class="n">example_batch_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="3863"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+</span><span data-line="3864"><span class="w">    </span><span class="sd">"""Block form of every ``(output, input)`` pair a compile would record, without compiling.</span>
+</span><span data-line="3865">
+</span><span data-line="3866"><span class="sd">    Same plan as :func:`plan_output_sub_batch_shapes`. Each forward segment runs</span>
+</span><span data-line="3867"><span class="sd">    the :class:`_ForwardJacobianModule` probe ``neml2-compile`` reads its pair</span>
+</span><span data-line="3868"><span class="sd">    forms from, with every sub-batched input seeded per site; a pair through a</span>
+</span><span data-line="3869"><span class="sd">    solve is ``"full"`` (:func:`_master_pair_forms`). Keyed ``[output][input]``</span>
+</span><span data-line="3870"><span class="sd">    over all structural inputs, sub-batched ones included.</span>
+</span><span data-line="3871"><span class="sd">    """</span>
+</span><span data-line="3872">    <span class="n">prepared</span> <span class="o">=</span> <span class="n">_prepare_export</span><span class="p">(</span>
+</span><span data-line="3873">        <span class="n">hit_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">example_batch_shape</span><span class="o">=</span><span class="n">example_batch_shape</span>
+</span><span data-line="3874">    <span class="p">)</span>
+</span><span data-line="3875">    <span class="n">shapes</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="3876">        <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">DEFAULT_EXAMPLE_SHAPE</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sub</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">_dyn</span><span class="p">,</span> <span class="n">sub</span><span class="p">)</span> <span class="ow">in</span> <span class="n">prepared</span><span class="o">.</span><span class="n">resolved_shapes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+</span><span data-line="3877">    <span class="p">}</span>
+</span><span data-line="3878">    <span class="n">seg_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="3879">    <span class="k">for</span> <span class="n">plan</span> <span class="ow">in</span> <span class="n">_plan_segments</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">model_name</span><span class="p">):</span>
+</span><span data-line="3880">        <span class="k">if</span> <span class="n">plan</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"forward"</span><span class="p">:</span>
+</span><span data-line="3881">            <span class="n">exportable</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"Model"</span><span class="p">,</span> <span class="n">plan</span><span class="o">.</span><span class="n">seg_model</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="3882">            <span class="n">example_inputs</span> <span class="o">=</span> <span class="n">_build_example_inputs</span><span class="p">(</span>
+</span><span data-line="3883">                <span class="n">exportable</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="nb">set</span><span class="p">(),</span> <span class="p">{},</span> <span class="n">device</span><span class="p">,</span> <span class="n">shapes</span><span class="o">=</span><span class="n">shapes</span>
+</span><span data-line="3884">            <span class="p">)</span>
+</span><span data-line="3885">            <span class="n">jvp_module</span> <span class="o">=</span> <span class="n">_ForwardJacobianModule</span><span class="p">(</span><span class="n">exportable</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="3886">            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span><span data-line="3887">                <span class="n">probe</span> <span class="o">=</span> <span class="n">jvp_module</span><span class="p">(</span><span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>
+</span><span data-line="3888">            <span class="n">n_outs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">jvp_module</span><span class="o">.</span><span class="n">output_names</span><span class="p">)</span>
+</span><span data-line="3889">            <span class="n">names</span> <span class="o">=</span> <span class="p">[(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">jvp_module</span><span class="o">.</span><span class="n">output_names</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">jvp_module</span><span class="o">.</span><span class="n">input_names</span><span class="p">]</span>
+</span><span data-line="3890">            <span class="n">seg_metas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+</span><span data-line="3891">                <span class="p">{</span>
+</span><span data-line="3892">                    <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"forward"</span><span class="p">,</span>
+</span><span data-line="3893">                    <span class="s2">"output_sub_batch_shapes"</span><span class="p">:</span> <span class="n">_output_sub_batch_shapes</span><span class="p">(</span>
+</span><span data-line="3894">                        <span class="n">exportable</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">probe</span><span class="p">[:</span><span class="n">n_outs</span><span class="p">]</span>
+</span><span data-line="3895">                    <span class="p">),</span>
+</span><span data-line="3896">                    <span class="s2">"jacobian_pairs"</span><span class="p">:</span> <span class="p">[</span>
+</span><span data-line="3897">                        <span class="p">{</span><span class="s2">"out_var"</span><span class="p">:</span> <span class="n">o</span><span class="p">,</span> <span class="s2">"in_var"</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s2">"form"</span><span class="p">:</span> <span class="n">f</span><span class="p">}</span>
+</span><span data-line="3898">                        <span class="k">for</span> <span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">jvp_module</span><span class="o">.</span><span class="n">pair_forms</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="3899">                    <span class="p">],</span>
+</span><span data-line="3900">                <span class="p">}</span>
+</span><span data-line="3901">            <span class="p">)</span>
+</span><span data-line="3902">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="3903">            <span class="n">impl</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"ImplicitUpdate"</span><span class="p">,</span> <span class="n">plan</span><span class="o">.</span><span class="n">impl_model</span><span class="p">)</span>
+</span><span data-line="3904">            <span class="n">system</span> <span class="o">=</span> <span class="n">impl</span><span class="o">.</span><span class="n">system</span>
+</span><span data-line="3905">            <span class="c1"># The flat givens a compile records, phantom ``X~1`` included.</span>
+</span><span data-line="3906">            <span class="n">givens</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">system</span><span class="o">.</span><span class="n">given_names</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">~1"</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">impl</span><span class="o">.</span><span class="n">incremental_variables</span><span class="p">)]</span>
+</span><span data-line="3907">            <span class="n">seg_metas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+</span><span data-line="3908">                <span class="p">{</span>
+</span><span data-line="3909">                    <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"implicit"</span><span class="p">,</span>
+</span><span data-line="3910">                    <span class="s2">"unknown_group_infos"</span><span class="p">:</span> <span class="n">_enumerate_group_infos</span><span class="p">(</span><span class="n">system</span><span class="p">)[</span><span class="s2">"unknown_group_infos"</span><span class="p">],</span>
+</span><span data-line="3911">                    <span class="s2">"unknowns"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"name"</span><span class="p">:</span> <span class="n">n</span><span class="p">}</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">system</span><span class="o">.</span><span class="n">unknown_names</span><span class="p">],</span>
+</span><span data-line="3912">                    <span class="s2">"givens"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"name"</span><span class="p">:</span> <span class="n">n</span><span class="p">}</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">givens</span><span class="p">],</span>
+</span><span data-line="3913">                <span class="p">}</span>
+</span><span data-line="3914">            <span class="p">)</span>
+</span><span data-line="3915">    <span class="n">outputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">)</span>
+</span><span data-line="3916">    <span class="n">inputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">structural_input_names</span><span class="p">)</span>
+</span><span data-line="3917">    <span class="n">in_sb</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">sub</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">sub</span><span class="p">)</span> <span class="ow">in</span> <span class="n">prepared</span><span class="o">.</span><span class="n">resolved_shapes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">sub</span><span class="p">}</span>
+</span><span data-line="3918">    <span class="n">out_sb</span> <span class="o">=</span> <span class="n">_master_output_sub_batch_shapes</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">seg_metas</span><span class="p">)</span>
+</span><span data-line="3919">    <span class="n">forms</span> <span class="o">=</span> <span class="n">_master_pair_forms</span><span class="p">([(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">outputs</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">],</span> <span class="n">in_sb</span><span class="p">,</span> <span class="n">out_sb</span><span class="p">,</span> <span class="n">seg_metas</span><span class="p">)</span>
+</span><span data-line="3920">    <span class="k">return</span> <span class="p">{</span><span class="n">o</span><span class="p">:</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">forms</span><span class="p">[(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">}</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">}</span>
+</span><span data-line="3921">
+</span><span data-line="3922">
+</span><span data-line="3923"><span class="k">def</span><span class="w"> </span><span class="nf">_master_pair_forms</span><span class="p">(</span>
+</span><span data-line="3924">    <span class="n">pairs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+</span><span data-line="3925">    <span class="n">input_sub_batch_shapes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+</span><span data-line="3926">    <span class="n">output_sub_batch_shapes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+</span><span data-line="3927">    <span class="n">seg_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+</span><span data-line="3928"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]:</span>
+</span><span data-line="3929"><span class="w">    </span><span class="sd">"""End-to-end block form of each master ``(out, in)`` pair.</span>
+</span><span data-line="3930">
+</span><span data-line="3931"><span class="sd">    A sub-batched input stays ``"paired"`` only through paired forward pairs; a</span>
+</span><span data-line="3932"><span class="sd">    solve or a ``"full"`` pair makes it ``"full"``. Unreached pairs follow</span>
+</span><span data-line="3933"><span class="sd">    :func:`~neml2.types._boundary.zero_pair_block_shape`.</span>
+</span><span data-line="3934"><span class="sd">    """</span>
+</span><span data-line="3935">    <span class="n">forms</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="3936">    <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+</span><span data-line="3937">        <span class="n">in_sub</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">input_sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="3938">        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_sub</span><span class="p">:</span>
+</span><span data-line="3939">            <span class="n">forms</span><span class="p">[(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">"plain"</span>
+</span><span data-line="3940">            <span class="k">continue</span>
+</span><span data-line="3941">        <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="s2">"paired"</span><span class="p">}</span>
+</span><span data-line="3942">        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">seg_metas</span><span class="p">:</span>
+</span><span data-line="3943">            <span class="n">reached</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="3944">            <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"kind"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"implicit"</span><span class="p">:</span>
+</span><span data-line="3945">                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">gv</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">state</span> <span class="k">for</span> <span class="n">gv</span> <span class="ow">in</span> <span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"givens"</span><span class="p">,</span> <span class="p">[])):</span>
+</span><span data-line="3946">                    <span class="k">for</span> <span class="n">uv</span> <span class="ow">in</span> <span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"unknowns"</span><span class="p">,</span> <span class="p">[]):</span>
+</span><span data-line="3947">                        <span class="n">reached</span><span class="p">[</span><span class="n">uv</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]]</span> <span class="o">=</span> <span class="s2">"full"</span>
+</span><span data-line="3948">            <span class="k">else</span><span class="p">:</span>
+</span><span data-line="3949">                <span class="k">for</span> <span class="n">pr</span> <span class="ow">in</span> <span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"jacobian_pairs"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]:</span>
+</span><span data-line="3950">                    <span class="n">src</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pr</span><span class="p">[</span><span class="s2">"in_var"</span><span class="p">])</span>
+</span><span data-line="3951">                    <span class="k">if</span> <span class="n">src</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="3952">                        <span class="k">continue</span>
+</span><span data-line="3953">                    <span class="n">f</span> <span class="o">=</span> <span class="s2">"paired"</span> <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="s2">"paired"</span> <span class="ow">and</span> <span class="n">pr</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"form"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"paired"</span> <span class="k">else</span> <span class="s2">"full"</span>
+</span><span data-line="3954">                    <span class="k">if</span> <span class="n">reached</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pr</span><span class="p">[</span><span class="s2">"out_var"</span><span class="p">])</span> <span class="o">!=</span> <span class="s2">"full"</span><span class="p">:</span>
+</span><span data-line="3955">                        <span class="n">reached</span><span class="p">[</span><span class="n">pr</span><span class="p">[</span><span class="s2">"out_var"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">f</span>
+</span><span data-line="3956">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">reached</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="3957">                <span class="n">state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"full"</span> <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"full"</span> <span class="k">else</span> <span class="n">f</span>
+</span><span data-line="3958">        <span class="k">if</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">state</span> <span class="ow">and</span> <span class="n">o</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span>
+</span><span data-line="3959">            <span class="n">forms</span><span class="p">[(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">o</span><span class="p">]</span>
+</span><span data-line="3960">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="3961">            <span class="n">out_sub</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">output_sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="3962">            <span class="n">forms</span><span class="p">[(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">"paired"</span> <span class="k">if</span> <span class="n">out_sub</span> <span class="o">==</span> <span class="n">in_sub</span> <span class="k">else</span> <span class="s2">"full"</span>
+</span><span data-line="3963">    <span class="k">return</span> <span class="n">forms</span>
+</span><span data-line="3964">
+</span><span data-line="3965">
+</span><span data-line="3966"><span class="k">def</span><span class="w"> </span><span class="nf">_build_meta</span><span class="p">(</span>
+</span><span data-line="3967">    <span class="n">prepared</span><span class="p">:</span> <span class="n">_PreparedExport</span><span class="p">,</span>
+</span><span data-line="3968">    <span class="n">seg_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+</span><span data-line="3969"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span data-line="3970"><span class="w">    </span><span class="sd">"""Assemble the shared, device/dtype-independent ``metadata.json`` envelope.</span>
+</span><span data-line="3971">
+</span><span data-line="3972"><span class="sd">    One metadata file backs every ``&lt;device&gt;/&lt;dtype&gt;/`` artifact, so no</span>
+</span><span data-line="3973"><span class="sd">    device/dtype (nor per-parameter device) is recorded -- the loader derives them</span>
+</span><span data-line="3974"><span class="sd">    from the folder path. Promoted-parameter ``values`` are stored dtype-neutral</span>
+</span><span data-line="3975"><span class="sd">    (float64) and materialized on the leaf at load. Solver config (implicit models)</span>
+</span><span data-line="3976"><span class="sd">    rides along so the C++ runtime is configured without a stub ``[Solvers]`` block.</span>
+</span><span data-line="3977"><span class="sd">    The envelope is fully device-independent, so the multi-device path can build it</span>
+</span><span data-line="3978"><span class="sd">    once from a single cpu-side *prepared*.</span>
+</span><span data-line="3979"><span class="sd">    """</span>
+</span><span data-line="3980">    <span class="n">model</span> <span class="o">=</span> <span class="n">prepared</span><span class="o">.</span><span class="n">model</span>
+</span><span data-line="3981">    <span class="n">structural_in</span> <span class="o">=</span> <span class="n">_structural_inputs</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">prepared</span><span class="o">.</span><span class="n">promoted_qnames</span><span class="p">)</span>
+</span><span data-line="3982">    <span class="n">in_sb</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">sub</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">sub</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">resolved_shapes</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">sub</span><span class="p">}</span>
+</span><span data-line="3983">    <span class="n">out_sb</span> <span class="o">=</span> <span class="n">_master_output_sub_batch_shapes</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">seg_metas</span><span class="p">)</span>
+</span><span data-line="3984">    <span class="n">meta</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="3985">        <span class="s2">"schema_version"</span><span class="p">:</span> <span class="n">AOTI_META_SCHEMA_VERSION</span><span class="p">,</span>
+</span><span data-line="3986">        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"composed"</span><span class="p">,</span>
+</span><span data-line="3987">        <span class="s2">"inputs"</span><span class="p">:</span> <span class="n">_var_infos</span><span class="p">(</span><span class="n">structural_in</span><span class="p">,</span> <span class="n">sub_batch_shapes</span><span class="o">=</span><span class="n">in_sb</span><span class="p">),</span>
+</span><span data-line="3988">        <span class="s2">"outputs"</span><span class="p">:</span> <span class="n">_var_infos</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">sub_batch_shapes</span><span class="o">=</span><span class="n">out_sb</span><span class="p">),</span>
+</span><span data-line="3989">        <span class="s2">"segments"</span><span class="p">:</span> <span class="n">seg_metas</span><span class="p">,</span>
+</span><span data-line="3990">    <span class="p">}</span>
+</span><span data-line="3991">    <span class="n">meta</span><span class="p">[</span><span class="s2">"parameters"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_parameter_infos</span><span class="p">(</span>
+</span><span data-line="3992">        <span class="n">prepared</span><span class="o">.</span><span class="n">promoted_snapshots</span><span class="p">,</span> <span class="n">prepared</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">prepared</span><span class="o">.</span><span class="n">promoted_base_shapes</span>
+</span><span data-line="3993">    <span class="p">)</span>
+</span><span data-line="3994">    <span class="c1"># Master (out, in) derivative pairs, in deterministic (output, input) order.</span>
+</span><span data-line="3995">    <span class="n">out_order</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">)}</span>
+</span><span data-line="3996">    <span class="n">in_order</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">structural_input_names</span><span class="p">)}</span>
+</span><span data-line="3997">    <span class="n">ordered_pairs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+</span><span data-line="3998">        <span class="n">prepared</span><span class="o">.</span><span class="n">master_pairs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="p">(</span><span class="n">out_order</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">in_order</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
+</span><span data-line="3999">    <span class="p">)</span>
+</span><span data-line="4000">    <span class="n">meta</span><span class="p">[</span><span class="s2">"derivatives"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="ow">in</span> <span class="n">ordered_pairs</span><span class="p">]</span>
+</span><span data-line="4001">    <span class="c1"># End-to-end block form of each pair, aligned with "derivatives".</span>
+</span><span data-line="4002">    <span class="n">forms</span> <span class="o">=</span> <span class="n">_master_pair_forms</span><span class="p">(</span><span class="n">ordered_pairs</span><span class="p">,</span> <span class="n">in_sb</span><span class="p">,</span> <span class="n">out_sb</span><span class="p">,</span> <span class="n">seg_metas</span><span class="p">)</span>
+</span><span data-line="4003">    <span class="n">meta</span><span class="p">[</span><span class="s2">"derivative_forms"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">forms</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ordered_pairs</span><span class="p">]</span>
+</span><span data-line="4004">    <span class="c1"># Master (out, param) parameter-derivative pairs, in (output, param) order.</span>
+</span><span data-line="4005">    <span class="n">meta</span><span class="p">[</span><span class="s2">"parameter_derivatives"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="4006">        <span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span>
+</span><span data-line="4007">        <span class="k">for</span> <span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">param_pairs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">out_order</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</span><span data-line="4008">    <span class="p">]</span>
+</span><span data-line="4009">    <span class="c1"># Boundary renames (shallow): only namespaces with an actual rename are written.</span>
+</span><span data-line="4010">    <span class="n">active_aliases</span> <span class="o">=</span> <span class="p">{</span><span class="n">ns</span><span class="p">:</span> <span class="n">m</span> <span class="k">for</span> <span class="n">ns</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">prepared</span><span class="o">.</span><span class="n">boundary_aliases</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">m</span><span class="p">}</span>
+</span><span data-line="4011">    <span class="k">if</span> <span class="n">active_aliases</span><span class="p">:</span>
+</span><span data-line="4012">        <span class="n">meta</span><span class="p">[</span><span class="s2">"boundary_aliases"</span><span class="p">]</span> <span class="o">=</span> <span class="n">active_aliases</span>
+</span><span data-line="4013">    <span class="c1"># Solver config (implicit models only) -- single source of truth for the</span>
+</span><span data-line="4014">    <span class="c1"># Python-free C++ runtime. See _extract_solver_config.</span>
+</span><span data-line="4015">    <span class="n">solver_config</span> <span class="o">=</span> <span class="n">_extract_solver_config</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</span><span data-line="4016">    <span class="k">if</span> <span class="n">solver_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="4017">        <span class="n">meta</span><span class="p">[</span><span class="s2">"solver_config"</span><span class="p">]</span> <span class="o">=</span> <span class="n">solver_config</span>
+</span><span data-line="4018">    <span class="k">return</span> <span class="n">meta</span>
+</span><span data-line="4019">
+</span><span data-line="4020">
+</span><span data-line="4021"><span class="k">def</span><span class="w"> </span><span class="nf">_compile_grid_worker</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+</span><span data-line="4022"><span class="w">    </span><span class="sd">"""Worker for the multi-device grid: compile ONE ``(device, segment)`` cell.</span>
+</span><span data-line="4023">
+</span><span data-line="4024"><span class="sd">    Like :func:`_compile_segment_worker` but keyed by device -- it writes to that</span>
+</span><span data-line="4025"><span class="sd">    device's artifact subfolder and tags its progress events with the device so</span>
+</span><span data-line="4026"><span class="sd">    the parent can distinguish the same segment across devices. Everything in</span>
+</span><span data-line="4027"><span class="sd">    *args* is picklable; the worker re-derives its segment from the input file.</span>
+</span><span data-line="4028"><span class="sd">    """</span>
+</span><span data-line="4029">    <span class="n">hit_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">export_opts</span><span class="p">,</span> <span class="n">seg_index</span> <span class="o">=</span> <span class="n">args</span>
+</span><span data-line="4030">    <span class="n">export_opts</span> <span class="o">=</span> <span class="n">_prepare_opts_in_worker</span><span class="p">(</span><span class="n">export_opts</span><span class="p">)</span>
+</span><span data-line="4031">    <span class="n">prepared</span> <span class="o">=</span> <span class="n">_prepare_export</span><span class="p">(</span><span class="n">hit_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="o">**</span><span class="n">export_opts</span><span class="p">)</span>
+</span><span data-line="4032">    <span class="n">plans</span> <span class="o">=</span> <span class="n">_plan_segments</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+</span><span data-line="4033">    <span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="p">[</span><span class="n">seg_index</span><span class="p">]</span>
+</span><span data-line="4034">    <span class="n">queue</span> <span class="o">=</span> <span class="n">_worker_progress_queue</span>
+</span><span data-line="4035">    <span class="n">cb</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">))</span> <span class="k">if</span> <span class="n">queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+</span><span data-line="4036">    <span class="n">seg_meta</span> <span class="o">=</span> <span class="n">_execute_segment_plan</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">prepared</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_dir</span><span class="p">),</span> <span class="n">device</span><span class="p">,</span> <span class="n">progress_cb</span><span class="o">=</span><span class="n">cb</span><span class="p">)</span>
+</span><span data-line="4037">    <span class="k">return</span> <span class="n">device</span><span class="p">,</span> <span class="n">seg_index</span><span class="p">,</span> <span class="n">seg_meta</span>
+</span><span data-line="4038">
+</span><span data-line="4039">
+</span><span data-line="4040"><span class="k">def</span><span class="w"> </span><span class="nf">_run_grid_pool</span><span class="p">(</span>
+</span><span data-line="4041">    <span class="n">hit_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="4042">    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="4043">    <span class="n">artifact_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="4044">    <span class="n">devices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span data-line="4045">    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="4046">    <span class="n">n_segments</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span data-line="4047">    <span class="n">export_opts</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+</span><span data-line="4048">    <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span data-line="4049">    <span class="n">progress_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="4050"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]:</span>
+</span><span data-line="4051"><span class="w">    </span><span class="sd">"""Compile the full ``(device × segment)`` grid concurrently in a spawn pool.</span>
+</span><span data-line="4052">
+</span><span data-line="4053"><span class="sd">    Up to ``min(jobs, len(devices) * n_segments)`` workers run at once, so the two</span>
+</span><span data-line="4054"><span class="sd">    parallelism axes (devices and segments) are flattened into one pool -- e.g.</span>
+</span><span data-line="4055"><span class="sd">    two devices with two segments each fully use ``-j 4``. Returns</span>
+</span><span data-line="4056"><span class="sd">    ``{device: [seg_meta in segment order]}``; per-``.pt2`` progress (device-tagged)</span>
+</span><span data-line="4057"><span class="sd">    is forwarded to *progress_cb* by a drainer thread.</span>
+</span><span data-line="4058"><span class="sd">    """</span>
+</span><span data-line="4059">    <span class="kn">import</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cf</span>
+</span><span data-line="4060">    <span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+</span><span data-line="4061">    <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 </span><span data-line="4062">
+</span><span data-line="4063">    <span class="n">ctx</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="s2">"spawn"</span><span class="p">)</span>
+</span><span data-line="4064">    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[(</span><span class="n">device</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)]</span>
+</span><span data-line="4065">    <span class="n">workers</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">jobs</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)))</span>
+</span><span data-line="4066">
+</span><span data-line="4067">    <span class="n">manager</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="4068">    <span class="n">queue</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="4069">    <span class="n">drainer</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="4070">    <span class="n">initializer</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="4071">    <span class="n">initargs</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+</span><span data-line="4072">    <span class="k">if</span> <span class="n">progress_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="4073">        <span class="n">manager</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">Manager</span><span class="p">()</span>
+</span><span data-line="4074">        <span class="n">queue</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+</span><span data-line="4075">        <span class="n">initializer</span> <span class="o">=</span> <span class="n">_worker_init</span>
+</span><span data-line="4076">        <span class="n">initargs</span> <span class="o">=</span> <span class="p">(</span><span class="n">queue</span><span class="p">,)</span>
+</span><span data-line="4077">
+</span><span data-line="4078">        <span class="k">def</span><span class="w"> </span><span class="nf">_drain</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="4079">            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+</span><span data-line="4080">                <span class="n">item</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</span><span data-line="4081">                <span class="k">if</span> <span class="n">item</span> <span class="o">==</span> <span class="n">_PROGRESS_SENTINEL</span><span class="p">:</span>
+</span><span data-line="4082">                    <span class="k">break</span>
+</span><span data-line="4083">                <span class="n">progress_cb</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</span><span data-line="4084">
+</span><span data-line="4085">        <span class="n">drainer</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_drain</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="4086">        <span class="n">drainer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span data-line="4087">
+</span><span data-line="4088">    <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="4089">    <span class="n">hit_s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">hit_path</span><span class="p">)</span>
+</span><span data-line="4090">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="4091">        <span class="k">with</span> <span class="n">cf</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span><span class="p">(</span>
+</span><span data-line="4092">            <span class="n">max_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span> <span class="n">mp_context</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">initializer</span><span class="p">,</span> <span class="n">initargs</span><span class="o">=</span><span class="n">initargs</span>
+</span><span data-line="4093">        <span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+</span><span data-line="4094">            <span class="n">futs</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="4095">            <span class="k">for</span> <span class="n">device</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+</span><span data-line="4096">                <span class="n">out_s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">artifact_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">device</span> <span class="o">/</span> <span class="n">dtype</span><span class="p">)</span>
+</span><span data-line="4097">                <span class="n">futs</span><span class="p">[</span>
+</span><span data-line="4098">                    <span class="n">ex</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+</span><span data-line="4099">                        <span class="n">_compile_grid_worker</span><span class="p">,</span>
+</span><span data-line="4100">                        <span class="p">(</span><span class="n">hit_s</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">out_s</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">export_opts</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span>
+</span><span data-line="4101">                    <span class="p">)</span>
+</span><span data-line="4102">                <span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+</span><span data-line="4103">            <span class="k">for</span> <span class="n">fut</span> <span class="ow">in</span> <span class="n">cf</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">futs</span><span class="p">):</span>
+</span><span data-line="4104">                <span class="n">device</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="n">futs</span><span class="p">[</span><span class="n">fut</span><span class="p">]</span>
+</span><span data-line="4105">                <span class="k">try</span><span class="p">:</span>
+</span><span data-line="4106">                    <span class="n">d</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">seg_meta</span> <span class="o">=</span> <span class="n">fut</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+</span><span data-line="4107">                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># noqa: BLE001</span>
+</span><span data-line="4108">                    <span class="n">ex</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">cancel_futures</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="4109">                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+</span><span data-line="4110">                        <span class="sa">f</span><span class="s2">"neml2-compile: segment </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> on device </span><span class="si">{</span><span class="n">device</span><span class="si">!r}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span>
+</span><span data-line="4111">                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+</span><span data-line="4112">                <span class="n">results</span><span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">idx</span><span class="p">)]</span> <span class="o">=</span> <span class="n">seg_meta</span>
+</span><span data-line="4113">    <span class="k">finally</span><span class="p">:</span>
+</span><span data-line="4114">        <span class="k">if</span> <span class="n">queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="4115">            <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">_PROGRESS_SENTINEL</span><span class="p">)</span>
+</span><span data-line="4116">        <span class="k">if</span> <span class="n">drainer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="4117">            <span class="n">drainer</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</span><span data-line="4118">        <span class="k">if</span> <span class="n">manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="4119">            <span class="n">manager</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</span><span data-line="4120">
+</span><span data-line="4121">    <span class="k">return</span> <span class="p">{</span><span class="n">device</span><span class="p">:</span> <span class="p">[</span><span class="n">results</span><span class="p">[(</span><span class="n">device</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)]</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">}</span>
+</span><span data-line="4122">
+</span><span data-line="4123">
+</span><span data-line="4124"><span class="c1"># ---------------------------------------------------------------------------</span>
+</span><span data-line="4125"><span class="c1"># Public API</span>
+</span><span data-line="4126"><span class="c1"># ---------------------------------------------------------------------------</span>
+</span><span data-line="4127">
+</span><span data-line="4128">
 <div class="viewcode-block" id="export_model_for_aoti">
 <a class="viewcode-back" href="../../../content/python_api/neml2.cli.html#neml2.cli.export_model_for_aoti">[docs]</a>
-</span><span data-line="4063"><span class="k">def</span><span class="w"> </span><span class="nf">export_model_for_aoti</span><span class="p">(</span>
-</span><span data-line="4064">    <span class="n">hit_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
-</span><span data-line="4065">    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="4066">    <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
-</span><span data-line="4067">    <span class="o">*</span><span class="p">,</span>
-</span><span data-line="4068">    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
-</span><span data-line="4069">    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"float64"</span><span class="p">,</span>
-</span><span data-line="4070">    <span class="n">promoted</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4071">    <span class="n">example_batch_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="4072">    <span class="n">dynamic_batch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="4073">    <span class="n">derivatives</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4074">    <span class="n">renames</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="4075">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4076">    <span class="n">additional_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4077">    <span class="n">load</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4078">    <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-</span><span data-line="4079">    <span class="n">progress_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="4080"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span data-line="4081"><span class="w">    </span><span class="sd">"""Export a native NEML2 model to ``.pt2`` artifacts for AOTI C++ consumption.</span>
-</span><span data-line="4082">
-</span><span data-line="4083"><span class="sd">    By default every parameter and buffer in the source model is folded into</span>
-</span><span data-line="4084"><span class="sd">    the exported graph as a constant -- the most efficient form for inference</span>
-</span><span data-line="4085"><span class="sd">    use. To keep a parameter mutable at runtime, pass its fully-qualified name</span>
-</span><span data-line="4086"><span class="sd">    via *promoted*; the exporter traces those entries as additional graph</span>
-</span><span data-line="4087"><span class="sd">    inputs and records their initial values in the metadata so the C++ side</span>
-</span><span data-line="4088"><span class="sd">    can populate ``aoti::Model::named_parameters()``.</span>
-</span><span data-line="4089">
-</span><span data-line="4090"><span class="sd">    Parameters</span>
-</span><span data-line="4091"><span class="sd">    ----------</span>
-</span><span data-line="4092"><span class="sd">    hit_path:</span>
-</span><span data-line="4093"><span class="sd">        Path to the HIT ``.i`` file.</span>
-</span><span data-line="4094"><span class="sd">    model_name:</span>
-</span><span data-line="4095"><span class="sd">        Name of the model in the ``[Models]`` section.</span>
-</span><span data-line="4096"><span class="sd">    output_dir:</span>
-</span><span data-line="4097"><span class="sd">        Directory for ``.pt2`` artifacts and metadata JSON.  Created if absent.</span>
-</span><span data-line="4098"><span class="sd">    device:</span>
-</span><span data-line="4099"><span class="sd">        Target device for the resulting artifact (default ``"cpu"``).</span>
-</span><span data-line="4100"><span class="sd">    dtype:</span>
-</span><span data-line="4101"><span class="sd">        Floating-point dtype for the resulting artifact (``"float64"`` or</span>
-</span><span data-line="4102"><span class="sd">        ``"float32"``; default ``"float64"``).</span>
-</span><span data-line="4103"><span class="sd">    promoted:</span>
-</span><span data-line="4104"><span class="sd">        Set / iterable of fully-qualified parameter or buffer names (the same</span>
-</span><span data-line="4105"><span class="sd">        form ``model.named_parameters(recurse=True)`` emits) to promote to</span>
-</span><span data-line="4106"><span class="sd">        runtime-flexible status. Empty default = fully baked artifact.</span>
-</span><span data-line="4107"><span class="sd">    example_batch_shape:</span>
-</span><span data-line="4108"><span class="sd">        Override for the per-input example shape used at trace time. Accepts</span>
-</span><span data-line="4109"><span class="sd">        either a single spec string (uniform across all inputs) or a dict</span>
-</span><span data-line="4110"><span class="sd">        mapping input variable name to spec string (per-variable). Each spec</span>
-</span><span data-line="4111"><span class="sd">        uses the ``(dyn; sub)`` grammar (see</span>
-</span><span data-line="4112"><span class="sd">        :func:`parse_example_batch_shape`). Overrides any</span>
-</span><span data-line="4113"><span class="sd">        ``[Settings]/example_batch_shape`` in the HIT file. When ``None``</span>
-</span><span data-line="4114"><span class="sd">        (default), the HIT setting -- or :data:`DEFAULT_EXAMPLE_SHAPE` if</span>
-</span><span data-line="4115"><span class="sd">        unset -- applies.</span>
-</span><span data-line="4116"><span class="sd">    dynamic_batch:</span>
-</span><span data-line="4117"><span class="sd">        Override for ``[Settings]/dynamic_batch``. ``True`` lets the leading</span>
-</span><span data-line="4118"><span class="sd">        batch axis vary at runtime (the default); ``False`` produces a</span>
-</span><span data-line="4119"><span class="sd">        static-batch artifact pinned at the example shape. Use ``False`` when</span>
-</span><span data-line="4120"><span class="sd">        a baked parameter has a rank ≥ 1 shape that would specialize the</span>
-</span><span data-line="4121"><span class="sd">        dynamic dim. When ``None`` (default), the HIT setting -- or ``True``</span>
-</span><span data-line="4122"><span class="sd">        if unset -- applies.</span>
-</span><span data-line="4123"><span class="sd">    derivatives:</span>
-</span><span data-line="4124"><span class="sd">        Sequence of ``OUT:IN`` derivative specs (the ``-d/--derivative`` CLI</span>
-</span><span data-line="4125"><span class="sd">        surface). Each requests a Jacobian/JVP block for that output-input</span>
-</span><span data-line="4126"><span class="sd">        pair; omitting a side selects all on that side (``stress:`` = all</span>
-</span><span data-line="4127"><span class="sd">        inputs of stress, ``:strain`` = all outputs wrt strain, ``:`` = all</span>
-</span><span data-line="4128"><span class="sd">        pairs). Empty (the default) compiles **no** derivative graphs, and the</span>
-</span><span data-line="4129"><span class="sd">        runtime ``jvp`` / ``jacobian`` raise until recompiled with ``-d``.</span>
-</span><span data-line="4130"><span class="sd">        Resolved against the model's outputs + structural inputs after</span>
-</span><span data-line="4131"><span class="sd">        promotion (see :func:`_resolve_derivative_specs`).</span>
-</span><span data-line="4132"><span class="sd">    renames:</span>
-</span><span data-line="4133"><span class="sd">        Optional shallow boundary renames (the ``--rename-input`` /</span>
-</span><span data-line="4134"><span class="sd">        ``--rename-output`` / ``--rename-parameter`` CLI surface). A dict with</span>
-</span><span data-line="4135"><span class="sd">        any of ``"inputs"`` / ``"outputs"`` / ``"parameters"`` keys, each an</span>
-</span><span data-line="4136"><span class="sd">        ``{original_name: boundary_name}`` sub-map. Only the names reported at</span>
-</span><span data-line="4137"><span class="sd">        the compiled artifact's interface change; the graphs and every internal</span>
-</span><span data-line="4138"><span class="sd">        wiring keep the original authored names. Validated against the</span>
-</span><span data-line="4139"><span class="sd">        post-promotion boundary namespaces (see :func:`_validate_renames`) and</span>
-</span><span data-line="4140"><span class="sd">        recorded under ``boundary_aliases`` in the metadata. ``None`` (default)</span>
-</span><span data-line="4141"><span class="sd">        keeps the original names.</span>
-</span><span data-line="4142"><span class="sd">    pre:</span>
-</span><span data-line="4143"><span class="sd">        HIT snippets prepended before parsing (same semantics as</span>
-</span><span data-line="4144"><span class="sd">        ``nmhit.parse_file``'s ``pre`` arg). Use to bind ``${var}``</span>
-</span><span data-line="4145"><span class="sd">        substitution variables that the input file expects -- e.g.</span>
-</span><span data-line="4146"><span class="sd">        ``pre=["nbatch=2", "device=cpu"]``. Post-``:=`` overrides via</span>
-</span><span data-line="4147"><span class="sd">        *additional_args* do NOT propagate into ``${...}`` substitution.</span>
-</span><span data-line="4148"><span class="sd">    additional_args:</span>
-</span><span data-line="4149"><span class="sd">        Trailing HIT override tokens appended to the parser's *post* list</span>
-</span><span data-line="4150"><span class="sd">        (e.g. ``"Models/elasticity/E:=210000"``). Path-style overrides only;</span>
-</span><span data-line="4151"><span class="sd">        for variable substitution use *pre*.</span>
-</span><span data-line="4152"><span class="sd">    load:</span>
-</span><span data-line="4153"><span class="sd">        User-extension paths (the ``--load`` CLI surface) to import before the</span>
-</span><span data-line="4154"><span class="sd">        model is built, so their ``@register_neml2_object`` types resolve. The</span>
-</span><span data-line="4155"><span class="sd">        caller is responsible for importing them in the current process; under</span>
-</span><span data-line="4156"><span class="sd">        ``jobs &gt; 1`` they are additionally forwarded to each spawn worker, which</span>
-</span><span data-line="4157"><span class="sd">        re-imports them before re-deriving its segment (a fresh interpreter would</span>
-</span><span data-line="4158"><span class="sd">        otherwise not see the custom types). Empty (default) = no extensions.</span>
-</span><span data-line="4159"><span class="sd">    jobs:</span>
-</span><span data-line="4160"><span class="sd">        Number of worker processes for parallel segment compilation. ``1``</span>
-</span><span data-line="4161"><span class="sd">        (default) compiles serially (behavior-identical to before this option).</span>
-</span><span data-line="4162"><span class="sd">        ``&gt; 1`` compiles independent segments concurrently in a spawn process</span>
-</span><span data-line="4163"><span class="sd">        pool -- effective only for a multi-segment model (a ``ComposedModel``</span>
-</span><span data-line="4164"><span class="sd">        containing an ``ImplicitUpdate``); single-segment models ignore it. The</span>
-</span><span data-line="4165"><span class="sd">        resulting ``metadata.json`` is identical to a serial run (segment metadata</span>
-</span><span data-line="4166"><span class="sd">        is reassembled in segment order regardless of completion order).</span>
-</span><span data-line="4167"><span class="sd">    progress_cb:</span>
-</span><span data-line="4168"><span class="sd">        Optional callback invoked with the bare filename of each generated file</span>
-</span><span data-line="4169"><span class="sd">        as it is written -- every ``.pt2`` graph and ``metadata.json``.</span>
-</span><span data-line="4170"><span class="sd">        The CLI passes a printer that renders ``[k/N] &lt;name&gt;`` progress. ``None``</span>
-</span><span data-line="4171"><span class="sd">        (default) is silent. Under ``jobs &gt; 1`` the callback still fires per</span>
-</span><span data-line="4172"><span class="sd">        ``.pt2`` (forwarded from workers), then once for the metadata.</span>
-</span><span data-line="4173">
-</span><span data-line="4174"><span class="sd">    Returns</span>
-</span><span data-line="4175"><span class="sd">    -------</span>
-</span><span data-line="4176"><span class="sd">    dict</span>
-</span><span data-line="4177"><span class="sd">        The metadata dictionary (same content as the written JSON).</span>
-</span><span data-line="4178"><span class="sd">    """</span>
-</span><span data-line="4179">    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-</span><span data-line="4180">    <span class="c1"># Schema v10 layout: binaries in the per-&lt;device&gt;/&lt;dtype&gt;/ leaf, one shared</span>
-</span><span data-line="4181">    <span class="c1"># metadata.json at the artifact root (output_dir). leaf.mkdir(parents=True)</span>
-</span><span data-line="4182">    <span class="c1"># also creates the root, so the meta write below has a directory.</span>
-</span><span data-line="4183">    <span class="n">leaf</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="n">device</span> <span class="o">/</span> <span class="n">dtype</span>
-</span><span data-line="4184">    <span class="n">leaf</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span data-line="4185">
-</span><span data-line="4186">    <span class="c1"># Run the full pre-compile prelude (load, wrap, promote, resolve derivatives /</span>
-</span><span data-line="4187">    <span class="c1"># renames, freeze, seed) once. Deterministic in (input, options, device) so a</span>
-</span><span data-line="4188">    <span class="c1"># spawned worker can reproduce the exact same segments.</span>
-</span><span data-line="4189">    <span class="n">prepared</span> <span class="o">=</span> <span class="n">_prepare_export</span><span class="p">(</span>
-</span><span data-line="4190">        <span class="n">hit_path</span><span class="p">,</span>
-</span><span data-line="4191">        <span class="n">model_name</span><span class="p">,</span>
-</span><span data-line="4192">        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
-</span><span data-line="4193">        <span class="n">promoted</span><span class="o">=</span><span class="n">promoted</span><span class="p">,</span>
-</span><span data-line="4194">        <span class="n">example_batch_shape</span><span class="o">=</span><span class="n">example_batch_shape</span><span class="p">,</span>
-</span><span data-line="4195">        <span class="n">dynamic_batch</span><span class="o">=</span><span class="n">dynamic_batch</span><span class="p">,</span>
-</span><span data-line="4196">        <span class="n">derivatives</span><span class="o">=</span><span class="n">derivatives</span><span class="p">,</span>
-</span><span data-line="4197">        <span class="n">renames</span><span class="o">=</span><span class="n">renames</span><span class="p">,</span>
-</span><span data-line="4198">        <span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span>
-</span><span data-line="4199">        <span class="n">additional_args</span><span class="o">=</span><span class="n">additional_args</span><span class="p">,</span>
-</span><span data-line="4200">    <span class="p">)</span>
-</span><span data-line="4201">
-</span><span data-line="4202">    <span class="c1"># Plan the segments (cheap, structural). All three model shapes -- forward,</span>
-</span><span data-line="4203">    <span class="c1"># single ImplicitUpdate, composed-with-implicit -- flow through one planner so</span>
-</span><span data-line="4204">    <span class="c1"># the artifacts predicted for progress exactly match what is produced.</span>
-</span><span data-line="4205">    <span class="n">plans</span> <span class="o">=</span> <span class="n">_plan_segments</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
-</span><span data-line="4206">
-</span><span data-line="4207">    <span class="c1"># Execute: serial (default) or, for a multi-segment model with jobs &gt; 1, in a</span>
-</span><span data-line="4208">    <span class="c1"># spawn process pool where each worker re-derives its segment from the file.</span>
-</span><span data-line="4209">    <span class="k">if</span> <span class="n">jobs</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">plans</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="4210">        <span class="c1"># Pass the ORIGINAL options (not the post-prepare derived values) so each</span>
-</span><span data-line="4211">        <span class="c1"># worker's _prepare_export re-derives from byte-identical inputs.</span>
-</span><span data-line="4212">        <span class="n">export_opts</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="4213">            <span class="s2">"promoted"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">promoted</span><span class="p">)),</span>
-</span><span data-line="4214">            <span class="s2">"example_batch_shape"</span><span class="p">:</span> <span class="n">example_batch_shape</span><span class="p">,</span>
-</span><span data-line="4215">            <span class="s2">"dynamic_batch"</span><span class="p">:</span> <span class="n">dynamic_batch</span><span class="p">,</span>
-</span><span data-line="4216">            <span class="s2">"derivatives"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">derivatives</span><span class="p">),</span>
-</span><span data-line="4217">            <span class="s2">"renames"</span><span class="p">:</span> <span class="n">renames</span><span class="p">,</span>
-</span><span data-line="4218">            <span class="s2">"pre"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span>
-</span><span data-line="4219">            <span class="s2">"additional_args"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">additional_args</span><span class="p">),</span>
-</span><span data-line="4220">            <span class="s2">"load"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">load</span><span class="p">),</span>
-</span><span data-line="4221">        <span class="p">}</span>
-</span><span data-line="4222">        <span class="n">seg_metas</span> <span class="o">=</span> <span class="n">_compile_segments_parallel</span><span class="p">(</span>
-</span><span data-line="4223">            <span class="n">hit_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">export_opts</span><span class="p">,</span> <span class="n">plans</span><span class="p">,</span> <span class="n">jobs</span><span class="p">,</span> <span class="n">progress_cb</span>
-</span><span data-line="4224">        <span class="p">)</span>
-</span><span data-line="4225">    <span class="k">else</span><span class="p">:</span>
-</span><span data-line="4226">        <span class="n">seg_metas</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="4227">            <span class="n">_execute_segment_plan</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">prepared</span><span class="p">,</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">progress_cb</span><span class="o">=</span><span class="n">progress_cb</span><span class="p">)</span>
-</span><span data-line="4228">            <span class="k">for</span> <span class="n">plan</span> <span class="ow">in</span> <span class="n">plans</span>
-</span><span data-line="4229">        <span class="p">]</span>
-</span><span data-line="4230">
-</span><span data-line="4231">    <span class="n">meta</span> <span class="o">=</span> <span class="n">_build_meta</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">seg_metas</span><span class="p">)</span>
-</span><span data-line="4232">    <span class="n">_write_meta</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">"metadata.json"</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
-</span><span data-line="4233">    <span class="n">_report</span><span class="p">(</span><span class="n">progress_cb</span><span class="p">,</span> <span class="s2">"metadata.json"</span><span class="p">)</span>
-</span><span data-line="4234">    <span class="k">return</span> <span class="n">meta</span></div>
+</span><span data-line="4129"><span class="k">def</span><span class="w"> </span><span class="nf">export_model_for_aoti</span><span class="p">(</span>
+</span><span data-line="4130">    <span class="n">hit_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="4131">    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="4132">    <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="4133">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="4134">    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
+</span><span data-line="4135">    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"float64"</span><span class="p">,</span>
+</span><span data-line="4136">    <span class="n">promoted</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4137">    <span class="n">example_batch_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="4138">    <span class="n">dynamic_batch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="4139">    <span class="n">derivatives</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4140">    <span class="n">renames</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="4141">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4142">    <span class="n">additional_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4143">    <span class="n">load</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4144">    <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+</span><span data-line="4145">    <span class="n">progress_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="4146"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span data-line="4147"><span class="w">    </span><span class="sd">"""Export a native NEML2 model to ``.pt2`` artifacts for AOTI C++ consumption.</span>
+</span><span data-line="4148">
+</span><span data-line="4149"><span class="sd">    By default every parameter and buffer in the source model is folded into</span>
+</span><span data-line="4150"><span class="sd">    the exported graph as a constant -- the most efficient form for inference</span>
+</span><span data-line="4151"><span class="sd">    use. To keep a parameter mutable at runtime, pass its fully-qualified name</span>
+</span><span data-line="4152"><span class="sd">    via *promoted*; the exporter traces those entries as additional graph</span>
+</span><span data-line="4153"><span class="sd">    inputs and records their initial values in the metadata so the C++ side</span>
+</span><span data-line="4154"><span class="sd">    can populate ``aoti::Model::named_parameters()``.</span>
+</span><span data-line="4155">
+</span><span data-line="4156"><span class="sd">    Parameters</span>
+</span><span data-line="4157"><span class="sd">    ----------</span>
+</span><span data-line="4158"><span class="sd">    hit_path:</span>
+</span><span data-line="4159"><span class="sd">        Path to the HIT ``.i`` file.</span>
+</span><span data-line="4160"><span class="sd">    model_name:</span>
+</span><span data-line="4161"><span class="sd">        Name of the model in the ``[Models]`` section.</span>
+</span><span data-line="4162"><span class="sd">    output_dir:</span>
+</span><span data-line="4163"><span class="sd">        Directory for ``.pt2`` artifacts and metadata JSON.  Created if absent.</span>
+</span><span data-line="4164"><span class="sd">    device:</span>
+</span><span data-line="4165"><span class="sd">        Target device for the resulting artifact (default ``"cpu"``).</span>
+</span><span data-line="4166"><span class="sd">    dtype:</span>
+</span><span data-line="4167"><span class="sd">        Floating-point dtype for the resulting artifact (``"float64"`` or</span>
+</span><span data-line="4168"><span class="sd">        ``"float32"``; default ``"float64"``).</span>
+</span><span data-line="4169"><span class="sd">    promoted:</span>
+</span><span data-line="4170"><span class="sd">        Set / iterable of fully-qualified parameter or buffer names (the same</span>
+</span><span data-line="4171"><span class="sd">        form ``model.named_parameters(recurse=True)`` emits) to promote to</span>
+</span><span data-line="4172"><span class="sd">        runtime-flexible status. Empty default = fully baked artifact.</span>
+</span><span data-line="4173"><span class="sd">    example_batch_shape:</span>
+</span><span data-line="4174"><span class="sd">        Override for the per-input example shape used at trace time. Accepts</span>
+</span><span data-line="4175"><span class="sd">        either a single spec string (uniform across all inputs) or a dict</span>
+</span><span data-line="4176"><span class="sd">        mapping input variable name to spec string (per-variable). Each spec</span>
+</span><span data-line="4177"><span class="sd">        uses the ``(dyn; sub)`` grammar (see</span>
+</span><span data-line="4178"><span class="sd">        :func:`parse_example_batch_shape`). Overrides any</span>
+</span><span data-line="4179"><span class="sd">        ``[Settings]/example_batch_shape`` in the HIT file. When ``None``</span>
+</span><span data-line="4180"><span class="sd">        (default), the HIT setting -- or :data:`DEFAULT_EXAMPLE_SHAPE` if</span>
+</span><span data-line="4181"><span class="sd">        unset -- applies.</span>
+</span><span data-line="4182"><span class="sd">    dynamic_batch:</span>
+</span><span data-line="4183"><span class="sd">        Override for ``[Settings]/dynamic_batch``. ``True`` lets the leading</span>
+</span><span data-line="4184"><span class="sd">        batch axis vary at runtime (the default); ``False`` produces a</span>
+</span><span data-line="4185"><span class="sd">        static-batch artifact pinned at the example shape. Use ``False`` when</span>
+</span><span data-line="4186"><span class="sd">        a baked parameter has a rank ≥ 1 shape that would specialize the</span>
+</span><span data-line="4187"><span class="sd">        dynamic dim. When ``None`` (default), the HIT setting -- or ``True``</span>
+</span><span data-line="4188"><span class="sd">        if unset -- applies.</span>
+</span><span data-line="4189"><span class="sd">    derivatives:</span>
+</span><span data-line="4190"><span class="sd">        Sequence of ``OUT:IN`` derivative specs (the ``-d/--derivative`` CLI</span>
+</span><span data-line="4191"><span class="sd">        surface). Each requests a Jacobian/JVP block for that output-input</span>
+</span><span data-line="4192"><span class="sd">        pair; omitting a side selects all on that side (``stress:`` = all</span>
+</span><span data-line="4193"><span class="sd">        inputs of stress, ``:strain`` = all outputs wrt strain, ``:`` = all</span>
+</span><span data-line="4194"><span class="sd">        pairs). Empty (the default) compiles **no** derivative graphs, and the</span>
+</span><span data-line="4195"><span class="sd">        runtime ``jvp`` / ``jacobian`` raise until recompiled with ``-d``.</span>
+</span><span data-line="4196"><span class="sd">        Resolved against the model's outputs + structural inputs after</span>
+</span><span data-line="4197"><span class="sd">        promotion (see :func:`_resolve_derivative_specs`).</span>
+</span><span data-line="4198"><span class="sd">    renames:</span>
+</span><span data-line="4199"><span class="sd">        Optional shallow boundary renames (the ``--rename-input`` /</span>
+</span><span data-line="4200"><span class="sd">        ``--rename-output`` / ``--rename-parameter`` CLI surface). A dict with</span>
+</span><span data-line="4201"><span class="sd">        any of ``"inputs"`` / ``"outputs"`` / ``"parameters"`` keys, each an</span>
+</span><span data-line="4202"><span class="sd">        ``{original_name: boundary_name}`` sub-map. Only the names reported at</span>
+</span><span data-line="4203"><span class="sd">        the compiled artifact's interface change; the graphs and every internal</span>
+</span><span data-line="4204"><span class="sd">        wiring keep the original authored names. Validated against the</span>
+</span><span data-line="4205"><span class="sd">        post-promotion boundary namespaces (see :func:`_validate_renames`) and</span>
+</span><span data-line="4206"><span class="sd">        recorded under ``boundary_aliases`` in the metadata. ``None`` (default)</span>
+</span><span data-line="4207"><span class="sd">        keeps the original names.</span>
+</span><span data-line="4208"><span class="sd">    pre:</span>
+</span><span data-line="4209"><span class="sd">        HIT snippets prepended before parsing (same semantics as</span>
+</span><span data-line="4210"><span class="sd">        ``nmhit.parse_file``'s ``pre`` arg). Use to bind ``${var}``</span>
+</span><span data-line="4211"><span class="sd">        substitution variables that the input file expects -- e.g.</span>
+</span><span data-line="4212"><span class="sd">        ``pre=["nbatch=2", "device=cpu"]``. Post-``:=`` overrides via</span>
+</span><span data-line="4213"><span class="sd">        *additional_args* do NOT propagate into ``${...}`` substitution.</span>
+</span><span data-line="4214"><span class="sd">    additional_args:</span>
+</span><span data-line="4215"><span class="sd">        Trailing HIT override tokens appended to the parser's *post* list</span>
+</span><span data-line="4216"><span class="sd">        (e.g. ``"Models/elasticity/E:=210000"``). Path-style overrides only;</span>
+</span><span data-line="4217"><span class="sd">        for variable substitution use *pre*.</span>
+</span><span data-line="4218"><span class="sd">    load:</span>
+</span><span data-line="4219"><span class="sd">        User-extension paths (the ``--load`` CLI surface) to import before the</span>
+</span><span data-line="4220"><span class="sd">        model is built, so their ``@register_neml2_object`` types resolve. The</span>
+</span><span data-line="4221"><span class="sd">        caller is responsible for importing them in the current process; under</span>
+</span><span data-line="4222"><span class="sd">        ``jobs &gt; 1`` they are additionally forwarded to each spawn worker, which</span>
+</span><span data-line="4223"><span class="sd">        re-imports them before re-deriving its segment (a fresh interpreter would</span>
+</span><span data-line="4224"><span class="sd">        otherwise not see the custom types). Empty (default) = no extensions.</span>
+</span><span data-line="4225"><span class="sd">    jobs:</span>
+</span><span data-line="4226"><span class="sd">        Number of worker processes for parallel segment compilation. ``1``</span>
+</span><span data-line="4227"><span class="sd">        (default) compiles serially (behavior-identical to before this option).</span>
+</span><span data-line="4228"><span class="sd">        ``&gt; 1`` compiles independent segments concurrently in a spawn process</span>
+</span><span data-line="4229"><span class="sd">        pool -- effective only for a multi-segment model (a ``ComposedModel``</span>
+</span><span data-line="4230"><span class="sd">        containing an ``ImplicitUpdate``); single-segment models ignore it. The</span>
+</span><span data-line="4231"><span class="sd">        resulting ``metadata.json`` is identical to a serial run (segment metadata</span>
+</span><span data-line="4232"><span class="sd">        is reassembled in segment order regardless of completion order).</span>
+</span><span data-line="4233"><span class="sd">    progress_cb:</span>
+</span><span data-line="4234"><span class="sd">        Optional callback invoked with the bare filename of each generated file</span>
+</span><span data-line="4235"><span class="sd">        as it is written -- every ``.pt2`` graph and ``metadata.json``.</span>
+</span><span data-line="4236"><span class="sd">        The CLI passes a printer that renders ``[k/N] &lt;name&gt;`` progress. ``None``</span>
+</span><span data-line="4237"><span class="sd">        (default) is silent. Under ``jobs &gt; 1`` the callback still fires per</span>
+</span><span data-line="4238"><span class="sd">        ``.pt2`` (forwarded from workers), then once for the metadata.</span>
+</span><span data-line="4239">
+</span><span data-line="4240"><span class="sd">    Returns</span>
+</span><span data-line="4241"><span class="sd">    -------</span>
+</span><span data-line="4242"><span class="sd">    dict</span>
+</span><span data-line="4243"><span class="sd">        The metadata dictionary (same content as the written JSON).</span>
+</span><span data-line="4244"><span class="sd">    """</span>
+</span><span data-line="4245">    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+</span><span data-line="4246">    <span class="c1"># Schema v10 layout: binaries in the per-&lt;device&gt;/&lt;dtype&gt;/ leaf, one shared</span>
+</span><span data-line="4247">    <span class="c1"># metadata.json at the artifact root (output_dir). leaf.mkdir(parents=True)</span>
+</span><span data-line="4248">    <span class="c1"># also creates the root, so the meta write below has a directory.</span>
+</span><span data-line="4249">    <span class="n">leaf</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="n">device</span> <span class="o">/</span> <span class="n">dtype</span>
+</span><span data-line="4250">    <span class="n">leaf</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="4251">
+</span><span data-line="4252">    <span class="c1"># Run the full pre-compile prelude (load, wrap, promote, resolve derivatives /</span>
+</span><span data-line="4253">    <span class="c1"># renames, freeze, seed) once. Deterministic in (input, options, device) so a</span>
+</span><span data-line="4254">    <span class="c1"># spawned worker can reproduce the exact same segments.</span>
+</span><span data-line="4255">    <span class="n">prepared</span> <span class="o">=</span> <span class="n">_prepare_export</span><span class="p">(</span>
+</span><span data-line="4256">        <span class="n">hit_path</span><span class="p">,</span>
+</span><span data-line="4257">        <span class="n">model_name</span><span class="p">,</span>
+</span><span data-line="4258">        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+</span><span data-line="4259">        <span class="n">promoted</span><span class="o">=</span><span class="n">promoted</span><span class="p">,</span>
+</span><span data-line="4260">        <span class="n">example_batch_shape</span><span class="o">=</span><span class="n">example_batch_shape</span><span class="p">,</span>
+</span><span data-line="4261">        <span class="n">dynamic_batch</span><span class="o">=</span><span class="n">dynamic_batch</span><span class="p">,</span>
+</span><span data-line="4262">        <span class="n">derivatives</span><span class="o">=</span><span class="n">derivatives</span><span class="p">,</span>
+</span><span data-line="4263">        <span class="n">renames</span><span class="o">=</span><span class="n">renames</span><span class="p">,</span>
+</span><span data-line="4264">        <span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span>
+</span><span data-line="4265">        <span class="n">additional_args</span><span class="o">=</span><span class="n">additional_args</span><span class="p">,</span>
+</span><span data-line="4266">    <span class="p">)</span>
+</span><span data-line="4267">
+</span><span data-line="4268">    <span class="c1"># Plan the segments (cheap, structural). All three model shapes -- forward,</span>
+</span><span data-line="4269">    <span class="c1"># single ImplicitUpdate, composed-with-implicit -- flow through one planner so</span>
+</span><span data-line="4270">    <span class="c1"># the artifacts predicted for progress exactly match what is produced.</span>
+</span><span data-line="4271">    <span class="n">plans</span> <span class="o">=</span> <span class="n">_plan_segments</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+</span><span data-line="4272">
+</span><span data-line="4273">    <span class="c1"># Execute: serial (default) or, for a multi-segment model with jobs &gt; 1, in a</span>
+</span><span data-line="4274">    <span class="c1"># spawn process pool where each worker re-derives its segment from the file.</span>
+</span><span data-line="4275">    <span class="k">if</span> <span class="n">jobs</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">plans</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="4276">        <span class="c1"># Pass the ORIGINAL options (not the post-prepare derived values) so each</span>
+</span><span data-line="4277">        <span class="c1"># worker's _prepare_export re-derives from byte-identical inputs.</span>
+</span><span data-line="4278">        <span class="n">export_opts</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="4279">            <span class="s2">"promoted"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">promoted</span><span class="p">)),</span>
+</span><span data-line="4280">            <span class="s2">"example_batch_shape"</span><span class="p">:</span> <span class="n">example_batch_shape</span><span class="p">,</span>
+</span><span data-line="4281">            <span class="s2">"dynamic_batch"</span><span class="p">:</span> <span class="n">dynamic_batch</span><span class="p">,</span>
+</span><span data-line="4282">            <span class="s2">"derivatives"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">derivatives</span><span class="p">),</span>
+</span><span data-line="4283">            <span class="s2">"renames"</span><span class="p">:</span> <span class="n">renames</span><span class="p">,</span>
+</span><span data-line="4284">            <span class="s2">"pre"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span>
+</span><span data-line="4285">            <span class="s2">"additional_args"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">additional_args</span><span class="p">),</span>
+</span><span data-line="4286">            <span class="s2">"load"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">load</span><span class="p">),</span>
+</span><span data-line="4287">        <span class="p">}</span>
+</span><span data-line="4288">        <span class="n">seg_metas</span> <span class="o">=</span> <span class="n">_compile_segments_parallel</span><span class="p">(</span>
+</span><span data-line="4289">            <span class="n">hit_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">export_opts</span><span class="p">,</span> <span class="n">plans</span><span class="p">,</span> <span class="n">jobs</span><span class="p">,</span> <span class="n">progress_cb</span>
+</span><span data-line="4290">        <span class="p">)</span>
+</span><span data-line="4291">    <span class="k">else</span><span class="p">:</span>
+</span><span data-line="4292">        <span class="n">seg_metas</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="4293">            <span class="n">_execute_segment_plan</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">prepared</span><span class="p">,</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">progress_cb</span><span class="o">=</span><span class="n">progress_cb</span><span class="p">)</span>
+</span><span data-line="4294">            <span class="k">for</span> <span class="n">plan</span> <span class="ow">in</span> <span class="n">plans</span>
+</span><span data-line="4295">        <span class="p">]</span>
+</span><span data-line="4296">
+</span><span data-line="4297">    <span class="n">meta</span> <span class="o">=</span> <span class="n">_build_meta</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">seg_metas</span><span class="p">)</span>
+</span><span data-line="4298">    <span class="n">_write_meta</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">"metadata.json"</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+</span><span data-line="4299">    <span class="n">_report</span><span class="p">(</span><span class="n">progress_cb</span><span class="p">,</span> <span class="s2">"metadata.json"</span><span class="p">)</span>
+</span><span data-line="4300">    <span class="k">return</span> <span class="n">meta</span></div>
 
-</span><span data-line="4235">
-</span><span data-line="4236">
-</span><span data-line="4237"><span class="k">def</span><span class="w"> </span><span class="nf">export_model_multidevice</span><span class="p">(</span>
-</span><span data-line="4238">    <span class="n">hit_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
-</span><span data-line="4239">    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="4240">    <span class="n">artifact_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
-</span><span data-line="4241">    <span class="n">devices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-</span><span data-line="4242">    <span class="o">*</span><span class="p">,</span>
-</span><span data-line="4243">    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"float64"</span><span class="p">,</span>
-</span><span data-line="4244">    <span class="n">promoted</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4245">    <span class="n">example_batch_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="4246">    <span class="n">dynamic_batch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="4247">    <span class="n">derivatives</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4248">    <span class="n">renames</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="4249">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4250">    <span class="n">additional_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4251">    <span class="n">load</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="4252">    <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-</span><span data-line="4253">    <span class="n">progress_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="4254"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span data-line="4255"><span class="w">    </span><span class="sd">"""Compile *model_name* for every device in *devices*, parallelizing across</span>
-</span><span data-line="4256"><span class="sd">    the full ``(device × segment)`` grid.</span>
-</span><span data-line="4257">
-</span><span data-line="4258"><span class="sd">    Each device's binaries land in ``artifact_dir/&lt;device&gt;/&lt;dtype&gt;/``; a single</span>
-</span><span data-line="4259"><span class="sd">    shared, device/dtype-independent ``artifact_dir/metadata.json`` backs them all.</span>
-</span><span data-line="4260"><span class="sd">    Returns that one ``meta`` dict. This is the CLI's multi-device</span>
-</span><span data-line="4261"><span class="sd">    entry point: unlike calling :func:`export_model_for_aoti` once per device</span>
-</span><span data-line="4262"><span class="sd">    (which parallelizes only that device's segments and runs devices sequentially),</span>
-</span><span data-line="4263"><span class="sd">    *jobs* here bounds the workers across ALL ``(device, segment)`` pairs at once --</span>
-</span><span data-line="4264"><span class="sd">    so e.g. two devices with two segments each saturate ``-j 4``, and the devices</span>
-</span><span data-line="4265"><span class="sd">    compile concurrently.</span>
-</span><span data-line="4266">
-</span><span data-line="4267"><span class="sd">    *progress_cb* is invoked with a device-tagged ``"&lt;device&gt;/&lt;filename&gt;"`` for</span>
-</span><span data-line="4268"><span class="sd">    every generated ``.pt2``, then once (untagged) for ``metadata.json``. ``jobs``</span>
-</span><span data-line="4269"><span class="sd">    is capped at the number of grid cells. Single-device / ``jobs=1`` runs are</span>
-</span><span data-line="4270"><span class="sd">    behavior-identical to a per-device :func:`export_model_for_aoti`.</span>
-</span><span data-line="4271"><span class="sd">    """</span>
-</span><span data-line="4272">    <span class="n">artifact_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">artifact_dir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-</span><span data-line="4273">    <span class="n">devices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">devices</span><span class="p">))</span>  <span class="c1"># de-dupe, preserve order</span>
-</span><span data-line="4274">
-</span><span data-line="4275">    <span class="k">def</span><span class="w"> </span><span class="nf">_dev_cb</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="4276">        <span class="k">if</span> <span class="n">progress_cb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="4277">            <span class="k">return</span> <span class="kc">None</span>
-</span><span data-line="4278">        <span class="n">cb</span> <span class="o">=</span> <span class="n">progress_cb</span>  <span class="c1"># bind non-None for the closure</span>
-</span><span data-line="4279">        <span class="k">return</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">cb</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-</span><span data-line="4280">
-</span><span data-line="4281">    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_on</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_PreparedExport</span><span class="p">:</span>
-</span><span data-line="4282">        <span class="k">return</span> <span class="n">_prepare_export</span><span class="p">(</span>
-</span><span data-line="4283">            <span class="n">hit_path</span><span class="p">,</span>
-</span><span data-line="4284">            <span class="n">model_name</span><span class="p">,</span>
-</span><span data-line="4285">            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
-</span><span data-line="4286">            <span class="n">promoted</span><span class="o">=</span><span class="n">promoted</span><span class="p">,</span>
-</span><span data-line="4287">            <span class="n">example_batch_shape</span><span class="o">=</span><span class="n">example_batch_shape</span><span class="p">,</span>
-</span><span data-line="4288">            <span class="n">dynamic_batch</span><span class="o">=</span><span class="n">dynamic_batch</span><span class="p">,</span>
-</span><span data-line="4289">            <span class="n">derivatives</span><span class="o">=</span><span class="n">derivatives</span><span class="p">,</span>
-</span><span data-line="4290">            <span class="n">renames</span><span class="o">=</span><span class="n">renames</span><span class="p">,</span>
-</span><span data-line="4291">            <span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span>
-</span><span data-line="4292">            <span class="n">additional_args</span><span class="o">=</span><span class="n">additional_args</span><span class="p">,</span>
-</span><span data-line="4293">        <span class="p">)</span>
-</span><span data-line="4294">
-</span><span data-line="4295">    <span class="c1"># Plan once on cpu -- the segment structure is device-independent, and this</span>
-</span><span data-line="4296">    <span class="c1"># keeps the parent from initializing CUDA (the workers own that).</span>
-</span><span data-line="4297">    <span class="n">prepared_cpu</span> <span class="o">=</span> <span class="n">_prepare_on</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
-</span><span data-line="4298">    <span class="n">plans</span> <span class="o">=</span> <span class="n">_plan_segments</span><span class="p">(</span><span class="n">prepared_cpu</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
-</span><span data-line="4299">    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">plans</span><span class="p">)</span>
-</span><span data-line="4300">    <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">:</span>
-</span><span data-line="4301">        <span class="p">(</span><span class="n">artifact_dir</span> <span class="o">/</span> <span class="n">device</span> <span class="o">/</span> <span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="4301">
 </span><span data-line="4302">
-</span><span data-line="4303">    <span class="n">seg_by_dev</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="4304">    <span class="k">if</span> <span class="n">jobs</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="4305">        <span class="c1"># Grid pool: workers re-derive each (device, segment) from picklable opts.</span>
-</span><span data-line="4306">        <span class="n">export_opts</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="4307">            <span class="s2">"promoted"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">promoted</span><span class="p">)),</span>
-</span><span data-line="4308">            <span class="s2">"example_batch_shape"</span><span class="p">:</span> <span class="n">example_batch_shape</span><span class="p">,</span>
-</span><span data-line="4309">            <span class="s2">"dynamic_batch"</span><span class="p">:</span> <span class="n">dynamic_batch</span><span class="p">,</span>
-</span><span data-line="4310">            <span class="s2">"derivatives"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">derivatives</span><span class="p">),</span>
-</span><span data-line="4311">            <span class="s2">"renames"</span><span class="p">:</span> <span class="n">renames</span><span class="p">,</span>
-</span><span data-line="4312">            <span class="s2">"pre"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span>
-</span><span data-line="4313">            <span class="s2">"additional_args"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">additional_args</span><span class="p">),</span>
-</span><span data-line="4314">            <span class="s2">"load"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">load</span><span class="p">),</span>
-</span><span data-line="4315">        <span class="p">}</span>
-</span><span data-line="4316">        <span class="n">seg_by_dev</span> <span class="o">=</span> <span class="n">_run_grid_pool</span><span class="p">(</span>
-</span><span data-line="4317">            <span class="n">hit_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">artifact_dir</span><span class="p">,</span> <span class="n">devices</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">export_opts</span><span class="p">,</span> <span class="n">jobs</span><span class="p">,</span> <span class="n">progress_cb</span>
-</span><span data-line="4318">        <span class="p">)</span>
-</span><span data-line="4319">    <span class="k">else</span><span class="p">:</span>
-</span><span data-line="4320">        <span class="c1"># Serial: prepare per device (device-correct) and compile in order --</span>
-</span><span data-line="4321">        <span class="c1"># behavior-identical to a per-device export_model_for_aoti.</span>
-</span><span data-line="4322">        <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">:</span>
-</span><span data-line="4323">            <span class="n">leaf</span> <span class="o">=</span> <span class="n">artifact_dir</span> <span class="o">/</span> <span class="n">device</span> <span class="o">/</span> <span class="n">dtype</span>
-</span><span data-line="4324">            <span class="n">prepared_d</span> <span class="o">=</span> <span class="n">_prepare_on</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</span><span data-line="4325">            <span class="n">plans_d</span> <span class="o">=</span> <span class="n">_plan_segments</span><span class="p">(</span><span class="n">prepared_d</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
-</span><span data-line="4326">            <span class="n">seg_by_dev</span><span class="p">[</span><span class="n">device</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="4327">                <span class="n">_execute_segment_plan</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">prepared_d</span><span class="p">,</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">progress_cb</span><span class="o">=</span><span class="n">_dev_cb</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>
-</span><span data-line="4328">                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plans_d</span>
-</span><span data-line="4329">            <span class="p">]</span>
-</span><span data-line="4330">
-</span><span data-line="4331">    <span class="c1"># One shared, device/dtype-independent metadata.json at the artifact root. The</span>
-</span><span data-line="4332">    <span class="c1"># segment metadata (bare .pt2 basenames) is identical across devices, so any</span>
-</span><span data-line="4333">    <span class="c1"># device's list backs the shared envelope; build it from the cpu-side prepared.</span>
-</span><span data-line="4334">    <span class="n">meta</span> <span class="o">=</span> <span class="n">_build_meta</span><span class="p">(</span><span class="n">prepared_cpu</span><span class="p">,</span> <span class="n">seg_by_dev</span><span class="p">[</span><span class="n">devices</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
-</span><span data-line="4335">    <span class="n">_write_meta</span><span class="p">(</span><span class="n">artifact_dir</span> <span class="o">/</span> <span class="s2">"metadata.json"</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
-</span><span data-line="4336">    <span class="n">_report</span><span class="p">(</span><span class="n">progress_cb</span><span class="p">,</span> <span class="s2">"metadata.json"</span><span class="p">)</span>
-</span><span data-line="4337">    <span class="k">return</span> <span class="n">meta</span>
-</span><span data-line="4338">
-</span><span data-line="4339">
-</span><span data-line="4340"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="4341">    <span class="s2">"export_model_for_aoti"</span><span class="p">,</span>
-</span><span data-line="4342">    <span class="s2">"export_model_multidevice"</span><span class="p">,</span>
-</span><span data-line="4343">    <span class="s2">"plan_export_artifacts"</span><span class="p">,</span>
-</span><span data-line="4344">    <span class="s2">"AOTI_META_SCHEMA_VERSION"</span><span class="p">,</span>
-</span><span data-line="4345"><span class="p">]</span>
+</span><span data-line="4303"><span class="k">def</span><span class="w"> </span><span class="nf">export_model_multidevice</span><span class="p">(</span>
+</span><span data-line="4304">    <span class="n">hit_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="4305">    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="4306">    <span class="n">artifact_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="4307">    <span class="n">devices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span data-line="4308">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="4309">    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"float64"</span><span class="p">,</span>
+</span><span data-line="4310">    <span class="n">promoted</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4311">    <span class="n">example_batch_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="4312">    <span class="n">dynamic_batch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="4313">    <span class="n">derivatives</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4314">    <span class="n">renames</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="4315">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4316">    <span class="n">additional_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4317">    <span class="n">load</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="4318">    <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+</span><span data-line="4319">    <span class="n">progress_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="4320"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span data-line="4321"><span class="w">    </span><span class="sd">"""Compile *model_name* for every device in *devices*, parallelizing across</span>
+</span><span data-line="4322"><span class="sd">    the full ``(device × segment)`` grid.</span>
+</span><span data-line="4323">
+</span><span data-line="4324"><span class="sd">    Each device's binaries land in ``artifact_dir/&lt;device&gt;/&lt;dtype&gt;/``; a single</span>
+</span><span data-line="4325"><span class="sd">    shared, device/dtype-independent ``artifact_dir/metadata.json`` backs them all.</span>
+</span><span data-line="4326"><span class="sd">    Returns that one ``meta`` dict. This is the CLI's multi-device</span>
+</span><span data-line="4327"><span class="sd">    entry point: unlike calling :func:`export_model_for_aoti` once per device</span>
+</span><span data-line="4328"><span class="sd">    (which parallelizes only that device's segments and runs devices sequentially),</span>
+</span><span data-line="4329"><span class="sd">    *jobs* here bounds the workers across ALL ``(device, segment)`` pairs at once --</span>
+</span><span data-line="4330"><span class="sd">    so e.g. two devices with two segments each saturate ``-j 4``, and the devices</span>
+</span><span data-line="4331"><span class="sd">    compile concurrently.</span>
+</span><span data-line="4332">
+</span><span data-line="4333"><span class="sd">    *progress_cb* is invoked with a device-tagged ``"&lt;device&gt;/&lt;filename&gt;"`` for</span>
+</span><span data-line="4334"><span class="sd">    every generated ``.pt2``, then once (untagged) for ``metadata.json``. ``jobs``</span>
+</span><span data-line="4335"><span class="sd">    is capped at the number of grid cells. Single-device / ``jobs=1`` runs are</span>
+</span><span data-line="4336"><span class="sd">    behavior-identical to a per-device :func:`export_model_for_aoti`.</span>
+</span><span data-line="4337"><span class="sd">    """</span>
+</span><span data-line="4338">    <span class="n">artifact_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">artifact_dir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+</span><span data-line="4339">    <span class="n">devices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">devices</span><span class="p">))</span>  <span class="c1"># de-dupe, preserve order</span>
+</span><span data-line="4340">
+</span><span data-line="4341">    <span class="k">def</span><span class="w"> </span><span class="nf">_dev_cb</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="4342">        <span class="k">if</span> <span class="n">progress_cb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="4343">            <span class="k">return</span> <span class="kc">None</span>
+</span><span data-line="4344">        <span class="n">cb</span> <span class="o">=</span> <span class="n">progress_cb</span>  <span class="c1"># bind non-None for the closure</span>
+</span><span data-line="4345">        <span class="k">return</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">cb</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="4346">
+</span><span data-line="4347">    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_on</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_PreparedExport</span><span class="p">:</span>
+</span><span data-line="4348">        <span class="k">return</span> <span class="n">_prepare_export</span><span class="p">(</span>
+</span><span data-line="4349">            <span class="n">hit_path</span><span class="p">,</span>
+</span><span data-line="4350">            <span class="n">model_name</span><span class="p">,</span>
+</span><span data-line="4351">            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+</span><span data-line="4352">            <span class="n">promoted</span><span class="o">=</span><span class="n">promoted</span><span class="p">,</span>
+</span><span data-line="4353">            <span class="n">example_batch_shape</span><span class="o">=</span><span class="n">example_batch_shape</span><span class="p">,</span>
+</span><span data-line="4354">            <span class="n">dynamic_batch</span><span class="o">=</span><span class="n">dynamic_batch</span><span class="p">,</span>
+</span><span data-line="4355">            <span class="n">derivatives</span><span class="o">=</span><span class="n">derivatives</span><span class="p">,</span>
+</span><span data-line="4356">            <span class="n">renames</span><span class="o">=</span><span class="n">renames</span><span class="p">,</span>
+</span><span data-line="4357">            <span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span>
+</span><span data-line="4358">            <span class="n">additional_args</span><span class="o">=</span><span class="n">additional_args</span><span class="p">,</span>
+</span><span data-line="4359">        <span class="p">)</span>
+</span><span data-line="4360">
+</span><span data-line="4361">    <span class="c1"># Plan once on cpu -- the segment structure is device-independent, and this</span>
+</span><span data-line="4362">    <span class="c1"># keeps the parent from initializing CUDA (the workers own that).</span>
+</span><span data-line="4363">    <span class="n">prepared_cpu</span> <span class="o">=</span> <span class="n">_prepare_on</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
+</span><span data-line="4364">    <span class="n">plans</span> <span class="o">=</span> <span class="n">_plan_segments</span><span class="p">(</span><span class="n">prepared_cpu</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+</span><span data-line="4365">    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">plans</span><span class="p">)</span>
+</span><span data-line="4366">    <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">:</span>
+</span><span data-line="4367">        <span class="p">(</span><span class="n">artifact_dir</span> <span class="o">/</span> <span class="n">device</span> <span class="o">/</span> <span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="4368">
+</span><span data-line="4369">    <span class="n">seg_by_dev</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="4370">    <span class="k">if</span> <span class="n">jobs</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="4371">        <span class="c1"># Grid pool: workers re-derive each (device, segment) from picklable opts.</span>
+</span><span data-line="4372">        <span class="n">export_opts</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="4373">            <span class="s2">"promoted"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">promoted</span><span class="p">)),</span>
+</span><span data-line="4374">            <span class="s2">"example_batch_shape"</span><span class="p">:</span> <span class="n">example_batch_shape</span><span class="p">,</span>
+</span><span data-line="4375">            <span class="s2">"dynamic_batch"</span><span class="p">:</span> <span class="n">dynamic_batch</span><span class="p">,</span>
+</span><span data-line="4376">            <span class="s2">"derivatives"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">derivatives</span><span class="p">),</span>
+</span><span data-line="4377">            <span class="s2">"renames"</span><span class="p">:</span> <span class="n">renames</span><span class="p">,</span>
+</span><span data-line="4378">            <span class="s2">"pre"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span>
+</span><span data-line="4379">            <span class="s2">"additional_args"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">additional_args</span><span class="p">),</span>
+</span><span data-line="4380">            <span class="s2">"load"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">load</span><span class="p">),</span>
+</span><span data-line="4381">        <span class="p">}</span>
+</span><span data-line="4382">        <span class="n">seg_by_dev</span> <span class="o">=</span> <span class="n">_run_grid_pool</span><span class="p">(</span>
+</span><span data-line="4383">            <span class="n">hit_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">artifact_dir</span><span class="p">,</span> <span class="n">devices</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">export_opts</span><span class="p">,</span> <span class="n">jobs</span><span class="p">,</span> <span class="n">progress_cb</span>
+</span><span data-line="4384">        <span class="p">)</span>
+</span><span data-line="4385">    <span class="k">else</span><span class="p">:</span>
+</span><span data-line="4386">        <span class="c1"># Serial: prepare per device (device-correct) and compile in order --</span>
+</span><span data-line="4387">        <span class="c1"># behavior-identical to a per-device export_model_for_aoti.</span>
+</span><span data-line="4388">        <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">:</span>
+</span><span data-line="4389">            <span class="n">leaf</span> <span class="o">=</span> <span class="n">artifact_dir</span> <span class="o">/</span> <span class="n">device</span> <span class="o">/</span> <span class="n">dtype</span>
+</span><span data-line="4390">            <span class="n">prepared_d</span> <span class="o">=</span> <span class="n">_prepare_on</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="4391">            <span class="n">plans_d</span> <span class="o">=</span> <span class="n">_plan_segments</span><span class="p">(</span><span class="n">prepared_d</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+</span><span data-line="4392">            <span class="n">seg_by_dev</span><span class="p">[</span><span class="n">device</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="4393">                <span class="n">_execute_segment_plan</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">prepared_d</span><span class="p">,</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">progress_cb</span><span class="o">=</span><span class="n">_dev_cb</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>
+</span><span data-line="4394">                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plans_d</span>
+</span><span data-line="4395">            <span class="p">]</span>
+</span><span data-line="4396">
+</span><span data-line="4397">    <span class="c1"># One shared, device/dtype-independent metadata.json at the artifact root. The</span>
+</span><span data-line="4398">    <span class="c1"># segment metadata (bare .pt2 basenames) is identical across devices, so any</span>
+</span><span data-line="4399">    <span class="c1"># device's list backs the shared envelope; build it from the cpu-side prepared.</span>
+</span><span data-line="4400">    <span class="n">meta</span> <span class="o">=</span> <span class="n">_build_meta</span><span class="p">(</span><span class="n">prepared_cpu</span><span class="p">,</span> <span class="n">seg_by_dev</span><span class="p">[</span><span class="n">devices</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+</span><span data-line="4401">    <span class="n">_write_meta</span><span class="p">(</span><span class="n">artifact_dir</span> <span class="o">/</span> <span class="s2">"metadata.json"</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+</span><span data-line="4402">    <span class="n">_report</span><span class="p">(</span><span class="n">progress_cb</span><span class="p">,</span> <span class="s2">"metadata.json"</span><span class="p">)</span>
+</span><span data-line="4403">    <span class="k">return</span> <span class="n">meta</span>
+</span><span data-line="4404">
+</span><span data-line="4405">
+</span><span data-line="4406"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="4407">    <span class="s2">"export_model_for_aoti"</span><span class="p">,</span>
+</span><span data-line="4408">    <span class="s2">"export_model_multidevice"</span><span class="p">,</span>
+</span><span data-line="4409">    <span class="s2">"plan_export_artifacts"</span><span class="p">,</span>
+</span><span data-line="4410">    <span class="s2">"AOTI_META_SCHEMA_VERSION"</span><span class="p">,</span>
+</span><span data-line="4411"><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
