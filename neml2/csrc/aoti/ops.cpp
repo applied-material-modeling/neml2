@@ -240,9 +240,8 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
   // Pack state from caller inputs (validating + broadcasting to the common batch).
   auto state = _prepare_inputs(inputs);
 
-  // dstate[var] is (*dyn, var_folded, M), M = _req_total_size, composed
-  // segment-by-segment in lockstep with `state`. `batch_shape_vec` (input 0's
-  // sub-batch included) only broadcasts promoted parameters, as the value path does.
+  // dstate[var] is (*dyn, var_folded, M), composed segment by segment with `state`.
+  // `batch_shape_vec` (input 0's, sub-batch included) only broadcasts parameters.
   const auto & ref = state.at(_input_names.front());
   const auto batch_shape_vec = _batch_shape_of(0, ref);
   const auto dyn_vec = _dynamic_batch_shape_of(0, ref);

@@ -171,12 +171,9 @@ public:
   /// on the first evaluation. Cached at load; no GIL.
   const std::vector<std::vector<int64_t>> & output_sub_batch_shapes() const noexcept;
 
-  /// Block form of each derivative pair, keyed `[output][input]`, as
-  /// @ref neml2::aoti::Model::derivative_forms, so a host sizes its storage the
-  /// same way on either runtime. Covers every (output, input) pair, sub-batched
-  /// inputs included, as `neml2-compile` would record it for the
-  /// `[Settings]/example_batch_shape` declaration; without one every pair is
-  /// `"plain"`. Planned on the first call (acquires the GIL), cached after.
+  /// As @ref neml2::aoti::Model::derivative_forms, for every (output, input)
+  /// pair; all `"plain"` without a `[Settings]` sub-batch declaration. Planned on
+  /// the first call (acquires the GIL), then cached.
   const std::map<std::string, std::map<std::string, std::string>> & derivative_forms() const;
 
   /// Evaluate the model. `inputs` is keyed by the names returned by
@@ -198,17 +195,10 @@ public:
   jvp(const std::map<std::string, at::Tensor> & inputs,
       const std::map<std::string, at::Tensor> & tangents) const;
 
-  /// Evaluate + full Jacobian as unflattened variable-pair blocks. Returns
-  /// `{outputs, J}` where `J[out_name][in_name]` is
-  /// `(*B, *out_sub_batch, *out_base, *in_base)` for a plain-batch input (see
-  /// @ref neml2::aoti::VariablePairJacobian), matching
-  /// @ref neml2::aoti::Model::jacobian.
-  ///
+  /// Evaluate + full Jacobian as unflattened variable-pair blocks, laid out as
+  /// @ref neml2::aoti::Model::jacobian (see @ref derivative_forms).
   /// `derivatives` takes `neml2-compile -d` specs; empty selects every output
-  /// against the plain-batch inputs. A sub-batched input is included only when
-  /// named; its block is `(*B, *sub_batch, *out_base, *in_base)` when site-local,
-  /// else `(*B, *out_sub_batch, *out_base, *in_sub_batch, *in_base)` (the
-  /// "paired" / "full" forms of @ref neml2::aoti::Model::derivative_forms).
+  /// against the plain-batch inputs, and a sub-batched input only when named.
   /// Acquires the GIL.
   std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs,

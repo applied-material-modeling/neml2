@@ -1075,8 +1075,9 @@ class _ForwardJacobianModule(nn.Module):
         self.structural_idx = tuple(
             i for i, n in enumerate(self.input_names) if n not in self.promoted_qnames
         )
-        # Block form of each emitted pair, filled by the eager probe.
+        # Per emitted pair, set by the eager probe: its form, and whether it is zero.
         self.pair_forms: list[str] = []
+        self.pair_zero: list[bool] = []
 
     def _needs_per_site_tangent_seed(self, in_name: str, sub_ndim: int) -> bool:
         # Per-site seed for a sub-batched input on a selected pair; other inputs
@@ -1133,9 +1134,9 @@ class _ForwardJacobianModule(nn.Module):
         result_tuple = result if isinstance(result, tuple) else (result,)
         *typed_outputs, v_out = result_tuple
         first_out = typed_outputs[0]
-        batch_shape = first_out.batch_shape
         pairs: list[torch.Tensor] = []
         forms: list[str] = []
+        zero: list[bool] = []
         for out_name, out_type, typed_out in zip(
             self.output_names, self.out_types, typed_outputs, strict=True
         ):
@@ -1150,6 +1151,7 @@ class _ForwardJacobianModule(nn.Module):
                 in_type = self.in_types[i]
                 in_base = tuple(int(s) for s in in_type.BASE_SHAPE)
                 block = v_out.get(out_name, {}).get(in_name)
+                zero.append(block is None)
                 ti = typed_inputs[i]
                 if self._needs_per_site_tangent_seed(in_name, ti.sub_batch_ndim):
                     in_sub = tuple(int(s) for s in ti.sub_batch_shape)
@@ -1169,10 +1171,9 @@ class _ForwardJacobianModule(nn.Module):
                     continue
                 forms.append("plain")
                 if block is None:
-                    # Zero block at natural per-pair shape. No sub axes
-                    # since the tangent didn't survive to this pair.
+                    # Zero block at this output's plain-form shape.
                     pair = torch.zeros(
-                        *batch_shape,
+                        *typed_out.batch_shape,
                         *out_base,
                         *in_base,
                         dtype=first_out.dtype,
@@ -1182,6 +1183,7 @@ class _ForwardJacobianModule(nn.Module):
                     pair = _leading_k_block_to_per_pair(block, in_type)
                 pairs.append(pair)
         self.pair_forms = forms
+        self.pair_zero = zero
         return (*typed_outputs, *pairs)
 
 
@@ -1701,6 +1703,7 @@ def _compile_forward_segment(
         probe_outputs = tuple(probe[:n_outs])
         probe_pairs = list(probe[n_outs:])
         probe_forms = list(jvp_module.pair_forms)
+        probe_zero = list(jvp_module.pair_zero)
         jvp_pkg_name = f"{pkg_basename}_jvp.pt2"
         if uses_ad:
             _compile_param_derivative_graph(
@@ -1755,6 +1758,7 @@ def _compile_forward_segment(
                         "in_sub_batch_shape": [int(s) for s in in_sub],
                         "out_sub_batch_shape": list(out_sub),
                         "form": form,
+                        "zero": probe_zero[k],
                         "batch_independent": batch_independent,
                     }
                 )
@@ -3863,11 +3867,8 @@ def plan_derivative_forms(
 ) -> dict[str, dict[str, str]]:
     """Block form of every ``(output, input)`` pair a compile would record, without compiling.
 
-    Same plan as :func:`plan_output_sub_batch_shapes`. Each forward segment runs
-    the :class:`_ForwardJacobianModule` probe ``neml2-compile`` reads its pair
-    forms from, with every sub-batched input seeded per site; a pair through a
-    solve is ``"full"`` (:func:`_master_pair_forms`). Keyed ``[output][input]``
-    over all structural inputs, sub-batched ones included.
+    The plan of :func:`plan_output_sub_batch_shapes`, plus each forward segment's
+    Jacobian probe; forms combine as in :func:`_master_pair_forms`.
     """
     prepared = _prepare_export(
         hit_path, model_name, device=device, example_batch_shape=example_batch_shape
@@ -3894,8 +3895,10 @@ def plan_derivative_forms(
                         exportable.output_spec, probe[:n_outs]
                     ),
                     "jacobian_pairs": [
-                        {"out_var": o, "in_var": i, "form": f}
-                        for (o, i), f in zip(names, jvp_module.pair_forms, strict=True)
+                        {"out_var": o, "in_var": i, "form": f, "zero": z}
+                        for (o, i), f, z in zip(
+                            names, jvp_module.pair_forms, jvp_module.pair_zero, strict=True
+                        )
                     ],
                 }
             )
@@ -3929,7 +3932,8 @@ def _master_pair_forms(
     """End-to-end block form of each master ``(out, in)`` pair.
 
     A sub-batched input stays ``"paired"`` only through paired forward pairs; a
-    solve or a ``"full"`` pair makes it ``"full"``. Unreached pairs follow
+    solve or a ``"full"`` pair makes it ``"full"``. A structurally zero pair
+    carries nothing. Unreached pairs follow
     :func:`~neml2.types._boundary.zero_pair_block_shape`.
     """
     forms: dict[tuple[str, str], str] = {}
@@ -3948,7 +3952,7 @@ def _master_pair_forms(
             else:
                 for pr in seg.get("jacobian_pairs") or []:
                     src = state.get(pr["in_var"])
-                    if src is None:
+                    if src is None or pr.get("zero"):
                         continue
                     f = "paired" if src == "paired" and pr.get("form") == "paired" else "full"
                     if reached.get(pr["out_var"]) != "full":

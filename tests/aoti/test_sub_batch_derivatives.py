@@ -121,6 +121,18 @@ _CASES = [
             ("y", "z"): "paired",
         },
     ),
+    (
+        "implicit_sub_batch_ift_outputs",
+        ["p:u", "p:v", "a:u", "a:v", "c:u", "c:v"],
+        {
+            ("p", "u"): "paired",
+            ("p", "v"): "plain",
+            ("a", "u"): "full",
+            ("a", "v"): "plain",
+            ("c", "u"): "full",
+            ("c", "v"): "plain",
+        },
+    ),
     ("forward_sub_batch", ["stress:strain"], {("stress", "strain"): "paired"}),
     ("forward_sub_batch_reduce", ["vf:x"], {("vf", "x"): "full"}),
     (
@@ -228,6 +240,23 @@ def test_compiled_sub_batch_derivatives_match_eager_and_fd(tmp_path, scenario, s
         torch.testing.assert_close(
             e, fd, rtol=_RTOL_FD, atol=_ATOL_FD, msg=f"{o}:{i} finite differences"
         )
+
+
+def test_plain_pair_beside_sub_batched_output_after_solve(tmp_path):
+    """A plain pair (c:v) whose output is plain, next to a sub-batched output (p)
+    in the post-solve segment, is a zero block there at c's own shape."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+    from neml2.eager import _EagerModel
+
+    hit = _hit("implicit_sub_batch_ift_outputs")
+    export_model_for_aoti(hit, "model", tmp_path / "art", derivatives=["c:v"])
+    eager = _EagerModel(str(hit), "model")
+    raw = _inputs(eager)
+    _, Jc = AOTIModel(str(tmp_path / "art")).jacobian(raw)
+    _, Je = eager.jacobian(raw, derivatives=["c:v"])
+    assert Jc["c"]["v"].shape == (3,)
+    torch.testing.assert_close(Jc["c"]["v"], Je["c"]["v"], rtol=_RTOL_ROUTE, atol=_ATOL_ROUTE)
 
 
 def test_reduction_through_solve_matches_closed_form(tmp_path):

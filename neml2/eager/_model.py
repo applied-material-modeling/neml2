@@ -223,11 +223,9 @@ class _EagerModel:
 
     @property
     def derivative_forms(self) -> dict[str, dict[str, str]]:
-        """Block form of every ``(output, input)`` pair, keyed ``[output][input]``:
-        ``"plain"``, ``"paired"`` or ``"full"``, as ``neml2-compile`` would record
-        it (:func:`~neml2.cli.aoti_export.plan_derivative_forms`). Planned on first
-        access from the ``[Settings]`` declaration; without one every pair is
-        ``"plain"``."""
+        """Block form of every ``(output, input)`` pair, ``[output][input]``, planned
+        on first access (:func:`~neml2.cli.aoti_export.plan_derivative_forms`); all
+        ``"plain"`` without a ``[Settings]`` sub-batch declaration."""
         if self._derivative_forms is None:
             forms = {o: dict.fromkeys(self.input_names, "plain") for o in self.output_names}
             if self._plan_source is not None:
