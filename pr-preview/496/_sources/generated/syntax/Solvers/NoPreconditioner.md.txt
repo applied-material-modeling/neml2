@@ -1,0 +1,8 @@
+(solvers-NoPreconditioner)=
+# NoPreconditioner
+
+**Source:** `solvers/preconditioners.py`
+
+Identity preconditioner (unpreconditioned Krylov).
+
+*This type has no documented options.*

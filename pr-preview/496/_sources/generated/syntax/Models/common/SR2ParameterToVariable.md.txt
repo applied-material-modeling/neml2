@@ -1,0 +1,18 @@
+(models-SR2ParameterToVariable)=
+# SR2ParameterToVariable
+
+**Source:** `models/common/ParameterToVariable.py`
+
+SR2 parameter-to-variable. Mirrors ``ParameterToVariable<SR2>``.
+
+## Outputs
+
+`to` &mdash; `output` &middot; `SR2` &middot; **required**
+: The name of the variable
+
+
+## Parameters
+
+`from` &mdash; `parameter` &middot; `SR2` &middot; **required**
+: The input parameter
+
