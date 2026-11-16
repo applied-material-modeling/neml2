@@ -257,6 +257,10 @@ def test_plain_pair_beside_sub_batched_output_after_solve(tmp_path):
     _, Je = eager.jacobian(raw, derivatives=["c:v"])
     assert Jc["c"]["v"].shape == (3,)
     torch.testing.assert_close(Jc["c"]["v"], Je["c"]["v"], rtol=_RTOL_ROUTE, atol=_ATOL_ROUTE)
+    # w_i = (w~1_i + dt v u_i) / (1 + dt), so dc/dv = sum_i dt u_i / (1 + dt).
+    dt = raw["t"] - raw["t~1"]
+    exact = (dt[:, None] * raw["u"] / (1 + dt[:, None])).sum(-1)
+    torch.testing.assert_close(Jc["c"]["v"], exact, rtol=_RTOL_ROUTE, atol=_ATOL_ROUTE)
 
 
 def test_reduction_through_solve_matches_closed_form(tmp_path):

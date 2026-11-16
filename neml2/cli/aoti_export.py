@@ -1075,9 +1075,10 @@ class _ForwardJacobianModule(nn.Module):
         self.structural_idx = tuple(
             i for i, n in enumerate(self.input_names) if n not in self.promoted_qnames
         )
-        # Per emitted pair, set by the eager probe: its form, and whether it is zero.
+        # Per emitted pair, set by the eager probe: its form, and whether it is
+        # structurally zero.
         self.pair_forms: list[str] = []
-        self.pair_zero: list[bool] = []
+        self.pair_is_structurally_zero: list[bool] = []
 
     def _needs_per_site_tangent_seed(self, in_name: str, sub_ndim: int) -> bool:
         # Per-site seed for a sub-batched input on a selected pair; other inputs
@@ -1136,7 +1137,7 @@ class _ForwardJacobianModule(nn.Module):
         first_out = typed_outputs[0]
         pairs: list[torch.Tensor] = []
         forms: list[str] = []
-        zero: list[bool] = []
+        structurally_zero: list[bool] = []
         for out_name, out_type, typed_out in zip(
             self.output_names, self.out_types, typed_outputs, strict=True
         ):
@@ -1151,7 +1152,7 @@ class _ForwardJacobianModule(nn.Module):
                 in_type = self.in_types[i]
                 in_base = tuple(int(s) for s in in_type.BASE_SHAPE)
                 block = v_out.get(out_name, {}).get(in_name)
-                zero.append(block is None)
+                structurally_zero.append(block is None)
                 ti = typed_inputs[i]
                 if self._needs_per_site_tangent_seed(in_name, ti.sub_batch_ndim):
                     in_sub = tuple(int(s) for s in ti.sub_batch_shape)
@@ -1183,7 +1184,7 @@ class _ForwardJacobianModule(nn.Module):
                     pair = _leading_k_block_to_per_pair(block, in_type)
                 pairs.append(pair)
         self.pair_forms = forms
-        self.pair_zero = zero
+        self.pair_is_structurally_zero = structurally_zero
         return (*typed_outputs, *pairs)
 
 
@@ -1703,7 +1704,7 @@ def _compile_forward_segment(
         probe_outputs = tuple(probe[:n_outs])
         probe_pairs = list(probe[n_outs:])
         probe_forms = list(jvp_module.pair_forms)
-        probe_zero = list(jvp_module.pair_zero)
+        probe_is_structurally_zero = list(jvp_module.pair_is_structurally_zero)
         jvp_pkg_name = f"{pkg_basename}_jvp.pt2"
         if uses_ad:
             _compile_param_derivative_graph(
@@ -1758,7 +1759,7 @@ def _compile_forward_segment(
                         "in_sub_batch_shape": [int(s) for s in in_sub],
                         "out_sub_batch_shape": list(out_sub),
                         "form": form,
-                        "zero": probe_zero[k],
+                        "structurally_zero": probe_is_structurally_zero[k],
                         "batch_independent": batch_independent,
                     }
                 )
@@ -3895,9 +3896,12 @@ def plan_derivative_forms(
                         exportable.output_spec, probe[:n_outs]
                     ),
                     "jacobian_pairs": [
-                        {"out_var": o, "in_var": i, "form": f, "zero": z}
+                        {"out_var": o, "in_var": i, "form": f, "structurally_zero": z}
                         for (o, i), f, z in zip(
-                            names, jvp_module.pair_forms, jvp_module.pair_zero, strict=True
+                            names,
+                            jvp_module.pair_forms,
+                            jvp_module.pair_is_structurally_zero,
+                            strict=True,
                         )
                     ],
                 }
@@ -3952,7 +3956,7 @@ def _master_pair_forms(
             else:
                 for pr in seg.get("jacobian_pairs") or []:
                     src = state.get(pr["in_var"])
-                    if src is None or pr.get("zero"):
+                    if src is None or pr.get("structurally_zero"):
                         continue
                     f = "paired" if src == "paired" and pr.get("form") == "paired" else "full"
                     if reached.get(pr["out_var"]) != "full":
