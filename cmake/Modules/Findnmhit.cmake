@@ -24,16 +24,11 @@ if(NOT TARGET nmhit::nmhit)
   # nmhit as seen by the current Python interpreter.
   find_package(Python3 COMPONENTS Interpreter)
   if(Python3_FOUND)
-    # Where `import nmhit` resolves (see Findtorch.cmake for why this comes
-    # before the site-dir guesses).
-    execute_process(
-      COMMAND ${Python3_EXECUTABLE} -c
-        "import importlib.util as u; s = u.find_spec('nmhit'); print(s.submodule_search_locations[0] if s else '')"
-      OUTPUT_VARIABLE _nmhit_import_dir
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      ERROR_QUIET
-    )
-    if(EXISTS "${_nmhit_import_dir}")
+    # Where `import nmhit` resolves, ahead of the site-dir guesses below (see
+    # PythonPackageDir.cmake for the layouts this covers).
+    include(${CMAKE_CURRENT_LIST_DIR}/PythonPackageDir.cmake)
+    python_package_dir(${Python3_EXECUTABLE} nmhit _nmhit_import_dir)
+    if(_nmhit_import_dir)
       list(APPEND _nmhit_search_paths ${_nmhit_import_dir})
     endif()
     execute_process(

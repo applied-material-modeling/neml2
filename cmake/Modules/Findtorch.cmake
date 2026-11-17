@@ -38,19 +38,12 @@ set(_torch_search_paths
 # versions of torch installed.
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND AND torch_SEARCH_SITE_PACKAGES)
-  # Ask the interpreter where `import torch` resolves (find_spec locates the
-  # package without importing it). This covers layouts the site-dir guesses
-  # below miss, e.g. a `--system-site-packages` venv whose torch lives in the
-  # base interpreter's site-packages rather than the venv's own.
-  execute_process(
-    COMMAND ${Python3_EXECUTABLE} -c
-      "import importlib.util as u; s = u.find_spec('torch'); print(s.submodule_search_locations[0] if s else '')"
-    OUTPUT_VARIABLE _torch_import_dir
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
-  )
+  # Where `import torch` resolves, ahead of the site-dir guesses below (see
+  # PythonPackageDir.cmake for the layouts this covers).
+  include(${CMAKE_CURRENT_LIST_DIR}/PythonPackageDir.cmake)
+  python_package_dir(${Python3_EXECUTABLE} torch _torch_import_dir)
 
-  if(EXISTS "${_torch_import_dir}")
+  if(_torch_import_dir)
     list(APPEND _torch_search_paths ${_torch_import_dir})
   endif()
 

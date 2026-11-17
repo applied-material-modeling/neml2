@@ -218,6 +218,7 @@ install(FILES
       ${NEML2_SOURCE_DIR}/cmake/Modules/Findtorch.cmake
       ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cpp
       ${NEML2_SOURCE_DIR}/cmake/Modules/Findnmhit.cmake
+      ${NEML2_SOURCE_DIR}/cmake/Modules/PythonPackageDir.cmake
       DESTINATION ${INSTALL_SHAREDIR}/cmake/neml2/Modules
       COMPONENT libneml2
 )
