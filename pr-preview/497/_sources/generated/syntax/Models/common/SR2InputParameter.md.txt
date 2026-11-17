@@ -1,0 +1,18 @@
+(models-SR2InputParameter)=
+# SR2InputParameter
+
+**Source:** `models/common/InputParameter.py`
+
+SR2-valued input parameter. Mirrors ``InputParameter<SR2>``.
+
+## Inputs
+
+`variable` &mdash; `input` &middot; `SR2` &middot; **required**
+: The input variable that defines this parameter
+
+
+## Outputs
+
+`parameter` &mdash; `output` &middot; `SR2` &middot; **required**
+: Output parameter
+

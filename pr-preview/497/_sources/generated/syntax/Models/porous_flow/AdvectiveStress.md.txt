@@ -1,0 +1,40 @@
+(models-AdvectiveStress)=
+# AdvectiveStress
+
+**Source:** `models/porous_flow/AdvectiveStress.py`
+
+Variational advective stress associated with swelling-induced volume change.
+
+Implements $p_s = -c/(3 J_s^{5/3} J_t^{2/3}) * P_{ij} F_{ij}$ where
+$J_s$ (swelling/phase-change Jacobian) and $J_t$ (thermal-expansion
+Jacobian) are optional inputs defaulting to ``1``, $P$ is the first
+Piola-Kirchhoff stress, $F$ is the deformation gradient, and $c$ is
+the volume-change coefficient. Mirrors the C++
+``models/porous_flow/AdvectiveStress`` set_value math 1:1.
+
+## Inputs
+
+`js` &mdash; `input` &middot; `Scalar`
+: The Jacobian of the deformation gradient associated with the swelling and phase change
+
+`jt` &mdash; `input` &middot; `Scalar`
+: The Jacobian of the deformation gradient associated with the thermal and volume expansion
+
+`deformation_gradient` &mdash; `input` &middot; `R2` &middot; **required**
+: The deformation gradient
+
+`pk1_stress` &mdash; `input` &middot; `R2` &middot; **required**
+: 1st Piola-Kirchhoff stress
+
+
+## Outputs
+
+`advective_stress` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The average advective stress
+
+
+## Parameters
+
+`coefficient` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Coefficient c
+

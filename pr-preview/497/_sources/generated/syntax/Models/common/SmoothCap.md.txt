@@ -1,0 +1,37 @@
+(models-SmoothCap)=
+# SmoothCap
+
+**Source:** `models/common/SmoothCap.py`
+
+Smoothly cap a strictly positive scalar from above,
+$y = \left( x^{-p} + x_{max}^{-p} \right)^{-1/p}$.
+
+This is a smooth minimum of $x$ and $x_{max}$: $y < \min(x, x_{max})$
+everywhere, $y \to x$ for $x \ll x_{max}$ and $y \to x_{max}$ for
+$x \gg x_{max}$. Larger $p$ gives a sharper corner. A typical use is
+bounding a temperature-dependent rate sensitivity (e.g. from
+``KocksMeckingRateSensitivity``) before it reaches a power-law flow rule,
+where very large exponents overflow at low temperature.
+
+The argument must be strictly positive.
+
+## Inputs
+
+`argument` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Argument to cap; must be strictly positive
+
+
+## Outputs
+
+`value` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Smoothly capped value
+
+
+## Other options
+
+`maximum` &mdash; `float` &middot; **required**
+: Cap value approached for large arguments
+
+`exponent` &mdash; `float` &middot; default `4.0`
+: Smoothing exponent; larger values give a sharper transition
+
