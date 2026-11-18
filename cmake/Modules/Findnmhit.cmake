@@ -24,6 +24,13 @@ if(NOT TARGET nmhit::nmhit)
   # nmhit as seen by the current Python interpreter.
   find_package(Python3 COMPONENTS Interpreter)
   if(Python3_FOUND)
+    # Where `import nmhit` resolves, ahead of the site-dir guesses below (see
+    # PythonPackageDir.cmake for the layouts this covers).
+    include(${CMAKE_CURRENT_LIST_DIR}/PythonPackageDir.cmake)
+    python_package_dir(${Python3_EXECUTABLE} nmhit _nmhit_import_dir)
+    if(_nmhit_import_dir)
+      list(APPEND _nmhit_search_paths ${_nmhit_import_dir})
+    endif()
     execute_process(
       COMMAND ${Python3_EXECUTABLE} -m site --user-site
       OUTPUT_VARIABLE _nmhit_user_site
