@@ -52,6 +52,7 @@ back to raw only at the return boundary (in
 from __future__ import annotations
 
 import itertools
+from collections.abc import Sequence
 
 import torch
 
@@ -60,6 +61,7 @@ from ..types._boundary import (
     assemble_jvp_outputs,
     broadcast_to_common_batch,
     check_tensor,
+    sub_batched_identity_seed,
     unwrap_outputs,
 )
 
@@ -189,6 +191,9 @@ class _EagerModel:
         self.output_sub_batch_shapes: list[list[int]] = [
             list(planned.get(n, [])) for n in self.output_names
         ]
+        # Derivative block forms are planned on first `derivative_forms` access.
+        self._plan_source = (input_file, model_name) if declares_sub else None
+        self._derivative_forms: dict[str, dict[str, str]] | None = None
 
         # Calibration-parameter surface (d(output)/d(parameter), reverse-mode AD).
         # Parameters are addressed by their named_parameters() qualified name
@@ -215,6 +220,32 @@ class _EagerModel:
         self.parameter_base_shapes: dict[str, list[int]] = {
             q: list(b) for q, b in self._param_base_shape_map.items()
         }
+
+    @property
+    def derivative_forms(self) -> dict[str, dict[str, str]]:
+        """Block form of every ``(output, input)`` pair, ``[output][input]``, planned
+        on first access (:func:`~neml2.cli.aoti_export.plan_derivative_forms`); all
+        ``"plain"`` without a ``[Settings]`` sub-batch declaration."""
+        if self._derivative_forms is None:
+            forms = {o: dict.fromkeys(self.input_names, "plain") for o in self.output_names}
+            if self._plan_source is not None:
+                from ..cli.aoti_export import plan_derivative_forms
+
+                input_file, model_name = self._plan_source
+                try:
+                    planned = plan_derivative_forms(
+                        input_file, model_name, device=str(self._device)
+                    )
+                except Exception as err:
+                    raise RuntimeError(
+                        f"EagerModel: could not work out the derivative block forms for the "
+                        f"[Settings]/example_batch_shape declaration of model {model_name!r} "
+                        f"in '{input_file}' (the compile plan failed: "
+                        f"{type(err).__name__}: {err})."
+                    ) from err
+                forms = {o: {i: planned[o][i] for i in self.input_names} for o in self.output_names}
+            self._derivative_forms = forms
+        return self._derivative_forms
 
     @property
     def device(self) -> torch.device:
@@ -334,8 +365,8 @@ class _EagerModel:
     def _plain_inputs(self, typed_args: tuple) -> list[str]:
         """Names of the inputs that carry no sub-batch axes in this call.
 
-        Derivatives are taken with respect to these only; a sub-batched input
-        (e.g. per-bin history ``number_density~1``) is held fixed, as on AOTI.
+        The default derivative columns; a sub-batched input is included only
+        when named.
         """
         return [
             n for n, ta in zip(self.input_names, typed_args, strict=True) if ta.sub_batch_ndim == 0
@@ -451,24 +482,37 @@ class _EagerModel:
         self,
         inputs: dict[str, torch.Tensor],
         batch_ndim: int | None = None,
+        derivatives: Sequence[str] | None = None,
     ) -> tuple[dict[str, torch.Tensor], dict[str, dict[str, torch.Tensor]]]:
         """Evaluate the model and its Jacobian as variable-pair blocks.
 
-        ``inputs`` is split as in :meth:`forward`. Returns ``(outputs, J)`` --
-        ``outputs`` keyed by ``output_names`` and ``J`` the nested
-        ``{out_name: {in_name: (*B, *out_sub_batch, *out_base, *in_base)}}``
-        block dict (rows in ``output_spec`` order, cols in ``input_spec`` order),
-        matching the C++ ``neml2::aoti::Model::jacobian`` contract. Columns are
-        the plain-batch inputs only: a sub-batched input is held fixed and has no
-        column, as an AOTI artifact returns only the pairs it was compiled with.
-        Built on the native chain rule via a leading-K identity seed per input
-        (reusing the AOTI export's ``_leading_k_identity_seed``).
+        ``inputs`` is split as in :meth:`forward`. Returns ``(outputs, J)`` with
+        ``J`` the nested ``{out_name: {in_name: block}}`` dict, matching the C++
+        ``neml2::aoti::Model::jacobian`` contract.
+
+        *derivatives* takes ``neml2-compile -d`` specs; the default is every output
+        against the plain-batch inputs. A sub-batched input is included only when
+        named (block forms: :func:`neml2.types._boundary.sub_batched_pair_block`).
         """
-        from ..cli.aoti_export import _leading_k_identity_seed
+        from ..cli.aoti_export import _leading_k_identity_seed, _resolve_derivative_specs
         from ..models.param_ad import call_batch_shape
 
         typed_args, common_dyn = self._typed_args(inputs, batch_ndim)
         plain = self._plain_inputs(typed_args)
+        sub_shapes = {
+            name: tuple(int(s) for s in ta.sub_batch_shape)
+            for name, ta in zip(self.input_names, typed_args, strict=True)
+            if name not in plain
+        }
+        if derivatives is None:
+            pairs = None
+            columns = plain
+        else:
+            pairs, _ = _resolve_derivative_specs(
+                derivatives, self.output_names, self.input_names, sub_batched_inputs=sub_shapes
+            )
+            requested = {i for _, i in pairs}
+            columns = [n for n in self.input_names if n in requested]
         # The output batches on broadcast(input batches, parameter batches) -- a
         # parameter may carry its own batch dim (e.g. a per-batch-element Scalar).
         # Build every input's identity seed at that common call batch so the chain
@@ -477,18 +521,18 @@ class _EagerModel:
         call_batch = call_batch_shape(
             typed_args, self._model, self._param_names, self._param_base_shape_map
         )
-        seed = {
-            name: {
-                name: _leading_k_identity_seed(
-                    self.input_spec[name],
-                    call_batch,
-                    dtype=typed_in.dtype,
-                    device=typed_in.device,
+        seed = {}
+        for name, typed_in in zip(self.input_names, typed_args, strict=True):
+            if name not in columns:
+                continue
+            opts = {"dtype": typed_in.dtype, "device": typed_in.device}
+            if name in sub_shapes:
+                leaf = sub_batched_identity_seed(
+                    self.input_spec[name], call_batch, sub_shapes[name], **opts
                 )
-            }
-            for name, typed_in in zip(self.input_names, typed_args, strict=True)
-            if name in plain
-        }
+            else:
+                leaf = _leading_k_identity_seed(self.input_spec[name], call_batch, **opts)
+            seed[name] = {name: leaf}
         typed_outputs, v_out = self._eval(typed_args, v=seed)
         outputs = unwrap_outputs(typed_outputs, self.output_names, common_dyn)
         assert v_out is not None
@@ -497,9 +541,11 @@ class _EagerModel:
             typed_outputs,
             self.output_names,
             self.output_spec,
-            plain,
+            columns,
             self.input_spec,
             call_batch,
+            input_sub_batch_shapes=sub_shapes,
+            pairs=pairs,
         )
         return outputs, jac
 

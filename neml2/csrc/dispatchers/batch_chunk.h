@@ -187,12 +187,14 @@ to_device_nested(const std::map<std::string, std::map<std::string, at::Tensor>> 
 /// batch). We detect it structurally: a block with exactly
 /// ``out_base_ndim[o] + in_base_ndim[i]`` dims carries no leading batch axis, so
 /// take the first chunk's copy; any block with more dims is batched and is
-/// concatenated as usual.
+/// concatenated as usual. *pair_extra_ndim* counts a pair's site axes (see
+/// `aoti::Model::derivative_forms`).
 inline std::map<std::string, std::map<std::string, at::Tensor>>
 cat_batch_nested(
     const std::vector<std::map<std::string, std::map<std::string, at::Tensor>>> & chunks,
     const std::map<std::string, int64_t> & out_base_ndim,
-    const std::map<std::string, int64_t> & in_base_ndim)
+    const std::map<std::string, int64_t> & in_base_ndim,
+    const std::map<std::string, std::map<std::string, int64_t>> & pair_extra_ndim = {})
 {
   _assert(!chunks.empty(), "cat_batch_nested: no chunks to concatenate.");
   if (chunks.size() == 1)
@@ -202,7 +204,10 @@ cat_batch_nested(
   for (const auto & [o, row] : chunks.front())
     for (const auto & [i, first] : row)
     {
-      const int64_t trail = out_base_ndim.at(o) + in_base_ndim.at(i);
+      int64_t trail = out_base_ndim.at(o) + in_base_ndim.at(i);
+      if (auto eo = pair_extra_ndim.find(o); eo != pair_extra_ndim.end())
+        if (auto ei = eo->second.find(i); ei != eo->second.end())
+          trail += ei->second;
       if (first.dim() == trail)
       {
         // Batch-independent: identical across chunks, take the first.

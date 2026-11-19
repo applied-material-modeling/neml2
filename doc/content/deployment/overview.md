@@ -131,10 +131,9 @@ line is a fourth way to drive a model with no code at all: [](cli-utilities).
 - **Calling a compiled model from Python**, or reproducing C++ numerics without a
   NEML2 source dependency → `py-aoti`.
 - **C++ tests that can't pay the compile cost** → `cpp-eager`.
-- **Sub-batch models** (crystal plasticity and friends) run on every runtime.
-  On `cpp-eager` the extents come from the input file's `[Settings]` block, and
-  derivatives are taken with respect to plain-batch inputs only
-  ([](model-eager-cpp)).
+- **Sub-batch models** (crystal plasticity and friends) run on every runtime,
+  derivatives included ([](sub-batch-derivatives)). On `cpp-eager` the extents
+  come from the input file's `[Settings]` block ([](model-eager-cpp)).
 
 (runtimes-vs-consumers)=
 ## Runtimes vs. consumers

@@ -30,6 +30,7 @@
 // never sees pybind/Python types.
 
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -69,6 +70,9 @@ struct Model::Impl
   // neml2-compile would record for it); empty means "not declared", as above.
   // One entry per output, for the same indexing reason.
   std::vector<std::vector<int64_t>> output_sub_batch_shapes;
+  // Per-pair derivative block forms, read on the first `derivative_forms()`
+  // call (the adapter plans them lazily) and cached.
+  std::optional<std::map<std::string, std::map<std::string, std::string>>> derivative_forms;
   // Calibration-parameter natural base shapes, keyed by qualified name (the
   // unified parameter surface shared with aoti::Model).
   std::map<std::string, std::vector<int64_t>> parameter_base_shapes;

@@ -71,9 +71,9 @@ namespace neml2::eager
  * **Sub-batch.** Variables are `(*B, *sub_batch_shape, *base_shape)`, as on
  * `aoti::Model`. The sub-batch extents come from the input file's
  * `[Settings]/example_batch_shape` (see @ref input_sub_batch_shapes); an
- * undeclared input is plain-batch. Derivatives (`jvp` / `jacobian`) are taken
- * with respect to plain-batch inputs only, and the parameter derivatives are
- * plain-batch only.
+ * undeclared input is plain-batch. `jvp` tangents and parameter derivatives are
+ * plain-batch only; `jacobian` takes a sub-batched input when named (see
+ * @ref derivative_forms).
  *
  * **PImpl + visibility.** Every implementation detail -- the embedded
  * interpreter handle and the `pybind11` adapter object -- lives behind an
@@ -171,6 +171,11 @@ public:
   /// on the first evaluation. Cached at load; no GIL.
   const std::vector<std::vector<int64_t>> & output_sub_batch_shapes() const noexcept;
 
+  /// As @ref neml2::aoti::Model::derivative_forms, for every (output, input)
+  /// pair; all `"plain"` without a `[Settings]` sub-batch declaration. Planned on
+  /// the first call (acquires the GIL), then cached.
+  const std::map<std::string, std::map<std::string, std::string>> & derivative_forms() const;
+
   /// Evaluate the model. `inputs` is keyed by the names returned by
   /// `input_names()` and shaped `(*B, *sub_batch_shape, *base_shape)` (see
   /// `input_sub_batch_shapes()`); missing keys throw, a non-canonical trailing
@@ -190,15 +195,14 @@ public:
   jvp(const std::map<std::string, at::Tensor> & inputs,
       const std::map<std::string, at::Tensor> & tangents) const;
 
-  /// Evaluate + full Jacobian as unflattened variable-pair blocks. Returns
-  /// `{outputs, J}` where `J[out_name][in_name]` is
-  /// `(*B, *out_sub_batch, *out_base, *in_base)` (see
-  /// @ref neml2::aoti::VariablePairJacobian), matching
-  /// @ref neml2::aoti::Model::jacobian. Columns are the plain-batch inputs only:
-  /// a sub-batched input has no column, as an AOTI artifact returns only the
-  /// pairs it was compiled with. Acquires the GIL.
+  /// Evaluate + full Jacobian as unflattened variable-pair blocks, laid out as
+  /// @ref neml2::aoti::Model::jacobian (see @ref derivative_forms).
+  /// `derivatives` takes `neml2-compile -d` specs; empty selects every output
+  /// against the plain-batch inputs, and a sub-batched input only when named.
+  /// Acquires the GIL.
   std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
-  jacobian(const std::map<std::string, at::Tensor> & inputs) const;
+  jacobian(const std::map<std::string, at::Tensor> & inputs,
+           const std::vector<std::string> & derivatives = {}) const;
 
   /// Per-calibration-parameter natural base shape, keyed by qualified name
   /// (e.g. `"elasticity.E"` -> `{}` for a Scalar, `{6}` for an SR2) -- the

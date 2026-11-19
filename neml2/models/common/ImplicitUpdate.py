@@ -38,6 +38,7 @@ from ...factory import register_neml2_object
 from ...schema import HitSchema, dependency, option
 from ...solvers import ConvergenceError, DenseLU, Newton, RetCode
 from ...types import Tensor, TensorWrapper
+from ...types.functions import fullify
 from .._hit import _opt_list_str
 from ..chain_rule import ChainRuleDict
 from ..model import Model, register_submodule
@@ -234,6 +235,10 @@ def _matrix_pushforward(
     :class:`Tensor` matmul, then unflatten back to the output wrapper's
     typed shape.
     """
+    # A per-site (paired) tangent stores all sites in one direction; the DENSE
+    # block couples sites, so enumerate them before folding into the DOF axis.
+    if any(p is not None for p in tangent.k_pairing):
+        tangent = fullify(tangent).materialize()
     # Flatten the tangent's (*sub_batch, *BASE) trailing axes into a
     # single DOF axis, wrap as a Tensor whose batch_ndim covers the
     # leading (K, *dynamic_batch) axes. ``tangent.dynamic_batch_shape``
@@ -618,7 +623,11 @@ class ImplicitUpdate(Model):
         err.unknowns = dict(self.system.u().disassemble().values)
 
     def _output_sensitivities(self, v: ChainRuleDict) -> ChainRuleDict:
-        A, B = self.system.A_and_B()
+        # B only for the givens that carry a direction; the rest would be unread.
+        seeded = [g for g in self.system.given_names if v.get(g)]
+        if not seeded:
+            return {u: {} for u in self.system.unknown_names}
+        A, B = self.system.A_and_B(seeded)
         du_dg = -self.input_sensitivity_solver.solve(A, B)
         assert isinstance(du_dg, AssembledMatrix)
 
@@ -627,7 +636,7 @@ class ImplicitUpdate(Model):
             unknown_sens: dict[str, TensorWrapper] = {}
             unknown_type = du_dg.row_layout.type_of(unknown_name)
             unknown_sub_batch_shape = du_dg.row_layout.sub_batch_shape(unknown_name)
-            for given_name in self.system.given_names:
+            for given_name in seeded:
                 given_sens = v.get(given_name, {})
                 if not given_sens:
                     continue

@@ -427,8 +427,9 @@ class AOTIModel(nn.Module):
 
         ``inputs`` is a ``{variable_name: tensor}`` dict. Returns
         ``(outputs, J)`` where ``J[out][in]`` is the block ``d(out)/d(in)``,
-        shaped ``(batch, *out_base, *in_base)``. Like :meth:`jvp`, needs an
-        artifact compiled with ``-d``.
+        shaped ``(batch, *out_base, *in_base)`` for plain-batch variables, else
+        as its :attr:`neml2.aoti.Model.derivative_forms` entry. Like :meth:`jvp`,
+        needs an artifact compiled with ``-d``.
         """
         return self._inner.jacobian(inputs, param_overrides or {})
 
