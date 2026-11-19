@@ -32,5 +32,6 @@ on-disk CSV files.
 
 from .CSVTensor import CSVSR2, CSVWR2, CSVScalar, CSVVec  # noqa: F401 (register)
 from .PythonTensor import PythonTensor  # noqa: F401 (register)
+from .SquareMatrix import SquareMatrix  # noqa: F401 (register)
 
-__all__ = ["CSVScalar", "CSVSR2", "CSVVec", "CSVWR2", "PythonTensor"]
+__all__ = ["CSVScalar", "CSVSR2", "CSVVec", "CSVWR2", "PythonTensor", "SquareMatrix"]

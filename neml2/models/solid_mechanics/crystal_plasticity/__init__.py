@@ -34,10 +34,13 @@ from .CrystalPlasticityDeformationGradientPredictor import (
     CrystalPlasticityDeformationGradientPredictor,
 )
 from .CrystalPlasticityStrainPredictor import CrystalPlasticityStrainPredictor
+from .DislocationInteractionStrengthMap import DislocationInteractionStrengthMap
 from .DislocationObstacleStrengthMap import DislocationObstacleStrengthMap
 from .ElasticStrainRate import ElasticStrainRate
 from .FixOrientation import FixOrientation
 from .KocksMeckingDynamicRecovery import KocksMeckingDynamicRecovery
+from .LinearInteractionHardeningRule import LinearInteractionHardeningRule
+from .LinearInteractionStrengthMap import LinearInteractionStrengthMap
 from .LinearSingleSlipHardeningRule import LinearSingleSlipHardeningRule
 from .LumpedForestDislocationEvolution import LumpedForestDislocationEvolution
 from .OrientationRate import OrientationRate
@@ -64,10 +67,13 @@ from .VoceSingleSlipHardeningRule import VoceSingleSlipHardeningRule
 __all__ = [
     "CrystalPlasticityDeformationGradientPredictor",
     "CrystalPlasticityStrainPredictor",
+    "DislocationInteractionStrengthMap",
     "DislocationObstacleStrengthMap",
     "ElasticStrainRate",
     "FixOrientation",
     "KocksMeckingDynamicRecovery",
+    "LinearInteractionHardeningRule",
+    "LinearInteractionStrengthMap",
     "LinearSingleSlipHardeningRule",
     "LumpedForestDislocationEvolution",
     "OrientationRate",

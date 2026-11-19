@@ -188,6 +188,38 @@ def test_wrap_group_raw_two_sub_batch_block_tags_common_prefix():
     assert result.batch_ndim == raw.ndim - 1 - 1  # minus common sub axis, minus base axis
 
 
+def test_wrap_group_raw_lone_extra_bearing_block_honors_override():
+    """A BLOCK group with a SINGLE ``(common, extra)`` member and an explicit
+    ``group_common`` override is wrapped with the OVERRIDE prefix ``(common,)``, not the
+    member's full ``(common, extra)`` sub-batch: ``sub_batch_ndim == 1``, the folded
+    ``extra`` axis stays in base, and the lone dynamic axis is preserved. The lone-member
+    counterpart of :func:`test_wrap_group_raw_two_sub_batch_block_tags_common_prefix`,
+    where the ``min`` over two members happens to land on the shared prefix.
+    """
+    n_common, n_extra = 4, 12  # e.g. (grain, slip)
+    specs: dict[str, type[TensorWrapper]] = {"rho": Scalar}
+    layout = AxisLayout(
+        [["rho"]],
+        specs,
+        {"rho": torch.Size([n_common, n_extra])},
+        structure=["block"],
+        group_common=[torch.Size([n_common])],  # prefix (grain,); slip folds into base
+    )
+    # Packed per-group tensor: (*dyn, common, base_total) with base_total = base(1) * extra.
+    n_dyn = 7
+    raw = torch.arange(n_dyn * n_common * n_extra, dtype=torch.float64).reshape(
+        n_dyn, n_common, n_extra
+    )
+    result = wrap_group_raw(raw, ("rho",), "block", layout)
+    assert result.sub_batch_ndim == 1  # (grain,) only -- NOT (grain, slip)
+    assert tuple(result.sub_batch_shape) == (n_common,)
+    assert result.batch_ndim == 1  # the lone dynamic axis is preserved, not eaten
+    # Round-trips: disassembly unfolds the (slip,) extra from base back to (grain, slip).
+    back = AssembledVector(layout, [result]).disassemble().values["rho"]
+    assert tuple(back.sub_batch_shape) == (n_common, n_extra)
+    torch.testing.assert_close(back.data.reshape(n_dyn, n_common, n_extra), raw, rtol=0, atol=0)
+
+
 def test_group_common_override_retains_matched_prefix():
     """A lone (N, M) member infers (N, M) as its common, but an explicit override pins
     (N,) -- the generated-given-layout fix so disassembly keeps the folded M width.
