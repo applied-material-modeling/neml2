@@ -1,0 +1,94 @@
+# NEML2 v3 coupled-form J2 power-law creep model (MOOSE-facing vars
+# neml2_stress / neml2_strain). Pure creep eps_dot=A*sigma_e^n, A=1e-30, n=4,
+# E=80e9, nu=0.33, via stock PerzynaPlasticFlowRate (eta=A^(-1/n)=3.162e7).
+# Driver-less: MOOSE feeds neml2_strain and reads neml2_stress via the [NEML2] block.
+[Models]
+  [mandel_stress]
+    type = IsotropicMandelStress
+    cauchy_stress = 'neml2_stress'
+  []
+  [vonmises]
+    type = SR2Invariant
+    invariant_type = 'VONMISES'
+    tensor = 'mandel_stress'
+    invariant = 'yield_function'
+  []
+  [flow]
+    type = ComposedModel
+    models = 'vonmises'
+  []
+  [normality]
+    type = Normality
+    model = 'flow'
+    function = 'yield_function'
+    from = 'mandel_stress'
+    to = 'flow_direction'
+  []
+  [flow_rate]
+    type = PerzynaPlasticFlowRate
+    reference_stress = 3.1622776601683795e7
+    exponent = 4
+  []
+  [Eprate]
+    type = AssociativePlasticFlow
+  []
+  [Erate]
+    type = SR2VariableRate
+    variable = 'neml2_strain'
+  []
+  [Eerate]
+    type = SR2LinearCombination
+    from = 'neml2_strain_rate plastic_strain_rate'
+    to = 'elastic_strain_rate'
+    weights = '1 -1'
+  []
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients = '80.0e9 0.33'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    rate_form = true
+    strain = 'elastic_strain'
+    stress = 'neml2_stress'
+  []
+  [integrate_stress]
+    type = SR2BackwardEulerTimeIntegration
+    variable = 'neml2_stress'
+  []
+  [implicit_rate]
+    type = ComposedModel
+    models = 'mandel_stress vonmises normality flow_rate Eprate Erate Eerate elasticity integrate_stress'
+  []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+    unknowns = 'neml2_stress'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = NewtonWithLineSearch
+    linesearch_type = 'BACKTRACKING'
+    max_its = 50
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'neml2_stress'
+  []
+  [model]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys'
+    solver = 'newton'
+    predictor = 'predictor'
+  []
+[]
