@@ -1,0 +1,44 @@
+(models-KocksMeckingActivationEnergy)=
+# KocksMeckingActivationEnergy
+
+**Source:** `models/solid_mechanics/plasticity/KocksMeckingActivationEnergy.py`
+
+Calculates the Kocks-Mecking normalized activation as
+$g = \frac{kT}{\mu b^3} \log \frac{\dot{\varepsilon}_0}{\dot{\varepsilon}}$
+with $\mu$ the shear modulus, $k$ the Boltzmann constant,
+$T$ the absolute temperature, $b$ the Burgers vector length,
+$\dot{\varepsilon}_0$ a reference strain rate, and
+$\dot{\varepsilon}$ the current strain rate.
+
+## Inputs
+
+`temperature` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Absolute temperature
+
+`strain_rate` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Effective strain rate
+
+
+## Outputs
+
+`activation_energy` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Output name of the activation energy
+
+
+## Parameters
+
+`shear_modulus` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: The shear modulus
+
+
+## Other options
+
+`eps0` &mdash; `float` &middot; **required**
+: Reference strain rate
+
+`k` &mdash; `float` &middot; **required**
+: The Boltzmann constant
+
+`b` &mdash; `float` &middot; **required**
+: Magnitude of the Burgers vector
+

@@ -1,0 +1,23 @@
+(tensors-CSVSR2)=
+# CSVSR2
+
+**Source:** `user_tensors/CSVTensor.py`
+
+Load 6 columns from CSV as an ``SR2`` with shape ``(N, 6)``.
+
+Column-name suffix order matches the C++ ``VTestTimeSeries<SR2>`` /
+Mandel slot convention: ``var_xx, var_yy, var_zz, var_yz, var_xz, var_xy``.
+Values are stacked verbatim -- ``.vtest`` files declare Mandel convention
+so the on-disk columns already carry the sqrt(2) scaling on shear slots.
+
+## Other options
+
+`csv_file` &mdash; `str` &middot; **required**
+: Path to the CSV file. Resolved relative to the input file's directory when not absolute.
+
+`variable` &mdash; `str`
+: Column-name prefix expanded via the per-type suffix convention (e.g. ``stress`` -> ``stress_xx``, ``stress_yy``, ... for SR2). Mutually exclusive with ``column_names``.
+
+`column_names` &mdash; `list`
+: Explicit whitespace-separated list of CSV column names; bypasses the ``variable`` suffix expansion. Mutually exclusive with ``variable``.
+

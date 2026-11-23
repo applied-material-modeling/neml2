@@ -1,0 +1,37 @@
+(models-SolidSolutionStrength)=
+# SolidSolutionStrength
+
+**Source:** `models/solid_mechanics/crystal_plasticity/SolidSolutionStrength.py`
+
+Solid solution strengthening contribution, defined by
+$\tau = \alpha \mu \varepsilon^{3/2} c^{1/2}$
+where $c$ is the matrix solute concentration, $\varepsilon$ is the
+misfit strain, $\alpha$ is an interaction coefficient and $\mu$ is
+the shear modulus.
+
+The output is a single strength contribution, intended to be combined with
+the other contributions through a ``ScalarLinearCombination``.
+
+## Inputs
+
+`solute_concentration` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Current matrix solute concentration
+
+
+## Outputs
+
+`solid_solution_strength` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The solid solution strength contribution
+
+
+## Parameters
+
+`alpha` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Interaction coefficient
+
+`shear_modulus` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Shear modulus
+
+`misfit_strain` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Misfit strain
+

@@ -1,0 +1,36 @@
+(models-AvramiErofeevNucleation)=
+# AvramiErofeevNucleation
+
+**Source:** `models/chemical_reactions/AvramiErofeevNucleation.py`
+
+Avrami--Erofeev nucleation reaction mechanism.
+
+Maps the conversion degree $a$ to the reaction rate
+
+$$
+f = k (1 - a) \bigl(-\ln(1 - a)\bigr)^n
+$$
+
+where $k$ is the reaction coefficient and $n$ is the reaction
+order.
+
+## Inputs
+
+`conversion_degree` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Degree of conversion
+
+
+## Outputs
+
+`reaction_rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Reaction rate
+
+
+## Parameters
+
+`coef` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Reaction coefficient
+
+`order` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Reaction order
+

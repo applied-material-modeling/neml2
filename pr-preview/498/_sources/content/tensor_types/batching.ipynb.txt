@@ -1,0 +1,238 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "0cdc050f",
+   "metadata": {},
+   "source": [
+    "(tensor-types-batching)=\n",
+    "# Batching and broadcasting\n",
+    "\n",
+    "Vectorizing a model over many material points is the whole point of the\n",
+    "tensor backend: the *same* `forward` body evaluates one state or a\n",
+    "million, and the only difference is the shape of the input. This page\n",
+    "shows the batching pattern, the broadcasting rules wrappers follow, and\n",
+    "the one batching concept torch has no equivalent for — the sub-batch\n",
+    "region."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "339cd197",
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
+   "outputs": [],
+   "source": [
+    "# Install NEML2 when running in Google Colab; no-op in the docs build and\n",
+    "# local Jupyter, and hidden from the rendered page.\n",
+    "import sys\n",
+    "\n",
+    "if \"google.colab\" in sys.modules:\n",
+    "    !pip install -q neml2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "82244c7c",
+   "metadata": {},
+   "source": [
+    "## One body, any batch shape\n",
+    "\n",
+    "A model's `forward` dispatches one PyTorch kernel per operation, and\n",
+    "those kernels broadcast across leading axes natively. So we can hand the\n",
+    "same model a single strain, a 1-D batch, or a 2-D grid and only the\n",
+    "leading axes change. First, a small elasticity model to evaluate:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a92fd1f1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%writefile elasticity.i\n",
+    "[Models]\n",
+    "  [elasticity]\n",
+    "    type = LinearIsotropicElasticity\n",
+    "    coefficients      = '200e3          0.3'\n",
+    "    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'\n",
+    "  []\n",
+    "[]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "cca6ff11",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import torch\n",
+    "import neml2\n",
+    "from neml2.types import SR2\n",
+    "\n",
+    "model = neml2.load_model(\"elasticity.i\", \"elasticity\")\n",
+    "\n",
+    "single = SR2.fill(0.01, 0, 0, 0, 0, 0)  # base only, no batch axes\n",
+    "batch = SR2(torch.randn(10_000, 6) * 0.01)  # one leading batch dim\n",
+    "grid = SR2(torch.randn(50, 200, 6) * 0.01)  # two leading batch dims\n",
+    "\n",
+    "print(\"single ->\", tuple(model(single).data.shape))\n",
+    "print(\"batch  ->\", tuple(model(batch).data.shape))\n",
+    "print(\"grid   ->\", tuple(model(grid).data.shape))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "be04482e",
+   "metadata": {},
+   "source": [
+    "Leading batch dims are completely free-form. A Python loop around a\n",
+    "single-state call leaves a lot of throughput on the table — pass the\n",
+    "whole batch as one tensor whenever you can.\n",
+    "[](tutorials-models-vectorization) shows the timing difference."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "01a52423",
+   "metadata": {},
+   "source": [
+    "## Broadcasting\n",
+    "\n",
+    "Binary operators between wrappers broadcast their batch regions using\n",
+    "PyTorch's standard rules: right-aligned by axis, size-1 axes stretched\n",
+    "to match, mismatched non-1 sizes an error. A `Scalar` broadcasts against\n",
+    "any wrapper's base, and a base-only value broadcasts against a batched\n",
+    "one:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6be637b9",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from neml2.types import Scalar\n",
+    "\n",
+    "pressure = Scalar(torch.linspace(1.0, 5.0, 5))  # shape (5,)\n",
+    "unit = SR2.fill(1, 1, 1, 0, 0, 0)  # base only, shape (6,)\n",
+    "scaled = pressure * unit  # (5,) Scalar × (6,) SR2\n",
+    "print(\"Scalar(5) * SR2(base) ->\", tuple(scaled.data.shape))\n",
+    "\n",
+    "offset = SR2(torch.randn(5, 6)) + unit  # (5, 6) + (6,)\n",
+    "print(\"SR2(5) + SR2(base)    ->\", tuple(offset.data.shape))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "de4cb83c",
+   "metadata": {},
+   "source": [
+    "## Sub-batch metadata survives the op\n",
+    "\n",
+    "Algebraic operators don't just broadcast the raw tensors — they unify\n",
+    "the operands' sub-batch widths and tag the result accordingly. So a\n",
+    "\"global\" parameter and a \"per-site\" field combine cleanly at any dynamic\n",
+    "batch size, and the result still knows which axis is per-site:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6ddc505a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "glob = Scalar(2.0)  # a global scalar, no sub-batch\n",
+    "per_site = Scalar(torch.randn(20)).sub_batch.retag(1)  # length-20 sub-batch\n",
+    "combined = glob * per_site\n",
+    "print(\"sub_batch_shape ->\", tuple(combined.sub_batch_shape))\n",
+    "print(\"sub_batch_ndim  ->\", combined.sub_batch_ndim)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8a459fd7",
+   "metadata": {},
+   "source": [
+    "## Declaring sub-batch axes in an input file\n",
+    "\n",
+    "`.sub_batch.retag(n)` is also valid inside a `[Tensors]` HIT block,\n",
+    "whose `expr` is evaluated as Python. A lookup-table control axis is the\n",
+    "canonical case — here 20 interpolation points marked as the sub-batch:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a3b13a63",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%writefile controls.i\n",
+    "[Tensors]\n",
+    "  [T_controls]\n",
+    "    type = Python\n",
+    "    expr = 'linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)'\n",
+    "  []\n",
+    "[]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "514ff25c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "controls = neml2.load_input(\"controls.i\").get_tensor(\"T_controls\")\n",
+    "print(\"sub_batch_shape ->\", tuple(controls.sub_batch_shape))\n",
+    "print(\"sub_batch_ndim  ->\", controls.sub_batch_ndim)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b0c6dfee",
+   "metadata": {},
+   "source": [
+    "## Relation to torch\n",
+    "\n",
+    "The leading-batch broadcasting above *is* PyTorch's — wrappers add no\n",
+    "new rule there; they just keep the base packing intact through it. The\n",
+    "sub-batch region is the genuinely new concept: a torch tensor has no\n",
+    "way to say \"this axis is per-site structure, not an ordinary batch\",\n",
+    "which is exactly the distinction the chain rule needs when models on\n",
+    "different sites compose."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8ba9a947",
+   "metadata": {},
+   "source": [
+    "## See also\n",
+    "\n",
+    "- [](tutorials-models-vectorization) — a timed loop-vs-batched\n",
+    "  comparison.\n",
+    "- [](tensor-types-regions) — the regions these rules act on.\n",
+    "- [](tutorials-models-input-file) — the `[Tensors]` section in full."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

@@ -1,0 +1,41 @@
+(models-SlidingDrivenStrainRate)=
+# SlidingDrivenStrainRate
+
+**Source:** `models/solid_mechanics/traction_separation_law/SlidingDrivenStrainRate.py`
+
+Local stand-in for the bulk strain rate that drives nucleation,
+
+$$
+\dot{\varepsilon} = \frac{\left| \dot{[\![u]\!]}_t^v \right|}{d},
+$$
+
+with $d$ a characteristic grain or grain boundary length scale.
+
+The bulk strain rate is the only non-local quantity in the original
+Sham-Needleman model. Assuming nucleation is driven by sliding stress
+concentrations replaces it with this purely local expression, which is
+what makes the simplified model usable as an interface law without a
+coupling back to the surrounding continuum.
+
+This leaf is optional by construction: the nucleation law consumes
+``strain_rate`` as an ordinary input, so an input file may instead supply
+the true bulk rate (for example through a `ScalarInputParameter`) and
+leave this model out of the composition entirely.
+
+## Inputs
+
+`viscous_sliding_rate` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Rate of the viscous part of the sliding jump
+
+
+## Outputs
+
+`strain_rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Effective strain rate driving cavity nucleation
+
+
+## Parameters
+
+`length_scale` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Characteristic grain or grain boundary length scale
+
