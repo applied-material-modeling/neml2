@@ -141,8 +141,17 @@ def _check_cpu_toolchain() -> None:
     return
 
 
+def _is_rocm() -> bool:
+    """Whether torch is a ROCm build, which exposes AMD GPUs as the ``cuda`` family."""
+    return getattr(torch.version, "hip", None) is not None
+
+
 def _check_cuda_toolchain() -> None:
     """Raise a recipe-bearing ``RuntimeError`` when ``nvcc`` is missing.
+
+    On a ROCm build of torch the ``cuda`` family is an AMD GPU and Inductor
+    compiles its kernels with ROCm's ``hipcc`` instead, see
+    :func:`_check_rocm_toolchain`.
 
     Inductor's CUDA backend needs ``nvcc`` to compile the generated
     kernels. The default ``torch`` wheel bundles the CUDA *runtime* but
@@ -151,6 +160,10 @@ def _check_cuda_toolchain() -> None:
     ``torch._inductor`` partway through the AOT compile. Surface the
     install recipe early instead.
     """
+    if _is_rocm():
+        _check_rocm_toolchain()
+        return
+
     import shutil
 
     from torch.utils.cpp_extension import CUDA_HOME
@@ -182,6 +195,32 @@ def _check_cuda_toolchain() -> None:
         "its root. See doc/content/installation/deps.md for details. "
         "CPU AOTI export needs none of this -- only inputs on a CUDA device "
         "trigger this check."
+    )
+
+
+def _check_rocm_toolchain() -> None:
+    """Raise a recipe-bearing ``RuntimeError`` when ROCm's ``hipcc`` is missing.
+
+    ROCm builds of torch expose AMD GPUs as ``torch.cuda`` (device ``cuda``),
+    so ``--device cuda`` targets them, and Inductor compiles the generated
+    kernels with ``hipcc``. Looked up on ``PATH``, then under torch's
+    ``ROCM_HOME`` (``ROCM_PATH`` / ``ROCM_HOME`` / the ``hipcc`` location).
+    """
+    import shutil
+
+    from torch.utils.cpp_extension import ROCM_HOME
+
+    if shutil.which("hipcc"):
+        return
+    if ROCM_HOME and (Path(ROCM_HOME) / "bin" / "hipcc").exists():
+        return
+    raise RuntimeError(
+        "compile_model: AOTI export for an AMD GPU (device 'cuda' on a ROCm build "
+        "of torch) requires ROCm's `hipcc`, but none was found (neither on PATH "
+        "nor under ROCM_HOME).\n"
+        "\n"
+        "Make the ROCm installation that torch was built against visible, e.g. "
+        "load its environment module or set ROCM_PATH to its root."
     )
 
 
@@ -251,6 +290,26 @@ TOOLCHAIN_CHECKS: dict[str, Callable[[], None]] = {
     "hip": _check_hip_toolchain,
     "mps": _check_mps_toolchain,
 }
+
+
+def default_inductor_configs(family: str) -> dict[str, object]:
+    """Inductor settings AOTI artifacts for device *family* need on this torch build.
+
+    :func:`neml2.models.export.compile_model` applies them before any
+    caller-supplied ``inductor_configs``, which take precedence.
+
+    On a ROCm build (AMD GPUs as the ``cuda`` family) the kernels are tiled in
+    one dimension only (``triton.max_tiles = 1``). With Inductor's default 2D
+    tiling, crystal plasticity artifacts compiled for an MI250X failed to launch
+    ("CUDA driver error: invalid configuration argument") with a dynamic batch
+    of ~1M rows; batches of 32k rows ran. With 1D
+    tiling, batches of over 1M rows run. That raises the usable batch without
+    removing the limit: a ~3M-row batch still failed, so very large batches
+    still need the dispatcher's chunking.
+    """
+    if family == "cuda" and _is_rocm():
+        return {"triton.max_tiles": 1}
+    return {}
 
 
 def check_toolchain(family: str) -> None:

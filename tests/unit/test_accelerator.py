@@ -34,6 +34,7 @@ from neml2._accelerator import (
     KNOWN_FAMILIES,
     TOOLCHAIN_CHECKS,
     check_toolchain,
+    default_inductor_configs,
     folder_name,
     is_compatible,
     parse_device_spec,
@@ -161,11 +162,11 @@ class TestCheckToolchain:
     def test_all_known_families_have_a_check(self):
         assert set(TOOLCHAIN_CHECKS) == set(KNOWN_FAMILIES)
 
-    def test_cuda_ok_when_nvcc_on_path(self):
+    def test_cuda_ok_when_nvcc_on_path(self, not_rocm):
         with patch("shutil.which", return_value="/usr/local/cuda/bin/nvcc"):
             check_toolchain("cuda")  # must not raise
 
-    def test_cuda_ok_when_nvcc_under_cuda_home(self, tmp_path):
+    def test_cuda_ok_when_nvcc_under_cuda_home(self, not_rocm, tmp_path):
         (tmp_path / "bin").mkdir()
         (tmp_path / "bin" / "nvcc").touch()
         with (
@@ -174,12 +175,44 @@ class TestCheckToolchain:
         ):
             check_toolchain("cuda")  # must not raise
 
-    def test_cuda_raises_when_missing(self):
+    def test_cuda_raises_when_missing(self, not_rocm):
         with (
             patch("shutil.which", return_value=None),
             patch("torch.utils.cpp_extension.CUDA_HOME", None),
         ):
             with pytest.raises(RuntimeError, match="requires `nvcc`"):
+                check_toolchain("cuda")
+
+    def test_rocm_ok_when_hipcc_on_path(self, rocm):
+        with patch("shutil.which", return_value="/opt/rocm/bin/hipcc"):
+            check_toolchain("cuda")  # must not raise
+
+    def test_rocm_ok_when_hipcc_under_rocm_home(self, rocm, tmp_path):
+        (tmp_path / "bin").mkdir()
+        (tmp_path / "bin" / "hipcc").touch()
+        with (
+            patch("shutil.which", return_value=None),
+            patch("torch.utils.cpp_extension.ROCM_HOME", str(tmp_path)),
+        ):
+            check_toolchain("cuda")  # must not raise
+
+    def test_rocm_does_not_require_nvcc(self, rocm):
+        # On a ROCm build "cuda" is an AMD GPU: hipcc suffices, nvcc is irrelevant
+        def which(exe):
+            return "/rocm/bin/hipcc" if exe == "hipcc" else None
+
+        with (
+            patch("shutil.which", side_effect=which),
+            patch("torch.utils.cpp_extension.CUDA_HOME", None),
+        ):
+            check_toolchain("cuda")  # must not raise
+
+    def test_rocm_raises_when_hipcc_missing(self, rocm):
+        with (
+            patch("shutil.which", return_value=None),
+            patch("torch.utils.cpp_extension.ROCM_HOME", None),
+        ):
+            with pytest.raises(RuntimeError, match="requires ROCm's `hipcc`"):
                 check_toolchain("cuda")
 
     def test_xpu_ok_when_available(self):
@@ -205,6 +238,65 @@ class TestCheckToolchain:
         with patch("neml2._accelerator.torch", SimpleNamespace(backends=fake_backends)):
             with pytest.raises(RuntimeError, match="MPS AOTI export requires"):
                 check_toolchain("mps")
+
+
+@pytest.fixture
+def rocm(monkeypatch):
+    """Pretend torch is a ROCm build (AMD GPUs as the ``cuda`` family)."""
+    monkeypatch.setattr("neml2._accelerator._is_rocm", lambda: True)
+
+
+@pytest.fixture
+def not_rocm(monkeypatch):
+    """Pretend torch is not a ROCm build, whatever this machine's torch is."""
+    monkeypatch.setattr("neml2._accelerator._is_rocm", lambda: False)
+
+
+class TestDefaultInductorConfigs:
+    def test_rocm_cuda_family_tiles_in_one_dimension(self, rocm):
+        assert default_inductor_configs("cuda") == {"triton.max_tiles": 1}
+
+    @pytest.mark.parametrize("family", ["cpu", "xpu", "hip", "mps"])
+    def test_other_families_on_rocm_keep_inductor_defaults(self, rocm, family):
+        assert default_inductor_configs(family) == {}
+
+    def test_cuda_without_rocm_keeps_inductor_defaults(self, not_rocm):
+        assert default_inductor_configs("cuda") == {}
+
+    def test_compile_model_applies_family_defaults_under_caller_configs(
+        self, tmp_path, monkeypatch
+    ):
+        # The family defaults reach Inductor, and caller entries override them.
+        import torch.nn as nn
+
+        from neml2.models.export import compile_model
+
+        class Identity(nn.Module):
+            def forward(self, x):
+                return x
+
+        seen: list[dict] = []
+
+        def _fake_aoti(*args, **kwargs):
+            seen.append(kwargs.get("inductor_configs", {}))
+            raise RuntimeError("compile-reached")
+
+        monkeypatch.setattr("neml2._accelerator.target_accelerator_family", lambda _: "cuda")
+        monkeypatch.setattr("neml2._accelerator.check_toolchain", lambda fam: None)
+        monkeypatch.setattr(
+            "neml2._accelerator.default_inductor_configs",
+            lambda fam: {"triton.max_tiles": 1, "triton.cudagraphs": False},
+        )
+        monkeypatch.setattr("torch._inductor.aoti_compile_and_package", _fake_aoti)
+
+        with pytest.raises(RuntimeError, match="compile-reached"):
+            compile_model(
+                Identity(),
+                (torch.zeros(2),),
+                tmp_path / "unused.pt2",
+                inductor_configs={"triton.cudagraphs": True},
+            )
+        assert seen == [{"triton.max_tiles": 1, "triton.cudagraphs": True}]
 
 
 class TestExportPreflightBranch:

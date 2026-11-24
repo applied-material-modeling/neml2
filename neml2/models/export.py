@@ -277,14 +277,20 @@ def compile_model(
         ``inductor_configs=...``. Use this to enable knobs like
         ``{"triton.cudagraphs": True}`` for CUDA-graph capture on graphs whose
         per-call kernel-launch overhead matters (e.g. ``DenseNewtonStep``).
-        ``None`` (the default) leaves Inductor at its compile-time defaults.
+        Entries override the settings the target device family needs
+        (:func:`neml2._accelerator.default_inductor_configs`, e.g. 1D tiling
+        for AMD GPUs); otherwise Inductor keeps its compile-time defaults.
 
     Returns
     -------
     Path
         The absolute path to the produced ``.pt2`` artifact.
     """
-    from .._accelerator import check_toolchain, target_accelerator_family
+    from .._accelerator import (
+        check_toolchain,
+        default_inductor_configs,
+        target_accelerator_family,
+    )
 
     # Preflight: if any example input lives on an accelerator, the Inductor
     # backend will JIT/AOT-compile device kernels and may need a per-family
@@ -293,6 +299,10 @@ def compile_model(
     _target_family = target_accelerator_family(t for a in example_inputs for t in _walk_tensors(a))
     if _target_family is not None:
         check_toolchain(_target_family)
+    inductor_configs = {
+        **(default_inductor_configs(_target_family) if _target_family is not None else {}),
+        **(inductor_configs or {}),
+    }
 
     # Restore the typed-wrapper metadata the export pytree round-trip drops
     # before anything reads the forward signature -- the wrapper's pure
