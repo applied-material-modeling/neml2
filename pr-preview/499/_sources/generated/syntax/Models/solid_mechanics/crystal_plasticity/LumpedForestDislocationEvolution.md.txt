@@ -1,0 +1,38 @@
+(models-LumpedForestDislocationEvolution)=
+# LumpedForestDislocationEvolution
+
+**Source:** `models/solid_mechanics/crystal_plasticity/LumpedForestDislocationEvolution.py`
+
+Standard forest hardening model for a single, lumped dislocation
+density shared by all slip systems, defined by
+$\dot{\rho} = (k_1 \sqrt{\rho} - k_2 \rho) \sum_{i=1}^{n_{slip}} \left| \dot{\gamma}_i \right|$.
+
+This is the lumped counterpart of ``PerSlipForestDislocationEvolution``:
+the density carries no slip-system axis, and it is driven by the total
+slip rate (typically from ``SumSlipRates``) rather than by the slip rate
+on each system. Paired with ``DislocationObstacleStrengthMap``, it gives
+the same Taylor strength on every slip system.
+
+## Inputs
+
+`dislocation_density` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Lumped dislocation density
+
+`sum_slip_rates` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Sum of the absolute values of the slip rates
+
+
+## Outputs
+
+`dislocation_density_rate` &mdash; `output` &middot; `Scalar` &middot; default `dislocation_density_rate`
+: Optional name for the derived output (defaults to 'dislocation_density_rate', i.e. the 'dislocation_density' variable name with the '_rate' suffix).
+
+
+## Parameters
+
+`k1` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Hardening coefficient
+
+`k2` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Recovery coefficient
+
